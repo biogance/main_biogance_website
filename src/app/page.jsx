@@ -1,10 +1,10 @@
-import Image from "next/image";
-import { Navbar } from "../Components/Pages/Navbar";
+
+import MainVideo from "../Components/Pages/MainVideo";
 
 export default function Home() {
   return (
     <div>
-     <Navbar/>
+     <MainVideo/>
     </div>
   );
 }
