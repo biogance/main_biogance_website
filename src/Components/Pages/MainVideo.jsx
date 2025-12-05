@@ -8,6 +8,9 @@ import LandingCards from './LandingCards';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingProductFinder } from './LandingProductFinder';
 import LandingExpertAdvice from './LandingExpertAdvice';
+import LandingReview from './LandingReview';
+import LandingBanner from './LandingBanner';
+import Footer from './Footer';
 
 const heroSlides = [
   {
@@ -200,6 +203,9 @@ export default function HeroSection() {
       <LandingProductFinder/>
       <LandingCards title="Best Selling" />
       <LandingExpertAdvice/>
+      <LandingReview/>
+      <LandingBanner/>
+      <Footer/>
     </>
   );
 }

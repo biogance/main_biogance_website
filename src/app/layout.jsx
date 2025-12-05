@@ -9,6 +9,9 @@ const geistSans = Geist({
 export const metadata = {
   title: "Biogance",
   description: "Powered by Biogance",
+  icons: {
+    icon: "/Group.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

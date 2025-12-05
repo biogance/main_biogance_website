@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
+import { SearchModal } from './Modal/SearchModal';
 
 const logoImage = '/logo.svg';
 
@@ -27,8 +29,10 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   return (
+    <>
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
       <div className="w-full mx-auto px-4 sm:px-6 h-full">
         <div className="relative flex items-center justify-between h-full">
@@ -41,15 +45,16 @@ export default function Navbar() {
               {isMobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
             </button>
           </div>
+
           <div className="flex-1 flex items-center justify-center md:items-stretch md:justify-start">
             {/* Logo */}
-            <div className="flex-shrink-0 cursor-pointer flex items-center">
+            <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
               <ImageWithFallback
                 src={logoImage}
                 alt="Biogance Logo"
                 className="h-10 sm:h-10"
               />
-            </div>
+            </Link>
   
             {/* Center Navigation Links - Desktop Only */}
             <div className="hidden md:flex flex-1 items-center justify-center gap-4">
@@ -82,7 +87,11 @@ export default function Navbar() {
                 <FiChevronDown className="w-4 h-4" />
               </button>
   
-              <button className="hidden xs:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
+              {/* SEARCH ICON - Now visible ONLY on desktop (sm and above) */}
+              <button
+                onClick={() => setIsSearchModalOpen(true)}
+                className="hidden sm:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+              >
                 <FiSearch className="w-5 h-5" />
               </button>
   
@@ -142,7 +151,10 @@ export default function Navbar() {
                 <span>EN</span>
                 <FiChevronDown className="w-4 h-4" />
               </button>
-              <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]">
+              <button
+                onClick={() => setIsSearchModalOpen(true)}
+                className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]"
+              >
                 <FiSearch className="w-5 h-5" />
               </button>
               <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]">
@@ -155,5 +167,11 @@ export default function Navbar() {
           </div>
       </div>
     </nav>
+
+    <SearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={() => setIsSearchModalOpen(false)} 
+    />
+    </>
   );
 }

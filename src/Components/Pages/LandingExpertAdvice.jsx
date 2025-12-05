@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Heart, ChevronLeft, ChevronRight } from "react-icons/md";
-import { BiChevronLeft, BiChevronRight, BiHeart } from "react-icons/bi";
+import { useState, useRef } from "react";
+import { BiChevronRight } from "react-icons/bi";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 
 export default function LandingExpertAdvice() {
+  const scrollContainerRef = useRef(null);
+  
   const [articles, setArticles] = useState([
     {
       id: 1,
@@ -13,18 +15,20 @@ export default function LandingExpertAdvice() {
       category: "For Dogs",
       date: "July 28, 2025",
       title: "How do I care for my dog's nose?",
-      description: "Don't know how to care for your dog's nose? A dog's nose holds many mysteries. Both fragile and powerful, it is particularly essential in...",
+      description: "Don't know how to care for your dog's nose? A dog's nose holds many mysteries. Both fragile and powerful, it is particularly essential in maintaining your pet's health and wellbeing throughout their life.",
       isFavorite: false,
+      isExpanded: false,
     },
     {
       id: 2,
       image: "https://images.unsplash.com/photo-1760130291264-cf83815f0c05?q=80&w=800&auto=format&fit=crop",
       category: "For Cats",
       date: "July 28, 2025",
-      tags: ["Behavior", "Tips & Tricks"],
+      tags: ["Behavior"],
       title: "What is pawing in cats?",
-      description: "In fact, pawing is innate in cats. At birth, this action is essential to the kitten's survival. It stimulates the mother's milk supply...",
+      description: "In fact, pawing is innate in cats. At birth, this action is essential to the kitten's survival. It stimulates the mother's milk supply and helps create a strong bond between mother and kitten.",
       isFavorite: false,
+      isExpanded: false,
     },
     {
       id: 3,
@@ -33,21 +37,64 @@ export default function LandingExpertAdvice() {
       date: "May 30, 2024",
       tags: ["Education"],
       title: "How to groom your dog at home?",
-      description: "Do you want a cute dog at all times? Have you never mustered up the courage to groom your dog? Often, we feel like our furball hates the...",
+      description: "Do you want a cute dog at all times? Have you never mustered up the courage to groom your dog? Often, we feel like our furball hates the grooming process, but with the right techniques it can be enjoyable.",
       isFavorite: false,
+      isExpanded: false,
     },
     {
       id: 4,
-      image: "https://images.unsplash.com/photo-1543466835-00a638f80e801?q=80&w=800&auto=format&fit=crop",
+      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?q=80&w=800&auto=format&fit=crop",
       category: "For Cats",
       date: "June 15, 2025",
       title: "Why does my cat sleep so much?",
-      description: "Cats sleep 12–16 hours a day. It's completely normal! But sometimes excessive sleep can be a sign of boredom or health issues...",
+      description: "Cats sleep 12–16 hours a day. It's completely normal! But sometimes excessive sleep can be a sign of boredom or health issues that need attention from a veterinarian for proper diagnosis.",
       isFavorite: false,
+      isExpanded: false,
+    },
+    {
+      id: 5,
+      image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=800&auto=format&fit=crop",
+      category: "For Dogs",
+      date: "August 10, 2025",
+      tags: ["Health"],
+      title: "Signs your dog needs a vet visit",
+      description: "Understanding when your dog needs medical attention can be challenging. Learn the key warning signs that indicate it's time to schedule a visit with your veterinarian for a thorough checkup.",
+      isFavorite: false,
+      isExpanded: false,
+    },
+    {
+      id: 6,
+      image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop",
+      category: "For Cats",
+      date: "September 5, 2025",
+      tags: ["Nutrition"],
+      title: "Best diet for senior cats",
+      description: "As cats age, their nutritional needs change significantly. Discover what foods are best for senior cats and how to maintain their health and vitality through proper nutrition and meal planning.",
+      isFavorite: false,
+      isExpanded: false,
+    },
+    {
+      id: 7,
+      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?q=80&w=800&auto=format&fit=crop",
+      category: "For Dogs",
+      date: "October 12, 2025",
+      tags: ["Training"],
+      title: "Puppy training basics",
+      description: "Starting early with puppy training sets the foundation for a well-behaved dog. Learn essential commands, house training tips, and positive reinforcement techniques that work best for young puppies.",
+      isFavorite: false,
+      isExpanded: false,
+    },
+    {
+      id: 8,
+      image: "https://images.unsplash.com/photo-1478098711619-5ab0b478d6e6?q=80&w=800&auto=format&fit=crop",
+      category: "For Cats",
+      date: "November 20, 2025",
+      title: "Understanding cat body language",
+      description: "Cats communicate primarily through body language. From tail positions to ear movements, learn how to read your cat's signals and understand what they're trying to tell you every day.",
+      isFavorite: false,
+      isExpanded: false,
     },
   ]);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   const toggleFavorite = (id) => {
     setArticles((prev) =>
@@ -57,23 +104,26 @@ export default function LandingExpertAdvice() {
     );
   };
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % articles.length);
+  const toggleExpanded = (id) => {
+    setArticles((prev) =>
+      prev.map((art) =>
+        art.id === id ? { ...art, isExpanded: !art.isExpanded } : art
+      )
+    );
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + articles.length) % articles.length);
-  };
-
-  const getVisibleArticles = () => {
-    const visible = [];
-    for (let i = 0; i < articles.length; i++) {
-      visible.push(articles[(currentIndex + i) % articles.length]);
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.querySelector('.flex-shrink-0').offsetWidth;
+      const gap = 24; // gap-6 in Tailwind = 24px
+      const scrollAmount = cardWidth + gap;
+      
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'next' ? scrollAmount : -scrollAmount,
+        behavior: 'smooth',
+      });
     }
-    return visible.slice(0, 3); // Show only 3 cards at a time
   };
-
-  const visibleArticles = getVisibleArticles();
 
   return (
     <section className="bg-white py-16 px-6">
@@ -98,87 +148,101 @@ export default function LandingExpertAdvice() {
           </div>
 
           {/* Navigation Arrows */}
-          <div className="flex gap-4">
+          <div className="flex gap-2">
             <button
-              onClick={prevSlide}
-              className="w-11 h-11 border border-gray-300 rounded-4xl hover:bg-gray-50 transition-all flex items-center justify-center group shadow-sm"
+              onClick={() => scroll('prev')}
+              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              aria-label="Previous articles"
             >
-              <BiChevronLeft className="w-7 h-7 text-gray-700 group-hover:text-black" />
-            </button> 
+              <IoChevronBack className="w-5 h-5 text-gray-700" />
+            </button>
             <button
-              onClick={nextSlide}
-              className="w-11 h-11 border border-gray-300 rounded-4xl hover:bg-gray-50 transition-all flex items-center justify-center group shadow-sm"
+              onClick={() => scroll('next')}
+              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              aria-label="Next articles"
             >
-              <BiChevronRight className="w-7 h-7 text-gray-700 group-hover:text-black" />
+              <IoChevronForward className="w-5 h-5 text-gray-700" />
             </button>
           </div>
         </div>
 
-        {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {visibleArticles.map((article) => (
-            <article
-              key={article.id}
-              className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 group"
-            >
-              {/* Image */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-
-                {/* Favorite Button */}
-                <button
-                  onClick={() => toggleFavorite(article.id)}
-                  className="absolute top-4 left-4 w-11 h-11 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all shadow-lg z-10"
+        {/* Articles Horizontal Scroll */}
+        <div className="relative overflow-hidden">
+          <style jsx>{`
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .hide-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+          
+          <div 
+            ref={scrollContainerRef}
+            className="overflow-x-auto hide-scrollbar"
+          >
+            <div className="flex gap-6 pb-4">
+              {articles.map((article) => (
+                <article
+                  key={article.id}
+                  className="bg-[#F7F7F7] rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-lg transition-all duration-300 group flex-shrink-0 w-[calc(33.333%-16px)]"
                 >
-                  <BiHeart
-                    className={`w-6 h-6 transition-all ${
-                      article.isFavorite
-                        ? "fill-red-500 text-red-500 scale-110"
-                        : "text-gray-700 hover:text-gray-900"
-                    }`}
-                  />
-                </button>
-              </div>
+                  {/* Image */}
+                  <div className="relative h-[240px] overflow-hidden bg-gray-100">
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
 
-              {/* Content */}
-              <div className="p-7">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-4 font-medium">
-                  <span className="text-black">{article.category}</span>
-                  <span>•</span>
-                  <span>{article.date}</span>
-                  {article.tags && (
-                    <>
-                      <span>•</span>
-                      <span className="text-gray-600">
-                        {article.tags.join(" • ")}
-                      </span>
-                    </>
-                  )}
-                </div>
+                    {/* Favorite Button */}
+                    <button
+                      onClick={() => toggleFavorite(article.id)}
+                      className="absolute top-4 left-4 w-9 h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                    >
+                      {article.isFavorite ? (
+                        <FaHeart className="w-5 h-5 text-black" />
+                      ) : (
+                        <FaRegHeart className="w-5 h-5 text-gray-700" />
+                      )}
+                    </button>
+                  </div>
 
-                <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-blue-600 transition">
-                  {article.title}
-                </h3>
+                  {/* Content */}
+                  <div className="p-7">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-4 font-medium">
+                      <span className="text-black border border-white rounded-full px-3 py-1 bg-white">{article.category}</span>
+                      <span className="text-black border border-white rounded-full px-3 py-1 bg-white">{article.date}</span>
+                      {article.tags && (
+                        <span className="text-gray-600 border border-white rounded-full px-3 py-1 bg-white">
+                          {article.tags.join(" • ")}
+                        </span>
+                      )}
+                    </div>
 
-                <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed">
-                  {article.description}
-                </p>
+                    <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 transition">
+                      {article.title}
+                    </h3>
 
-                <button className="w-full bg-black text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-gray-800 transition">
-                  Continue Reading
-                </button>
-              </div>
-            </article>
-          ))}
+                    <p className={`text-sm text-gray-600 mb-6 leading-relaxed transition-all duration-300 ${
+                      article.isExpanded ? '' : 'line-clamp-3'
+                    }`}>
+                      {article.description}
+                    </p>
+
+                    <button 
+                      onClick={() => toggleExpanded(article.id)}
+                      className="bg-black cursor-pointer text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition"
+                    >
+                      {article.isExpanded ? 'Show Less' : 'Continue Reading'}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
-
-       
       </div>
     </section>
   );
