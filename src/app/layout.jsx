@@ -1,24 +1,21 @@
-import { Geist, Geist_Mono, Lato } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { ReduxProvider } from "../redux/provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Biogance",
-  description: "Powered by Biogance",
-  icons: {
-    icon: "/Group.svg",
-  },
+  description: "Pioneers in Natural Pet Care",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        {children}
+      <body className={inter.className}>
+        <ReduxProvider>
+          {children}
+        </ReduxProvider>
       </body>
     </html>
   );

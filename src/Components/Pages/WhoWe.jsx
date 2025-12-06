@@ -1,6 +1,9 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import WhoWeBioganceHero from './WhoWeBioganceHero';
+import WhoWeBioganceNatural from './WhoWeBioganceNatural';
+import WhoWeJourneyLife from './WhoWeJourneyLife';
 
 const WhoWe = () => {
   return (
@@ -41,7 +44,10 @@ const WhoWe = () => {
         </div>
       </main>
 
-      {/* Footer - ab ye show hoga aur page scroll karega */}
+
+      <WhoWeBioganceHero/>
+      <WhoWeBioganceNatural/>
+      <WhoWeJourneyLife/>
       <Footer />
     </>
   );

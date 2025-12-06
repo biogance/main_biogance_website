@@ -251,7 +251,7 @@ export default function Footer() {
               <ul className="space-y-2.5 text-sm text-gray-300">
                 <li><Link href="/who-we" className="hover:text-white transition">Who are we?</Link></li>
                 <li><a href="#" className="hover:text-white transition">Nos engagements</a></li>
-                <li><a href="#" className="hover:text-white transition">Nos certifications</a></li>
+                <li><Link href="/certifications" className="hover:text-white transition">Nos certifications</Link></li>
                 <li><a href="#" className="hover:text-white transition">Our expert tips</a></li>
                 <li><a href="#" className="hover:text-white transition">Our ingredients</a></li>
                 <li><a href="#" className="hover:text-white transition">Join the loyalty program</a></li>
