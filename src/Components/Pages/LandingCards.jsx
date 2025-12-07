@@ -25,10 +25,10 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
   return (
   <div className="group">
   {/* Main Card Container */}
-  <div className="bg-gray-50  rounded-2xl border border-[#E3E3E3] p-3 relative mb-3">
+  <div className="bg-gray-50 rounded-2xl border border-[#E3E3E3] p-3 relative mb-3">
     {/* Discount Badge */}
     {product.discount && (
-      <div className="absolute top-4 left-4 bg-[#1FC16B1A] text-black border border-[#84EBB4] text-xs font-semibold px-3 py-1 rounded-md z-10">
+      <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#1FC16B1A] text-black border border-[#84EBB4] text-xs font-semibold px-2 py-1 md:px-3 rounded-md z-10">
         {product.discount}
       </div>
     )}
@@ -36,31 +36,31 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
     {/* Like Button */}
     <button
       onClick={() => setIsLiked(!isLiked)}
-      className="absolute top-4 right-4 cursor-pointer w-8 h-8 bg-white rounded-xl border border-[#E3E3E3] flex items-center justify-center z-10"
+      className="absolute top-3 right-3 md:top-4 md:right-4 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-white rounded-xl border border-[#E3E3E3] flex items-center justify-center z-10"
     >
       {isLiked ? (
-        <FaHeart className="w-4 h-4 text-black" />
+        <FaHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
       ) : (
-        <FaRegHeart className="w-4 h-4 text-gray-700" />
+        <FaRegHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
       )}
     </button>
 
     {/* Product Image Container */}
-    <div className="relative h-64 flex items-center justify-center mb-4  mt-4">
+    <div className="relative h-48 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
       {/* Navigation Arrows */}
       {showNav && product.images.length > 1 && (
         <>
           <button
             onClick={handlePrevImage}
-            className="absolute left-2 cursor-pointer w-8 h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-cente"
+            className="absolute left-1 md:left-2 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-center"
           >
-            <IoChevronBack className="w-5 h-5 text-gray-700" />
+            <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
           </button>
           <button
             onClick={handleNextImage}
-            className="absolute right-2 cursor-pointer w-8 h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-center"
+            className="absolute right-1 md:right-2 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-center"
           >
-            <IoChevronForward className="w-5 h-5 text-gray-700" />
+            <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
           </button>
         </>
       )}
@@ -69,7 +69,7 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
       <img
         src={product.images[currentImageIndex] || product.image}
         alt={product.name}
-        className="h-48 object-contain transition-opacity duration-300"
+        className="h-36 md:h-48 object-contain transition-opacity duration-300"
       />
     </div>
 
@@ -79,7 +79,7 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
         {product.images.map((_, idx) => (
           <div
             key={idx}
-            className={`w-2 h-2 rounded-full transition-colors ${
+            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${
               idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
             }`}
           />
@@ -91,17 +91,16 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
   {/* Product Info - Outside the gray card */}
   <div>
     {/* Product Name */}
-    <h3 className="text-sm text-gray-800 mb-3 line-clamp-1">
+    <h3 className="text-xs md:text-sm text-gray-800 mb-2 md:mb-3 line-clamp-2 md:line-clamp-1">
       {product.name}
     </h3>
 
     {/* Price and Add to Cart */}
-    <div className="flex items-center justify-between">
-      
-      <span className="text-xl font-bold text-gray-900">
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-lg md:text-xl font-bold text-gray-900">
         €{product.price}
       </span>
-      <button className="bg-black text-white cursor-pointer text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
+      <button className="bg-black text-white cursor-pointer text-xs md:text-sm font-medium px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
         Add to Cart
       </button>
     </div>
@@ -200,9 +199,8 @@ export default function PopularProducts({ title = 'Popular Products' }) {
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      // Calculate single card width + gap
-      const cardWidth = scrollContainerRef.current.querySelector('.flex-shrink-0').offsetWidth;
-      const gap = 16; // 4 * 4px (gap-4 in Tailwind)
+      const cardWidth = scrollContainerRef.current.querySelector('.product-card').offsetWidth;
+      const gap = 16;
       const scrollAmount = cardWidth + gap;
       
       scrollContainerRef.current.scrollBy({
@@ -216,43 +214,46 @@ export default function PopularProducts({ title = 'Popular Products' }) {
     <div className="w-full mx-auto bg-white">
       <style jsx global>{`
         .hide-scrollbar {
-          -ms-overflow-style: none; /* IE and Edge */
-          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
         .hide-scrollbar::-webkit-scrollbar {
-          display: none; /* Chrome, Safari, and Opera */
+          display: none;
         }
       `}</style>
 
-      <div className="px-10 py-10">
+      <div className="px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">{title} ›</h2>
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title} ›</h2>
           <div className="flex gap-2">
             <button
               onClick={() => scroll('prev')}
-              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
               aria-label="Previous products"
             >
-              <IoChevronBack className="w-5 h-5 text-gray-700" />
+              <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
             <button
               onClick={() => scroll('next')}
-              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
               aria-label="Next products"
             >
-              <IoChevronForward className="w-5 h-5 text-gray-700" />
+              <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
           </div>
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - Responsive */}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar"
+          className="flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"
         >
           {products.map((product) => (
-            <div key={product.id} className="flex-shrink-0" style={{ width: 'calc(25% - 12px)' }}>
+            <div 
+              key={product.id} 
+              className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"
+            >
               <LandingCards
                 product={product}
                 showNav={true}

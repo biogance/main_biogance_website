@@ -114,8 +114,8 @@ export default function LandingExpertAdvice() {
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.querySelector('.flex-shrink-0').offsetWidth;
-      const gap = 24; // gap-6 in Tailwind = 24px
+      const cardWidth = scrollContainerRef.current.querySelector('.article-card').offsetWidth;
+      const gap = window.innerWidth < 768 ? 12 : 24;
       const scrollAmount = cardWidth + gap;
       
       scrollContainerRef.current.scrollBy({
@@ -126,24 +126,24 @@ export default function LandingExpertAdvice() {
   };
 
   return (
-    <section className="bg-white py-16 px-6">
+    <section className="bg-white py-8 md:py-12 lg:py-16 px-4 md:px-6">
       <div className="max-w-10xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start justify-between mb-12 gap-8">
+        <div className="flex flex-col lg:flex-row items-start justify-between mb-8 md:mb-12 gap-6 md:gap-8">
           <div>
-            <h2 className="text-3xl font-bold mb-4 text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-gray-900">
               Our Expert Advice
             </h2>
-            <p className="text-gray-600 text-base mb-4 max-w-2xl">
+            <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 max-w-2xl">
               Get tips and guidance from vets and pet care experts to keep your
               pet happy and healthy.
             </p>
             <a
               href="#"
-              className="text-sm font-semibold text-black hover:underline inline-flex items-center gap-1"
+              className="text-xs md:text-sm font-semibold text-black hover:underline inline-flex items-center gap-1"
             >
               Discover more tips from our specialists
-              <span className="text-xl"><BiChevronRight className="w-5 h-5 text-gray-700 group-hover:text-black" /></span>
+              <span className="text-lg md:text-xl"><BiChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-700 group-hover:text-black" /></span>
             </a>
           </div>
 
@@ -151,17 +151,17 @@ export default function LandingExpertAdvice() {
           <div className="flex gap-2">
             <button
               onClick={() => scroll('prev')}
-              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
               aria-label="Previous articles"
             >
-              <IoChevronBack className="w-5 h-5 text-gray-700" />
+              <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
             <button
               onClick={() => scroll('next')}
-              className="w-10 h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
               aria-label="Next articles"
             >
-              <IoChevronForward className="w-5 h-5 text-gray-700" />
+              <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
             </button>
           </div>
         </div>
@@ -180,16 +180,16 @@ export default function LandingExpertAdvice() {
           
           <div 
             ref={scrollContainerRef}
-            className="overflow-x-auto hide-scrollbar"
+            className="overflow-x-auto hide-scrollbar snap-x snap-mandatory"
           >
-            <div className="flex gap-6 pb-4">
+            <div className="flex gap-3 md:gap-6 pb-4">
               {articles.map((article) => (
                 <article
                   key={article.id}
-                  className="bg-[#F7F7F7] rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-lg transition-all duration-300 group flex-shrink-0 w-[calc(33.333%-16px)]"
+                  className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-lg transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)]"
                 >
                   {/* Image */}
-                  <div className="relative h-[240px] overflow-hidden bg-gray-100">
+                  <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100">
                     <img
                       src={article.image}
                       alt={article.title}
@@ -199,33 +199,33 @@ export default function LandingExpertAdvice() {
                     {/* Favorite Button */}
                     <button
                       onClick={() => toggleFavorite(article.id)}
-                      className="absolute top-4 left-4 w-9 h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                      className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
                     >
                       {article.isFavorite ? (
-                        <FaHeart className="w-5 h-5 text-black" />
+                        <FaHeart className="w-4 h-4 md:w-5 md:h-5 text-black" />
                       ) : (
-                        <FaRegHeart className="w-5 h-5 text-gray-700" />
+                        <FaRegHeart className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
                       )}
                     </button>
                   </div>
 
                   {/* Content */}
-                  <div className="p-7">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-4 font-medium">
-                      <span className="text-black border border-white rounded-full px-3 py-1 bg-white">{article.category}</span>
-                      <span className="text-black border border-white rounded-full px-3 py-1 bg-white">{article.date}</span>
+                  <div className="p-4 md:p-6 lg:p-7">
+                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium">
+                      <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white">{article.category}</span>
+                      <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white">{article.date}</span>
                       {article.tags && (
-                        <span className="text-gray-600 border border-white rounded-full px-3 py-1 bg-white">
+                        <span className="text-gray-600 border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white">
                           {article.tags.join(" • ")}
                         </span>
                       )}
                     </div>
 
-                    <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 transition">
+                    <h3 className="text-base md:text-lg lg:text-xl font-bold mb-2 md:mb-3 text-gray-900 line-clamp-2 transition">
                       {article.title}
                     </h3>
 
-                    <p className={`text-sm text-gray-600 mb-6 leading-relaxed transition-all duration-300 ${
+                    <p className={`text-xs md:text-sm text-gray-600 mb-4 md:mb-6 leading-relaxed transition-all duration-300 ${
                       article.isExpanded ? '' : 'line-clamp-3'
                     }`}>
                       {article.description}
@@ -233,7 +233,7 @@ export default function LandingExpertAdvice() {
 
                     <button 
                       onClick={() => toggleExpanded(article.id)}
-                      className="bg-black cursor-pointer text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition"
+                      className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto"
                     >
                       {article.isExpanded ? 'Show Less' : 'Continue Reading'}
                     </button>
