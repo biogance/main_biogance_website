@@ -14,12 +14,12 @@ export default function Home() {
     <div>
      {/* <Navbar/> */}
      {/* <Pro/> */}
-     <Commitments/>
+     {/* <Commitments/> */}
      {/* <BioganceAmbassadorForm/> */}
      {/* <DistributorForm/> */}
      {/* <ResellerForm/> */}
      {/* <ThankYouModal/> */}
-     {/* <HeroSection/> */}
+     <HeroSection/>
     </div>
   );
 }
