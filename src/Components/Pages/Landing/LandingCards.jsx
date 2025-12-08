@@ -52,13 +52,13 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
         <>
           <button
             onClick={handlePrevImage}
-            className="absolute left-1 md:left-2 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-center"
+            className="absolute left-[-15] md:left-[-10] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center"
           >
             <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
           </button>
           <button
             onClick={handleNextImage}
-            className="absolute right-1 md:right-2 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent backdrop-blur-sm rounded-full flex items-center justify-center"
+            className="absolute right-[-15] md:right-[-10] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent  rounded-full flex items-center justify-center"
           >
             <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
           </button>

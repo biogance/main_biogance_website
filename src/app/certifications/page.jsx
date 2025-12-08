@@ -1,4 +1,4 @@
-import Certifications from '../../Components/Pages/Certifications';
+import Certifications from '../../Components/Pages/Certification/Certifications';
 
 export default function CertificationsPage() {
   return <Certifications />;

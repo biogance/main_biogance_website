@@ -1,7 +1,7 @@
 import React from "react";
 import { MdVerified } from "react-icons/md";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
+import Navbar from "../Navbar";
+import Footer from "../Footer";
 import { FaCheck } from "react-icons/fa";
 
 export default function Certifications() {

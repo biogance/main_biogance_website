@@ -1,10 +1,10 @@
 
-import MainVideo from "../Components/Pages/MainVideo";
+import HeroSection from "../Components/Pages/Landing/MainVideo";
 
 export default function Home() {
   return (
     <div>
-     <MainVideo/>
+     <HeroSection/>
     </div>
   );
 }
