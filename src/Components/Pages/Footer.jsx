@@ -85,17 +85,17 @@ export default function Footer() {
 
             {/* Newsletter */}
             <div className="pt-4">
-              <p className="text-white font-medium mb-3">Subscribe to our newsletter</p>
+              <p className="text-white font-medium mb-3 text-sm sm:text-base">Subscribe to our newsletter</p>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-white block mb-2">Email Address</label>
-                  <div className="flex gap-2">
+                  <label className="text-xs sm:text-sm text-white block mb-2">Email Address</label>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
                       placeholder="eg: john_doe@gmail.com"
-                      className="flex-1 bg-[#393939] border border-[#393939] text-white px-4 py-2.5 text-sm rounded-xl placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
+                      className="flex-1 min-w-0 bg-[#393939] border border-[#393939] text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm rounded-xl placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
                     />
-                    <button className="px-2 border border-white cursor-pointer text-white text-sm font-normal rounded-xl hover:bg-black transition whitespace-nowrap">
+                    <button className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal rounded-xl hover:bg-black transition whitespace-nowrap">
                       Subscribe
                     </button>
                   </div>
@@ -105,13 +105,13 @@ export default function Footer() {
 
             {/* App Download */}
            <div className="pt-4">
-  <p className="text-base font-medium mb-3">Download App on Mobile</p>
-  <div className="flex gap-3">
-    <a href="#" className="flex-shrink-0">
-      <img src="play.svg" alt="Google Play" className="h-12 w-auto" />
+  <p className="text-sm sm:text-base font-medium mb-3">Download App on Mobile</p>
+  <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-2 sm:gap-3">
+    <a href="#" className="flex-shrink-0 w-fit">
+      <img src="play.svg" alt="Google Play" className="h-10 w-auto" />
     </a>
-    <a href="#" className="flex-shrink-0">
-      <img src="app.svg" alt="App Store" className="h-12 w-auto" />
+    <a href="#" className="flex-shrink-0 w-fit">
+      <img src="app.svg" alt="App Store" className="h-10 w-auto" />
     </a>
   </div>
 </div>

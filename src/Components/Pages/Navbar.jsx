@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
@@ -10,7 +9,7 @@ const logoImage = '/logo.svg';
 const navLinks = [
   { href: '#', text: 'Our Laboratory' },
   { href: '#', text: 'Our Expert Advice' },
-  { href: '#', text: 'Pro' },
+  { href: '/proNavbar', text: 'Pro' },
 ];
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
@@ -36,8 +35,8 @@ export default function Navbar() {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
       <div className="w-full mx-auto px-4 sm:px-6 h-full">
         <div className="relative flex items-center justify-between h-full">
-          {/* Mobile Menu Button & Logo (for mobile) */}
-          <div className="flex items-center md:hidden">
+          {/* Mobile Menu Button & Logo (for mobile and iPad) */}
+          <div className="flex items-center xl:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-gray-600 hover:text-gray-900"
@@ -46,7 +45,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className="flex-1 flex items-center justify-center md:items-stretch md:justify-start">
+          <div className="flex-1 flex items-center justify-center xl:items-stretch xl:justify-start">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
               <ImageWithFallback
@@ -56,8 +55,8 @@ export default function Navbar() {
               />
             </Link>
   
-            {/* Center Navigation Links - Desktop Only */}
-            <div className="hidden md:flex flex-1 items-center justify-center gap-4">
+            {/* Center Navigation Links - Desktop Only (xl and above) */}
+            <div className="hidden xl:flex flex-1 items-center justify-center gap-4">
               <button className="flex items-center gap-2 hover:text-gray-600 transition-colors p-2">
                 <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
                 <div className="text-left">
@@ -82,24 +81,24 @@ export default function Navbar() {
           
           {/* Right Side Icons */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-              <button className="hidden sm:flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden xl:flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
                 <span>EN</span>
                 <FiChevronDown className="w-4 h-4" />
               </button>
   
-              {/* SEARCH ICON - Now visible ONLY on desktop (sm and above) */}
+              {/* SEARCH ICON - visible on desktop only (xl and above) */}
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="hidden sm:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+                className="hidden xl:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
               >
                 <FiSearch className="w-5 h-5" />
               </button>
   
-              <button className="hidden sm:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden xl:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
                 <FiUser className="w-5 h-5" />
               </button>
   
-              <button className="hidden sm:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden xl:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                 <FiHeart className="w-5 h-5" />
               </button>
   
@@ -113,9 +112,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu (for mobile and iPad) */}
       <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`xl:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             isMobileMenuOpen ? 'max-h-screen border-t border-gray-200' : 'max-h-0'
           }`}
         >
