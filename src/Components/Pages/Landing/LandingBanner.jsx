@@ -42,7 +42,7 @@ const LandingBanner = () => {
             <ImageWithFallback
               src={imagePath}
               alt={`Banner image ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-700"
             />
           </div>
         ))}

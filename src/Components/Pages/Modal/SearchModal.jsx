@@ -163,7 +163,18 @@ export const SearchModal = ({ isOpen, onClose }) => {
         isOpen ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="w-full h-full overflow-y-auto relative">
+      <style>
+        {`
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
+      <div className="w-full h-full overflow-y-auto relative hide-scrollbar">
         {/* Close Button */}
         <button
           onClick={onClose}

@@ -69,7 +69,7 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
       <img
         src={product.images[currentImageIndex] || product.image}
         alt={product.name}
-        className="h-36 md:h-48 object-contain transition-opacity duration-300"
+        className="h-36 md:h-48 object-contain cursor-pointer hover:scale-110 transition-transform duration-500"
       />
     </div>
 
