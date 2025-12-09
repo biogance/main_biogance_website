@@ -17,15 +17,23 @@ const WhoWe = () => {
       <main className="relative bg-white">
         <div className="relative w-full min-h-screen flex items-center justify-center">
           {/* Background Video */}
-          <iframe
-            className="absolute inset-0 w-full h-full"
-            src="https://www.youtube.com/embed/uxwk-YslZf0?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=uxwk-YslZf0"
-            title="YouTube video"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ pointerEvents: 'none' }}
-          />
+         <div className="absolute inset-0 overflow-hidden">
+  <iframe
+    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+    src="https://www.youtube.com/embed/uxwk-YslZf0?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=uxwk-YslZf0"
+    title="YouTube video"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+    style={{ 
+      pointerEvents: 'none',
+      width: '177.77vh', // 16:9 aspect ratio
+      height: '56.25vw', // 16:9 aspect ratio
+      minWidth: '100%',
+      minHeight: '100%'
+    }}
+  />
+</div>
           
           {/* Dark Overlay - optional */}
           <div className="absolute inset-0 bg-black/40"></div>

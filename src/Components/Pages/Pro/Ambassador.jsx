@@ -10,6 +10,7 @@ export default function BioganceAmbassadorForm() {
         firstName: '',
         lastName: '',
         email: '',
+        contact:'',
         cityRegion1: '',
         cityRegion2: '',
         socialMediaLink: '',
@@ -135,19 +136,21 @@ export default function BioganceAmbassadorForm() {
 
                     {/* Tabs */}
                     <div className="border-b border-gray-300 mb-6">
-                        <div className="flex flex-wrap gap-2">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setSelectedTab(tab)}
-                                    className={`px-2 py-2 text-[14px] font-[550] rounded-t-lg cursor-pointer ${selectedTab === tab
-                                        ? 'bg-black text-white'
-                                        : 'bg-white text-black '
-                                        }`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
+                        <div className="overflow-x-auto scrollbar-hide">
+                            <div className="flex gap-1 min-w-max">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setSelectedTab(tab)}
+                                        className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${selectedTab === tab
+                                            ? 'bg-black text-white'
+                                            : 'bg-white text-black'
+                                            }`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -267,7 +270,7 @@ export default function BioganceAmbassadorForm() {
                                                         value={formData.socialMediaLink}
                                                         onChange={handleInputChange}
                                                         placeholder="e.g. https://instagram.com/yourpage"
-                                                        className="w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                        className="w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition"
                                                     />
                                                 </div>
 
@@ -326,7 +329,7 @@ export default function BioganceAmbassadorForm() {
                                                         value={formData.mainThemeText || ''}
                                                         onChange={handleInputChange}
                                                         placeholder="eg: Type here"
-                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition"
                                                     />
                                                 </div>
 
@@ -385,7 +388,7 @@ export default function BioganceAmbassadorForm() {
                                                         value={formData.petMainTheme || ''}
                                                         onChange={handleInputChange}
                                                         placeholder="eg: Other pet"
-                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition"
                                                     />
                                                 </div>
 
@@ -461,7 +464,7 @@ export default function BioganceAmbassadorForm() {
                                                                 value={animal.breed}
                                                                 onChange={(e) => handleAnimalChange(animal.id, 'breed', e.target.value)}
                                                                 placeholder="e.g. Golden Retriever, Persian, etc."
-                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                             />
                                                         </div>
 
@@ -495,7 +498,7 @@ export default function BioganceAmbassadorForm() {
                                                                 value={animal.characteristics}
                                                                 onChange={(e) => handleAnimalChange(animal.id, 'characteristics', e.target.value)}
                                                                 placeholder="e.g. Sensitive skin, allergies, rescue animal, senior, etc."
-                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                             />
                                                         </div>
                                                     </div>
@@ -533,7 +536,7 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="In a few words, why would you like to become a Biogance ambassador?"
                                                     maxLength={maxChars}
                                                     rows={4}
-                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition resize-none"
+                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition resize-none"
                                                 />
                                                 <div className="text-right mt-2">
                                                     <span className="text-xs text-gray-500">
@@ -710,7 +713,7 @@ export default function BioganceAmbassadorForm() {
                                                             value={formData.breedName}
                                                             onChange={handleInputChange}
                                                             placeholder="eg: Type here"
-                                                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition"
                                                         />
                                                     </div>
                                                     <div>
@@ -723,7 +726,7 @@ export default function BioganceAmbassadorForm() {
                                                             value={formData.mainBreedId}
                                                             onChange={handleInputChange}
                                                             placeholder="eg: Type here"
-                                                            className="w-full px-4 py-3 bg-gray-50  rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                            className="w-full px-4 py-3 bg-gray-50  rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                                                         />
                                                     </div>
                                                 </div>
@@ -853,7 +856,7 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="In a few words, why would you like to become a Biogance ambassador?"
                                                     maxLength={maxChars}
                                                     rows={4}
-                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition resize-none"
+                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                                                 />
                                                 <div className="text-right mt-2">
                                                     <span className="text-xs text-gray-500">
@@ -1029,7 +1032,7 @@ export default function BioganceAmbassadorForm() {
                                                             value={formData.breedName}
                                                             onChange={handleInputChange}
                                                             placeholder="eg: Type here"
-                                                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                                                         />
                                                     </div>
 
@@ -1055,7 +1058,7 @@ export default function BioganceAmbassadorForm() {
                                                         value={formData.breedName}
                                                         onChange={handleInputChange}
                                                         placeholder="eg: Type here"
-                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition"
+                                                        className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                                                     />
                                                 </div>
 
@@ -1100,7 +1103,7 @@ export default function BioganceAmbassadorForm() {
                                                             placeholder="In a few words, why would you like to become a Biogance ambassador?"
                                                             maxLength={maxChars}
                                                             rows={4}
-                                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition resize-none"
+                                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                                                         />
                                                         <div className="text-right mt-2">
                                                             <span className="text-xs text-gray-500">
@@ -1170,16 +1173,16 @@ export default function BioganceAmbassadorForm() {
                                                 />
                                             </div>
 
-                                            <div>
+                                          <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Contact name*
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="e.g pet nook"
-                                                    value={formData.lastName}
+                                                    name="contact"
+                                                    value={formData.contact}
                                                     onChange={handleInputChange}
-                                                    placeholder="e.g. CA987654321"
+                                                    placeholder="e.g. pet nook"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
                                             </div>
@@ -1586,7 +1589,7 @@ export default function BioganceAmbassadorForm() {
                                             {/* How long have you been practicing */}
                                             <div className="p-6">
                                                 <div className="mb-6">
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         How long have you been practicing?
                                                     </label>
                                                     <div className="flex gap-6">
@@ -1599,7 +1602,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className=" accent-black cursor-pointer"
                                                             />
-                                                            <span>Less than 5 years</span>
+                                                            <span style={{color:"black"}}>Less than 5 years</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1610,7 +1613,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>5 to 10 years</span>
+                                                            <span style={{color:"black"}}>5 to 10 years</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1621,14 +1624,14 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>More than 10 years</span>
+                                                            <span style={{color:"black"}}>More than 10 years</span>
                                                         </label>
                                                     </div>
                                                 </div>
 
                                                 {/* You mainly work with */}
                                                 <div className="mb-6">
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         You mainly work with
                                                     </label>
                                                     <div className="flex gap-6">
@@ -1641,7 +1644,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Dogs</span>
+                                                            <span style={{color:"black"}}>Dogs</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1652,7 +1655,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Cats</span>
+                                                            <span style={{color:"black"}}>Cats</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1663,7 +1666,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Horses</span>
+                                                            <span style={{color:"black"}}>Horses</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1674,14 +1677,14 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Other Animals</span>
+                                                            <span style={{color:"black"}}>Other Animals</span>
                                                         </label>
                                                     </div>
                                                 </div>
 
                                                 {/* Are you already familiar with Biogance or Eskadron? */}
                                                 <div>
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         Are you already familiar with Biogance or Eskadron?
                                                     </label>
                                                     <div className="flex gap-6">
@@ -1694,7 +1697,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Yes, I use your products</span>
+                                                            <span style={{color:"black"}}>Yes, I use your products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1705,7 +1708,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Yes, I know the brand</span>
+                                                            <span style={{color:"black"}}>Yes, I know the brand</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1716,7 +1719,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>No, I&apos;m discovering it</span>
+                                                            <span style={{color:"black"}}>No, I&apos;m discovering it</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1730,7 +1733,7 @@ export default function BioganceAmbassadorForm() {
                                             {/* Would you like to participate in */}
                                             <div className="p-6">
                                                 <div className="mb-6">
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         Would you like to participate in
                                                     </label>
                                                     <div className="space-y-2">
@@ -1743,7 +1746,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Writing articles / expert advice</span>
+                                                            <span style={{color:"black"}}>Writing articles / expert advice</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1754,7 +1757,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Product testing / technical feedback</span>
+                                                            <span style={{color:"black"}}>Product testing / technical feedback</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1765,7 +1768,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Conferences or interviews</span>
+                                                            <span style={{color:"black"}}>Conferences or interviews</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1776,14 +1779,14 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Field collaborations (clinics, fairs, etc.)</span>
+                                                            <span style={{color:"black"}}>Field collaborations (clinics, fairs, etc.)</span>
                                                         </label>
                                                     </div>
                                                 </div>
 
                                                 {/* What topics could you cover in an expert article? */}
                                                 <div>
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         What topics could you cover in an expert article?
                                                     </label>
                                                     <div className="relative">
@@ -1870,16 +1873,16 @@ export default function BioganceAmbassadorForm() {
                                                 />
                                             </div>
 
-                                            <div>
+                                           <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Contact name*
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="e.g pet nook"
-                                                    value={formData.lastName}
+                                                    name="contact"
+                                                    value={formData.contact}
                                                     onChange={handleInputChange}
-                                                    placeholder="e.g. CA987654321"
+                                                    placeholder="e.g. pet nook"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
                                             </div>
@@ -1924,7 +1927,7 @@ export default function BioganceAmbassadorForm() {
                                 <div className="max-w-5xl mx-auto  space-y-6  py-8">
                                     {/* Your Structure Section */}
                                     <div className="bg-white rounded-lg border border-gray-300 ">
-                                        <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900  p-4">Your Structure</h2>
+                                        <h2 className="p-6 bg-gray-50 text-black text-sm font-bold">Your Structure</h2>
 
                                         {/* Type of organization */}
                                         <div className="p-6 space-y-5">
@@ -2010,12 +2013,12 @@ export default function BioganceAmbassadorForm() {
                                     <div className="max-w-5xl mx-auto">
                                         {/* Your Collaboration with Biogance Section */}
                                         <div className="bg-white rounded-lg border border-gray-200 mb-8 ">
-                                            <h2 className="p-6 bg-gray-50 text-sm font-bold ">Your Collaboration with Biogance</h2>
+                                            <h2 className="p-6 bg-gray-50 text-black text-sm font-bold ">Your Collaboration with Biogance</h2>
 
                                             {/* How did you hear about Biogance? */}
                                             <div className="p-6">
                                                 <div className="mb-6">
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         How did you hear about Biogance?
                                                     </label>
                                                     <div className="flex gap-6 flex-wrap">
@@ -2028,7 +2031,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Social media</span>
+                                                            <span  style={{color:"black"}}>Social media</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2039,7 +2042,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Recommendation</span>
+                                                            <span style={{color:"black"}}>Recommendation</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2050,7 +2053,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Trade show / event</span>
+                                                            <span style={{color:"black"}}>Trade show / event</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2061,14 +2064,14 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Others</span>
+                                                            <span style={{color:"black"}}>Others</span>
                                                         </label>
                                                     </div>
                                                 </div>
 
                                                 {/* Which products would be most useful you? */}
                                                 <div className=" ">
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         Which products would be most useful you?
                                                     </label>
                                                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-4">
@@ -2081,7 +2084,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Shampoos and hygiene care</span>
+                                                            <span style={{color:"black"}}>Shampoos and hygiene care</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2092,7 +2095,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Anti-parasitic products</span>
+                                                            <span style={{color:"black"}}>Anti-parasitic products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2103,7 +2106,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Cleaning / disinfection products</span>
+                                                            <span style={{color:"black"}}>Cleaning / disinfection products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2114,13 +2117,13 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Others</span>
+                                                            <span style={{color:"black"}}>Others</span>
                                                         </label>
                                                     </div>
 
                                                     {/* Other Product */}
                                                     <div>
-                                                        <label className="block mb-2 text-gray-700">
+                                                        <label className="block mb-2 text-gray-700 text-black">
                                                             Other Product
                                                         </label>
                                                         <input
@@ -2128,14 +2131,14 @@ export default function BioganceAmbassadorForm() {
                                                             placeholder="eg: Type here"
                                                             value={otherProduct}
                                                             onChange={(e) => setOtherProduct(e.target.value)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 placeholder:text-gray-400"
+                                                            className="w-full text-black px-3 py-2 border border-gray-300 rounded bg-gray-50 placeholder:text-gray-400"
                                                         />
                                                     </div>
                                                 </div>
 
                                                 {/* Would you like to share your initiatives */}
                                                 <div>
-                                                    <label className="block mb-3">
+                                                    <label className="block mb-3 text-black">
                                                         Would you like to share your initiatives on our social media (photos, testimonials, acknowledgements)?
                                                     </label>
                                                     <div className="flex gap-6">
@@ -2148,7 +2151,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setShareInitiatives(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>Yes</span>
+                                                            <span style={{color:"black"}}>Yes</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2159,7 +2162,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setShareInitiatives(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span>No</span>
+                                                            <span style={{color:"black"}}>No</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -2168,11 +2171,11 @@ export default function BioganceAmbassadorForm() {
 
                                         {/* Your Message Section */}
                                         <div className="bg-white rounded-lg border border-gray-200 mb-6 ">
-                                            <h2 className="p-6 bg-gray-50 text-sm font-bold">Your Message</h2>
+                                            <h2 className="p-6 bg-gray-50 text-sm font-bold text-black">Your Message</h2>
 
                                             {/* What topics could you cover in an expert article? */}
                                             <div className="p-6">
-                                                <label className="block mb-3">
+                                                <label className="block mb-3 text-black ">
                                                     What topics could you cover in an expert article?
                                                 </label>
                                                 <div className="relative">
@@ -2182,7 +2185,7 @@ export default function BioganceAmbassadorForm() {
                                                         placeholder="In a few words, why would you like to become a Biogance ambassador?"
                                                         maxLength={maxChars}
                                                         rows={4}
-                                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition resize-none"
+                                                        className="w-full px-4 py-3 bg-grey-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                                                     />
                                                     <div className="text-right text-gray-500 mt-1">
                                                         {message.length}/{maxChars} characters

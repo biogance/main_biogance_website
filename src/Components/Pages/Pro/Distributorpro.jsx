@@ -245,7 +245,7 @@ export function DistributorForm() {
             <div className="max-w-4xl mx-auto px-6 py-16">
                 {/* Form Header */}
                 <div className="mb-8">
-                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3' }}>
+                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color:"black" }}>
                         Become a Biogance Distributor
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
@@ -268,9 +268,10 @@ export function DistributorForm() {
                                 placeholder="e.g. Pawsome Inc."
                                 value={formData.companyName}
                                 onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 ... placeholder:text-gray-500"
                                 style={{ fontSize: '14px' }}
                                 required
+                                
                             />
                         </div>
                         <div>
@@ -282,7 +283,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Jane Smith"
                                 value={formData.firstName}
                                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full ... placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                                 required
                             />
@@ -300,7 +301,7 @@ export function DistributorForm() {
                                 placeholder="e.g. sales@example.com"
                                 value={formData.businessEmail}
                                 onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full ... placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                                 required
                             />
@@ -312,7 +313,7 @@ export function DistributorForm() {
                             <div className="flex gap-2">
                                 <div className="relative" ref={dropdownRef}>
                                     <div
-                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 rounded-md text-black cursor-pointer hover:bg-gray-100 transition-colors"
                                         onClick={() => setIsOpen(!isOpen)}
                                     >
                                         <img
@@ -334,7 +335,7 @@ export function DistributorForm() {
                                                     placeholder="Search country..."
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className="w-full px-3 py-2 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
+                                                    className="w-full ... placeholder:text-gray-500 px-3 py-2  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             </div>
@@ -342,7 +343,7 @@ export function DistributorForm() {
                                                 {filteredCountries.map((country, index) => (
                                                     <div
                                                         key={`${country.iso}-${index}`}
-                                                        className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        className="flex items-center text-black  gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer "
                                                         onClick={() => {
                                                             setFormData({ ...formData, countryCode: country.code });
                                                             setIsOpen(false);
@@ -373,7 +374,7 @@ export function DistributorForm() {
                                     placeholder="e.g. 555-123-4567"
                                     value={formData.businessPhone}
                                     onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-                                    className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    className="flex-1 px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                     style={{ fontSize: '14px' }}
                                 />
                             </div>
@@ -391,7 +392,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 123456789"
                                 value={formData.registrationNumber}
                                 onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                                 required
                             />
@@ -405,7 +406,7 @@ export function DistributorForm() {
                                 placeholder="e.g. www.yourwebsite.com"
                                 value={formData.website}
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -422,7 +423,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Sales Manager"
                                 value={formData.jobTitle}
                                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -435,7 +436,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 10"
                                 value={formData.salesReps}
                                 onChange={(e) => setFormData({ ...formData, salesReps: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -451,7 +452,7 @@ export function DistributorForm() {
                             placeholder="e.g. 123 Main Street, Suite 100"
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -467,7 +468,7 @@ export function DistributorForm() {
                                 placeholder="e.g. United States"
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -480,7 +481,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Anytown"
                                 value={formData.city}
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -497,7 +498,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 123 Main Street"
                                 value={formData.street}
                                 onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -510,7 +511,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 12345"
                                 value={formData.zipCode}
                                 onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -527,7 +528,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Biogance/Ekinat"
                                 value={formData.brand}
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -540,7 +541,7 @@ export function DistributorForm() {
                                 placeholder="e.g. North America"
                                 value={formData.geographicCoverage}
                                 onChange={(e) => setFormData({ ...formData, geographicCoverage: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -556,7 +557,7 @@ export function DistributorForm() {
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                             style={{ fontSize: '14px' }}
                         />
                     </div>

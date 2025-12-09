@@ -18,19 +18,19 @@ const heroSlides = [
     url: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1920&q=80',
   },
   {
-    type: 'video',
-    url: 'https://www.youtube.com/embed/uxwk-YslZf0?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=uxwk-YslZf0',
-    isYouTube: true,
-  },
+  type: 'video',
+  url: 'https://www.youtube.com/embed/AaKL5eNmJc0?autoplay=1&mute=1&loop=1&playlist=AaKL5eNmJc0&controls=0&rel=0&modestbranding=1&playsinline=1',
+  isYouTube: true,
+},
   {
     type: 'image',
     url: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1920&q=80',
   },
-  {
-    type: 'video',
-    url: 'https://www.youtube.com/embed/uxwk-YslZf0?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=uxwk-YslZf0',
-    isYouTube: true,
-  },
+   {
+  type: 'video',
+  url: 'https://www.youtube.com/embed/AaKL5eNmJc0?autoplay=1&mute=1&loop=1&playlist=AaKL5eNmJc0&controls=0&rel=0&modestbranding=1&playsinline=1',
+  isYouTube: true,
+},
   {
     type: 'image',
     url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1920&q=80',
@@ -56,16 +56,19 @@ export default function HeroSection() {
   const currentSlideData = heroSlides[currentSlide];
   const isCurrentVideo = currentSlideData.type === 'video';
 
-  // Auto-scroll functionality for images only (YouTube videos loop automatically)
+  // Auto-scroll functionality for both images and videos
   React.useEffect(() => {
-    if (!hasMultipleSlides || isCurrentVideo) return;
+    if (!hasMultipleSlides) return;
+
+    // For images: 2.5 seconds, for videos: approximately video duration (30 seconds as estimate)
+    const duration = isCurrentVideo ? 50000 : 2500;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 2500);
+    }, duration);
 
     return () => clearInterval(interval);
-  }, [hasMultipleSlides, isCurrentVideo]);
+  }, [hasMultipleSlides, isCurrentVideo, currentSlide]);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
@@ -90,19 +93,27 @@ export default function HeroSection() {
 
       {/* Main content with viewport height */}
       <main className="relative bg-white">
-        <div className="relative w-full min-h-screen flex items-center justify-center">
+        <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Image or Video */}
           {isCurrentVideo ? (
             currentSlideData.isYouTube ? (
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src={currentSlideData.url}
-                title="YouTube video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ pointerEvents: 'none' }}
-              />
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                <iframe
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                  src={currentSlideData.url}
+                  title="YouTube video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ 
+                    pointerEvents: 'none',
+                    width: '100vw',
+                    height: '56.25vw', // 16:9 aspect ratio
+                    minHeight: '100vh',
+                    minWidth: '177.77vh', // 16:9 aspect ratio
+                  }}
+                />
+              </div>
             ) : (
               <video
                 className="absolute inset-0 w-full h-full object-cover"
@@ -126,72 +137,115 @@ export default function HeroSection() {
           {/* Dark Overlay */}
           <div className="absolute inset-0 bg-black/40"></div>
 
-          {/* Content Container */}
-          <div className="relative mt-12 flex items-center justify-start px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24 w-full h-full py-20 sm:py-24 md:py-28 lg:py-32">
-            <div className="max-w-2xl text-white">
-              {/* Tagline */}
-              <p className="text-sm md:text-base font-light mb-4 tracking-wide">
-                {heroContent.tagline}
-              </p>
+          {/* Content Container - Fixed responsive structure */}
+          <div className="relative z-10 w-full h-full flex items-center">
+            <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 2xl:px-24">
+              <div className="max-w-3xl">
+                {/* Tagline */}
+                <p className="text-xs sm:text-sm md:text-base font-light mb-3 md:mb-4 tracking-wide text-white/90">
+                  {heroContent.tagline}
+                </p>
 
-              {/* Main Heading */}
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-                {heroContent.heading}
-              </h1>
+                {/* Main Heading */}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 md:mb-6 text-white">
+                  {heroContent.heading}
+                </h1>
 
-              {/* Description */}
-              <p className="text-base md:text-lg mb-8 max-w-xl leading-relaxed">
-                {heroContent.description}
-              </p>
+                {/* Description */}
+                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-white/90">
+                  {heroContent.description}
+                </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-white cursor-pointer text-black px-8 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors">
-                  Shop Now
-                </button>
-                <button className="bg-transparent cursor-pointer border-2 border-white text-white px-8 py-3 rounded-md font-medium hover:bg-white/10 transition-colors">
-                  Discover
-                </button>
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                  <button className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
+                    Shop Now
+                  </button>
+                  <button className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
+                    Discover
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Navigation Arrows and Dots - Bottom Right */}
+          {/* Navigation Controls - Responsive positioning */}
           {hasMultipleSlides && (
-            <div className="absolute bottom-10 right-10 flex flex-col items-center gap-6 z-10">
-              {/* Arrows */}
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={goToPrevious}
-                  aria-label="Previous slide" 
-                  className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-transparent backdrop-blur-sm flex items-center justify-center hover:bg-white/10 transition-all"
-                >
-                  <MdKeyboardArrowLeft size={30} />
-                </button>
-                <button 
-                  onClick={goToNext}
-                  aria-label="Next slide" 
-                  className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-transparent backdrop-blur-sm flex items-center justify-center hover:bg-white/10 transition-all"
-                >
-                  <MdKeyboardArrowRight size={30} />
-                </button>
+            <>
+              {/* Desktop Navigation - Bottom Right */}
+              <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
+                {/* Arrows */}
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <button 
+                    onClick={goToPrevious}
+                    aria-label="Previous slide" 
+                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
+                  >
+                    <MdKeyboardArrowLeft size={24} className="lg:w-[30px] lg:h-[30px]" />
+                  </button>
+                  <button 
+                    onClick={goToNext}
+                    aria-label="Next slide" 
+                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
+                  >
+                    <MdKeyboardArrowRight size={24} className="lg:w-[30px] lg:h-[30px]" />
+                  </button>
+                </div>
+
+                {/* Dots Indicator */}
+                <div className="flex items-center gap-2">
+                  {heroSlides.map((_, index) => (
+                    <div
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`cursor-pointer rounded-full transition-all duration-300 ${
+                        index === currentSlide
+                          ? 'w-8 lg:w-10 h-2 bg-white'
+                          : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
               </div>
 
-              {/* Dots Indicator */}
-              <div className="flex items-center gap-2">
-                {heroSlides.map((_, index) => (
-                  <div
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`cursor-pointer rounded-full transition-all duration-300 ${
-                      index === currentSlide
-                        ? 'w-10 h-2 bg-white'
-                        : 'w-2 h-2 bg-white/50 hover:bg-white/70'
-                    }`}
-                  ></div>
-                ))}
+              {/* Mobile Navigation - Bottom Center */}
+              <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+                <div className="flex flex-col items-center gap-4">
+                  {/* Dots Indicator */}
+                  <div className="flex items-center gap-2">
+                    {heroSlides.map((_, index) => (
+                      <div
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`cursor-pointer rounded-full transition-all duration-300 ${
+                          index === currentSlide
+                            ? 'w-8 h-2 bg-white'
+                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                        }`}
+                      ></div>
+                    ))}
+                  </div>
+
+                  {/* Arrows */}
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={goToPrevious}
+                      aria-label="Previous slide" 
+                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
+                    >
+                      <MdKeyboardArrowLeft size={24} />
+                    </button>
+                    <button 
+                      onClick={goToNext}
+                      aria-label="Next slide" 
+                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
+                    >
+                      <MdKeyboardArrowRight size={24} />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </main>

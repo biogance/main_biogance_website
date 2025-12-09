@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
+
 const LandingCards = ({ product, onNext, onPrev, showNav }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -23,89 +24,89 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
   };
 
   return (
-  <div className="group">
-  {/* Main Card Container */}
-  <div className="bg-gray-50 rounded-2xl border border-[#E3E3E3] p-3 relative mb-3">
-    {/* Discount Badge */}
-    {product.discount && (
-      <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#1FC16B1A] text-black border border-[#84EBB4] text-xs font-semibold px-2 py-1 md:px-3 rounded-md z-10">
-        {product.discount}
-      </div>
-    )}
+    <div className="group">
+      {/* Main Card Container */}
+      <div className="bg-gray-50 rounded-2xl border border-[#E3E3E3] p-3 relative mb-3">
+        {/* Discount Badge */}
+        {product.discount && (
+          <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#1FC16B1A] text-black border border-[#84EBB4] text-xs font-semibold px-2 py-1 md:px-3 rounded-md z-10">
+            {product.discount}
+          </div>
+        )}
 
-    {/* Like Button */}
-    <button
-      onClick={() => setIsLiked(!isLiked)}
-      className="absolute top-3 right-3 md:top-4 md:right-4 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-white rounded-xl border border-[#E3E3E3] flex items-center justify-center z-10"
-    >
-      {isLiked ? (
-        <FaHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
-      ) : (
-        <FaRegHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
-      )}
-    </button>
+        {/* Like Button */}
+        <button
+          onClick={() => setIsLiked(!isLiked)}
+          className="absolute top-3 right-3 md:top-4 md:right-4 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-white rounded-xl border border-[#E3E3E3] flex items-center justify-center z-10"
+        >
+          {isLiked ? (
+            <FaHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
+          ) : (
+            <FaRegHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
+          )}
+        </button>
 
-    {/* Product Image Container */}
-    <div className="relative h-48 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
-      {/* Navigation Arrows */}
-      {showNav && product.images.length > 1 && (
-        <>
-          <button
-            onClick={handlePrevImage}
-            className="absolute left-[-15] md:left-[-10] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center"
-          >
-            <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-          </button>
-          <button
-            onClick={handleNextImage}
-            className="absolute right-[-15] md:right-[-10] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent  rounded-full flex items-center justify-center"
-          >
-            <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-          </button>
-        </>
-      )}
+        {/* Product Image Container */}
+        <div className="relative h-40 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
+          {/* Navigation Arrows */}
+          {showNav && product.images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-[-15px] md:left-[-18px] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center"
+              >
+                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-[-15px] md:right-[-18px] cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center"
+              >
+                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+            </>
+          )}
 
-      {/* Product Image */}
-      <img
-        src={product.images[currentImageIndex] || product.image}
-        alt={product.name}
-        className="h-36 md:h-48 object-contain cursor-pointer hover:scale-110 transition-transform duration-500"
-      />
-    </div>
-
-    {/* Dots Indicator */}
-    {product.images.length > 1 && (
-      <div className="flex justify-center gap-1">
-        {product.images.map((_, idx) => (
-          <div
-            key={idx}
-            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${
-              idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
-            }`}
+          {/* Product Image */}
+          <img
+            src={product.images[currentImageIndex] || product.image}
+            alt={product.name}
+            className="h-28 w-28 md:h-48 md:w-48 object-contain cursor-pointer hover:scale-110 transition-transform duration-500"
           />
-        ))}
+        </div>
+
+        {/* Dots Indicator */}
+        {product.images.length > 1 && (
+          <div className="flex justify-center gap-1">
+            {product.images.map((_, idx) => (
+              <div
+                key={idx}
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${
+                  idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    )}
-  </div>
 
-  {/* Product Info - Outside the gray card */}
-  <div>
-    {/* Product Name */}
-    <h3 className="text-xs md:text-sm text-gray-800 mb-2 md:mb-3 line-clamp-2 md:line-clamp-1">
-      {product.name}
-    </h3>
+      {/* Product Info - Outside the gray card */}
+      <div>
+        {/* Product Name */}
+        <h3 className="text-xs md:text-sm text-gray-800 mb-2 md:mb-3 line-clamp-2 md:line-clamp-1">
+          {product.name}
+        </h3>
 
-    {/* Price and Add to Cart */}
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-lg md:text-xl font-bold text-gray-900">
-        €{product.price}
-      </span>
-      <button className="bg-black text-white cursor-pointer text-xs md:text-sm font-medium px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
-        Add to Cart
-      </button>
+        {/* Price and Add to Cart */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-lg md:text-xl font-bold text-gray-900">
+            €{product.price}
+          </span>
+          <button className="bg-black text-white cursor-pointer text-xs md:text-sm font-medium px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
+            Add to Cart
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   );
 };
 
