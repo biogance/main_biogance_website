@@ -71,9 +71,9 @@ export default function Navbar() {
               {navLinks.map((link, index) => (
                 <React.Fragment key={link.text}>
                   <span className="text-gray-300">|</span>
-                  <a href={link.href} className="text-sm font-normal text-[#1C1C1C] hover:text-gray-600 px-2 py-1">
+                  <Link href={link.href} className="text-sm font-normal text-[#1C1C1C] hover:text-gray-600 px-2 py-1">
                     {link.text}
-                  </a>
+                  </Link>
                 </React.Fragment>
               ))}
             </div>
