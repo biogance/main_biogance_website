@@ -5,7 +5,7 @@ import { ReduxProvider } from "../redux/provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Biogance",
+  title: "Biogance - Biogance",
   description: "Pioneers in Natural Pet Care",
   // Add these lines for the favicon
   icons: {
