@@ -2,16 +2,24 @@
 import Image from "next/image";
 import ThankYou from "../../../../public/thankyouPic.png"
 
-export default function ThankYouModal() {
+export default function ThankYouModal({ onClose }) {
     return (
-        <div className=" bg-gray-100 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl   max-w-md w-full p-8 relative">
+        <div className="fixed inset-0 z-50 bg-black/50 bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-8 relative">
+                {/* Close Button (X) */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                    
+                </button>
+
                 {/* Illustration */}
                 <div className="flex justify-center mb-6">
                     <Image
                         src={ThankYou}
                         alt="Laboratory workers"
-                        className="w-full h-[300px] object-fit"
+                        className="w-full h-[300px] object-cover"
                     />
                 </div>
 
@@ -27,7 +35,7 @@ export default function ThankYouModal() {
 
                 {/* Button */}
                 <button
-                    onClick={() => console.log('Got it clicked')}
+                    onClick={onClose}
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-colors duration-200 cursor-pointer"
                 >
                     Got It!

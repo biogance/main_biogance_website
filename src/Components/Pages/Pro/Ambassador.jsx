@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
+import { useRouter } from 'next/navigation';
+import ThankYouModal from './ThankyouModal';
 
 export default function BioganceAmbassadorForm() {
     const [selectedTab, setSelectedTab] = useState('Content Creator');
@@ -10,7 +12,7 @@ export default function BioganceAmbassadorForm() {
         firstName: '',
         lastName: '',
         email: '',
-        contact:'',
+        contact: '',
         cityRegion1: '',
         cityRegion2: '',
         socialMediaLink: '',
@@ -71,6 +73,236 @@ export default function BioganceAmbassadorForm() {
         ]);
     };
 
+
+    const handleCancel = () => {
+        router.back();
+    };
+    const [errors, setErrors] = useState({});
+    const [showModal, setShowModal] = useState(false);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // Clear previous errors
+        setErrors({});
+
+        // Validate required fields
+        const newErrors = {};
+
+        // ===== COMMON FIELDS (All Tabs) =====
+        if (!formData.firstName || formData.firstName.trim() === '') {
+            newErrors.firstName = 'First name is required';
+        }
+
+        if (!formData.lastName || formData.lastName.trim() === '') {
+            newErrors.lastName = 'Last name is required';
+        }
+
+        if (!formData.email || formData.email.trim() === '') {
+            newErrors.email = 'Email is required';
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                newErrors.email = 'Please enter a valid email address';
+            }
+        }
+
+        if (!formData.contact || formData.contact.trim() === '') {
+            newErrors.contact = 'Contact is required';
+        }
+
+        if (!formData.cityRegion2 || formData.cityRegion2.trim() === '') {
+            newErrors.cityRegion2 = 'City/Region is required';
+        }
+
+        // ===== TAB-SPECIFIC VALIDATION =====
+
+        // Content Creator Tab
+        if (selectedTab === 'Content Creator') {
+            // Your Universe validation
+            if (!formData.socialMediaLink || formData.socialMediaLink.trim() === '') {
+                newErrors.socialMediaLink = 'Main social media link is required';
+            }
+
+            if (!formData.mainTheme || formData.mainTheme.trim() === '') {
+                newErrors.mainTheme = 'Main theme is required';
+            }
+
+            if (!formData.hasMultipleAnimals || formData.hasMultipleAnimals.trim() === '') {
+                newErrors.hasMultipleAnimals = 'Please select if you have one or more animals';
+            }
+
+
+            // Animal validation (at least first animal's species is required)
+            if (animalForms && animalForms.length > 0 && (!animalForms[0].species || animalForms[0].species === '')) {
+                newErrors.animalSpecies = 'Species for Animal 1 is required';
+            }
+
+            // Collaboration validation
+
+        }
+
+        // Breeder Tab
+        else if (selectedTab === 'Breeder') {
+            // Your Activity validation
+            if (!formData.speciesBreed || formData.speciesBreed.trim() === '') {
+                newErrors.speciesBreed = 'Species Breed is required';
+            }
+
+            if (!formData.breedingDuration || formData.breedingDuration.trim() === '') {
+                newErrors.breedingDuration = 'Breeding duration is required';
+            }
+
+            // Your Collaboration with Biogance validation
+            if (!formData.familiarWithProducts || formData.familiarWithProducts.trim() === '') {
+                newErrors.familiarWithProducts = 'Please select if you are familiar with our products';
+            }
+        }
+
+        // Groomer Tab
+        else if (selectedTab === 'Groomer') {
+            // Grooming business validation
+            if (!formData.speciesBreed || formData.speciesBreed.trim() === '') {
+                newErrors.speciesBreed = 'Speciality is required';
+            }
+
+
+        }
+
+        // Club or Association Tab
+        else if (selectedTab === 'Club or Association') {
+            // Organization validation
+            if (!formData.structure || formData.structure.trim() === '') {
+                newErrors.structure = 'Organization name is required';
+            }
+
+            if (!formData.organizationType || formData.organizationType.trim() === '') {
+                newErrors.organizationType = 'Organization type is required';
+            }
+
+            if (!formData.memberCount || formData.memberCount.trim() === '') {
+                newErrors.memberCount = 'Member count is required';
+            }
+
+            // Collaboration validation
+            if (!formData.familiarWithProducts || formData.familiarWithProducts.trim() === '') {
+                newErrors.familiarWithProducts = 'Please select if you are familiar with our products';
+            }
+        }
+
+        // Health Professional Tab
+        else if (selectedTab === 'Health Professional') {
+           
+        }
+
+        // Animal Welfare Organization or Shelter Tab
+        else if (selectedTab === 'Animal welfare organization or shelter') {
+            // Organization validation
+            if (!formData.shelterName || formData.shelterName.trim() === '') {
+                newErrors.shelterName = 'Shelter/Organization name is required';
+            }
+
+            if (!formData.shelterType || formData.shelterType.trim() === '') {
+                newErrors.shelterType = 'Organization type is required';
+            }
+
+            if (!formData.animalsRescued || formData.animalsRescued.trim() === '') {
+                newErrors.animalsRescued = 'Number of animals rescued/cared for is required';
+            }
+
+            // Collaboration validation
+            if (!formData.familiarWithProducts || formData.familiarWithProducts.trim() === '') {
+                newErrors.familiarWithProducts = 'Please select if you are familiar with our products';
+            }
+        }
+
+        // Agreement checkbox validation (Common for all tabs)
+        if (!agreeToReview) {
+            newErrors.agreeToReview = 'You must agree to the information review to submit';
+        }
+
+        // Check if there are any errors
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            // Scroll to first error
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        // All validation passed, show modal
+        console.log('Form submitted:', {
+            tab: selectedTab,
+            formData: formData,
+            motivation: motivation,
+            animals: animalForms
+        });
+        console.log('Form submitted successfully for tab:', selectedTab);
+        console.log('Form Data:', formData);
+        console.log('Motivation:', motivation);
+        setShowModal(true);
+
+        // Reset form after successful submission
+        setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            contact: '',
+            cityRegion1: '',
+            cityRegion2: '',
+
+            // Content Creator fields
+            socialMediaLink: '',
+            followers: '',
+            mainName: '',
+            mainTheme: '',
+            mainThemeText: '',
+            contentType: '',
+            petType: '',
+            contentRanking: [],
+            pets: [],
+            petMainTheme: '',
+            hasMultipleAnimals: '',
+            animals: [],
+
+            // Breeder fields
+            speciesBreed: '',
+            breedName: '',
+            mainBreedId: '',
+            breedingDuration: '',
+            breedingSize: '',
+
+            // Groomer fields
+            businessName: '',
+            groomingExperience: '',
+            servicesOffered: '',
+
+            // Club or Association fields
+            organizationName: '',
+            organizationType: '',
+            memberCount: '',
+
+            // Health Professional fields
+            clinicName: '',
+            profession: '',
+            yearsOfExperience: '',
+
+            // Animal Welfare fields
+            shelterName: '',
+            shelterType: '',
+            animalsRescued: '',
+
+            // Common collaboration field
+            familiarWithProducts: '',
+            idealPartnership: ''
+        });
+
+        setMotivation('');
+        setAgreeToReview(false);
+        if (setAnimalForms) {
+            setAnimalForms([]);
+        }
+    };
+
     const [motivation, setMotivation] = useState('');
     const [agreeToReview, setAgreeToReview] = useState(false);
     const maxChars = 250;
@@ -84,6 +316,7 @@ export default function BioganceAmbassadorForm() {
     const [otherProduct, setOtherProduct] = useState('');
     const [shareInitiatives, setShareInitiatives] = useState('');
     const [message, setMessage] = useState('');
+    const router = useRouter();
 
 
 
@@ -178,11 +411,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="firstName"
                                                     value={formData.firstName}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.firstName) {
+                                                            setErrors({ ...errors, firstName: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. The Pet Nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  "
-                                                    
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition  '
+                                                        }`}
                                                 />
+                                                {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -193,10 +434,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="lastName"
                                                     value={formData.lastName}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.lastName) {
+                                                            setErrors({ ...errors, lastName: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. CA987654321"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.lastName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -210,24 +460,42 @@ export default function BioganceAmbassadorForm() {
                                                     type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    City / Region*
+                                                    Contact*
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
-                                                    value={formData.cityRegion1}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    name="contact"
+                                                    value={formData.contact}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. CA124653"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -241,10 +509,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="cityRegion2"
                                                     value={formData.cityRegion2}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                             <div></div>
                                         </div>
@@ -268,10 +545,19 @@ export default function BioganceAmbassadorForm() {
                                                         type="text"
                                                         name="socialMediaLink"
                                                         value={formData.socialMediaLink}
-                                                        onChange={handleInputChange}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            if (errors.socialMediaLink) {
+                                                                setErrors({ ...errors, socialMediaLink: '' });
+                                                            }
+                                                        }}
                                                         placeholder="e.g. https://instagram.com/yourpage"
-                                                        className="w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition"
+                                                        className={`w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 transition ${errors.socialMediaLink ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                                            }`}
                                                     />
+                                                    {errors.socialMediaLink && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.socialMediaLink}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Number of Followers */}
@@ -309,13 +595,21 @@ export default function BioganceAmbassadorForm() {
                                                                     name="mainTheme"
                                                                     value={option}
                                                                     checked={formData.mainTheme === option}
-                                                                    onChange={handleInputChange}
+                                                                    onChange={(e) => {
+                                                                        handleInputChange(e);
+                                                                        if (errors.mainTheme) {
+                                                                            setErrors({ ...errors, mainTheme: '' });
+                                                                        }
+                                                                    }}
                                                                     className="w-4 h-4 text-black border-2 border-black accent-black cursor-pointer"
                                                                 />
                                                                 <span className="ml-2 text-xs text-gray-800">{option}</span>
                                                             </label>
                                                         ))}
                                                     </div>
+                                                    {errors.mainTheme && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.mainTheme}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Main Theme Text Input */}
@@ -408,12 +702,20 @@ export default function BioganceAmbassadorForm() {
                                                                     name="hasMultipleAnimals"
                                                                     value={option}
                                                                     checked={formData.hasMultipleAnimals === option}
-                                                                    onChange={handleInputChange}
+                                                                    onChange={(e) => {
+                                                                        handleInputChange(e);
+                                                                        if (errors.hasMultipleAnimals) {
+                                                                            setErrors({ ...errors, hasMultipleAnimals: '' });
+                                                                        }
+                                                                    }}
                                                                     className="w-4 h-4 text-black border-2 border-black accent-black cursor-pointer"
                                                                 />
                                                                 <span className="ml-3 text-sm text-gray-800">{option}</span>
                                                             </label>
                                                         ))}
+                                                        {errors.hasMultipleAnimals && (
+                                                            <p className="mt-1 text-xs text-red-600">{errors.hasMultipleAnimals}</p>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -441,7 +743,13 @@ export default function BioganceAmbassadorForm() {
                                                                         <span className="ml-3 text-xs text-gray-800">{opt}</span>
                                                                     </label>
                                                                 ))}
+
                                                             </div>
+                                                            {errors.animalSpecies && (
+                                                                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                                                                    <p className="text-xs text-red-600">{errors.animalSpecies}</p>
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         {animal.species === 'Others' && (
@@ -559,14 +867,18 @@ export default function BioganceAmbassadorForm() {
                                                     I agree that my information may be used to review my application.
                                                 </span>
                                             </label>
+                                            {errors.agreeToReview && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                            )}
                                         </div>
 
                                         {/* Cancel and Submit Buttons */}
                                         <div className="flex gap-4">
-                                            <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                            <button onClick={handleCancel}
+                                                className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                 Cancel
                                             </button>
-                                            <button type="submit" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                            <button onClick={handleSubmit} type="button" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                 Submit
                                             </button>
                                         </div>
@@ -598,10 +910,20 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="firstName"
                                                     value={formData.firstName}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.firstName) {
+                                                            setErrors({ ...errors, firstName: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. The Pet Nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400  focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
+
                                                 />
+                                                {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -612,10 +934,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="lastName"
                                                     value={formData.lastName}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.lastName) {
+                                                            setErrors({ ...errors, lastName: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. CA987654321"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.lastName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -629,24 +960,42 @@ export default function BioganceAmbassadorForm() {
                                                     type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    City / Region*
+                                                    Contact*
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
-                                                    value={formData.cityRegion1}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    name="contact"
+                                                    value={formData.contact}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. CA124653"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -660,10 +1009,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="cityRegion2"
                                                     value={formData.cityRegion2}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                             <div></div>
                                         </div>
@@ -676,7 +1034,7 @@ export default function BioganceAmbassadorForm() {
                                         {/* Your Activity */}
                                         <div className="bg-white border border-gray-300 rounded-lg">
                                             <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
-                                                <h2 className="text-sm font-semibold text-black">Your Activity</h2>
+                                                <h2 className="text-sm font-semibold text-black rounded-lg">Your Activity</h2>
                                             </div>
                                             <div className="p-6 space-y-6">
                                                 {/* Species Breed */}
@@ -699,6 +1057,9 @@ export default function BioganceAmbassadorForm() {
                                                             </label>
                                                         ))}
                                                     </div>
+                                                    {errors.speciesBreed && (
+                                                        <p className="text-red-500 text-xs mt-1">{errors.speciesBreed}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Breed Name and Main Breed(s) */}
@@ -751,6 +1112,9 @@ export default function BioganceAmbassadorForm() {
                                                             </label>
                                                         ))}
                                                     </div>
+                                                    {errors.breedingDuration && (
+                                                        <p className="text-red-500 text-xs mt-1">{errors.breedingDuration}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Breeding size */}
@@ -812,6 +1176,9 @@ export default function BioganceAmbassadorForm() {
                                                             </label>
                                                         ))}
                                                     </div>
+                                                    {errors.familiarWithProducts && (
+                                                        <p className="text-red-500 text-xs mt-1">{errors.familiarWithProducts}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Would you like to */}
@@ -879,14 +1246,17 @@ export default function BioganceAmbassadorForm() {
                                                     I agree that my information may be used to review my application.
                                                 </span>
                                             </label>
+                                            {errors.agreeToReview && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                            )}
                                         </div>
 
                                         {/* Cancel and Submit Buttons */}
                                         <div className="flex gap-4">
-                                            <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                            <button onClick={handleCancel} className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                 Cancel
                                             </button>
-                                            <button className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                            <button onClick={handleSubmit} type="button" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                 Submit
                                             </button>
                                         </div>
@@ -922,6 +1292,9 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="e.g. The Pet Nook"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
+                                                 {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -936,6 +1309,9 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="e.g. CA987654321"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
+                                                 {errors.lastName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -949,24 +1325,42 @@ export default function BioganceAmbassadorForm() {
                                                     type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    City / Region*
+                                                    Contact*
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
-                                                    value={formData.cityRegion1}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    name="contact"
+                                                    value={formData.contact}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. CA124653"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -980,10 +1374,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="cityRegion2"
                                                     value={formData.cityRegion2}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                             <div></div>
                                         </div>
@@ -995,7 +1398,7 @@ export default function BioganceAmbassadorForm() {
                                         {/* Your Activity */}
                                         <div className="bg-white border border-gray-300 rounded-lg">
                                             <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
-                                                <h2 className="text-sm font-semibold text-black">Your Activity</h2>
+                                                <h2 className="text-sm font-semibold text-black rounded-lg">Your Activity</h2>
                                             </div>
                                             <div className="p-6 space-y-6">
                                                 {/* Species Breed */}
@@ -1017,7 +1420,11 @@ export default function BioganceAmbassadorForm() {
                                                                 <span className="ml-2 text-sm text-gray-800">{option}</span>
                                                             </label>
                                                         ))}
+
                                                     </div>
+                                                    {errors.speciesBreed && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.speciesBreed}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Breed Name and Main Breed(s) */}
@@ -1126,14 +1533,19 @@ export default function BioganceAmbassadorForm() {
                                                             I agree that my information may be used to review my application.
                                                         </span>
                                                     </label>
+                                                    {errors.agreeToReview && (
+                                                        <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Cancel and Submit Buttons */}
                                                 <div className="flex gap-4">
-                                                    <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                                    <button onClick={handleCancel}
+                                                        className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                         Cancel
                                                     </button>
-                                                    <button className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                                    <button type="button" onClick={handleSubmit}
+                                                        className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                         Submit
                                                     </button>
                                                 </div>
@@ -1173,7 +1585,7 @@ export default function BioganceAmbassadorForm() {
                                                 />
                                             </div>
 
-                                          <div>
+                                            <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Contact name*
                                                 </label>
@@ -1210,12 +1622,21 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
-                                                    value={formData.cityRegion1}
-                                                    onChange={handleInputChange}
+                                                    name="cityRegion2"
+                                                    value={formData.cityRegion2}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1226,7 +1647,7 @@ export default function BioganceAmbassadorForm() {
                                 <div className="max-w-5xl mx-auto  space-y-6  py-8">
                                     {/* Your Structure Section */}
                                     <div className="bg-white rounded-lg border border-gray-300 ">
-                                        <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900  p-4">Your Structure</h2>
+                                        <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900  p-4 rounded-lg">Your Structure</h2>
 
                                         {/* Type of organization */}
                                         <div className="p-6 space-y-5">
@@ -1436,14 +1857,20 @@ export default function BioganceAmbassadorForm() {
                                                 I agree that my information may be used to review my application.
                                             </span>
                                         </label>
+                                        {errors.agreeToReview && (
+                                            <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                        )}
                                     </div>
 
                                     {/* Cancel and Submit Buttons */}
                                     <div className="flex gap-4">
-                                        <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                        <button onClick={handleCancel}
+                                            className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                             Cancel
                                         </button>
-                                        <button className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                        <button onClick={handleSubmit}
+                                            type="button"
+                                            className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                             Submit
                                         </button>
                                     </div>
@@ -1506,9 +1933,9 @@ export default function BioganceAmbassadorForm() {
                                                     <label key={option} className="flex items-center cursor-pointer">
                                                         <input
                                                             type="radio"
-                                                            name="speciesBreed"
+                                                            name="email"
                                                             value={option}
-                                                            checked={formData.speciesBreed === option}
+                                                            checked={formData.email === option}
                                                             onChange={handleInputChange}
                                                             className="w-4 h-4 text-black accent-black cursor-pointer"
                                                         />
@@ -1553,7 +1980,8 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
+                                                    name="email"
+                                                    value={formData.email}
                                                     onChange={handleInputChange}
                                                     placeholder="e.g. pet net"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
@@ -1571,10 +1999,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="cityRegion2"
                                                     value={formData.cityRegion2}
-                                                    onChange={handleInputChange}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                             <div></div>
                                         </div>
@@ -1584,13 +2021,13 @@ export default function BioganceAmbassadorForm() {
                                     <div className="max-w-5xl mx-auto space-y-6">
                                         {/* Your Activity Section */}
                                         <div className="bg-white rounded-lg border border-gray-300 ">
-                                            <h2 className=" p-6 bg-gray-50 text-md font-bold text-black">Your Activity</h2>
+                                            <h2 className=" p-6 bg-gray-50 text-md font-bold text-black rounded-lg">Your Activity</h2>
 
                                             {/* How long have you been practicing */}
                                             <div className="p-6">
                                                 <div className="mb-6">
                                                     <label className="block mb-3 text-black">
-                                                        How long have you been practicing?
+                                                        How long have you been practicing?*
                                                     </label>
                                                     <div className="flex gap-6">
                                                         <label className="flex items-center gap-2 cursor-pointer">
@@ -1602,7 +2039,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className=" accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Less than 5 years</span>
+                                                            <span style={{ color: "black" }}>Less than 5 years</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1613,7 +2050,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>5 to 10 years</span>
+                                                            <span style={{ color: "black" }}>5 to 10 years</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1624,7 +2061,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setPracticingYears(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>More than 10 years</span>
+                                                            <span style={{ color: "black" }}>More than 10 years</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1644,7 +2081,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Dogs</span>
+                                                            <span style={{ color: "black" }}>Dogs</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1655,7 +2092,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Cats</span>
+                                                            <span style={{ color: "black" }}>Cats</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1666,7 +2103,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Horses</span>
+                                                            <span style={{ color: "black" }}>Horses</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1677,7 +2114,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setWorkWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Other Animals</span>
+                                                            <span style={{ color: "black" }}>Other Animals</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1697,7 +2134,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Yes, I use your products</span>
+                                                            <span style={{ color: "black" }}>Yes, I use your products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1708,7 +2145,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Yes, I know the brand</span>
+                                                            <span style={{ color: "black" }}>Yes, I know the brand</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1719,7 +2156,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setFamiliarWith(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>No, I&apos;m discovering it</span>
+                                                            <span style={{ color: "black" }}>No, I&apos;m discovering it</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1746,7 +2183,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Writing articles / expert advice</span>
+                                                            <span style={{ color: "black" }}>Writing articles / expert advice</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1757,7 +2194,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Product testing / technical feedback</span>
+                                                            <span style={{ color: "black" }}>Product testing / technical feedback</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1768,7 +2205,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Conferences or interviews</span>
+                                                            <span style={{ color: "black" }}>Conferences or interviews</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1779,7 +2216,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setParticipateIn(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Field collaborations (clinics, fairs, etc.)</span>
+                                                            <span style={{ color: "black" }}>Field collaborations (clinics, fairs, etc.)</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1822,14 +2259,20 @@ export default function BioganceAmbassadorForm() {
                                                     I agree that my information may be used to review my application.
                                                 </span>
                                             </label>
+                                            {errors.agreeToReview && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                            )}
                                         </div>
 
                                         {/* Cancel and Submit Buttons */}
                                         <div className="flex gap-4">
-                                            <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                            <button onClick={handleCancel}
+                                                className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                 Cancel
                                             </button>
-                                            <button className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                            <button onClick={handleSubmit}
+                                                type="button"
+                                                className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                 Submit
                                             </button>
                                         </div>
@@ -1873,7 +2316,7 @@ export default function BioganceAmbassadorForm() {
                                                 />
                                             </div>
 
-                                           <div>
+                                            <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Contact name*
                                                 </label>
@@ -1910,12 +2353,21 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    name="cityRegion1"
-                                                    value={formData.cityRegion1}
-                                                    onChange={handleInputChange}
+                                                    name="cityRegion2"
+                                                    value={formData.cityRegion2}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.cityRegion2) {
+                                                            setErrors({ ...errors, cityRegion2: '' });
+                                                        }
+                                                    }}
                                                     placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.cityRegion2 && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1927,7 +2379,7 @@ export default function BioganceAmbassadorForm() {
                                 <div className="max-w-5xl mx-auto  space-y-6  py-8">
                                     {/* Your Structure Section */}
                                     <div className="bg-white rounded-lg border border-gray-300 ">
-                                        <h2 className="p-6 bg-gray-50 text-black text-sm font-bold">Your Structure</h2>
+                                        <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg">Your Structure</h2>
 
                                         {/* Type of organization */}
                                         <div className="p-6 space-y-5">
@@ -2013,7 +2465,7 @@ export default function BioganceAmbassadorForm() {
                                     <div className="max-w-5xl mx-auto">
                                         {/* Your Collaboration with Biogance Section */}
                                         <div className="bg-white rounded-lg border border-gray-200 mb-8 ">
-                                            <h2 className="p-6 bg-gray-50 text-black text-sm font-bold ">Your Collaboration with Biogance</h2>
+                                            <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg ">Your Collaboration with Biogance</h2>
 
                                             {/* How did you hear about Biogance? */}
                                             <div className="p-6">
@@ -2031,7 +2483,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span  style={{color:"black"}}>Social media</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Social media</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2042,7 +2494,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Recommendation</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Recommendation</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2053,7 +2505,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Trade show / event</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Trade show / event</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2064,7 +2516,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setHearAbout(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Others</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Others</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -2084,7 +2536,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Shampoos and hygiene care</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Shampoos and hygiene care</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2095,7 +2547,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Anti-parasitic products</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Anti-parasitic products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2106,7 +2558,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Cleaning / disinfection products</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Cleaning / disinfection products</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2117,21 +2569,21 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setUsefulProducts(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Others</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Others</span>
                                                         </label>
                                                     </div>
 
                                                     {/* Other Product */}
                                                     <div>
-                                                        <label className="block mb-2 text-gray-700 text-black">
+                                                        <label className="block mb-2  text-black">
                                                             Other Product
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            placeholder="eg: Type here"
+                                                            placeholder="eg: type here"
                                                             value={otherProduct}
                                                             onChange={(e) => setOtherProduct(e.target.value)}
-                                                            className="w-full text-black px-3 py-2 border border-gray-300 rounded bg-gray-50 placeholder:text-gray-400"
+                                                            className="w-full text-black px-3 py-2  rounded bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                         />
                                                     </div>
                                                 </div>
@@ -2151,7 +2603,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setShareInitiatives(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>Yes</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Yes</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -2162,7 +2614,7 @@ export default function BioganceAmbassadorForm() {
                                                                 onChange={(e) => setShareInitiatives(e.target.value)}
                                                                 className="accent-black cursor-pointer"
                                                             />
-                                                            <span style={{color:"black"}}>No</span>
+                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>No</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -2171,7 +2623,7 @@ export default function BioganceAmbassadorForm() {
 
                                         {/* Your Message Section */}
                                         <div className="bg-white rounded-lg border border-gray-200 mb-6 ">
-                                            <h2 className="p-6 bg-gray-50 text-sm font-bold text-black">Your Message</h2>
+                                            <h2 className="p-6 bg-gray-50 text-sm font-bold text-black rounded-lg">Your Message</h2>
 
                                             {/* What topics could you cover in an expert article? */}
                                             <div className="p-6">
@@ -2206,14 +2658,19 @@ export default function BioganceAmbassadorForm() {
                                                     I agree that my information may be used to review my application.
                                                 </span>
                                             </label>
+                                            {errors.agreeToReview && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                            )}
                                         </div>
 
                                         {/* Cancel and Submit Buttons */}
                                         <div className="flex gap-4">
-                                            <button className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                            <button onClick={handleCancel}
+                                                className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                 Cancel
                                             </button>
-                                            <button className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                            <button onClick={handleSubmit}
+                                                type="button" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                 Submit
                                             </button>
                                         </div>
@@ -2225,7 +2682,11 @@ export default function BioganceAmbassadorForm() {
 
                 </div>
             </div >
-            <Footer/>
+            {/* Thank You Modal */}
+            {showModal && (
+                <ThankYouModal onClose={() => setShowModal(false)} />
+            )}
+            <Footer />
         </>
     );
 }

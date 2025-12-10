@@ -3,8 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import ThankYouModal from './ThankyouModal';
 
 export function DistributorForm() {
+    const router = useRouter();
+    const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         companyName: '',
         firstName: '',
@@ -186,9 +191,9 @@ export function DistributorForm() {
 
     // Get selected country
     const getCountryByCode = (code) => {
-        return countries.find(c => c.code === code && c.iso === 'pk') || 
-               countries.find(c => c.code === code) || 
-               countries[0];
+        return countries.find(c => c.code === code && c.iso === 'pk') ||
+            countries.find(c => c.code === code) ||
+            countries[0];
     };
 
     const selectedCountry = getCountryByCode(formData.countryCode);
@@ -212,12 +217,49 @@ export function DistributorForm() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+
+    const [errors, setErrors] = useState({});
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
-    };
 
-    const handleCancel = () => {
+        // Clear previous errors
+        setErrors({});
+
+        // Validate required fields
+        const newErrors = {};
+
+        if (!formData.companyName || formData.companyName.trim() === '') {
+            newErrors.companyName = 'Company name is required';
+        }
+
+        if (!formData.firstName || formData.firstName.trim() === '') {
+            newErrors.firstName = 'First name is required';
+        }
+
+        if (!formData.businessEmail || formData.businessEmail.trim() === '') {
+            newErrors.businessEmail = 'Business email is required';
+        } else {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.businessEmail)) {
+                newErrors.businessEmail = 'Please enter a valid email address';
+            }
+        }
+
+        if (!formData.registrationNumber || formData.registrationNumber.trim() === '') {
+            newErrors.registrationNumber = 'Registration number is required';
+        }
+
+        // Check if there are any errors
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        // Sab kuch sahi hai, modal show karo
+        console.log('Form submitted:', formData);
+        setShowModal(true);
         setFormData({
             companyName: '',
             firstName: '',
@@ -238,14 +280,36 @@ export function DistributorForm() {
             message: ''
         });
     };
+    const handleCancel = () => {
+        setFormData({
+            companyName: '',
+            firstName: '',
+            businessEmail: '',
+            countryCode: '+92',
+            businessPhone: '',
+            registrationNumber: '',
+            website: '',
+            jobTitle: '',
+            salesReps: '',
+            address: '',
+            country: '',
+            city: '',
+            street: '',
+            zipCode: '',
+            brand: '',
+            geographicCoverage: '',
+            message: ''
+        });
+        router.back();
+    };
 
     return (
         <>
-            <Navbar/>
+            <Navbar />
             <div className="max-w-4xl mx-auto px-6 py-16">
                 {/* Form Header */}
                 <div className="mb-8">
-                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color:"black" }}>
+                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
                         Become a Biogance Distributor
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
@@ -267,12 +331,20 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. Pawsome Inc."
                                 value={formData.companyName}
-                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                className="w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 ... placeholder:text-gray-500"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, companyName: e.target.value });
+                                    // Clear error when user starts typing
+                                    if (errors.companyName) {
+                                        setErrors({ ...errors, companyName: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 placeholder:text-gray-500 ${errors.companyName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
-                                
                             />
+                            {errors.companyName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -282,11 +354,19 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. Jane Smith"
                                 value={formData.firstName}
-                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                className="w-full ... placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, firstName: e.target.value });
+                                    if (errors.firstName) {
+                                        setErrors({ ...errors, firstName: '' });
+                                    }
+                                }}
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.firstName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                            )}
                         </div>
                     </div>
 
@@ -300,11 +380,19 @@ export function DistributorForm() {
                                 type="email"
                                 placeholder="e.g. sales@example.com"
                                 value={formData.businessEmail}
-                                onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-                                className="w-full ... placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, businessEmail: e.target.value });
+                                    if (errors.businessEmail) {
+                                        setErrors({ ...errors, businessEmail: '' });
+                                    }
+                                }}
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.businessEmail ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.businessEmail && (
+                                <p className="mt-1 text-sm text-red-600">{errors.businessEmail}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -391,11 +479,19 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. 123456789"
                                 value={formData.registrationNumber}
-                                onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, registrationNumber: e.target.value });
+                                    if (errors.registrationNumber) {
+                                        setErrors({ ...errors, registrationNumber: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.registrationNumber ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.registrationNumber && (
+                                <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -567,6 +663,7 @@ export function DistributorForm() {
                         <button
                             type="button"
                             onClick={handleCancel}
+
                             className="flex-1 px-8 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
@@ -574,6 +671,7 @@ export function DistributorForm() {
                         </button>
                         <button
                             type="submit"
+                            onClick={handleSubmit}
                             className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
@@ -582,7 +680,11 @@ export function DistributorForm() {
                     </div>
                 </form>
             </div>
-            <Footer/>
+            {/* Thank You Modal */}
+            {showModal && (
+                <ThankYouModal onClose={() => setShowModal(false)} />
+            )}
+            <Footer />
         </>
     );
 }

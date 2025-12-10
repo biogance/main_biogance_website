@@ -3,8 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
+import { useRouter } from 'next/navigation';
+import ThankYouModal from './ThankyouModal';
 
 export function ResellerForm() {
+    const router = useRouter();
+    const [showModal, setShowModal] = useState(false);
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         companyName: '',
         registrationNumber: '',
@@ -214,7 +219,67 @@ export function ResellerForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Clear previous errors
+        setErrors({});
+
+        // Validate required fields
+        const newErrors = {};
+
+        if (!formData.companyName || formData.companyName.trim() === '') {
+            newErrors.companyName = 'Company name is required';
+        }
+
+        if (!formData.registrationNumber || formData.registrationNumber.trim() === '') {
+            newErrors.registrationNumber = 'Registration number is required';
+        }
+
+        if (!formData.contactName || formData.contactName.trim() === '') {
+            newErrors.contactName = 'Contact name is required';
+        }
+
+        if (!formData.jobTitle || formData.jobTitle.trim() === '') {
+            newErrors.jobTitle = 'Job title is required';
+        }
+
+        if (!formData.email || formData.email.trim() === '') {
+            newErrors.email = 'Email is required';
+        } else {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                newErrors.email = 'Please enter a valid email address';
+            }
+        }
+
+        // Check if there are any errors
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        // Sab kuch sahi hai, modal show karo
         console.log('Form submitted:', formData);
+        setShowModal(true);
+        setFormData({
+            companyName: '',
+            registrationNumber: '',
+            contactName: '',
+            jobTitle: '',
+            email: '',
+            countryCode: '+92',
+            phone: '',
+            website: '',
+            message: '',
+            resellerTypes: {
+                petShop: false,
+                gardenCenter: false,
+                groomingSalon: false,
+                professionalBreeder: false,
+                veterinaryClinic: false,
+                onlineStore: false
+            }
+        });
     };
 
     const handleCancel = () => {
@@ -237,7 +302,9 @@ export function ResellerForm() {
                 onlineStore: false
             }
         });
+        router.back();
     };
+
 
     const handleCheckboxChange = (type) => {
         setFormData({
@@ -253,11 +320,9 @@ export function ResellerForm() {
         <>
             <Navbar />
             <div className="max-w-4xl mx-auto px-6 py-16">
-
-
                 {/* Form Header */}
                 <div className="mb-8">
-                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color:"black" }}>
+                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
                         Become a Biogance Reseller
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
@@ -277,11 +342,19 @@ export function ResellerForm() {
                                 type="text"
                                 placeholder="e.g. The Pet Nook"
                                 value={formData.companyName}
-                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, companyName: e.target.value });
+                                    if (errors.companyName) {
+                                        setErrors({ ...errors, companyName: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.companyName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.companyName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -291,11 +364,19 @@ export function ResellerForm() {
                                 type="text"
                                 placeholder="e.g. CA9876543210"
                                 value={formData.registrationNumber}
-                                onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, registrationNumber: e.target.value });
+                                    if (errors.registrationNumber) {
+                                        setErrors({ ...errors, registrationNumber: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.registrationNumber ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.registrationNumber && (
+                                <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
+                            )}
                         </div>
                     </div>
 
@@ -309,11 +390,19 @@ export function ResellerForm() {
                                 type="text"
                                 placeholder="e.g. Megan Carter"
                                 value={formData.contactName}
-                                onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, contactName: e.target.value });
+                                    if (errors.contactName) {
+                                        setErrors({ ...errors, contactName: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.contactName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.contactName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.contactName}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -323,11 +412,19 @@ export function ResellerForm() {
                                 type="text"
                                 placeholder="e.g. Owner"
                                 value={formData.jobTitle}
-                                onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, jobTitle: e.target.value });
+                                    if (errors.jobTitle) {
+                                        setErrors({ ...errors, jobTitle: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.jobTitle ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.jobTitle && (
+                                <p className="mt-1 text-sm text-red-600">{errors.jobTitle}</p>
+                            )}
                         </div>
                     </div>
 
@@ -341,11 +438,19 @@ export function ResellerForm() {
                                 type="email"
                                 placeholder="e.g. megan@thetpetnook.com"
                                 value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, email: e.target.value });
+                                    if (errors.email) {
+                                        setErrors({ ...errors, email: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -362,7 +467,7 @@ export function ResellerForm() {
                                             alt="flag"
                                             className="w-5 h-4"
                                         />
-                                        <span className="text-sm font-medium ... placeholder:text-gray-500 text-black " style={{ fontSize: '14px' }}>{formData.countryCode}</span>
+                                        <span className="text-sm font-medium text-black" style={{ fontSize: '14px' }}>{formData.countryCode}</span>
                                         <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -376,7 +481,7 @@ export function ResellerForm() {
                                                     placeholder="Search country..."
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className="w-full px-3 ... placeholder:text-gray-500 text-black  py-2 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
+                                                    className="w-full px-3 placeholder:text-gray-500 text-black py-2 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             </div>
@@ -384,7 +489,7 @@ export function ResellerForm() {
                                                 {filteredCountries.map((country, index) => (
                                                     <div
                                                         key={`${country.iso}-${index}`}
-                                                        className="flex items-center gap-3 ... placeholder:text-gray-500 text-black  px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        className="flex items-center gap-3 text-black px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
                                                         onClick={() => {
                                                             setFormData({ ...formData, countryCode: country.code });
                                                             setIsOpen(false);
@@ -397,7 +502,7 @@ export function ResellerForm() {
                                                             className="w-5 h-4"
                                                         />
                                                         <span className="text-sm flex-1 text-black">{country.name}</span>
-                                                        <span className="text-sm text-gray-500 font-medium text-black">{country.code}</span>
+                                                        <span className="text-sm text-gray-500 font-medium">{country.code}</span>
                                                     </div>
                                                 ))}
                                                 {filteredCountries.length === 0 && (
@@ -415,7 +520,7 @@ export function ResellerForm() {
                                     placeholder="e.g. 555-777-8888"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="flex-1 px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    className="flex-1 px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                     style={{ fontSize: '14px' }}
                                 />
                             </div>
@@ -432,7 +537,7 @@ export function ResellerForm() {
                             placeholder="e.g. www.whitepetcompanies.com"
                             value={formData.website}
                             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -447,10 +552,11 @@ export function ResellerForm() {
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
+
 
                     {/* Reseller Type Checkboxes */}
                     <div className="mb-8">
@@ -465,7 +571,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('petShop')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer"
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black" }}>Pet Shop / Specialty Store</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Pet Shop / Specialty Store</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -474,7 +580,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('gardenCenter')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black"  }}>Garden Center</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Garden Center</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -483,7 +589,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('groomingSalon')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black"  }}>Grooming Salon</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Grooming Salon</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -492,7 +598,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('professionalBreeder')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black"  }}>Professional Breeder</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Professional Breeder</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -501,7 +607,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('veterinaryClinic')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black"  }}>Veterinary Clinic</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Veterinary Clinic</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -510,7 +616,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('onlineStore')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color:"black"  }}>Online Store</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Online Store</span>
                             </label>
                         </div>
                     </div>
@@ -527,6 +633,7 @@ export function ResellerForm() {
                         </button>
                         <button
                             type="submit"
+
                             className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}>
                             Submit
@@ -534,7 +641,11 @@ export function ResellerForm() {
                     </div>
                 </form>
             </div>
-            <Footer/>
+            {/* Thank You Modal */}
+            {showModal && (
+                <ThankYouModal onClose={() => setShowModal(false)} />
+            )}
+            <Footer />
         </>
     );
 }
