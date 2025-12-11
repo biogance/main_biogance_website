@@ -14,13 +14,11 @@ import Link from 'next/link';
 export function Pro() {
     const [activeTab, setActiveTab] = useState("distributor");
     const router = useRouter();
-
-
     return (
         <>
 
             {/* Hero Section */}
-            <div className="relative h-[100vh] w-full ">
+            <div className="relative h-screen w-full ">
                 <Navbar />
 
                 <div className="absolute inset-0">
@@ -118,7 +116,7 @@ export function Pro() {
                                             alt="Check"
                                             width={20}
                                             height={20}
-                                            className="mt-0.5 flex-shrink-0"
+                                            className="mt-0.5 shrink-0"
                                         />
                                         <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.5' }}>
                                             Preferential offers and advantageous B2B terms (download the catalog)
@@ -130,7 +128,7 @@ export function Pro() {
                                             alt="Check"
                                             width={20}
                                             height={20}
-                                            className="mt-0.5 flex-shrink-0"
+                                            className="mt-0.5 shrink-0"
                                         />
                                         <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.5' }}>
                                             Customized marketing tools (POS materials, visuals, promotional kits)

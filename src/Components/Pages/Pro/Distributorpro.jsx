@@ -338,7 +338,7 @@ export function DistributorForm() {
                                         setErrors({ ...errors, companyName: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 placeholder:text-gray-500 ${errors.companyName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -360,7 +360,7 @@ export function DistributorForm() {
                                         setErrors({ ...errors, firstName: '' });
                                     }
                                 }}
-                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -386,7 +386,7 @@ export function DistributorForm() {
                                         setErrors({ ...errors, businessEmail: '' });
                                     }
                                 }}
-                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.businessEmail ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -485,7 +485,7 @@ export function DistributorForm() {
                                         setErrors({ ...errors, registrationNumber: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 ${errors.registrationNumber ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />

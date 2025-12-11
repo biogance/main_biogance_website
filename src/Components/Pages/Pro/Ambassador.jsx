@@ -9,12 +9,15 @@ import ThankYouModal from './ThankyouModal';
 export default function BioganceAmbassadorForm() {
     const [selectedTab, setSelectedTab] = useState('Content Creator');
     const [formData, setFormData] = useState({
+        // Common Fields (All Tabs)
         firstName: '',
         lastName: '',
         email: '',
         contact: '',
         cityRegion1: '',
         cityRegion2: '',
+
+        // Content Creator fields
         socialMediaLink: '',
         followers: '',
         mainName: '',
@@ -27,15 +30,58 @@ export default function BioganceAmbassadorForm() {
         petMainTheme: '',
         hasMultipleAnimals: '',
         animals: [],
+
+        // Breeder fields
         speciesBreed: '',
         breedName: '',
         mainBreedId: '',
         breedingDuration: '',
         breedingSize: '',
         familiarWithProducts: '',
-        idealPartnership: ''
-    });
+        idealPartnership: '',
 
+        // Groomer fields
+        businessName: '',
+        groomingExperience: '',
+        servicesOffered: '',
+        mainSpeciality: '',
+        otherSpeciality: '',
+        onlinePresenceLink: '',
+        shareContent: '',
+
+        // Club or Association fields
+        organizationType: '',
+        organizationName: '',
+        memberCount: '',
+        organizeEvents: '',
+        breedSpecies: '',
+        mainBreeds: '',
+        collaborationReason: '',
+        promotionActions: '',
+        otherPromotionActions: '',
+
+        // Health Professional fields
+        profession: '',
+        otherProfession: '',
+        clinicName: '',
+        yearsExperience: '',
+        mainWorkWith: '',
+        familiarWithBiogance: '',
+        participateIn: '',
+        expertTopics: '',
+
+        // Animal Welfare Organization or Shelter fields
+        shelterName: '',
+        legalStatus: '',
+        rinaSirenNumber: '',
+        animalsInCare: '',
+        speciesConcerned: '',
+        hearAboutBiogance: '',
+        usefulProducts: '',
+        otherProducts: '',
+        shareInitiatives: '',
+        shelterMessage: ''
+    });
     const tabs = [
         'Content Creator',
         'Breeder',
@@ -94,8 +140,11 @@ export default function BioganceAmbassadorForm() {
             newErrors.firstName = 'First name is required';
         }
 
-        if (!formData.lastName || formData.lastName.trim() === '') {
-            newErrors.lastName = 'Last name is required';
+        if (selectedTab !== 'Animal welfare organization or shelter' &&
+            selectedTab !== 'Club or Association') {
+            if (!formData.lastName || formData.lastName.trim() === '') {
+                newErrors.lastName = 'Last name is required';
+            }
         }
 
         if (!formData.email || formData.email.trim() === '') {
@@ -171,48 +220,70 @@ export default function BioganceAmbassadorForm() {
 
         // Club or Association Tab
         else if (selectedTab === 'Club or Association') {
-            // Organization validation
-            if (!formData.structure || formData.structure.trim() === '') {
-                newErrors.structure = 'Organization name is required';
+            // Basic Information validation
+            if (!formData.firstName || formData.firstName.trim() === '') {
+                newErrors.firstName = 'Name of Association/Club is required';
             }
 
+            if (!formData.contact || formData.contact.trim() === '') {
+                newErrors.contact = 'Contact name is required';
+            }
+
+            if (!formData.email || formData.email.trim() === '') {
+                newErrors.email = 'Professional email address is required';
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                newErrors.email = 'Please enter a valid email address';
+            }
+
+            if (!formData.cityRegion2 || formData.cityRegion2.trim() === '') {
+                newErrors.cityRegion2 = 'City / Region is required';
+            }
+
+            // Organization validation
             if (!formData.organizationType || formData.organizationType.trim() === '') {
                 newErrors.organizationType = 'Organization type is required';
             }
 
             if (!formData.memberCount || formData.memberCount.trim() === '') {
-                newErrors.memberCount = 'Member count is required';
+                newErrors.memberCount = 'Number of active members is required';
+            }
+
+            if (!formData.organizeEvents || formData.organizeEvents.trim() === '') {
+                newErrors.organizeEvents = 'Please select if you organize events';
             }
 
             // Collaboration validation
-            if (!formData.familiarWithProducts || formData.familiarWithProducts.trim() === '') {
-                newErrors.familiarWithProducts = 'Please select if you are familiar with our products';
+            if (!formData.collaborationReason || formData.collaborationReason.trim() === '') {
+                newErrors.collaborationReason = 'Please tell us why you want to collaborate';
+            }
+
+            if (!formData.promotionActions || formData.promotionActions.trim() === '') {
+                newErrors.promotionActions = 'Please select promotion actions';
+            }
+
+            // Agreement validation
+            if (!agreeToReview) {
+                newErrors.agreeToReview = 'You must agree to the review of your application';
             }
         }
 
         // Health Professional Tab
         else if (selectedTab === 'Health Professional') {
-           
+            // Professional information validation
+            if (!formData.profession || formData.profession.trim() === '') {
+                newErrors.profession = 'Profession/Speciality is required';
+            }
+
+            if (!formData.yearsExperience || formData.yearsExperience.trim() === '') {
+                newErrors.yearsExperience = 'Years of experience is required';
+            }
         }
 
         // Animal Welfare Organization or Shelter Tab
         else if (selectedTab === 'Animal welfare organization or shelter') {
-            // Organization validation
-            if (!formData.shelterName || formData.shelterName.trim() === '') {
-                newErrors.shelterName = 'Shelter/Organization name is required';
-            }
-
-            if (!formData.shelterType || formData.shelterType.trim() === '') {
-                newErrors.shelterType = 'Organization type is required';
-            }
-
-            if (!formData.animalsRescued || formData.animalsRescued.trim() === '') {
-                newErrors.animalsRescued = 'Number of animals rescued/cared for is required';
-            }
-
-            // Collaboration validation
-            if (!formData.familiarWithProducts || formData.familiarWithProducts.trim() === '') {
-                newErrors.familiarWithProducts = 'Please select if you are familiar with our products';
+            // Legal status validation
+            if (!formData.legalStatus || formData.legalStatus.trim() === '') {
+                newErrors.legalStatus = 'Legal status is required';
             }
         }
 
@@ -552,7 +623,7 @@ export default function BioganceAmbassadorForm() {
                                                             }
                                                         }}
                                                         placeholder="e.g. https://instagram.com/yourpage"
-                                                        className={`w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 transition ${errors.socialMediaLink ? 'ring-2 ring-red-500' : 'focus:ring-gray-300'
+                                                        className={`w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                                             }`}
                                                     />
                                                     {errors.socialMediaLink && (
@@ -746,7 +817,7 @@ export default function BioganceAmbassadorForm() {
 
                                                             </div>
                                                             {errors.animalSpecies && (
-                                                                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                                                                <div className="mt-2 p rounded-md">
                                                                     <p className="text-xs text-red-600">{errors.animalSpecies}</p>
                                                                 </div>
                                                             )}
@@ -1292,7 +1363,7 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="e.g. The Pet Nook"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
-                                                 {errors.firstName && (
+                                                {errors.firstName && (
                                                     <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
                                                 )}
                                             </div>
@@ -1309,7 +1380,7 @@ export default function BioganceAmbassadorForm() {
                                                     placeholder="e.g. CA987654321"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
-                                                 {errors.lastName && (
+                                                {errors.lastName && (
                                                     <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
                                                 )}
                                             </div>
@@ -1569,20 +1640,29 @@ export default function BioganceAmbassadorForm() {
                                     </div>
 
                                     <div className="p-6 space-y-5">
-                                        {/* First Row - First Name and Last Name */}
+                                        {/* First Row - Organization Name and Contact Name */}
                                         <div className="grid grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    Name of Association/Club*
+                                                    Name of Organization/Shelter*
                                                 </label>
                                                 <input
                                                     type="text"
                                                     name="firstName"
                                                     value={formData.firstName}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. The Pet Nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.firstName) {
+                                                            setErrors({ ...errors, firstName: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. Happy Paws Shelter"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -1593,10 +1673,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="contact"
                                                     value={formData.contact}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. pet nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. John Smith"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1610,10 +1699,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. contact@shelter.com"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -1630,7 +1728,7 @@ export default function BioganceAmbassadorForm() {
                                                             setErrors({ ...errors, cityRegion2: '' });
                                                         }
                                                     }}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
+                                                    placeholder="e.g. Los Angeles"
                                                     className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                                         }`}
                                                 />
@@ -1639,36 +1737,73 @@ export default function BioganceAmbassadorForm() {
                                                 )}
                                             </div>
                                         </div>
-
-
                                     </div>
                                 </div>
 
-                                <div className="max-w-5xl mx-auto  space-y-6  py-8">
+                                <div className="max-w-5xl mx-auto space-y-6 py-8">
                                     {/* Your Structure Section */}
-                                    <div className="bg-white rounded-lg border border-gray-300 ">
-                                        <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900  p-4 rounded-lg">Your Structure</h2>
+                                    <div className="bg-white rounded-lg border border-gray-300">
+                                        <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900 p-4 rounded-lg">Your Structure</h2>
 
                                         {/* Type of organization */}
                                         <div className="p-6 space-y-5">
-                                            <div className="mb-6 ">
-                                                <label className="block text-sm font-medium text-gray-700 mb-3 ">
+                                            <div className="mb-6">
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
                                                     Type of organization*
                                                 </label>
                                                 <div className="space-y-2">
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="organizationType"
+                                                            value="Leisure club / association"
+                                                            checked={formData.organizationType === 'Leisure club / association'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.organizationType) {
+                                                                    setErrors({ ...errors, organizationType: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Leisure club / association</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="organizationType"
+                                                            value="Competition / show club / association"
+                                                            checked={formData.organizationType === 'Competition / show club / association'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.organizationType) {
+                                                                    setErrors({ ...errors, organizationType: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Competition / show club / association</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="organizationType"
+                                                            value="Others"
+                                                            checked={formData.organizationType === 'Others'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.organizationType) {
+                                                                    setErrors({ ...errors, organizationType: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Others</span>
                                                     </label>
                                                 </div>
+                                                {errors.organizationType && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.organizationType}</p>
+                                                )}
                                             </div>
 
                                             {/* Organization name */}
@@ -1678,6 +1813,9 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    name="organizationName"
+                                                    value={formData.organizationName}
+                                                    onChange={handleInputChange}
                                                     placeholder="eg: Type here"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
@@ -1690,18 +1828,57 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <div className="space-y-2">
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4" />
+                                                        <input
+                                                            type="radio"
+                                                            name="memberCount"
+                                                            value="Less than 50"
+                                                            checked={formData.memberCount === 'Less than 50'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.memberCount) {
+                                                                    setErrors({ ...errors, memberCount: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Less than 50</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="memberCount"
+                                                            value="50 - 200"
+                                                            checked={formData.memberCount === '50 - 200'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.memberCount) {
+                                                                    setErrors({ ...errors, memberCount: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">50 - 200</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="memberCount"
+                                                            value="More than 200"
+                                                            checked={formData.memberCount === 'More than 200'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.memberCount) {
+                                                                    setErrors({ ...errors, memberCount: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">More than 200</span>
                                                     </label>
                                                 </div>
+                                                {errors.memberCount && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.memberCount}</p>
+                                                )}
                                             </div>
 
                                             {/* Do you organize events */}
@@ -1711,21 +1888,47 @@ export default function BioganceAmbassadorForm() {
                                                 </label>
                                                 <div className="space-y-2">
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="events" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="organizeEvents"
+                                                            value="Yes"
+                                                            checked={formData.organizeEvents === 'Yes'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.organizeEvents) {
+                                                                    setErrors({ ...errors, organizeEvents: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Yes</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="events" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="organizeEvents"
+                                                            value="No"
+                                                            checked={formData.organizeEvents === 'No'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.organizeEvents) {
+                                                                    setErrors({ ...errors, organizeEvents: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">No</span>
                                                     </label>
                                                 </div>
+                                                {errors.organizeEvents && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.organizeEvents}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
-
                                     {/* Breeds Represented Section */}
-                                    <div className="bg-white rounded-lg border border-gray-300 ">
+                                    <div className="bg-white rounded-lg border border-gray-300">
                                         <h2 className="text-md font-semibold text-gray-900 mb-2 p-4 bg-gray-50">Breeds Represented</h2>
                                         <div className="p-6">
                                             <p className="text-sm text-gray-600 mb-6">
@@ -1744,19 +1947,47 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="species" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="breedSpecies"
+                                                                value="Dog"
+                                                                checked={formData.breedSpecies === 'Dog'}
+                                                                onChange={handleInputChange}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Dog</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="species" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="breedSpecies"
+                                                                value="Cat"
+                                                                checked={formData.breedSpecies === 'Cat'}
+                                                                onChange={handleInputChange}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Cat</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="species" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="breedSpecies"
+                                                                value="Horse"
+                                                                checked={formData.breedSpecies === 'Horse'}
+                                                                onChange={handleInputChange}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Horse</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="species" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="breedSpecies"
+                                                                value="Others"
+                                                                checked={formData.breedSpecies === 'Others'}
+                                                                onChange={handleInputChange}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Others</span>
                                                         </label>
                                                     </div>
@@ -1769,21 +2000,24 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <input
                                                         type="text"
+                                                        name="mainBreeds"
+                                                        value={formData.mainBreeds}
+                                                        onChange={handleInputChange}
                                                         placeholder="eg: Border Collie, Maine Coon, Selle Français"
                                                         className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                     />
                                                 </div>
                                             </div>
 
-                                            <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md">
+                                            <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition">
                                                 <span className="text-lg">+</span>
                                                 Add Another Breed Group
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="max-w-5xl mx-auto ">
-                                        <div className="bg-white rounded-lg border border-gray-300 ">
+                                    <div className="max-w-5xl mx-auto">
+                                        <div className="bg-white rounded-lg border border-gray-300">
                                             <h2 className="text-lg font-semibold text-gray-900 mb-6 p-4 bg-gray-50">Collaboration with Biogance</h2>
 
                                             {/* Why would you like to collaborate */}
@@ -1794,14 +2028,27 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <div className="relative">
                                                         <textarea
+                                                            name="collaborationReason"
+                                                            value={formData.collaborationReason}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.collaborationReason) {
+                                                                    setErrors({ ...errors, collaborationReason: '' });
+                                                                }
+                                                            }}
                                                             placeholder="In a few words, why would you like to become a Biogance ambassador?"
                                                             rows="4"
-                                                            className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                            maxLength={250}
+                                                            className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 '
+                                        }`}
                                                         />
                                                         <div className="absolute bottom-2 right-3 text-xs text-gray-500">
-                                                            0/250 characters
+                                                            {formData.collaborationReason?.length || 0}/250 characters
                                                         </div>
                                                     </div>
+                                                    {errors.collaborationReason && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.collaborationReason}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* What types of actions */}
@@ -1811,22 +2058,73 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <div className="space-y-2 mb-4">
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="actions" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="promotionActions"
+                                                                value="Offer a promo code to your members"
+                                                                checked={formData.promotionActions === 'Offer a promo code to your members'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.promotionActions) {
+                                                                        setErrors({ ...errors, promotionActions: '' });
+                                                                    }
+                                                                }}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Offer a promo code to your members</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="actions" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="promotionActions"
+                                                                value="Distribute Biogance prizes during your contests / events"
+                                                                checked={formData.promotionActions === 'Distribute Biogance prizes during your contests / events'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.promotionActions) {
+                                                                        setErrors({ ...errors, promotionActions: '' });
+                                                                    }
+                                                                }}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Distribute Biogance prizes during your contests / events</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="actions" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="promotionActions"
+                                                                value="Publish articles / posts on your social media / website"
+                                                                checked={formData.promotionActions === 'Publish articles / posts on your social media / website'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.promotionActions) {
+                                                                        setErrors({ ...errors, promotionActions: '' });
+                                                                    }
+                                                                }}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Publish articles / posts on your social media / website</span>
                                                         </label>
                                                         <label className="flex items-center">
-                                                            <input type="radio" name="actions" className="w-4 h-4 accent-black cursor-pointer" />
+                                                            <input
+                                                                type="radio"
+                                                                name="promotionActions"
+                                                                value="Others"
+                                                                checked={formData.promotionActions === 'Others'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.promotionActions) {
+                                                                        setErrors({ ...errors, promotionActions: '' });
+                                                                    }
+                                                                }}
+                                                                className="w-4 h-4 accent-black cursor-pointer"
+                                                            />
                                                             <span className="ml-2 text-sm text-gray-700">Others</span>
                                                         </label>
                                                     </div>
+                                                    {errors.promotionActions && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.promotionActions}</p>
+                                                    )}
 
                                                     {/* Other type of actions */}
                                                     <div>
@@ -1835,6 +2133,9 @@ export default function BioganceAmbassadorForm() {
                                                         </label>
                                                         <input
                                                             type="text"
+                                                            name="otherPromotionActions"
+                                                            value={formData.otherPromotionActions}
+                                                            onChange={handleInputChange}
                                                             placeholder="eg: Border Collie, Maine Coon, Selle Français"
                                                             className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                         />
@@ -1850,7 +2151,12 @@ export default function BioganceAmbassadorForm() {
                                             <input
                                                 type="checkbox"
                                                 checked={agreeToReview}
-                                                onChange={(e) => setAgreeToReview(e.target.checked)}
+                                                onChange={(e) => {
+                                                    setAgreeToReview(e.target.checked);
+                                                    if (errors.agreeToReview) {
+                                                        setErrors({ ...errors, agreeToReview: '' });
+                                                    }
+                                                }}
                                                 className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
                                             />
                                             <span className="ml-3 text-sm text-gray-800">
@@ -1868,8 +2174,8 @@ export default function BioganceAmbassadorForm() {
                                             className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                             Cancel
                                         </button>
-                                        <button onClick={handleSubmit}
-                                            type="button"
+                                        <button type="button"
+                                            onClick={handleSubmit}
                                             className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                             Submit
                                         </button>
@@ -1878,8 +2184,6 @@ export default function BioganceAmbassadorForm() {
                             </div>
                         </>
                     )}
-
-
 
 
                     {selectedTab === 'Health Professional' && (
@@ -1903,10 +2207,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="firstName"
                                                     value={formData.firstName}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. The Pet Nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.firstName) {
+                                                            setErrors({ ...errors, firstName: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. John"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -1917,59 +2230,79 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="lastName"
                                                     value={formData.lastName}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. CA987654321"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.lastName) {
+                                                            setErrors({ ...errors, lastName: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. Doe"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.lastName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+                                                )}
                                             </div>
                                         </div>
 
+                                        {/* Professional/Speciality */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-900 mb-3">
-                                                Professional/Speciality
+                                                Professional/Speciality*
                                             </label>
                                             <div className="flex flex-wrap gap-4">
-                                                {['Vetrinian', 'Osteopath', 'Nutritionist', 'Behaviorist', 'Others'].map((option) => (
+                                                {['Veterinarian', 'Osteopath', 'Nutritionist', 'Behaviorist', 'Others'].map((option) => (
                                                     <label key={option} className="flex items-center cursor-pointer">
                                                         <input
                                                             type="radio"
-                                                            name="email"
+                                                            name="profession"
                                                             value={option}
-                                                            checked={formData.email === option}
-                                                            onChange={handleInputChange}
+                                                            checked={formData.profession === option}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.profession) {
+                                                                    setErrors({ ...errors, profession: '' });
+                                                                }
+                                                            }}
                                                             className="w-4 h-4 text-black accent-black cursor-pointer"
                                                         />
                                                         <span className="ml-2 text-sm text-gray-800">{option}</span>
                                                     </label>
                                                 ))}
                                             </div>
+                                            {errors.profession && (
+                                                <p className="mt-1 text-xs text-red-600">{errors.profession}</p>
+                                            )}
                                         </div>
+
+                                        {/* Other Profession/Speciality */}
                                         <div>
                                             <label className="block text-sm font-lg text-black mb-2">
                                                 Other Profession/Speciality
                                             </label>
                                             <input
-                                                type="email"
-                                                name="email"
+                                                type="text"
+                                                name="otherProfession"
+                                                value={formData.otherProfession}
                                                 onChange={handleInputChange}
                                                 placeholder="e.g. Type here"
                                                 className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                             />
                                         </div>
 
-
-                                        {/* Second Row - Email and City/Region */}
+                                        {/* Second Row - Clinic Name and Email */}
                                         <div className="grid grid-cols-2 gap-5">
-
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    Name of Clinic/paractice/organization
+                                                    Name of Clinic/Practice/Organization
                                                 </label>
                                                 <input
-                                                    type="email"
-                                                    name="email"
+                                                    type="text"
+                                                    name="clinicName"
+                                                    value={formData.clinicName}
                                                     onChange={handleInputChange}
-                                                    placeholder="e.g. pet net"
+                                                    placeholder="e.g. Pet Health Clinic"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
                                             </div>
@@ -1979,18 +2312,50 @@ export default function BioganceAmbassadorForm() {
                                                     Professional email address*
                                                 </label>
                                                 <input
-                                                    type="text"
+                                                    type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. pet net"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. john@clinic.com"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
                                         </div>
 
-                                        {/* Third Row - City/Region (half width) */}
+                                        {/* Third Row - Contact and City/Region */}
                                         <div className="grid grid-cols-2 gap-5">
+                                            <div>
+                                                <label className="block text-sm font-lg text-black mb-2">
+                                                    Contact*
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="contact"
+                                                    value={formData.contact}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. +1234567890"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
+                                                />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
+                                            </div>
+
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     City / Region*
@@ -2005,7 +2370,7 @@ export default function BioganceAmbassadorForm() {
                                                             setErrors({ ...errors, cityRegion2: '' });
                                                         }
                                                     }}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
+                                                    placeholder="e.g. New York"
                                                     className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                                         }`}
                                                 />
@@ -2013,41 +2378,51 @@ export default function BioganceAmbassadorForm() {
                                                     <p className="mt-1 text-xs text-red-600">{errors.cityRegion2}</p>
                                                 )}
                                             </div>
-                                            <div></div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className=" py-6 ">
+
+                                <div className="py-6">
                                     <div className="max-w-5xl mx-auto space-y-6">
                                         {/* Your Activity Section */}
-                                        <div className="bg-white rounded-lg border border-gray-300 ">
-                                            <h2 className=" p-6 bg-gray-50 text-md font-bold text-black rounded-lg">Your Activity</h2>
+                                        <div className="bg-white rounded-lg border border-gray-300">
+                                            <h2 className="p-6 bg-gray-50 text-md font-bold text-black rounded-lg">Your Activity</h2>
 
-                                            {/* How long have you been practicing */}
                                             <div className="p-6">
+                                                {/* How long have you been practicing */}
                                                 <div className="mb-6">
                                                     <label className="block mb-3 text-black">
                                                         How long have you been practicing?*
                                                     </label>
-                                                    <div className="flex gap-6">
+                                                    <div className="flex gap-6 flex-wrap">
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="practicingYears"
-                                                                value="less5"
-                                                                checked={practicingYears === 'less5'}
-                                                                onChange={(e) => setPracticingYears(e.target.value)}
-                                                                className=" accent-black cursor-pointer"
+                                                                name="yearsExperience"
+                                                                value="Less than 5 years"
+                                                                checked={formData.yearsExperience === 'Less than 5 years'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.yearsExperience) {
+                                                                        setErrors({ ...errors, yearsExperience: '' });
+                                                                    }
+                                                                }}
+                                                                className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Less than 5 years</span>
                                                         </label>
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="practicingYears"
-                                                                value="5-10"
-                                                                checked={practicingYears === '5-10'}
-                                                                onChange={(e) => setPracticingYears(e.target.value)}
+                                                                name="yearsExperience"
+                                                                value="5 to 10 years"
+                                                                checked={formData.yearsExperience === '5 to 10 years'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.yearsExperience) {
+                                                                        setErrors({ ...errors, yearsExperience: '' });
+                                                                    }
+                                                                }}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>5 to 10 years</span>
@@ -2055,15 +2430,23 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="practicingYears"
-                                                                value="more10"
-                                                                checked={practicingYears === 'more10'}
-                                                                onChange={(e) => setPracticingYears(e.target.value)}
+                                                                name="yearsExperience"
+                                                                value="More than 10 years"
+                                                                checked={formData.yearsExperience === 'More than 10 years'}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    if (errors.yearsExperience) {
+                                                                        setErrors({ ...errors, yearsExperience: '' });
+                                                                    }
+                                                                }}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>More than 10 years</span>
                                                         </label>
                                                     </div>
+                                                    {errors.yearsExperience && (
+                                                        <p className="mt-1 text-xs text-red-600">{errors.yearsExperience}</p>
+                                                    )}
                                                 </div>
 
                                                 {/* You mainly work with */}
@@ -2071,14 +2454,14 @@ export default function BioganceAmbassadorForm() {
                                                     <label className="block mb-3 text-black">
                                                         You mainly work with
                                                     </label>
-                                                    <div className="flex gap-6">
+                                                    <div className="flex gap-6 flex-wrap">
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="workWith"
-                                                                value="dogs"
-                                                                checked={workWith === 'dogs'}
-                                                                onChange={(e) => setWorkWith(e.target.value)}
+                                                                name="mainWorkWith"
+                                                                value="Dogs"
+                                                                checked={formData.mainWorkWith === 'Dogs'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Dogs</span>
@@ -2086,10 +2469,10 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="workWith"
-                                                                value="cats"
-                                                                checked={workWith === 'cats'}
-                                                                onChange={(e) => setWorkWith(e.target.value)}
+                                                                name="mainWorkWith"
+                                                                value="Cats"
+                                                                checked={formData.mainWorkWith === 'Cats'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Cats</span>
@@ -2097,10 +2480,10 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="workWith"
-                                                                value="horses"
-                                                                checked={workWith === 'horses'}
-                                                                onChange={(e) => setWorkWith(e.target.value)}
+                                                                name="mainWorkWith"
+                                                                value="Horses"
+                                                                checked={formData.mainWorkWith === 'Horses'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Horses</span>
@@ -2108,10 +2491,10 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="workWith"
-                                                                value="other"
-                                                                checked={workWith === 'other'}
-                                                                onChange={(e) => setWorkWith(e.target.value)}
+                                                                name="mainWorkWith"
+                                                                value="Other Animals"
+                                                                checked={formData.mainWorkWith === 'Other Animals'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Other Animals</span>
@@ -2124,14 +2507,14 @@ export default function BioganceAmbassadorForm() {
                                                     <label className="block mb-3 text-black">
                                                         Are you already familiar with Biogance or Eskadron?
                                                     </label>
-                                                    <div className="flex gap-6">
+                                                    <div className="flex gap-6 flex-wrap">
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="familiarWith"
-                                                                value="use"
-                                                                checked={familiarWith === 'use'}
-                                                                onChange={(e) => setFamiliarWith(e.target.value)}
+                                                                name="familiarWithBiogance"
+                                                                value="Yes, I use your products"
+                                                                checked={formData.familiarWithBiogance === 'Yes, I use your products'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Yes, I use your products</span>
@@ -2139,10 +2522,10 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="familiarWith"
-                                                                value="know"
-                                                                checked={familiarWith === 'know'}
-                                                                onChange={(e) => setFamiliarWith(e.target.value)}
+                                                                name="familiarWithBiogance"
+                                                                value="Yes, I know the brand"
+                                                                checked={formData.familiarWithBiogance === 'Yes, I know the brand'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Yes, I know the brand</span>
@@ -2150,10 +2533,10 @@ export default function BioganceAmbassadorForm() {
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
-                                                                name="familiarWith"
-                                                                value="discovering"
-                                                                checked={familiarWith === 'discovering'}
-                                                                onChange={(e) => setFamiliarWith(e.target.value)}
+                                                                name="familiarWithBiogance"
+                                                                value="No, I'm discovering it"
+                                                                checked={formData.familiarWithBiogance === "No, I'm discovering it"}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>No, I&apos;m discovering it</span>
@@ -2164,11 +2547,11 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Collaboration Opportunities Section */}
-                                        <div className="bg-white rounded-lg border border-gray-200 ">
+                                        <div className="bg-white rounded-lg border border-gray-200">
                                             <h2 className="p-6 bg-gray-50 text-md font-bold text-black">Collaboration Opportunities</h2>
 
-                                            {/* Would you like to participate in */}
                                             <div className="p-6">
+                                                {/* Would you like to participate in */}
                                                 <div className="mb-6">
                                                     <label className="block mb-3 text-black">
                                                         Would you like to participate in
@@ -2178,9 +2561,9 @@ export default function BioganceAmbassadorForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="participateIn"
-                                                                value="articles"
-                                                                checked={participateIn === 'articles'}
-                                                                onChange={(e) => setParticipateIn(e.target.value)}
+                                                                value="Writing articles / expert advice"
+                                                                checked={formData.participateIn === 'Writing articles / expert advice'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Writing articles / expert advice</span>
@@ -2189,9 +2572,9 @@ export default function BioganceAmbassadorForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="participateIn"
-                                                                value="testing"
-                                                                checked={participateIn === 'testing'}
-                                                                onChange={(e) => setParticipateIn(e.target.value)}
+                                                                value="Product testing / technical feedback"
+                                                                checked={formData.participateIn === 'Product testing / technical feedback'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Product testing / technical feedback</span>
@@ -2200,9 +2583,9 @@ export default function BioganceAmbassadorForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="participateIn"
-                                                                value="conferences"
-                                                                checked={participateIn === 'conferences'}
-                                                                onChange={(e) => setParticipateIn(e.target.value)}
+                                                                value="Conferences or interviews"
+                                                                checked={formData.participateIn === 'Conferences or interviews'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Conferences or interviews</span>
@@ -2211,9 +2594,9 @@ export default function BioganceAmbassadorForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="participateIn"
-                                                                value="field"
-                                                                checked={participateIn === 'field'}
-                                                                onChange={(e) => setParticipateIn(e.target.value)}
+                                                                value="Field collaborations (clinics, fairs, etc.)"
+                                                                checked={formData.participateIn === 'Field collaborations (clinics, fairs, etc.)'}
+                                                                onChange={handleInputChange}
                                                                 className="accent-black cursor-pointer"
                                                             />
                                                             <span style={{ color: "black" }}>Field collaborations (clinics, fairs, etc.)</span>
@@ -2228,31 +2611,34 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <div className="relative">
                                                         <textarea
+                                                            name="expertTopics"
+                                                            value={formData.expertTopics}
+                                                            onChange={handleInputChange}
                                                             placeholder="In a few words, why would you like to become a Biogance ambassador?"
-                                                            value={expertTopics}
-                                                            onChange={(e) => {
-                                                                if (e.target.value.length <= maxChars) {
-                                                                    setExpertTopics(e.target.value);
-                                                                }
-                                                            }}
-                                                            className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                            maxLength={250}
+                                                            rows={4}
+                                                            className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
                                                         />
                                                         <div className="text-right text-gray-500 mt-1">
-                                                            {expertTopics.length}/{maxChars} characters
+                                                            {formData.expertTopics?.length || 0}/250 characters
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-
-
                                         </div>
+
                                         {/* Agreement Checkbox */}
                                         <div className="mb-6">
                                             <label className="flex items-start cursor-pointer">
                                                 <input
                                                     type="checkbox"
                                                     checked={agreeToReview}
-                                                    onChange={(e) => setAgreeToReview(e.target.checked)}
+                                                    onChange={(e) => {
+                                                        setAgreeToReview(e.target.checked);
+                                                        if (errors.agreeToReview) {
+                                                            setErrors({ ...errors, agreeToReview: '' });
+                                                        }
+                                                    }}
                                                     className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
                                                 />
                                                 <span className="ml-3 text-sm text-gray-800">
@@ -2278,19 +2664,14 @@ export default function BioganceAmbassadorForm() {
                                         </div>
                                     </div>
                                 </div>
-
-
                             </div>
-
                         </>
                     )}
 
 
 
                     {selectedTab === 'Animal welfare organization or shelter' && (
-
                         <>
-
                             <div className="animate-fadeIn">
                                 <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
                                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -2300,20 +2681,29 @@ export default function BioganceAmbassadorForm() {
                                     </div>
 
                                     <div className="p-6 space-y-5">
-                                        {/* First Row - First Name and Last Name */}
+                                        {/* First Row - Organization Name and Contact Name */}
                                         <div className="grid grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
-                                                    Name of Association/Club*
+                                                    Name of Organization/Shelter*
                                                 </label>
                                                 <input
                                                     type="text"
                                                     name="firstName"
                                                     value={formData.firstName}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. The Pet Nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.firstName) {
+                                                            setErrors({ ...errors, firstName: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. Happy Paws Shelter"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50  rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.firstName && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -2324,10 +2714,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="text"
                                                     name="contact"
                                                     value={formData.contact}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. pet nook"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.contact) {
+                                                            setErrors({ ...errors, contact: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. John Smith"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.contact && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -2341,10 +2740,19 @@ export default function BioganceAmbassadorForm() {
                                                     type="email"
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
-                                                    className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        if (errors.email) {
+                                                            setErrors({ ...errors, email: '' });
+                                                        }
+                                                    }}
+                                                    placeholder="e.g. contact@shelter.com"
+                                                    className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                                        }`}
                                                 />
+                                                {errors.email && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                                                )}
                                             </div>
 
                                             <div>
@@ -2361,7 +2769,7 @@ export default function BioganceAmbassadorForm() {
                                                             setErrors({ ...errors, cityRegion2: '' });
                                                         }
                                                     }}
-                                                    placeholder="e.g. megan@whiskersnwags.com"
+                                                    placeholder="e.g. Los Angeles"
                                                     className={`w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
                                                         }`}
                                                 />
@@ -2370,310 +2778,394 @@ export default function BioganceAmbassadorForm() {
                                                 )}
                                             </div>
                                         </div>
-
-
                                     </div>
                                 </div>
 
-
-                                <div className="max-w-5xl mx-auto  space-y-6  py-8">
+                                <div className="max-w-5xl mx-auto space-y-6 py-8">
                                     {/* Your Structure Section */}
-                                    <div className="bg-white rounded-lg border border-gray-300 ">
+                                    <div className="bg-white rounded-lg border border-gray-300">
                                         <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg">Your Structure</h2>
 
-                                        {/* Type of organization */}
                                         <div className="p-6 space-y-5">
-                                            <div className="mb-6 ">
-                                                <label className="block text-sm font-medium text-gray-700 mb-3 ">
+                                            {/* Legal Status */}
+                                            <div className="mb-6">
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
                                                     Legal Status*
                                                 </label>
-                                                <div className=" flex gap-3">
-                                                    <label className="flex  items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                <div className="flex gap-3 flex-wrap">
+                                                    <label className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="legalStatus"
+                                                            value="Non profit association"
+                                                            checked={formData.legalStatus === 'Non profit association'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.legalStatus) {
+                                                                    setErrors({ ...errors, legalStatus: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Non profit association</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="legalStatus"
+                                                            value="Foundation"
+                                                            checked={formData.legalStatus === 'Foundation'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.legalStatus) {
+                                                                    setErrors({ ...errors, legalStatus: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Foundation</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="structure" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="legalStatus"
+                                                            value="Others"
+                                                            checked={formData.legalStatus === 'Others'}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                if (errors.legalStatus) {
+                                                                    setErrors({ ...errors, legalStatus: '' });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Others</span>
                                                     </label>
                                                 </div>
+                                                {errors.legalStatus && (
+                                                    <p className="mt-1 text-xs text-red-600">{errors.legalStatus}</p>
+                                                )}
                                             </div>
 
-                                            {/* Organization name */}
+                                            {/* RINA or SIREN number */}
                                             <div className="mb-6">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     RINA or SIREN number (if applicable)
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    name="rinaSirenNumber"
+                                                    value={formData.rinaSirenNumber}
+                                                    onChange={handleInputChange}
                                                     placeholder="eg: Type here"
                                                     className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                 />
                                             </div>
 
-                                            {/* Number of active members */}
+                                            {/* Number of animals currently in care */}
                                             <div className="mb-6">
                                                 <label className="block text-sm font-medium text-gray-700 mb-3">
                                                     Number of animals currently in care
                                                 </label>
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-3 flex-wrap">
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4" />
+                                                        <input
+                                                            type="radio"
+                                                            name="animalsInCare"
+                                                            value="Less than 20"
+                                                            checked={formData.animalsInCare === 'Less than 20'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Less than 20</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="animalsInCare"
+                                                            value="20 - 50"
+                                                            checked={formData.animalsInCare === '20 - 50'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">20 - 50</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="members" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="animalsInCare"
+                                                            value="More than 50"
+                                                            checked={formData.animalsInCare === 'More than 50'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">More than 50</span>
                                                     </label>
                                                 </div>
                                             </div>
 
-                                            {/* Do you organize events */}
+                                            {/* Species Concerned */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-3">
                                                     Species Concerned
                                                 </label>
-                                                <div className="gap-3 flex">
+                                                <div className="gap-3 flex flex-wrap">
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="events" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="speciesConcerned"
+                                                            value="Dogs"
+                                                            checked={formData.speciesConcerned === 'Dogs'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Dogs</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="events" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="speciesConcerned"
+                                                            value="Cats"
+                                                            checked={formData.speciesConcerned === 'Cats'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Cats</span>
                                                     </label>
                                                     <label className="flex items-center">
-                                                        <input type="radio" name="events" className="w-4 h-4 accent-black cursor-pointer" />
+                                                        <input
+                                                            type="radio"
+                                                            name="speciesConcerned"
+                                                            value="Small pets/Others"
+                                                            checked={formData.speciesConcerned === 'Small pets/Others'}
+                                                            onChange={handleInputChange}
+                                                            className="w-4 h-4 accent-black cursor-pointer"
+                                                        />
                                                         <span className="ml-2 text-sm text-gray-700">Small pets/Others</span>
                                                     </label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
+                                    {/* Your Collaboration with Biogance Section */}
+                                    <div className="bg-white rounded-lg border border-gray-200 mb-8">
+                                        <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg">Your Collaboration with Biogance</h2>
 
-                                <div className="   ">
-                                    <div className="max-w-5xl mx-auto">
-                                        {/* Your Collaboration with Biogance Section */}
-                                        <div className="bg-white rounded-lg border border-gray-200 mb-8 ">
-                                            <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg ">Your Collaboration with Biogance</h2>
-
+                                        <div className="p-6">
                                             {/* How did you hear about Biogance? */}
-                                            <div className="p-6">
-                                                <div className="mb-6">
-                                                    <label className="block mb-3 text-black">
-                                                        How did you hear about Biogance?
-                                                    </label>
-                                                    <div className="flex gap-6 flex-wrap">
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="hearAbout"
-                                                                value="social"
-                                                                checked={hearAbout === 'social'}
-                                                                onChange={(e) => setHearAbout(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Social media</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="hearAbout"
-                                                                value="recommendation"
-                                                                checked={hearAbout === 'recommendation'}
-                                                                onChange={(e) => setHearAbout(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Recommendation</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="hearAbout"
-                                                                value="trade"
-                                                                checked={hearAbout === 'trade'}
-                                                                onChange={(e) => setHearAbout(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Trade show / event</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="hearAbout"
-                                                                value="others"
-                                                                checked={hearAbout === 'others'}
-                                                                onChange={(e) => setHearAbout(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Others</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-
-                                                {/* Which products would be most useful you? */}
-                                                <div className=" ">
-                                                    <label className="block mb-3 text-black">
-                                                        Which products would be most useful you?
-                                                    </label>
-                                                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-4">
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="usefulProducts"
-                                                                value="shampoos"
-                                                                checked={usefulProducts === 'shampoos'}
-                                                                onChange={(e) => setUsefulProducts(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Shampoos and hygiene care</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="usefulProducts"
-                                                                value="antiparasitic"
-                                                                checked={usefulProducts === 'antiparasitic'}
-                                                                onChange={(e) => setUsefulProducts(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Anti-parasitic products</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="usefulProducts"
-                                                                value="cleaning"
-                                                                checked={usefulProducts === 'cleaning'}
-                                                                onChange={(e) => setUsefulProducts(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Cleaning / disinfection products</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="usefulProducts"
-                                                                value="others"
-                                                                checked={usefulProducts === 'others'}
-                                                                onChange={(e) => setUsefulProducts(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Others</span>
-                                                        </label>
-                                                    </div>
-
-                                                    {/* Other Product */}
-                                                    <div>
-                                                        <label className="block mb-2  text-black">
-                                                            Other Product
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            placeholder="eg: type here"
-                                                            value={otherProduct}
-                                                            onChange={(e) => setOtherProduct(e.target.value)}
-                                                            className="w-full text-black px-3 py-2  rounded bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Would you like to share your initiatives */}
-                                                <div>
-                                                    <label className="block mb-3 text-black">
-                                                        Would you like to share your initiatives on our social media (photos, testimonials, acknowledgements)?
-                                                    </label>
-                                                    <div className="flex gap-6">
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="shareInitiatives"
-                                                                value="yes"
-                                                                checked={shareInitiatives === 'yes'}
-                                                                onChange={(e) => setShareInitiatives(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>Yes</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="shareInitiatives"
-                                                                value="no"
-                                                                checked={shareInitiatives === 'no'}
-                                                                onChange={(e) => setShareInitiatives(e.target.value)}
-                                                                className="accent-black cursor-pointer"
-                                                            />
-                                                            <span className='text-sm text-gray-700' style={{ color: "black" }}>No</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Your Message Section */}
-                                        <div className="bg-white rounded-lg border border-gray-200 mb-6 ">
-                                            <h2 className="p-6 bg-gray-50 text-sm font-bold text-black rounded-lg">Your Message</h2>
-
-                                            {/* What topics could you cover in an expert article? */}
-                                            <div className="p-6">
-                                                <label className="block mb-3 text-black ">
-                                                    What topics could you cover in an expert article?
+                                            <div className="mb-6">
+                                                <label className="block mb-3 text-black">
+                                                    How did you hear about Biogance?
                                                 </label>
-                                                <div className="relative">
-                                                    <textarea
-                                                        value={motivation}
-                                                        onChange={(e) => setMotivation(e.target.value)}
-                                                        placeholder="In a few words, why would you like to become a Biogance ambassador?"
-                                                        maxLength={maxChars}
-                                                        rows={4}
-                                                        className="w-full px-4 py-3 bg-grey-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                                                <div className="flex gap-6 flex-wrap">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="hearAboutBiogance"
+                                                            value="Social media"
+                                                            checked={formData.hearAboutBiogance === 'Social media'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Social media</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="hearAboutBiogance"
+                                                            value="Recommendation"
+                                                            checked={formData.hearAboutBiogance === 'Recommendation'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Recommendation</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="hearAboutBiogance"
+                                                            value="Trade show / event"
+                                                            checked={formData.hearAboutBiogance === 'Trade show / event'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Trade show / event</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="hearAboutBiogance"
+                                                            value="Others"
+                                                            checked={formData.hearAboutBiogance === 'Others'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Others</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            {/* Which products would be most useful to you? */}
+                                            <div className="mb-6">
+                                                <label className="block mb-3 text-black">
+                                                    Which products would be most useful to you?
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="usefulProducts"
+                                                            value="Shampoos and hygiene care"
+                                                            checked={formData.usefulProducts === 'Shampoos and hygiene care'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Shampoos and hygiene care</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="usefulProducts"
+                                                            value="Anti-parasitic products"
+                                                            checked={formData.usefulProducts === 'Anti-parasitic products'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Anti-parasitic products</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="usefulProducts"
+                                                            value="Cleaning / disinfection products"
+                                                            checked={formData.usefulProducts === 'Cleaning / disinfection products'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Cleaning / disinfection products</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="usefulProducts"
+                                                            value="Others"
+                                                            checked={formData.usefulProducts === 'Others'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Others</span>
+                                                    </label>
+                                                </div>
+
+                                                {/* Other Product */}
+                                                <div>
+                                                    <label className="block mb-2 text-black">
+                                                        Other Product
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        name="otherProducts"
+                                                        value={formData.otherProducts}
+                                                        onChange={handleInputChange}
+                                                        placeholder="eg: type here"
+                                                        className="w-full text-black px-3 py-2 rounded bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                                                     />
-                                                    <div className="text-right text-gray-500 mt-1">
-                                                        {message.length}/{maxChars} characters
-                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Would you like to share your initiatives */}
+                                            <div>
+                                                <label className="block mb-3 text-black">
+                                                    Would you like to share your initiatives on our social media (photos, testimonials, acknowledgements)?
+                                                </label>
+                                                <div className="flex gap-6">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="shareInitiatives"
+                                                            value="Yes"
+                                                            checked={formData.shareInitiatives === 'Yes'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>Yes</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="shareInitiatives"
+                                                            value="No"
+                                                            checked={formData.shareInitiatives === 'No'}
+                                                            onChange={handleInputChange}
+                                                            className="accent-black cursor-pointer"
+                                                        />
+                                                        <span className='text-sm text-gray-700'>No</span>
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Agreement Checkbox */}
-                                        <div className="mb-6">
-                                            <label className="flex items-start cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={agreeToReview}
-                                                    onChange={(e) => setAgreeToReview(e.target.checked)}
-                                                    className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
-                                                />
-                                                <span className="ml-3 text-sm text-gray-800">
-                                                    I agree that my information may be used to review my application.
-                                                </span>
-                                            </label>
-                                            {errors.agreeToReview && (
-                                                <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
-                                            )}
-                                        </div>
+                                    </div>
 
-                                        {/* Cancel and Submit Buttons */}
-                                        <div className="flex gap-4">
-                                            <button onClick={handleCancel}
-                                                className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
-                                                Cancel
-                                            </button>
-                                            <button onClick={handleSubmit}
-                                                type="button" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
-                                                Submit
-                                            </button>
+                                    {/* Your Message Section */}
+                                    <div className="bg-white rounded-lg border border-gray-200 mb-6">
+                                        <h2 className="p-6 bg-gray-50 text-sm font-bold text-black rounded-lg">Your Message</h2>
+
+                                        <div className="p-6">
+                                            <label className="block mb-3 text-black">
+                                                In a few words, tell us about your organization and mission
+                                            </label>
+                                            <div className="relative">
+                                                <textarea
+                                                    name="shelterMessage"
+                                                    value={formData.shelterMessage}
+                                                    onChange={handleInputChange}
+                                                    placeholder="In a few words, tell us about your organization..."
+                                                    maxLength={250}
+                                                    rows={4}
+                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                                                />
+                                                <div className="text-right text-gray-500 mt-1">
+                                                    {formData.shelterMessage?.length || 0}/250 characters
+                                                </div>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    {/* Agreement Checkbox */}
+                                    <div className="mb-6">
+                                        <label className="flex items-start cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={agreeToReview}
+                                                onChange={(e) => {
+                                                    setAgreeToReview(e.target.checked);
+                                                    if (errors.agreeToReview) {
+                                                        setErrors({ ...errors, agreeToReview: '' });
+                                                    }
+                                                }}
+                                                className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                                            />
+                                            <span className="ml-3 text-sm text-gray-800">
+                                                I agree that my information may be used to review my application.
+                                            </span>
+                                        </label>
+                                        {errors.agreeToReview && (
+                                            <p className="text-red-500 text-xs mt-1">{errors.agreeToReview}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Cancel and Submit Buttons */}
+                                    <div className="flex gap-4">
+                                        <button onClick={handleCancel}
+                                            className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
+                                            Cancel
+                                        </button>
+                                        <button onClick={handleSubmit}
+                                            type="button"
+                                            className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
+                                            Submit
+                                        </button>
                                     </div>
                                 </div>
                             </div>
