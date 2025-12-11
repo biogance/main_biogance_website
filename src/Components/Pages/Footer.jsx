@@ -100,7 +100,7 @@ export default function Footer() {
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
-                      placeholder="eg: john_doe@gmail.com"
+                      placeholder="john_doe@gmail.com"
                       className="flex-1 min-w-0 bg-[#393939] border border-[#393939] text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm rounded-xl placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
                     />
                     <button className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal rounded-xl hover:bg-black transition whitespace-nowrap">

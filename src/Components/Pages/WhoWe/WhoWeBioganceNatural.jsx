@@ -97,10 +97,10 @@ export default function WhoWeBioganceNatural() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto bg-white text-gray-900 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg">
+            <button className="w-full cursor-pointer sm:w-auto bg-white text-gray-900 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg">
               Shop Now
             </button>
-            <button className="w-full sm:w-auto bg-transparent text-white px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold border-2 border-white rounded-lg hover:bg-white/10 transition-all duration-200">
+            <button className="w-full cursor-pointer sm:w-auto bg-transparent text-white px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold border-2 border-white rounded-lg hover:bg-white/10 transition-all duration-200">
               Discover
             </button>
           </div>

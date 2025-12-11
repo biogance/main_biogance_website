@@ -32,6 +32,14 @@ export default function Navbar() {
 
   return (
     <>
+    {/* Backdrop overlay */}
+    {isMobileMenuOpen && (
+      <div 
+        className="fixed inset-0  z-40 xl:hidden"style={{backgroundColor:"rgba(0,0,0,0.5)"}}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+    )}
+    
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
       <div className="w-full mx-auto px-4 sm:px-6 h-full">
         <div className="relative flex items-center justify-between h-full">
@@ -41,7 +49,7 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-gray-600 hover:text-gray-900"
             >
-              {isMobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <FiX className="w-6 h-6 cursor-pointer" /> : <FiMenu className="w-6 h-6 cursor-pointer" />}
             </button>
           </div>
 
