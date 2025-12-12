@@ -9,7 +9,7 @@ const logoImage = '/logo.svg';
 const navLinks = [
   { href: '#', text: 'Our Laboratory' },
   { href: '#', text: 'Our Expert Advice' },
-  { href: '/proNavbar', text: 'Pro' },
+  { href: '/navPro', text: 'Pro' },
 ];
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
