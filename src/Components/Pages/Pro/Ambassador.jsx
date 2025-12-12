@@ -473,7 +473,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - First Name and Last Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     First Name*
@@ -522,7 +522,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Email and City/Region */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Email*
@@ -972,7 +972,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - First Name and Last Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     First Name*
@@ -1022,7 +1022,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Email and City/Region */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Email*
@@ -1134,7 +1134,7 @@ export default function BioganceAmbassadorForm() {
                                                 </div>
 
                                                 {/* Breed Name and Main Breed(s) */}
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                                     <div>
                                                         <label className="block text-xs font-medium text-gray-900 mb-2">
                                                             Breed Name
@@ -1350,7 +1350,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - First Name and Last Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     First Name*
@@ -1387,7 +1387,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Email and City/Region */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Email*
@@ -1641,7 +1641,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - Organization Name and Contact Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Name of Organization/Shelter*
@@ -1690,7 +1690,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Email and City/Region */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Professional email address*
@@ -2198,7 +2198,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - First Name and Last Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     First Name*
@@ -2292,7 +2292,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Clinic Name and Email */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Name of Clinic/Practice/Organization
@@ -2682,7 +2682,7 @@ export default function BioganceAmbassadorForm() {
 
                                     <div className="p-6 space-y-5">
                                         {/* First Row - Organization Name and Contact Name */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Name of Organization/Shelter*
@@ -2731,7 +2731,7 @@ export default function BioganceAmbassadorForm() {
                                         </div>
 
                                         {/* Second Row - Email and City/Region */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
                                                 <label className="block text-sm font-lg text-black mb-2">
                                                     Professional email address*

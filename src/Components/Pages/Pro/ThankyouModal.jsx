@@ -1,8 +1,16 @@
 "use client"
-import Image from "next/image";
-import ThankYou from "../../../../public/thankyouPic.png"
+import { useState } from 'react';
 
 export default function ThankYouModal({ onClose }) {
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+        }, 350); // Match animation duration
+    };
+
     return (
         <>
             <style jsx>{`
@@ -15,54 +23,79 @@ export default function ThankYouModal({ onClose }) {
                     }
                 }
 
-                @keyframes slideDown {
+                @keyframes fadeOut {
+                    from {
+                        opacity: 1;
+                    }
+                    to {
+                        opacity: 0;
+                    }
+                }
+
+                @keyframes zoomIn {
                     from {
                         opacity: 0;
-                        transform: translateY(-50px);
+                        transform: scale(0.8);
                     }
                     to {
                         opacity: 1;
-                        transform: translateY(0);
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes zoomOut {
+                    from {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: scale(0.8);
                     }
                 }
 
                 .animate-fadeIn {
-                    animation: fadeIn 0.3s ease-out;
+                    animation: fadeIn 0.25s ease-out forwards;
                 }
 
-                .animate-slideDown {
-                    animation: slideDown 0.4s ease-out;
+                .animate-fadeOut {
+                    animation: fadeOut 0.25s ease-in forwards;
+                }
+
+                .animate-zoomIn {
+                    animation: zoomIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+
+                .animate-zoomOut {
+                    animation: zoomOut 0.35s ease-in forwards;
                 }
             `}</style>
 
-            <div className="fixed inset-0 z-50 bg-black/50 bg-opacity-50 flex items-center justify-center p-4 animate-fadeIn">
-                <div className="bg-white rounded-3xl max-w-md w-full p-8 relative animate-slideDown">
-                    {/* Close Button (X) */}
-                    
-
+            <div className={`fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}>
+                <div className={`bg-white rounded-3xl max-w-md w-full p-8 relative ${isClosing ? 'animate-zoomOut' : 'animate-zoomIn'}`}>
                     {/* Illustration */}
                     <div className="flex justify-center mb-6">
-                        <Image
-                            src={ThankYou}
+                        <img
+                            src="/thankyouPic.png"
                             alt="Laboratory workers"
-                            className="w-full h-[300px] object-cover"
+                            className="w-[200px] h-[300px] object-fit"
                         />
                     </div>
 
                     {/* Text content */}
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">
                             Thank you for your request!
                         </h2>
-                        <p className="text-gray-600 text-sm leading-relaxed">
+                        <p className="text-gray-600 text-xs leading-relaxed">
                             Our commercial team will review your information and contact you soon to finalize your reseller or distributor account.
                         </p>
                     </div>
 
                     {/* Button */}
                     <button
-                        onClick={onClose}
-                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-colors duration-200 cursor-pointer "
+                        onClick={handleClose}
+                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 rounded-xl transition-colors duration-200 cursor-pointer"
                     >
                         Got It!
                     </button>
@@ -71,3 +104,4 @@ export default function ThankYouModal({ onClose }) {
         </>
     );
 }
+
