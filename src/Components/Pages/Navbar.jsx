@@ -30,15 +30,23 @@ export default function Navbar() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
+  const handleMobileMenuToggle = () => {
+    if (isMobileMenuOpen) {
+      setIsProductsOpen(false);
+    }
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <>
     {/* Backdrop overlay */}
-    {isMobileMenuOpen && (
-      <div 
-        className="fixed inset-0  z-40 xl:hidden"style={{backgroundColor:"rgba(0,0,0,0.5)"}}
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
-    )}
+    <div 
+      className={`fixed inset-0 z-40 xl:hidden transition-opacity duration-300 ${
+        isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}
+      style={{backgroundColor:"rgba(0,0,0,0.5)"}}
+      onClick={handleMobileMenuToggle}
+    />
     
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
       <div className="w-full mx-auto px-4 sm:px-6 h-full">
@@ -46,10 +54,14 @@ export default function Navbar() {
           {/* Mobile Menu Button & Logo (for mobile and iPad) */}
           <div className="flex items-center xl:hidden">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-gray-600 hover:text-gray-900"
+              onClick={handleMobileMenuToggle}
+              className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
             >
-              {isMobileMenuOpen ? <FiX className="w-6 h-6 cursor-pointer" /> : <FiMenu className="w-6 h-6 cursor-pointer" />}
+              {isMobileMenuOpen ? (
+                <FiX className="w-6 h-6 cursor-pointer" />
+              ) : (
+                <FiMenu className="w-6 h-6 cursor-pointer" />
+              )}
             </button>
           </div>
 
@@ -120,58 +132,78 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu (for mobile and iPad) */}
-      <div
-          className={`xl:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-screen border-t border-gray-200' : 'max-h-0'
+      {/* Mobile Menu with Ultra Smooth Animation */}
+      <div 
+        className={`xl:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${
+          isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div 
+          className={`px-4 py-4 space-y-4 transform transition-all duration-500 ease-in-out ${
+            isMobileMenuOpen ? 'translate-y-0' : '-translate-y-6'
           }`}
         >
-          <div className="px-4 py-4 space-y-4 bg-white">
-            <div>
-              <button
-                onClick={() => setIsProductsOpen(!isProductsOpen)}
-                className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400]"
+          <div>
+            <button
+              onClick={() => setIsProductsOpen(!isProductsOpen)}
+              className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400] hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
+            >
+              <div className="flex items-center space-x-2">
+                <img src="/Menu.svg" className="w-5 h-5" alt="Menu" />
+                <span>Our Products</span>
+              </div>
+              <FiChevronDown
+                className={`w-4 h-4 transition-transform duration-400 ease-in-out ${
+                  isProductsOpen ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+            </button>
+            
+            {/* Products Dropdown with Smooth Animation */}
+            <div 
+              className={`overflow-hidden transition-all duration-400 ease-in-out ${
+                isProductsOpen ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
+              }`}
+            >
+              <div 
+                className={`pl-7 pt-2 space-y-2 transform transition-all duration-400 ease-in-out ${
+                  isProductsOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                }`}
               >
-                <div className="flex items-center space-x-2">
-                  <img src="/Menu.svg" className="w-5 h-5" alt="Menu" />
-                  <span>Our Products</span>
-                </div>
-                <FiChevronDown
-                  className={`w-4 h-4 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-              {isProductsOpen && (
-                <div className="pl-7 pt-2 space-y-2">
-                  <img src="/france.svg" alt="France" className="w-8 h-6" />
-                </div>
-              )}
-            </div>
-
-            {navLinks.map((link) => (
-              <a key={link.text} href={link.href} className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600">
-                {link.text}
-              </a>
-            ))}
-
-            <div className="pt-4 border-t border-gray-200 flex items-center space-x-3">
-              <button className="flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C]">
-                <span>EN</span>
-                <FiChevronDown className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]"
-              >
-                <FiSearch className="w-5 h-5" />
-              </button>
-              <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]">
-                <FiUser className="w-5 h-5" />
-              </button>
-              <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C]">
-                <FiHeart className="w-5 h-5" />
-              </button>
+                <img src="/france.svg" alt="France" className="w-8 h-6" />
+              </div>
             </div>
           </div>
+
+          {navLinks.map((link) => (
+            <a 
+              key={link.text} 
+              href={link.href} 
+              className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600 hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
+            >
+              {link.text}
+            </a>
+          ))}
+
+          <div className="pt-4 border-t border-gray-200 flex items-center space-x-3">
+            <button className="flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+              <span>EN</span>
+              <FiChevronDown className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setIsSearchModalOpen(true)}
+              className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+            >
+              <FiSearch className="w-5 h-5" />
+            </button>
+            <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+              <FiUser className="w-5 h-5" />
+            </button>
+            <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+              <FiHeart className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
     </nav>
 

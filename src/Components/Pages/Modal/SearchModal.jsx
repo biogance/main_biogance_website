@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IoClose, IoSearch } from 'react-icons/io5';
-import SearchBar from './SearchBar'; // Assuming SearchBar is in the same folder
+import styled, { keyframes } from 'styled-components';
+import SearchBar from './SearchBar';
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
   return (
@@ -12,6 +13,93 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
     />
   );
 };
+
+// Shimmer animation
+const shimmer = keyframes`
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+`;
+
+// Spinner animation
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+// Base Shimmer component
+const ShimmerBase = styled.div`
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: ${shimmer} 1.5s infinite;
+`;
+
+// Spinner component
+const Spinner = styled.div`
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #000000;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: ${spin} 0.8s linear infinite;
+`;
+
+// Loading Product Item Component
+const LoadingProductItem = () => (
+  <div className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors">
+    {/* Image area with spinner */}
+    <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <Spinner />
+    </div>
+    
+    <div className="flex-1 min-w-0 flex flex-col justify-center">
+      {/* Product name shimmer */}
+      <ShimmerBase 
+        style={{ 
+          width: '100%',
+          height: '14px',
+          marginBottom: '8px',
+          borderRadius: '4px'
+        }} 
+      />
+      
+      {/* Size badge shimmer */}
+      <ShimmerBase 
+        style={{ 
+          width: '60px',
+          height: '24px',
+          borderRadius: '9999px',
+          marginBottom: '8px'
+        }} 
+      />
+      
+      {/* Price shimmer */}
+      <div className="flex items-center gap-2">
+        <ShimmerBase 
+          style={{ 
+            width: '50px',
+            height: '14px',
+            borderRadius: '4px'
+          }} 
+        />
+        <ShimmerBase 
+          style={{ 
+            width: '60px',
+            height: '16px',
+            borderRadius: '4px'
+          }} 
+        />
+      </div>
+    </div>
+  </div>
+);
 
 // Sample Data
 const recentSearches = [
@@ -128,34 +216,42 @@ const ProductItem = ({ product }) => (
   </div>
 );
 
-const ProductList = ({ title, products }) => (
+const ProductList = ({ title, products, isLoading }) => (
   <div>
     <h3 className="text-lg font-semibold mb-6 text-gray-900">{title}</h3>
     <div className="space-y-5">
-      {products.map((product) => (
-        <ProductItem key={product.id} product={product} />
-      ))}
+      {isLoading ? (
+        // Show 3 loading items
+        Array.from({ length: 3 }).map((_, index) => (
+          <LoadingProductItem key={index} />
+        ))
+      ) : (
+        products.map((product) => (
+          <ProductItem key={product.id} product={product} />
+        ))
+      )}
     </div>
   </div>
 );
 
+
+
 export const SearchModal = ({ isOpen, onClose }) => {
-  // The App component is just for demonstration and should be removed
-  // if this modal is used within a larger application structure.
-  const App = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-        >
-          Open Search
-        </button>
-        <SearchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      </div>
-    );
-  };
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset loading state when modal opens
+      setIsLoading(true);
+      
+      // Simulate loading for 3 seconds
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   return (
     <div
@@ -194,14 +290,22 @@ export const SearchModal = ({ isOpen, onClose }) => {
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Popular Products */}
-            <ProductList title="Popular Products" products={popularProducts} />
+            <ProductList 
+              title="Popular Products" 
+              products={popularProducts}
+              isLoading={isLoading}
+            />
 
             {/* Best Selling */}
-            <ProductList title="Best Selling" products={bestSellingProducts} />
+            <ProductList 
+              title="Best Selling" 
+              products={bestSellingProducts}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 };
-export default SearchModal;
+

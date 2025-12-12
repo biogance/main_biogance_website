@@ -1,9 +1,136 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
+// Loading Card Component with inline styles
+const LoadingCard = () => (
+  <div className="group">
+    {/* Shimmer Card Div */}
+    <div 
+      className="rounded-2xl border border-[#E3E3E3] p-3 relative mb-3" 
+      style={{ 
+        backgroundColor: '#f9fafb',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite'
+      }}
+    >
+      {/* Discount Badge Shimmer */}
+      <div 
+        style={{ 
+          position: 'absolute',
+          top: '12px',
+          left: '12px',
+          width: '60px',
+          height: '24px',
+          borderRadius: '6px',
+          zIndex: 10,
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }} 
+      />
+
+      {/* Like Button Shimmer */}
+      <div 
+        style={{ 
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          width: '32px',
+          height: '32px',
+          borderRadius: '12px',
+          zIndex: 10,
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }} 
+      />
+
+      {/* Product Image with Spinner */}
+      <div className="relative h-40 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
+        <div 
+          style={{
+            border: '2px solid #f3f3f3',
+            borderTop: '2px solid #000000',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            animation: 'spin 0.8s linear infinite'
+          }}
+        />
+      </div>
+
+      {/* Dots Indicator Shimmer */}
+      <div className="flex justify-center gap-1">
+        {[1, 2, 3].map((idx) => (
+          <div
+            key={idx}
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+              backgroundSize: '200px 100%',
+              animation: 'shimmer 1.5s infinite'
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    {/* Product Info Shimmer */}
+    <div>
+      <div 
+        style={{ 
+          width: '100%',
+          height: '14px',
+          marginBottom: '8px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }} 
+      />
+      <div 
+        style={{ 
+          width: '70%',
+          height: '14px',
+          marginBottom: '12px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }} 
+      />
+
+      <div className="flex items-center justify-between gap-2">
+        <div 
+          style={{ 
+            width: '60px',
+            height: '24px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }} 
+        />
+        <div 
+          style={{ 
+            width: '100px',
+            height: '40px',
+            borderRadius: '8px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }} 
+        />
+      </div>
+    </div>
+  </div>
+);
 
 const LandingCards = ({ product, onNext, onPrev, showNav }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -112,6 +239,7 @@ const LandingCards = ({ product, onNext, onPrev, showNav }) => {
 
 export default function PopularProducts({ title = 'Popular Products' }) {
   const scrollContainerRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const products = [
     {
@@ -120,7 +248,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '15.90',
       originalPrice: null,
       discount: '20% Off',
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
@@ -134,7 +262,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '12.60',
       originalPrice: null,
       discount: '20% Off',
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop",
@@ -148,7 +276,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '11.25',
       originalPrice: '35.30',
       discount: null,
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=400&h=400&fit=crop"
@@ -161,9 +289,9 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '12.60',
       originalPrice: null,
       discount: '20% Off',
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
       images: [
-        "truck.svg",
+        "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=400&h=400&fit=crop"
       ],
@@ -175,7 +303,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '18.90',
       originalPrice: '24.90',
       discount: '20% Off',
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&h=400&fit=crop"
@@ -188,15 +316,55 @@ export default function PopularProducts({ title = 'Popular Products' }) {
       price: '14.50',
       originalPrice: null,
       discount: null,
-      image:"truck.svg",
+      image:"https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
-        "earth.svg",
+        "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop"
       ],
       liked: false
     }
   ];
+
+  useEffect(() => {
+    // Preload all product images
+    const imageUrls = products.flatMap(product => product.images);
+    let loadedCount = 0;
+    const totalImages = imageUrls.length;
+
+    // Create image objects to preload
+    const imagePromises = imageUrls.map((url) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedCount++;
+          resolve();
+        };
+        img.onerror = () => {
+          loadedCount++;
+          resolve();
+        };
+        img.src = url;
+      });
+    });
+
+    // Wait for all images to load or minimum 2 seconds
+    Promise.all([
+      Promise.all(imagePromises),
+      new Promise(resolve => setTimeout(resolve, 2000))
+    ]).then(() => {
+      setIsLoading(false);
+    });
+
+    // Fallback: Hide loading after 5 seconds max
+    const fallbackTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+    };
+  }, []);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -214,6 +382,24 @@ export default function PopularProducts({ title = 'Popular Products' }) {
   return (
     <div className="w-full mx-auto bg-white">
       <style jsx global>{`
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: 200px 0;
+          }
+        }
+        
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+        
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -250,17 +436,28 @@ export default function PopularProducts({ title = 'Popular Products' }) {
           ref={scrollContainerRef}
           className="flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"
         >
-          {products.map((product) => (
-            <div 
-              key={product.id} 
-              className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"
-            >
-              <LandingCards
-                product={product}
-                showNav={true}
-              />
-            </div>
-          ))}
+          {isLoading
+            ? // Show loading cards with spinner
+              Array.from({ length: 6 }).map((_, index) => (
+                <div 
+                  key={index} 
+                  className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"
+                >
+                  <LoadingCard />
+                </div>
+              ))
+            : // Show actual products
+              products.map((product) => (
+                <div 
+                  key={product.id} 
+                  className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"
+                >
+                  <LandingCards
+                    product={product}
+                    showNav={true}
+                  />
+                </div>
+              ))}
         </div>
       </div>
     </div>
