@@ -381,7 +381,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
 
   return (
     <div className="w-full mx-auto bg-white">
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
             background-position: -200px 0;
@@ -390,7 +390,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
             background-position: 200px 0;
           }
         }
-        
+       
         @keyframes spin {
           0% {
             transform: rotate(0deg);
@@ -399,7 +399,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
             transform: rotate(360deg);
           }
         }
-        
+       
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -407,7 +407,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
-      `}</style>
+      `}} />
 
       <div className="px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10">
         {/* Header */}
