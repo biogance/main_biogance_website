@@ -94,7 +94,7 @@ export default function LandingCategories() {
 
   return (
     <section className="bg-gray-100 py-16 px-6">
-      <style jsx global>{`
+       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
             background-position: -200px 0;
@@ -120,7 +120,7 @@ export default function LandingCategories() {
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
-      `}</style>
+      `}} />
 
       <div className="max-w-7xl mx-auto">
         <h2 className="text-center text-3xl font-semibold text-black mb-12">
