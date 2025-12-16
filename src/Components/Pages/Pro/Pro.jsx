@@ -137,13 +137,13 @@ export function Pro() {
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <Link href="/distributor"  >
+                                    <Link href="/Distributor"  >
                                         <button
                                             className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             Distributor Application
                                         </button>
                                     </Link>
-                                    <Link href="/reseller"  >
+                                    <Link href="/Reseller"  >
                                         <button className="px-6 py-3 bg-white text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             Reseller Application
                                         </button>
@@ -207,7 +207,7 @@ export function Pro() {
                                         trust, passion, and shared values: respect for animals and the environment, their
                                         well-being, quality, and innovation.
                                     </p>
-                                    <Link href="/ambassador"  >
+                                    <Link href="/Ambassador"  >
                                         <button className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             Become an Ambassador
                                         </button>
