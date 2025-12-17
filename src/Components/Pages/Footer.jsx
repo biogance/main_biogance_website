@@ -257,7 +257,7 @@ export default function Footer() {
             <div>
               <h3 className="font-semibold text-white mb-4 text-md">Our Laboratory</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
-                <li><Link href="/who-we" className="hover:text-white transition">Who are we?</Link></li>
+                <li><Link href="/who-are-we" className="hover:text-white transition">Who are we?</Link></li>
                 <li><a href="#" className="hover:text-white transition">Nos engagements</a></li>
                 <li><Link href="/certifications" className="hover:text-white transition">Nos certifications</Link></li>
                 <li><a href="#" className="hover:text-white transition">Our expert tips</a></li>
