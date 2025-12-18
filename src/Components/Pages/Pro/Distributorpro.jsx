@@ -3,8 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import ThankYouModal from './ThankyouModal';
 
 export function DistributorForm() {
+    const router = useRouter();
+    const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         companyName: '',
         firstName: '',
@@ -186,9 +191,9 @@ export function DistributorForm() {
 
     // Get selected country
     const getCountryByCode = (code) => {
-        return countries.find(c => c.code === code && c.iso === 'pk') || 
-               countries.find(c => c.code === code) || 
-               countries[0];
+        return countries.find(c => c.code === code && c.iso === 'pk') ||
+            countries.find(c => c.code === code) ||
+            countries[0];
     };
 
     const selectedCountry = getCountryByCode(formData.countryCode);
@@ -212,12 +217,49 @@ export function DistributorForm() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+
+    const [errors, setErrors] = useState({});
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
-    };
 
-    const handleCancel = () => {
+        // Clear previous errors
+        setErrors({});
+
+        // Validate required fields
+        const newErrors = {};
+
+        if (!formData.companyName || formData.companyName.trim() === '') {
+            newErrors.companyName = 'Company name is required';
+        }
+
+        if (!formData.firstName || formData.firstName.trim() === '') {
+            newErrors.firstName = 'First name is required';
+        }
+
+        if (!formData.businessEmail || formData.businessEmail.trim() === '') {
+            newErrors.businessEmail = 'Business email is required';
+        } else {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.businessEmail)) {
+                newErrors.businessEmail = 'Please enter a valid email address';
+            }
+        }
+
+        if (!formData.registrationNumber || formData.registrationNumber.trim() === '') {
+            newErrors.registrationNumber = 'Registration number is required';
+        }
+
+        // Check if there are any errors
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        // Sab kuch sahi hai, modal show karo
+        console.log('Form submitted:', formData);
+        setShowModal(true);
         setFormData({
             companyName: '',
             firstName: '',
@@ -238,14 +280,36 @@ export function DistributorForm() {
             message: ''
         });
     };
+    const handleCancel = () => {
+        setFormData({
+            companyName: '',
+            firstName: '',
+            businessEmail: '',
+            countryCode: '+92',
+            businessPhone: '',
+            registrationNumber: '',
+            website: '',
+            jobTitle: '',
+            salesReps: '',
+            address: '',
+            country: '',
+            city: '',
+            street: '',
+            zipCode: '',
+            brand: '',
+            geographicCoverage: '',
+            message: ''
+        });
+        router.back();
+    };
 
     return (
         <>
-            <Navbar/>
+            <Navbar />
             <div className="max-w-4xl mx-auto px-6 py-16">
                 {/* Form Header */}
                 <div className="mb-8">
-                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3' }}>
+                    <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
                         Become a Biogance Distributor
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
@@ -267,11 +331,20 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. Pawsome Inc."
                                 value={formData.companyName}
-                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, companyName: e.target.value });
+                                    // Clear error when user starts typing
+                                    if (errors.companyName) {
+                                        setErrors({ ...errors, companyName: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.companyName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -281,11 +354,19 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. Jane Smith"
                                 value={formData.firstName}
-                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, firstName: e.target.value });
+                                    if (errors.firstName) {
+                                        setErrors({ ...errors, firstName: '' });
+                                    }
+                                }}
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.firstName && (
+                                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                            )}
                         </div>
                     </div>
 
@@ -299,11 +380,19 @@ export function DistributorForm() {
                                 type="email"
                                 placeholder="e.g. sales@example.com"
                                 value={formData.businessEmail}
-                                onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, businessEmail: e.target.value });
+                                    if (errors.businessEmail) {
+                                        setErrors({ ...errors, businessEmail: '' });
+                                    }
+                                }}
+                                className={`w-full placeholder:text-gray-500 px-4 text-black py-3 bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.businessEmail && (
+                                <p className="mt-1 text-sm text-red-600">{errors.businessEmail}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -312,7 +401,7 @@ export function DistributorForm() {
                             <div className="flex gap-2">
                                 <div className="relative" ref={dropdownRef}>
                                     <div
-                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 rounded-md text-black cursor-pointer hover:bg-gray-100 transition-colors"
                                         onClick={() => setIsOpen(!isOpen)}
                                     >
                                         <img
@@ -334,7 +423,7 @@ export function DistributorForm() {
                                                     placeholder="Search country..."
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className="w-full px-3 py-2 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
+                                                    className="w-full ... placeholder:text-gray-500 px-3 py-2  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             </div>
@@ -342,7 +431,7 @@ export function DistributorForm() {
                                                 {filteredCountries.map((country, index) => (
                                                     <div
                                                         key={`${country.iso}-${index}`}
-                                                        className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        className="flex items-center text-black  gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer "
                                                         onClick={() => {
                                                             setFormData({ ...formData, countryCode: country.code });
                                                             setIsOpen(false);
@@ -373,7 +462,7 @@ export function DistributorForm() {
                                     placeholder="e.g. 555-123-4567"
                                     value={formData.businessPhone}
                                     onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-                                    className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    className="flex-1 px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                     style={{ fontSize: '14px' }}
                                 />
                             </div>
@@ -390,11 +479,19 @@ export function DistributorForm() {
                                 type="text"
                                 placeholder="e.g. 123456789"
                                 value={formData.registrationNumber}
-                                onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, registrationNumber: e.target.value });
+                                    if (errors.registrationNumber) {
+                                        setErrors({ ...errors, registrationNumber: '' });
+                                    }
+                                }}
+                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md  placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition
+                                    }`}
                                 style={{ fontSize: '14px' }}
-                                required
                             />
+                            {errors.registrationNumber && (
+                                <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
@@ -405,7 +502,7 @@ export function DistributorForm() {
                                 placeholder="e.g. www.yourwebsite.com"
                                 value={formData.website}
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -422,7 +519,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Sales Manager"
                                 value={formData.jobTitle}
                                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -435,7 +532,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 10"
                                 value={formData.salesReps}
                                 onChange={(e) => setFormData({ ...formData, salesReps: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -451,7 +548,7 @@ export function DistributorForm() {
                             placeholder="e.g. 123 Main Street, Suite 100"
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -467,7 +564,7 @@ export function DistributorForm() {
                                 placeholder="e.g. United States"
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -480,7 +577,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Anytown"
                                 value={formData.city}
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -497,7 +594,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 123 Main Street"
                                 value={formData.street}
                                 onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -510,7 +607,7 @@ export function DistributorForm() {
                                 placeholder="e.g. 12345"
                                 value={formData.zipCode}
                                 onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -527,7 +624,7 @@ export function DistributorForm() {
                                 placeholder="e.g. Biogance/Ekinat"
                                 value={formData.brand}
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -540,7 +637,7 @@ export function DistributorForm() {
                                 placeholder="e.g. North America"
                                 value={formData.geographicCoverage}
                                 onChange={(e) => setFormData({ ...formData, geographicCoverage: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 style={{ fontSize: '14px' }}
                             />
                         </div>
@@ -556,7 +653,7 @@ export function DistributorForm() {
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                            className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -566,6 +663,7 @@ export function DistributorForm() {
                         <button
                             type="button"
                             onClick={handleCancel}
+
                             className="flex-1 px-8 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
@@ -573,6 +671,7 @@ export function DistributorForm() {
                         </button>
                         <button
                             type="submit"
+                            onClick={handleSubmit}
                             className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
@@ -581,7 +680,11 @@ export function DistributorForm() {
                     </div>
                 </form>
             </div>
-            <Footer/>
+            {/* Thank You Modal */}
+            {showModal && (
+                <ThankYouModal onClose={() => setShowModal(false)} />
+            )}
+            <Footer />
         </>
     );
 }

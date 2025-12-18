@@ -69,15 +69,15 @@ export default function WhoWeBioganceHero() {
                 <div className="flex items-start gap-3">
                   <img src="tick.svg" alt="" className="w-6 h-6" />
                   <span className="text-sm sm:text-base text-gray-700">Award-Winning & Globally Trusted</span>
-                </div>
+                </div> 
               </div>
               
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button className="bg-black text-white rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors duration-200 w-full sm:w-auto">
+                <button className="bg-black cursor-pointer text-white rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors duration-200 w-full sm:w-auto">
                   Shop Now
                 </button>
-                <button className="bg-white text-black rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold border-2 border-black hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto">
+                <button className="bg-white cursor-pointer text-black rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold border-2 border-black hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto">
                   Discover
                 </button>
               </div>

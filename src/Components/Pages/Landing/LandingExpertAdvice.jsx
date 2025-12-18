@@ -26,7 +26,7 @@ export default function LandingExpertAdvice() {
       date: "July 28, 2025",
       tags: ["Behavior"],
       title: "What is pawing in cats?",
-      description: "In fact, pawing is innate in cats. At birth, this action is essential to the kitten's survival. It stimulates the mother's milk supply and helps create a strong bond between mother and kitten.",
+      description: "In fact, pawing is innate in cats. At birth, this action is essential to the kitten's survival. It stimulates the mother's milk supply and helps create a strong bond between mother and kitten. In fact, pawing is innate in cats.",
       isFavorite: false,
       isExpanded: false,
     },

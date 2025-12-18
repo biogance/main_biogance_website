@@ -2,6 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaInstagram, FaYoutube, FaLinkedinIn, FaTwitter, FaTiktok } from 'react-icons/fa';
 import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
+import { LuFacebook } from "react-icons/lu";
+import { SlSocialFacebook, SlSocialLinkedin, SlSocialYoutube } from "react-icons/sl";
+import { PiTiktokLogo, PiTwitterLogo } from 'react-icons/pi';
+import { BsTiktok } from "react-icons/bs";
+
+
+
+
 
 export default function Footer() {
   return (
@@ -13,7 +21,7 @@ export default function Footer() {
           <div className="lg:col-span-3 space-y-6 p-8 lg:pr-6">
             {/* Logo */}
             <div className="flex items-center gap-3">
-             <img src="logo2.svg" alt="" />
+             <img src="/logo2.svg" alt="Biogance Logo" />
             </div>
             
             {/* Description */}
@@ -45,23 +53,23 @@ export default function Footer() {
               <div>
                 <p className="text-sm text-gray-400 mb-2">@bioganceofficiel</p>
                 <div className="flex gap-2">
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="facebook.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                    <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="instagram.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                    <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="Youtube.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="YouTube" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                    <SlSocialYoutube className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="LinkdIn.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="LinkedIn" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                   <SlSocialLinkedin className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="Twiter.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="Twitter" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                    <PiTwitterLogo className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="tiktok.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                   <BsTiktok size={15} className="p-[0.9]  border border gray-200   text-[#E3E3E3] rounded-sm" />
                   </a>
                 </div>
               </div>
@@ -70,17 +78,17 @@ export default function Footer() {
               <div>
                 <p className="text-sm text-gray-400 mb-2">@ekinatofficiel</p>
                 <div className="flex gap-2">
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="facebook.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                     <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="instagram.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                    <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                    <img src="tiktok.svg" alt=""className="w-4 h-4" />
+                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <BsTiktok size={15} className="p-[0.9]  text-[#E3E3E3] border border gray-200   rounded-sm" />
                   </a>
                 </div>
-              </div>
+              </div> 
             </div>
 
             {/* Newsletter */}
@@ -92,7 +100,7 @@ export default function Footer() {
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
-                      placeholder="eg: john_doe@gmail.com"
+                      placeholder="john_doe@gmail.com"
                       className="flex-1 min-w-0 bg-[#393939] border border-[#393939] text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm rounded-xl placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
                     />
                     <button className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal rounded-xl hover:bg-black transition whitespace-nowrap">
@@ -107,11 +115,11 @@ export default function Footer() {
            <div className="pt-4">
   <p className="text-sm sm:text-base font-medium mb-3">Download App on Mobile</p>
   <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-2 sm:gap-3">
-    <a href="#" className="flex-shrink-0 w-fit">
-      <img src="play.svg" alt="Google Play" className="h-10 w-auto" />
+    <a href="#" className="flex-shrink-0 w-fit" aria-label="Download on Google Play">
+      <img src="/play.svg" alt="Google Play" className="h-10 w-auto" />
     </a>
-    <a href="#" className="flex-shrink-0 w-fit">
-      <img src="app.svg" alt="App Store" className="h-10 w-auto" />
+    <a href="#" className="flex-shrink-0 w-fit" aria-label="Download on the App Store">
+      <img src="/app.svg" alt="App Store" className="h-10 w-auto" />
     </a>
   </div>
 </div>
@@ -249,7 +257,7 @@ export default function Footer() {
             <div>
               <h3 className="font-semibold text-white mb-4 text-md">Our Laboratory</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
-                <li><Link href="/who-we" className="hover:text-white transition">Who are we?</Link></li>
+                <li><Link href="/who-are-we" className="hover:text-white transition">Who are we?</Link></li>
                 <li><a href="#" className="hover:text-white transition">Nos engagements</a></li>
                 <li><Link href="/certifications" className="hover:text-white transition">Nos certifications</Link></li>
                 <li><a href="#" className="hover:text-white transition">Our expert tips</a></li>

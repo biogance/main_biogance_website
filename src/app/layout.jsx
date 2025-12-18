@@ -5,13 +5,35 @@ import { ReduxProvider } from "../redux/provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Biogance",
+  title: "Biogance - Biogance",
   description: "Pioneers in Natural Pet Care",
-  // Add these lines for the favicon
   icons: {
-    icon: "/FF.svg",        // ← your SVG favicon
-    // optional: you can also add apple touch icon, etc.
-    // apple: "/logo.svg",
+    icon: "/FF.svg",
+  },
+
+  robots: {
+    index: false,
+    follow: false,
+  },
+  
+  openGraph: {
+    title: "Biogance - Biogance",
+    description: "Pioneers in Natural Pet Care",
+    images: [
+      {
+        url: "/og-image.jpg", 
+        width: 1200,
+        height: 630,
+        alt: "Biogance - Pioneers in Natural Pet Care",
+      },
+    ],
+  },
+ 
+  twitter: {
+    card: "summary_large_image",
+    title: "Biogance - Biogance",
+    description: "Pioneers in Natural Pet Care",
+    images: ["/fav.svg"], 
   },
 };
 
