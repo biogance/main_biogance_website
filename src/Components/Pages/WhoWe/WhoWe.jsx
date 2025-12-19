@@ -17,23 +17,18 @@ const WhoWe = () => {
       <main className="relative bg-white">
         <div className="relative w-full min-h-screen flex items-center justify-center">
           {/* Background Video */}
-         <div className="absolute inset-0 overflow-hidden">
-  <iframe
-    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-    src="https://www.youtube.com/embed/uxwk-YslZf0?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=uxwk-YslZf0"
-    title="YouTube video"
-    frameBorder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen
-    style={{ 
-      pointerEvents: 'none',
-      width: '177.77vh', // 16:9 aspect ratio
-      height: '56.25vw', // 16:9 aspect ratio
-      minWidth: '100%',
-      minHeight: '100%'
-    }}
-  />
-</div>
+          <div className="absolute inset-0 overflow-hidden">
+            <video
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-auto h-auto object-cover"
+              muted
+              autoPlay
+              loop
+              playsInline
+            >
+              <source src="/LandingVideo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
           
           {/* Dark Overlay - optional */}
           <div className="absolute inset-0 bg-black/40"></div>
@@ -51,7 +46,6 @@ const WhoWe = () => {
           </div> */}
         </div>
       </main>
-
 
       <WhoWeBioganceHero/>
       <WhoWeBioganceNatural/>

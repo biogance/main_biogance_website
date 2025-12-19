@@ -61,7 +61,7 @@ const ReviewCard = ({ name, date, review }) => {
       </div>
 
       {/* Review Text */}
-      <div>
+      <div className="flex-grow">
         <p className={`text-sm md:text-base text-gray-700 leading-relaxed transition-all duration-300 ${
           isExpanded ? 'mb-2 md:mb-3' : 'line-clamp-3 mb-2'
         }`}>
@@ -112,7 +112,7 @@ export default function LandingReview() {
             ref={scrollContainerRef}
             className="overflow-x-auto hide-scrollbar snap-x snap-mandatory"
           >
-            <div className="flex gap-3 md:gap-4 lg:gap-6 pb-4">
+            <div className="flex gap-3 md:gap-4 lg:gap-6 pb-4 items-start">
               {reviews.map((review, index) => (
                 <ReviewCard
                   key={index}

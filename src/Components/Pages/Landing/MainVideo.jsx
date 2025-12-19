@@ -19,19 +19,17 @@ const heroSlides = [
     url: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1920&q=80',
   },
   {
-  type: 'video',
-  url: 'https://www.youtube.com/embed/AaKL5eNmJc0?autoplay=1&mute=1&loop=1&playlist=AaKL5eNmJc0&controls=0&rel=0&modestbranding=1&playsinline=1',
-  isYouTube: true,
-},
+    type: 'video',
+    url: '/LandingVideo.mp4', // Apni video ka naam yahan daalein
+  },
   {
     type: 'image',
     url: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1920&q=80',
   },
-   {
-  type: 'video',
-  url: 'https://www.youtube.com/embed/AaKL5eNmJc0?autoplay=1&mute=1&loop=1&playlist=AaKL5eNmJc0&controls=0&rel=0&modestbranding=1&playsinline=1',
-  isYouTube: true,
-},
+  {
+    type: 'video',
+    url: '/LandingVideo.mp4', // Apni doosri video ka naam yahan daalein
+  },
   {
     type: 'image',
     url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1920&q=80',
@@ -62,7 +60,7 @@ export default function HeroSection() {
     if (!hasMultipleSlides) return;
 
     // For images: 2.5 seconds, for videos: approximately video duration (30 seconds as estimate)
-    const duration = isCurrentVideo ? 50000 : 2500;
+    const duration = isCurrentVideo ? 49000 : 2500;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -97,35 +95,19 @@ export default function HeroSection() {
         <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Image or Video */}
           {isCurrentVideo ? (
-            currentSlideData.isYouTube ? (
-              <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <iframe
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                  src={currentSlideData.url}
-                  title="YouTube video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ 
-                    pointerEvents: 'none',
-                    width: '100vw',
-                    height: '56.25vw', // 16:9 aspect ratio
-                    minHeight: '100vh',
-                    minWidth: '177.77vh', // 16:9 aspect ratio
-                  }}
-                />
-              </div>
-            ) : (
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                muted
-                autoPlay
-                loop
-                playsInline
-              >
-                <source src={currentSlideData.url} type="video/mp4" />
-              </video>
-            )
+            <video
+              key={currentSlideData.url}
+              className="absolute inset-0 w-full h-full object-cover"
+              muted
+              autoPlay
+              loop
+              playsInline
+              onError={(e) => console.error('Video error:', e)}
+              onLoadedData={() => console.log('Video loaded successfully')}
+            >
+              <source src={currentSlideData.url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           ) : (
             <div
               className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-all duration-700"

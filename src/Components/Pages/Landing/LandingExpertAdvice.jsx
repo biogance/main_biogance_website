@@ -76,7 +76,7 @@ export default function LandingExpertAdvice() {
     {
       id: 7,
       image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?q=80&w=800&auto=format&fit=crop",
-      category: "For Dogs",
+      category: "For Dog",
       date: "October 12, 2025",
       tags: ["Training"],
       title: "Puppy training basics",
@@ -182,14 +182,14 @@ export default function LandingExpertAdvice() {
             ref={scrollContainerRef}
             className="overflow-x-auto hide-scrollbar snap-x snap-mandatory"
           >
-            <div className="flex gap-3 md:gap-6 pb-4">
+            <div className="flex gap-3 md:gap-6 pb-4 items-start">
               {articles.map((article) => (
                 <article
                   key={article.id}
-                  className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)]"
+                  className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col"
                 >
                   {/* Image */}
-                  <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100">
+                  <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100 flex-shrink-0">
                     <img
                       src={article.image}
                       alt={article.title}
@@ -210,7 +210,7 @@ export default function LandingExpertAdvice() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-4 md:p-6 lg:p-7">
+                  <div className="p-4 md:p-6 lg:p-7 flex flex-col flex-grow">
                     <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium">
                       <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white">{article.category}</span>
                       <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white">{article.date}</span>
@@ -225,15 +225,17 @@ export default function LandingExpertAdvice() {
                       {article.title}
                     </h3>
 
-                    <p className={`text-xs md:text-sm text-gray-600 mb-4 md:mb-6 leading-relaxed transition-all duration-300 ${
-                      article.isExpanded ? '' : 'line-clamp-3'
-                    }`}>
-                      {article.description}
-                    </p>
+                    <div className="flex-grow mb-4 md:mb-6">
+                      <p className={`text-xs md:text-sm text-gray-600 leading-relaxed transition-all duration-300 ${
+                        article.isExpanded ? '' : 'line-clamp-3'
+                      }`}>
+                        {article.description}
+                      </p>
+                    </div>
 
                     <button 
                       onClick={() => toggleExpanded(article.id)}
-                      className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto"
+                      className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto mt-auto"
                     >
                       {article.isExpanded ? 'Show Less' : 'Continue Reading'}
                     </button>
