@@ -186,7 +186,7 @@ export default function LandingExpertAdvice() {
               {articles.map((article) => (
                 <article
                   key={article.id}
-                  className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-lg transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)]"
+                  className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)]"
                 >
                   {/* Image */}
                   <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100">

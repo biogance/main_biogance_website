@@ -146,7 +146,7 @@ export default function LandingCategories() {
                   return (
                     <div
                       key={index}
-                      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
+                      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
                     >
                       <Icon className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-gray-700 rounded-xl bg-[#F7F7F7] p-3" />
                       <p className="text-center text-xs sm:text-sm font-bold text-gray-600 whitespace-nowrap">

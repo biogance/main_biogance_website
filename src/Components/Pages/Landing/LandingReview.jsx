@@ -33,7 +33,7 @@ const ReviewCard = ({ name, date, review }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-[#E3E3E380] flex flex-col hover:shadow-lg transition-shadow duration-300 flex-shrink-0 w-[85vw] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] review-card snap-start">
+    <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-[#E3E3E380] flex flex-col hover:shadow-md transition-shadow duration-300 flex-shrink-0 w-[85vw] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] review-card snap-start">
       {/* Header */}
       <div className="flex items-start justify-between mb-3 md:mb-4">
         <div className="flex items-center gap-2 md:gap-3">
