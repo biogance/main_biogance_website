@@ -18,7 +18,7 @@ export function Pro() {
         <>
 
             {/* Hero Section */}
-            <div className="relative h-screen w-full ">
+            <div className="relative h-[500px] w-full">
                 <Navbar />
 
                 <div className="absolute inset-0">
@@ -36,15 +36,15 @@ export function Pro() {
                     </h1>
 
                     <div className="flex items-center gap-2 text-white text-xs sm:text-sm">
-                        <a href="/" className="hover:underline">Home</a>
+                        <Link href="/" className="hover:underline">Home</Link>
                         <span>/</span>
-                        <a href="/" className="underline">Pro</a>
+                        <a  className="underline">Pro</a>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-6 py-16">
+            <div className="max-w-8xl mx-auto px-6 py-16">
 
                 {/* Tabs */}
                 <div className="flex justify-center gap-4 mb-12 px-4">

@@ -96,7 +96,7 @@ export default function Commitments() {
 
 
            <div className="min-h-screen bg-white py-18 px-4">
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">

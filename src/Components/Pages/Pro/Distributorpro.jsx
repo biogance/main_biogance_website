@@ -254,6 +254,7 @@ export function DistributorForm() {
         // Check if there are any errors
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
