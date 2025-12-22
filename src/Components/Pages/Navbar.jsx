@@ -41,7 +41,7 @@ export default function Navbar() {
     <>
     {/* Backdrop overlay */}
     <div 
-      className={`fixed inset-0 z-40 xl:hidden transition-opacity duration-300 ${
+      className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
         isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
       style={{backgroundColor:"rgba(0,0,0,0.5)"}}
@@ -52,7 +52,7 @@ export default function Navbar() {
       <div className="w-full mx-auto px-4 sm:px-6 h-full">
         <div className="relative flex items-center justify-between h-full">
           {/* Mobile Menu Button & Logo (for mobile and iPad) */}
-          <div className="flex items-center xl:hidden">
+          <div className="flex items-center lg:hidden">
             <button
               onClick={handleMobileMenuToggle}
               className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
@@ -65,7 +65,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className="flex-1 flex items-center justify-center xl:items-stretch xl:justify-start">
+          <div className="flex-1 flex items-center justify-center lg:items-stretch lg:justify-start">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
               <ImageWithFallback
@@ -75,8 +75,8 @@ export default function Navbar() {
               />
             </Link>
   
-            {/* Center Navigation Links - Desktop Only (xl and above) */}
-            <div className="hidden xl:flex flex-1 items-center justify-center gap-4">
+            {/* Center Navigation Links - Desktop Only (lg and above) */}
+            <div className="hidden lg:flex flex-1 items-center justify-center gap-4">
               <button className="flex items-center gap-2 hover:text-gray-600 transition-colors p-2">
                 <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
                 <div className="text-left">
@@ -101,24 +101,24 @@ export default function Navbar() {
           
           {/* Right Side Icons */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-              <button className="hidden xl:flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden lg:flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
                 <span>EN</span>
                 <FiChevronDown className="w-4 h-4" />
               </button>
   
-              {/* SEARCH ICON - visible on desktop only (xl and above) */}
+              {/* SEARCH ICON - visible on desktop only (lg and above) */}
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="hidden xl:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+                className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
               >
                 <FiSearch className="w-5 h-5" />
               </button>
   
-              <button className="hidden xl:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
                 <FiUser className="w-5 h-5" />
               </button>
   
-              <button className="hidden xl:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
+              <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                 <FiHeart className="w-5 h-5" />
               </button>
   
@@ -134,7 +134,7 @@ export default function Navbar() {
 
       {/* Mobile Menu with Ultra Smooth Animation */}
       <div 
-        className={`xl:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${
+        className={`lg:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${
           isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
