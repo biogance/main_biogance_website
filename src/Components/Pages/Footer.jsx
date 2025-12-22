@@ -310,7 +310,7 @@ export default function Footer() {
               <a href="#" className="hover:text-gray-900 transition">Disclaimer for BIOGANCE</a>
               <a href="#" className="hover:text-gray-900 transition">Shipping & Return</a>
               <a href="#" className="hover:text-gray-900 transition">Privacy Policy</a>
-              <a href="#" className="hover:text-gray-900 transition">Terms & Conditions</a>
+              <Link href="/termsCondition" className="hover:text-gray-900 transition">Terms & Conditions</Link>
             </div>
           </div>
         </div>
