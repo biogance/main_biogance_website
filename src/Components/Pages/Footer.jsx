@@ -306,11 +306,11 @@ export default function Footer() {
             <div className="flex flex-wrap gap-5 justify-center ">
               <a href="#" className="hover:text-gray-900 transition">Conception</a>
               <a href="#" className="hover:text-gray-900 transition">Agency Fifteen</a>
-              <a href="#" className="hover:text-gray-900 transition">FAQs</a>
-              <a href="#" className="hover:text-gray-900 transition">Disclaimer for BIOGANCE</a>
-              <a href="#" className="hover:text-gray-900 transition">Shipping & Return</a>
-              <a href="#" className="hover:text-gray-900 transition">Privacy Policy</a>
-              <Link href="/termsCondition" className="hover:text-gray-900 transition">Terms & Conditions</Link>
+              <Link href="/faq" className="hover:text-gray-900 transition">FAQs</Link>
+              <Link href="/termsCondition?section=disclaimer" className="hover:text-gray-900 transition cursor-pointer">Disclaimer for BIOGANCE</Link>
+              <Link href="/termsCondition?section=shipping" className="hover:text-gray-900 transition cursor-pointer">Shipping & Return</Link>
+              <Link href="/termsCondition?section=privacy" className="hover:text-gray-900 transition cursor-pointer">Privacy Policy</Link>
+              <Link href="/termsCondition?section=terms" className="hover:text-gray-900 transition cursor-pointer">Terms & Conditions</Link>
             </div>
           </div>
         </div>

@@ -1,11 +1,14 @@
 "use client"
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 
 export default function TermsCondition() {
-  const [activeSection, setActiveSection] = useState('disclaimer');
+  const searchParams = useSearchParams();
+  const section = searchParams.get('section');
+  const [activeSection, setActiveSection] = useState(section || 'disclaimer');
 
   return (
     <div className="min-h-screen bg-white">
