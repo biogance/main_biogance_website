@@ -1,11 +1,19 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 
 export default function TermsCondition() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TermsConditionContent />
+    </Suspense>
+  );
+}
+
+function TermsConditionContent() {
   const searchParams = useSearchParams();
   const section = searchParams.get('section');
   const [activeSection, setActiveSection] = useState(section || 'disclaimer');
