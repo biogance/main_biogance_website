@@ -192,23 +192,9 @@ export default function HeroSection() {
               </div>
 
               {/* Mobile Navigation - Bottom Center */}
-              <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+          {/* Mobile Navigation - Bottom Right */}
+              <div className="md:hidden absolute bottom-6 right-6 z-20">
                 <div className="flex flex-col items-center gap-4">
-                  {/* Dots Indicator */}
-                  <div className="flex items-center gap-2">
-                    {heroSlides.map((_, index) => (
-                      <div
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`cursor-pointer rounded-full transition-all duration-300 ${
-                          index === currentSlide
-                            ? 'w-8 h-2 bg-white'
-                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-
                   {/* Arrows */}
                   <div className="flex items-center gap-3">
                     <button 
@@ -225,6 +211,21 @@ export default function HeroSection() {
                     >
                       <MdKeyboardArrowRight size={24} />
                     </button>
+                  </div>
+
+                  {/* Dots Indicator */}
+                  <div className="flex items-center gap-2">
+                    {heroSlides.map((_, index) => (
+                      <div
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`cursor-pointer rounded-full transition-all duration-300 ${
+                          index === currentSlide
+                            ? 'w-8 h-2 bg-white'
+                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                        }`}
+                      ></div>
+                    ))}
                   </div>
                 </div>
               </div>
