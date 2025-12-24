@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, Suspense } from 'react';
@@ -17,103 +18,125 @@ function TermsConditionContent() {
   const searchParams = useSearchParams();
   const section = searchParams.get('section');
   const [activeSection, setActiveSection] = useState(section || 'disclaimer');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleSectionChange = (newSection) => {
+    if (newSection === activeSection) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveSection(newSection);
+      setTimeout(() => setIsTransitioning(false), 50);
+    }, 200);
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       {/* Mobile Navigation - Horizontal Scrollable Tabs */}
-      <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-10">
+      <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-10 shadow-sm">
         <div className="overflow-x-auto">
           <nav className="flex space-x-2 px-4 py-3 min-w-max">
             <button
-              onClick={() => setActiveSection('disclaimer')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg ${activeSection === 'disclaimer'
-                ? 'bg-gray-900 text-white font-medium'
-                : 'bg-gray-100 text-gray-600'
-                }`}
+              onClick={() => handleSectionChange('disclaimer')}
+              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+                activeSection === 'disclaimer'
+                  ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
+              }`}
             >
               Disclaimer
             </button>
 
             <button
-              onClick={() => setActiveSection('shipping')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg ${activeSection === 'shipping'
-                ? 'bg-gray-900 text-white font-medium'
-                : 'bg-gray-100 text-gray-600'
-                }`}
+              onClick={() => handleSectionChange('shipping')}
+              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+                activeSection === 'shipping'
+                  ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
+              }`}
             >
               Shipping & Return
             </button>
 
             <button
-              onClick={() => setActiveSection('privacy')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg ${activeSection === 'privacy'
-                ? 'bg-gray-900 text-white font-medium'
-                : 'bg-gray-100 text-gray-600'
-                }`}
+              onClick={() => handleSectionChange('privacy')}
+              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+                activeSection === 'privacy'
+                  ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
+              }`}
             >
               Privacy Policy
             </button>
 
             <button
-              onClick={() => setActiveSection('terms')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg ${activeSection === 'terms'
-                ? 'bg-gray-900 text-white font-medium'
-                : 'bg-gray-100 text-gray-600'
-                }`}
+              onClick={() => handleSectionChange('terms')}
+              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+                activeSection === 'terms'
+                  ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
+              }`}
             >
               Terms & Conditions
             </button>
           </nav>
         </div>
       </div>
-      <h1 className="text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-6 px-8">
+      
+      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-6 px-8 transition-all duration-300 ${
+        isTransitioning ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
+      }`}>
         {activeSection === 'disclaimer' && 'Disclaimer for BIOGANCE'}
         {activeSection === 'shipping' && 'Shipping & Return'}
         {activeSection === 'privacy' && 'Privacy Policy'}
         {activeSection === 'terms' && 'Terms & Conditions'}
       </h1>
 
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8 mt-6 lg:mt-6 px-4 lg:px-0">
+      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 px-4 lg:px-0">
         {/* Desktop Left Sidebar */}
         <div className="hidden lg:block w-64 flex-shrink-0 sticky top-18 self-start">
           <nav className="space-y-2">
             <button
-              onClick={() => setActiveSection('disclaimer')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer ${activeSection === 'disclaimer'
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-                }`}
+              onClick={() => handleSectionChange('disclaimer')}
+              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+                activeSection === 'disclaimer'
+                  ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
+                  : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
+              }`}
             >
               Disclaimer for BIOGANCE
             </button>
 
             <button
-              onClick={() => setActiveSection('shipping')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer ${activeSection === 'shipping'
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-                }`}
+              onClick={() => handleSectionChange('shipping')}
+              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+                activeSection === 'shipping'
+                  ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
+                  : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
+              }`}
             >
               Shipping & Return
             </button>
 
             <button
-              onClick={() => setActiveSection('privacy')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer ${activeSection === 'privacy'
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-                }`}
+              onClick={() => handleSectionChange('privacy')}
+              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+                activeSection === 'privacy'
+                  ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
+                  : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
+              }`}
             >
               Privacy Policy
             </button>
 
             <button
-              onClick={() => setActiveSection('terms')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer ${activeSection === 'terms'
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-                }`}
+              onClick={() => handleSectionChange('terms')}
+              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+                activeSection === 'terms'
+                  ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
+                  : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
+              }`}
             >
               Terms & Conditions
             </button>
@@ -121,19 +144,16 @@ function TermsConditionContent() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 pb-8">
-          {/* Mobile Title */}
-          <h1 className="lg:hidden text-xl font-bold text-gray-900 mb-4">
-            {activeSection === 'disclaimer' && 'Disclaimer for BIOGANCE'}
-            {activeSection === 'shipping' && 'Shipping & Return'}
-            {activeSection === 'privacy' && 'Privacy Policy'}
-            {activeSection === 'terms' && 'Terms & Conditions'}
-          </h1>
-
+        <div className={`flex-1 pb-8 transition-all duration-300 ${
+          isTransitioning 
+            ? 'opacity-0 transform translate-y-4' 
+            : 'opacity-100 transform translate-y-0'
+        }`}>
+         
           {activeSection === 'disclaimer' && (
             <div className="space-y-6 lg:space-y-8">
               {/* Presentation of the site */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Presentation of the site</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -161,7 +181,7 @@ function TermsConditionContent() {
               </div>
 
               {/* General conditions of use of the site */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">General conditions of use of the site</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -176,7 +196,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Description of services provided */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Description of services provided</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -191,7 +211,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Technical limitations */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Technical limitations</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>The site uses JavaScript technology.</p>
@@ -207,7 +227,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Intellectual Property */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Intellectual Property</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -221,7 +241,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Liability */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Liability</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -235,7 +255,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Personal data (RGPD) */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Personal data (RGPD)</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -252,7 +272,7 @@ function TermsConditionContent() {
                   </ul>
 
                   <p>
-                    These rights can be exercised by e-mail to: info@biogance.fr , or by post to: BIOGANCE – ZI Anjou Atlantique – 49123 Champtocé-sur-Loire – France (accompanied by proof of identity).
+                    These rights can be exercised by e-mail to: info@biogance.fr , or by post to: BIOGANCE – ZI Anjou Atlantique – 49123 Champtocé-sur-Loire – France (accompanied by proof of identity).
                   </p>
                   <p>
                     BIOGANCE does not transmit any data to third parties without consent, except where legally required or through the use of an authorized subcontractor.
@@ -262,19 +282,19 @@ function TermsConditionContent() {
               </div>
 
               {/* Cookies */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Cookies</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
-                    When browsing www.biogance.fr , cookies may be placed on the user's device.
+                    When browsing www.biogance.fr , cookies may be placed on the user's device.
                   </p>
 
                   <p>
-                    In accordance with current regulations, cookies requiring consent (audience measurement, advertising or social media cookies) are only placed after explicit acceptance by the user via a dedicated banner.
+                    In accordance with current regulations, cookies requiring consent (audience measurement, advertising or social media cookies) are only placed after explicit acceptance by the user via a dedicated banner.
                   </p>
 
                   <p>
-                    The user can accept, refuse or customize their preferences at any time via the cookie banner or the “Manage my cookies” link.
+                    The user can accept, refuse or customize their preferences at any time via the cookie banner or the "Manage my cookies" link.
                   </p>
 
                   <p>
@@ -284,7 +304,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Applicable law and jurisdiction */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Applicable law and jurisdiction</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -300,7 +320,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Reference links */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Reference Text</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-1 lg:space-y-2">
                   <ul className="list-disc ml-4 lg:ml-6 space-y-1">
@@ -312,11 +332,11 @@ function TermsConditionContent() {
               </div>
 
               {/* Glossary */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">Glossary</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-1 lg:space-y-2">
                   <ul className="list-disc ml-4 lg:ml-6 space-y-1">
-                    <li>User:  Any person accessing the site www.biogance.fr</li>
+                    <li>User:  Any person accessing the site www.biogance.fr</li>
                     <li>Personal data:  Information that can directly or indirectly identify a natural person</li>
                   </ul>
                 </div>
@@ -327,11 +347,11 @@ function TermsConditionContent() {
           {activeSection === 'shipping' && (
             <div className="space-y-6 lg:space-y-8">
               {/* ORDER, VALIDATION AND PROCESSING */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">ORDER, VALIDATION AND PROCESSING</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
-                    To place an order on www.biogance.fr , the customer must log in to their account or create one. Once the products have been added to the basket, they select the delivery method, choose the payment method, and confirm their order by checking the box "I accept the General Conditions of Sale" and validating the payment.
+                    To place an order on www.biogance.fr , the customer must log in to their account or create one. Once the products have been added to the basket, they select the delivery method, choose the payment method, and confirm their order by checking the box "I accept the General Conditions of Sale" and validating the payment.
                   </p>
 
                   <p>The order is considered finalized from the moment the payment is accepted. A confirmation is then sent by email, with a summary order number.</p>
@@ -370,7 +390,7 @@ function TermsConditionContent() {
               </div>
 
               {/* DELIVERY */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">DELIVERY</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p><strong>Delivery area</strong></p>
@@ -397,21 +417,21 @@ function TermsConditionContent() {
                   <p><strong>Delivery problems</strong></p>
 
                   <p>
-                    Upon receipt of the package, if it is visibly damaged, the customer is invited to refuse delivery and immediately inform BIOGANCE Customer Service, available Monday to Friday from 9 a.m. to 12:30 p.m. and from 1:30 p.m. to 4 p.m. at 02 41 73 15 15 or by e-mail at info@biogance.fr .
+                    Upon receipt of the package, if it is visibly damaged, the customer is invited to refuse delivery and immediately inform BIOGANCE Customer Service, available Monday to Friday from 9 a.m. to 12:30 p.m. and from 1:30 p.m. to 4 p.m. at 02 41 73 15 15 or by e-mail at info@biogance.fr .
                   </p>
 
                   <p>
-                    In case of doubt, the customer can also accept the package by making specific and dated reservations on the delivery slip (e.g.: “crushed package”, “missing product”, etc.).
+                    In case of doubt, the customer can also accept the package by making specific and dated reservations on the delivery slip (e.g.: "crushed package", "missing product", etc.).
                   </p>
 
                   <p>
-                    In the event of a transport dispute, an investigation may be opened with the carrier. This procedure can take up to 21 working days .
+                    In the event of a transport dispute, an investigation may be opened with the carrier. This procedure can take up to 21 working days .
                   </p>
 
                   <p><strong>Force majeure</strong></p>
 
                   <p>
-                    BIOGANCE cannot be held responsible for any delay or failure to perform (including delivery) in the event of the occurrence of an event beyond its control, qualified as force majeure within the meaning of Article 1218 of the Civil Code .
+                    BIOGANCE cannot be held responsible for any delay or failure to perform (including delivery) in the event of the occurrence of an event beyond its control, qualified as force majeure within the meaning of Article 1218 of the Civil Code .
                   </p>
 
                   <p>
@@ -426,7 +446,7 @@ function TermsConditionContent() {
               </div>
 
               {/* RIGHT OF WITHDRAWAL */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">RIGHT OF WITHDRAWAL</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
@@ -510,19 +530,19 @@ function TermsConditionContent() {
               </div>
 
               {/* CLAIMS AND DISPUTE RESOLUTION */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">CLAIMS AND DISPUTE RESOLUTION</h2>
                 <div className="text-xs lg:text-sm text-gray-700 space-y-2 lg:space-y-3">
                   <p>
-                    For any complaints, the customer can contact our customer service at the following address: <br />BIOGANCE – ZI Anjou Atlantique, 49123 Champtocé-sur-Loire <br />Or by e-mail at: info@biogance.fr
+                    For any complaints, the customer can contact our customer service at the following address: <br />BIOGANCE – ZI Anjou Atlantique, 49123 Champtocé-sur-Loire <br />Or by e-mail at: info@biogance.fr
                   </p>
 
                   <p>
-                    In accordance with articles L612-1 et seq. of the Consumer Code , in the event of an unresolved dispute after contacting our customer service, the customer has the option of using a mediation service free of charge.
+                    In accordance with articles L612-1 et seq. of the Consumer Code , in the event of an unresolved dispute after contacting our customer service, the customer has the option of using a mediation service free of charge.
                   </p>
 
                   <p>
-                    BIOGANCE adheres to the e-commerce mediator service of FEVAD (Federation of e-commerce and distance selling), whose contact details are as follows: <br />Consumer mediator FEVAD<br />BP 20015 – 75362 Paris CEDEX 8 <br />www.mediateurfevad.fr
+                    BIOGANCE adheres to the e-commerce mediator service of FEVAD (Federation of e-commerce and distance selling), whose contact details are as follows: <br />Consumer mediator FEVAD<br />BP 20015 – 75362 Paris CEDEX 8 <br />www.mediateurfevad.fr
                   </p>
 
                   <p>
@@ -530,11 +550,11 @@ function TermsConditionContent() {
                   </p>
 
                   <p>
-                    The customer can also use the European online dispute resolution (ODR) platform accessible here: https://ec.europa.eu/consumers/odr/
+                    The customer can also use the European online dispute resolution (ODR) platform accessible here: https://ec.europa.eu/consumers/odr/
                   </p>
 
                   <p>
-                    In the event of failure of mediation or an amicable solution, the dispute will be brought before the competent French courts , in accordance with the applicable legal rules.
+                    In the event of failure of mediation or an amicable solution, the dispute will be brought before the competent French courts , in accordance with the applicable legal rules.
                   </p>
 
                 </div>
