@@ -84,7 +84,7 @@ function TermsConditionContent() {
         </div>
       </div>
       
-      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-6 px-8 transition-all duration-300 ${
+      <h1 className={`text-2xl lg:text-2xl   font-bold text-gray-900 mb-2 mt-6 px-8 transition-all duration-300 ${
         isTransitioning ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
       }`}>
         {activeSection === 'disclaimer' && 'Disclaimer for BIOGANCE'}
@@ -93,9 +93,9 @@ function TermsConditionContent() {
         {activeSection === 'terms' && 'Terms & Conditions'}
       </h1>
 
-      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 px-4 lg:px-0">
+      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 mr-5 ml-5 px-4 lg:px-0">
         {/* Desktop Left Sidebar */}
-        <div className="hidden lg:block w-64 flex-shrink-0 sticky top-18 self-start">
+        <div className="hidden lg:block w-64 flex-shrink-0 sticky top-20 self-start">
           <nav className="space-y-2">
             <button
               onClick={() => handleSectionChange('disclaimer')}
