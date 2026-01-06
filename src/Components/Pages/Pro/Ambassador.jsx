@@ -404,11 +404,11 @@ export default function BioganceAmbassadorForm() {
                         transform: translateY(0);
                     }
                 }
-                
+
                 .animate-fadeIn {
                     animation: fadeIn 0.5s ease-in-out;
                 }
-                
+
                 @keyframes slideIn {
                     from {
                         opacity: 0;
@@ -419,9 +419,17 @@ export default function BioganceAmbassadorForm() {
                         transform: translateX(0);
                     }
                 }
-                
+
                 .animate-slideIn {
                     animation: slideIn 0.5s ease-out;
+                }
+
+                .scrollbar-hide {
+                    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+                    scrollbar-width: none;  /* Firefox */
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;  /* Safari and Chrome */
                 }
             `}</style>
             <Navbar />

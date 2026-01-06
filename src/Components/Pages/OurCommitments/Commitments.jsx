@@ -31,8 +31,10 @@ export default function Commitments() {
           animation: fadeIn 0.5s ease-in-out;
         }
       `}</style>
-            <Navbar />
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center ">
+            <div className="fixed top-0 left-0 right-0 z-50">
+                               <Navbar />
+                             </div>
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center mt-16 ">
                 <div className="max-w-7xl w-full   overflow-hidden">
                     <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
                         {/* Left Side - Image */}

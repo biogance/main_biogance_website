@@ -16,7 +16,7 @@ export function ResellerForm() {
         contactName: '',
         jobTitle: '',
         email: '',
-        countryCode: '+92',
+        countryCode: '+33',
         phone: '',
         website: '',
         message: '',
@@ -268,7 +268,7 @@ export function ResellerForm() {
             contactName: '',
             jobTitle: '',
             email: '',
-            countryCode: '+92',
+            countryCode: '+33',
             phone: '',
             website: '',
             message: '',
@@ -290,7 +290,7 @@ export function ResellerForm() {
             contactName: '',
             jobTitle: '',
             email: '',
-            countryCode: '+92',
+            countryCode: '+33',
             phone: '',
             website: '',
             message: '',
@@ -319,7 +319,9 @@ export function ResellerForm() {
 
     return (
         <>
-            <Navbar />
+             <div className="fixed top-0 left-0 right-0 z-50">
+                    <Navbar />
+                  </div>
             <div className="max-w-4xl mx-auto px-6 py-16">
                 {/* Form Header */}
                 <div className="mb-8">

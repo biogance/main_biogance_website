@@ -16,11 +16,12 @@ export function Pro() {
     const router = useRouter();
     return (
         <>
+            <div className="fixed top-0 left-0 right-0 z-50">
+                   <Navbar />
+                 </div>
 
             {/* Hero Section */}
             <div className="relative h-[500px] w-full">
-                <Navbar />
-
                 <div className="absolute inset-0">
                     <Image
                         src={proImg}
