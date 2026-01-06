@@ -322,7 +322,7 @@ export function ResellerForm() {
              <div className="fixed top-0 left-0 right-0 z-50">
                     <Navbar />
                   </div>
-            <div className="max-w-4xl mx-auto px-6 py-16">
+            <div className="max-w-4xl mx-auto px-6 py-16 mt-10">
                 {/* Form Header */}
                 <div className="mb-8">
                     <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
