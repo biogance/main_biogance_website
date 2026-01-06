@@ -7,7 +7,9 @@ import { FaCheck } from "react-icons/fa";
 export default function Certifications() {
   return (
     <>
-      <Navbar />
+       <div className="fixed top-0 left-0 right-0 z-50">
+                 <Navbar/>
+              </div>
       <div className="bg-white py-8 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-10xl mx-auto">
           {/* Mobile Layout - Image First */}
@@ -83,7 +85,7 @@ export default function Certifications() {
 
             {/* Right Content - Image and Badge (Desktop Only) */}
             <div className="relative hidden lg:block">
-              <div className="relative rounded-lg overflow-hidden shadow-xl">
+              <div className="relative rounded-lg mt-10 overflow-hidden shadow-xl">
                 <img
                   src="/C1.svg"
                   alt="Pet care professional"

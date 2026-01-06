@@ -224,7 +224,7 @@ export default function Footer() {
               {/* Reptiles */}
               <div>
                 <h3 className="font-semibold text-white mb-4 text-md">Reptiles</h3>
-                <ul className="space-y-2.5 text-sm text-gray-300">
+                <ul className="space-y-2.5 text-sm text-gray-300 mb-4">
                   <li><a href="#" className="hover:text-white transition">Tortoise</a></li>
                   <li><a href="#" className="hover:text-white transition">Terrarium maintenance</a></li>
                 </ul>

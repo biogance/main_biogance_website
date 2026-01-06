@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 
@@ -20,9 +20,16 @@ function TermsConditionContent() {
   const [activeSection, setActiveSection] = useState(section || 'disclaimer');
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  useEffect(() => {
+    const currentSection = searchParams.get('section');
+    if (currentSection && currentSection !== activeSection) {
+      setActiveSection(currentSection);
+    }
+  }, [searchParams]);
+
   const handleSectionChange = (newSection) => {
     if (newSection === activeSection) return;
-    
+
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveSection(newSection);
@@ -31,10 +38,12 @@ function TermsConditionContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="min-h-screen bg-white ">
+    <div className="fixed top-0 left-0 right-0 z-50">
+                <Navbar/>
+             </div>
       {/* Mobile Navigation - Horizontal Scrollable Tabs */}
-      <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-10 shadow-sm">
+      <div className="lg:hidden sticky top-0 bg-white border-b  border-gray-200 z-10 shadow-sm">
         <div className="overflow-x-auto">
           <nav className="flex space-x-2 px-4 py-3 min-w-max">
             <button
@@ -84,7 +93,7 @@ function TermsConditionContent() {
         </div>
       </div>
       
-      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-6 px-8 transition-all duration-300 ${
+      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-20 px-8 transition-all duration-300 ${
         isTransitioning ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
       }`}>
         {activeSection === 'disclaimer' && 'Disclaimer for BIOGANCE'}
@@ -93,9 +102,9 @@ function TermsConditionContent() {
         {activeSection === 'terms' && 'Terms & Conditions'}
       </h1>
 
-      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 px-4 lg:px-0">
+      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 ml-6 mr-6 px-4 lg:px-0">
         {/* Desktop Left Sidebar */}
-        <div className="hidden lg:block w-64 flex-shrink-0 sticky top-18 self-start">
+        <div className="hidden lg:block w-64 flex-shrink-0 sticky top-20 self-start">
           <nav className="space-y-2">
             <button
               onClick={() => handleSectionChange('disclaimer')}

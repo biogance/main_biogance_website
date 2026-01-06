@@ -70,9 +70,12 @@ export default function FAQ() {
    
   return (
     <>
-      <Navbar/>
+        <div className="fixed top-0 left-0 right-0 z-50">
+             <Navbar/>
+          </div>
+    
       <div className="min-h-screen bg-white">
-        <div className="max-w-10xl mx-auto px-6 py-12">
+        <div className="max-w-10xl mx-auto px-6 py-22">
           <div className="grid md:grid-cols-[280px_1fr] gap-12">
             {/* Sidebar */}
             <div className="md:sticky md:top-18 md:self-start">
