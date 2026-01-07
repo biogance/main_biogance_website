@@ -82,15 +82,15 @@ export function LandingProductFinder() {
             <h3 className="text-white text-xs sm:text-sm font-medium mb-3 sm:mb-4">
               Who is your pet?
             </h3>
-            <div className="flex flex-wrap gap-2 sm:gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3"> 
               {petTypes.map((pet) => (
                 <button
                   key={pet}
                   onClick={() => setSelectedPet(pet)}
                   className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
                     selectedPet === pet
-                      ? 'bg-white text-black shadow-lg'
-                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/30'
+                      ? 'bg-white text-black shadow-lg border border-white'
+                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/30' 
                   }`}
                 >
                   {pet}
