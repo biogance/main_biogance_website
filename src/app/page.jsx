@@ -8,6 +8,7 @@ import { ResellerForm } from "@/Components/Pages/Pro/ResellerPro";
 import Image from "next/image";
 import ThankYouModal from "@/Components/Pages/Pro/ThankyouModal";
 import HeroSection from "@/Components/Pages/Landing/MainVideo";
+import SignUp from "@/Components/Pages/Onboarding/SignUp";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
      {/* <DistributorForm/> */}
      {/* <ResellerForm/> */}
      {/* <ThankYouModal/> */}
+     {/* <SignUp/> */}
      <HeroSection/>
     </div>
   );

@@ -117,10 +117,12 @@ export default function Navbar() {
               <button className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
                 <FiUser className="w-5 h-5" />
               </button>
-  
+  <Link href="/wishlist">
               <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                 <FiHeart className="w-5 h-5" />
+
               </button>
+              </Link>
   
               <button className="relative p-2 bg-gray-900 cursor-pointer hover:bg-gray-800 rounded-xl transition-colors">
                 <img src="/q.svg" alt="Cart" className="w-5 h-5" />
@@ -199,9 +201,9 @@ export default function Navbar() {
             <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
               <FiUser className="w-5 h-5" />
             </button>
-            <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+            <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
               <FiHeart className="w-5 h-5" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

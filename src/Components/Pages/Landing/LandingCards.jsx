@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+// import { RxCross2 } from "react-icons/rx";
 
 // Loading Card Component (unchanged)
 const LoadingCard = () => (
@@ -143,9 +144,14 @@ const LandingCards = ({ product, showNav }) => {
   );
 };
 
-export default function PopularProducts({ title = 'Popular Products' }) {
+export default function PopularProducts({ title = 'Popular Products', isWishlist = false }) {
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('favorite');
+
+  const handleRemoveAll = () => {
+    console.log('Remove all clicked');
+  };
 
   const products = [
     // ... (your products array remains exactly the same)
@@ -265,7 +271,7 @@ export default function PopularProducts({ title = 'Popular Products' }) {
   };
 
   return (
-    <div className="w-full mx-auto bg-white">
+    <div className="w-full bg-white">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -273,28 +279,59 @@ export default function PopularProducts({ title = 'Popular Products' }) {
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}} />
 
-      <div className="px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10">
-        <div className="flex items-center justify-between mb-4 md:mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title} ›</h2>
-          <div className="flex gap-2">
-            <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-            </button>
-            <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-            </button>
+      <div className={isWishlist ? "px-4" : "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"}>
+        {isWishlist ? (
+          <div className="max-w-7xl mx-auto bg-white py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-gray-900">Your Products Wishlist</h1>
+              <button onClick={handleRemoveAll} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                {/* <X className="w-4 h-4" /> */}
+                {/* <RxCross2 /> */}
+                Remove All
+              </button>
+            </div>
+            <div className="flex gap-8 border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('favorite')}
+                className={`pb-2 text-sm font-medium transition-colors ${
+                  activeTab === 'favorite' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Favorite Products
+              </button>
+              <button
+                onClick={() => setActiveTab('advice')}
+                className={`pb-2 text-sm font-medium transition-colors ${
+                  activeTab === 'advice' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Favorite Expert Advices
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title} ›</h2>
+            <div className="flex gap-2">
+              <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+              <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+            </div>
+          </div>
+        )}
 
-        <div ref={scrollContainerRef} className="flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory">
+        <div ref={scrollContainerRef} className={isWishlist ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"}>
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]">
+                <div key={index} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
                   <LoadingCard />
                 </div>
               ))
             : products.map((product) => (
-                <div key={product.id} className="product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]">
+                <div key={product.id} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
                   <LandingCards product={product} showNav={true} />
                 </div>
               ))}
