@@ -663,7 +663,7 @@ export function DistributorForm() {
 
                     {/* Buttons */}
                     <div className="flex gap-4">
-                        <button
+                        {/* <button
                             type="button"
                             onClick={handleCancel}
 
@@ -671,12 +671,12 @@ export function DistributorForm() {
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
                             Cancel
-                        </button>
+                        </button> */}
                         <button
                             type="submit"
                             onClick={handleSubmit}
-                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-                            style={{ fontSize: '14px', fontWeight: 600 }}
+                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer "
+                            style={{ fontSize: '14px', fontWeight: 600  }}
                         >
                             Submit
                         </button>

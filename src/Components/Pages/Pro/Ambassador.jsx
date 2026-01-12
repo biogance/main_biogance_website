@@ -955,10 +955,10 @@ export default function BioganceAmbassadorForm() {
 
                                         {/* Cancel and Submit Buttons */}
                                         <div className="flex gap-4">
-                                            <button onClick={handleCancel}
+                                            {/* <button onClick={handleCancel}
                                                 className="flex-1 bg-white text-black py-4 rounded-md text-sm font-semibold border border-gray-300 hover:bg-gray-50 transition cursor-pointer">
                                                 Cancel
-                                            </button>
+                                            </button> */}
                                             <button onClick={handleSubmit} type="button" className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer">
                                                 Submit
                                             </button>

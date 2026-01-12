@@ -261,7 +261,7 @@ export default function Footer() {
                 <li><Link href="/commitments" className="hover:text-white transition">Nos engagements</Link></li>
                 <li><Link href="/certifications" className="hover:text-white transition">Nos certifications</Link></li>
                 <li><a href="#" className="hover:text-white transition">Our expert tips</a></li>
-                <li><a href="#" className="hover:text-white transition">Our ingredients</a></li>
+                <li><Link href="/ingredients" className="hover:text-white transition">Our ingredients</Link></li>
                 <li><a href="#" className="hover:text-white transition">Join the loyalty program</a></li>
                 <li><a href="#" className="hover:text-white transition">Write to us</a></li>
               </ul>

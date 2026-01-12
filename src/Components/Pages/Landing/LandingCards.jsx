@@ -3,14 +3,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { IoClose } from 'react-icons/io5';
 // import { RxCross2 } from "react-icons/rx";
 
 // Loading Card Component (unchanged)
 const LoadingCard = () => (
   <div className="group">
-    <div 
-      className="rounded-2xl border border-[#E3E3E3] p-3 relative mb-3" 
-      style={{ 
+    <div
+      className="rounded-2xl border border-[#E3E3E3] p-3 relative mb-3"
+      style={{
         backgroundColor: '#f9fafb',
         background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
         backgroundSize: '200px 100%',
@@ -83,8 +84,8 @@ const LandingCards = ({ product, showNav }) => {
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
                 className={`absolute left-[-15px] md:left-[-18px] w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center z-20 transition-all
-                  ${currentImageIndex === 0 
-                    ? 'opacity-70 cursor-not-allowed' 
+                  ${currentImageIndex === 0
+                    ? 'opacity-70 cursor-not-allowed'
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
@@ -95,8 +96,8 @@ const LandingCards = ({ product, showNav }) => {
                 onClick={handleNextImage}
                 disabled={currentImageIndex === product.images.length - 1}
                 className={`absolute right-[-15px] md:right-[-18px] w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center z-20 transition-all
-                  ${currentImageIndex === product.images.length - 1 
-                    ? 'opacity-70 cursor-not-allowed' 
+                  ${currentImageIndex === product.images.length - 1
+                    ? 'opacity-70 cursor-not-allowed'
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
@@ -117,9 +118,8 @@ const LandingCards = ({ product, showNav }) => {
             {product.images.map((_, idx) => (
               <div
                 key={idx}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${
-                  idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
-                }`}
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
+                  }`}
               />
             ))}
           </div>
@@ -161,7 +161,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '15.90',
       originalPrice: null,
       discount: '20% Off',
-      image:"https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
@@ -175,7 +175,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '12.60',
       originalPrice: null,
       discount: '20% Off',
-      image:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop",
@@ -189,7 +189,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '11.25',
       originalPrice: '35.30',
       discount: null,
-      image:"https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=400&h=400&fit=crop"
@@ -202,7 +202,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '12.60',
       originalPrice: null,
       discount: '20% Off',
-      image:"https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
@@ -216,7 +216,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '18.90',
       originalPrice: '24.90',
       discount: '20% Off',
-      image:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&h=400&fit=crop"
@@ -229,7 +229,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '14.50',
       originalPrice: null,
       discount: null,
-      image:"https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
       images: [
         "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
@@ -262,7 +262,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       const cardWidth = scrollContainerRef.current.querySelector('.product-card')?.offsetWidth || 0;
       const gap = 16;
       const scrollAmount = cardWidth + gap;
-      
+
       scrollContainerRef.current.scrollBy({
         left: direction === 'next' ? scrollAmount : -scrollAmount,
         behavior: 'smooth',
@@ -272,7 +272,8 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
 
   return (
     <div className="w-full bg-white">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -281,29 +282,33 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
 
       <div className={isWishlist ? "px-4" : "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"}>
         {isWishlist ? (
-          <div className="max-w-7xl mx-auto bg-white py-6">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">Your Products Wishlist</h1>
-              <button onClick={handleRemoveAll} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                {/* <X className="w-4 h-4" /> */}
-                {/* <RxCross2 /> */}
-                Remove All
+          <div className="w-full max-w-8xl mx-auto bg-white py-8   ">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                Your Products Wishlist
+              </h1>
+              <button className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-700 hover:text-black transition-colors self-start sm:self-auto">
+                <IoClose className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Remove All</span>
               </button>
             </div>
-            <div className="flex gap-8 border-b border-gray-200">
+
+            <div className="flex gap-2 sm:gap-4 lg:gap-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => setActiveTab('favorite')}
-                className={`pb-2 text-sm font-medium transition-colors ${
-                  activeTab === 'favorite' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${activeTab === 'favorite'
+                    ? 'bg-black text-white shadow-sm'
+                    : 'bg-white text-black hover:bg-gray-50'
+                  }`}
               >
                 Favorite Products
               </button>
               <button
                 onClick={() => setActiveTab('advice')}
-                className={`pb-2 text-sm font-medium transition-colors ${
-                  activeTab === 'advice' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${activeTab === 'advice'
+                    ? 'bg-black text-white shadow-sm'
+                    : 'bg-white text-black hover:bg-gray-50'
+                  }`}
               >
                 Favorite Expert Advices
               </button>
@@ -326,15 +331,15 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
         <div ref={scrollContainerRef} className={isWishlist ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"}>
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
-                  <LoadingCard />
-                </div>
-              ))
+              <div key={index} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+                <LoadingCard />
+              </div>
+            ))
             : products.map((product) => (
-                <div key={product.id} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
-                  <LandingCards product={product} showNav={true} />
-                </div>
-              ))}
+              <div key={product.id} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+                <LandingCards product={product} showNav={true} />
+              </div>
+            ))}
         </div>
       </div>
     </div>

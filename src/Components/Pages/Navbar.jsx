@@ -7,7 +7,7 @@ import { SearchModal } from './Modal/SearchModal';
 const logoImage = '/logo.svg';
 
 const navLinks = [
-  { href: '#', text: 'Our Laboratory' },
+  { href: '/who-are-we', text: 'Our Laboratory' },
   { href: '#', text: 'Our Expert Advice' },
   { href: '/navPro', text: 'Pro' },
 ];

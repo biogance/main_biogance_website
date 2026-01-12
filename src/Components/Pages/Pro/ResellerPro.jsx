@@ -626,14 +626,14 @@ export function ResellerForm() {
 
                     {/* Buttons */}
                     <div className="flex gap-4">
-                        <button
+                        {/* <button
                             type="button"
                             onClick={handleCancel}
                             className="flex-1 px-8 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
                             Cancel
-                        </button>
+                        </button> */}
                         <button
                             type="submit"
 
