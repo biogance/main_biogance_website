@@ -144,7 +144,7 @@ const LandingCards = ({ product, showNav }) => {
   );
 };
 
-export default function PopularProducts({ title = 'Popular Products', isWishlist = false }) {
+export default function PopularProducts({ title = 'Popular Products', isWishlist = false, isFavourite = false, isHorizontal = false }) {
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('favorite');
@@ -261,7 +261,7 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
     if (scrollContainerRef.current) {
       const cardWidth = scrollContainerRef.current.querySelector('.product-card')?.offsetWidth || 0;
       const gap = 16;
-      const scrollAmount = cardWidth + gap;
+      const scrollAmount = isHorizontal ? (cardWidth + gap) * 4 : cardWidth + gap;
 
       scrollContainerRef.current.scrollBy({
         left: direction === 'next' ? scrollAmount : -scrollAmount,
@@ -280,8 +280,8 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}} />
 
-      <div className={isWishlist ? "px-4" : "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"}>
-        {isWishlist ? (
+      <div className={isFavourite ? "px-4" : isWishlist ? "px-4" : "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"}>
+        {isFavourite ? null : isWishlist ? (
           <div className="w-full max-w-8xl mx-auto bg-white py-8   ">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
@@ -314,6 +314,17 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
               </button>
             </div>
           </div>
+        ) : isHorizontal ? (
+          <div className="flex justify-end mb-4 md:mb-6">
+            <div className="flex gap-2">
+              <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+              <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title} ›</h2>
@@ -328,19 +339,20 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
           </div>
         )}
 
-        <div ref={scrollContainerRef} className={isWishlist ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"}>
+        <div ref={scrollContainerRef} className={isFavourite ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : isWishlist ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : isHorizontal ? "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory" : "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"}>
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+              <div key={index} className={isFavourite ? "product-card" : isWishlist ? "product-card" : isHorizontal ? "product-card flex-shrink-0 snap-start w-[calc(25%-12px)]" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
                 <LoadingCard />
               </div>
             ))
             : products.map((product) => (
-              <div key={product.id} className={isWishlist ? "product-card" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
-                <LandingCards product={product} showNav={true} />
+              <div key={product.id} className={isFavourite ? "product-card" : isWishlist ? "product-card" : isHorizontal ? "product-card flex-shrink-0 snap-start w-[calc(25%-12px)]" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+                <LandingCards product={product} showNav={!isFavourite} />
               </div>
             ))}
         </div>
+        
       </div>
     </div>
   );
