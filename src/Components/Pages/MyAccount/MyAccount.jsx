@@ -9,6 +9,12 @@ import { Sidebar } from "./Sidebar"
 import Dashboard from './Dashboard';
 import MyOrder from './MyOrder';
 import Favourite from './Favourite';
+import Loyalty from './Loyalty';
+import UserProfile from './UserProfile';
+import PetProfile from './PetProfile';
+import Address from './Address';
+
+
 
 
 export default function MyAccount() {
@@ -22,6 +28,18 @@ export default function MyAccount() {
                 return <MyOrder />;
             case 'favorites':
                 return <Favourite />;
+                 case 'loyalty':
+                return <Loyalty/>;
+                 case 'profile':
+                return <UserProfile/>;
+                 case 'pet':
+
+                return <PetProfile/>;
+                   case 'addresses':
+
+                return <Address/>;
+               
+                
             // Add cases for other components like 'orders' in the future
             default:
                 return <Dashboard />;
