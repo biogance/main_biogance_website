@@ -22,61 +22,73 @@ const OurIngredients = () => {
     const [category, setCategory] = useState('All Categories');
 
     const ingredients = [
-    {
-      image: cardImg,
-      title: 'Hyaluronic Acid',
-      tag: 'Hydrating Agent',
-      description: 'Hyaluronic acid is a powerful humectant that attracts and binds moisture to the skin. It plumps the skin and protects the dermis. Known for its ability to...'
-    },
-    {
-      image: garlicImg,
-      title: 'Garlic',
-      tag: 'Nourishing Agent',
-      description: 'Garlic has long been used in folk medicine for its various benefits. Its bioactive compounds, like allicin, are believed to provide antioxidants to aid in purifying...'
-    },
-    {
-      image: algeaImg,
-      title:"Laminaria algae",
-      tag: 'Soothing Agent',
-      description: 'A perennial herbaceous plant native to Asia and southern Europe, licorice is valued not just for its sweet, aromatic flavor, but also for its antioxidant and...'
-    },
-    {
-      image: AschophyImg,
-      title: 'Acetylcholine algae',
-      tag: 'Soothing Agent',
-      description: 'Acetylcholine algae is a unique marine organism known for its calming and nourishing properties. Rich in natural moisturizers, amino acids, and antioxidants, it is...'
-    },
-    {
-      image: AltanioImg,
-      title: 'Allantoin',
-      tag: 'Calming Agent',
-      description: 'Allantoin is a botanical extract naturally present in the comfrey plant, known for its soothing and healing properties. It reduces irritation and supports skin barrier...'
-    },
-    {
-      image:  Alovera,
-      title: 'Aloe Vera',
-      tag: 'Hydrating & Soothing Agent',
-      description: 'Aloe vera is a succulent plant renowned for its healing and soothing properties. Packed with vitamins, minerals, and antioxidants, its water-rich gel deeply and...'
-    },
-    {
-      image: AlmondImg,
-      title: 'Sweet Almond',
-      tag: 'Nourishing Oil',
-      description: 'Sweet Almond oil is a gentle and nourishing oil extracted from almonds. Packed with vitamins E and A, it provides deep hydration, softens the skin, and calms inflammation...'
-    },
-    {
-      image:  clay,
-      title: 'Green Clay',
-      tag: 'Hydrating & Soothing Agent',
-      description: 'Green clay is a mineral-rich substance known for its absorbent properties, making it especially beneficial for oily skin. It gently purifies, removes impurities...'
-    },
-    {
-      image: Avacado,
-      title: 'Lawyer (Avocado)',
-      tag: 'Nourishing Agent',
-      description: 'Avocado oil, known as "Lawyer" in Spanish, supplies vitamins A, D, and E along with essential fatty acids. Its deep penetration helps skin and hair, and curbs moisture...'
-    }
-  ];
+        {
+            image: cardImg,
+            title: 'Hyaluronic Acid',
+            tag: 'Hydrating Agent',
+            description: 'Hyaluronic acid is a powerful humectant that attracts and binds moisture to the skin. It plumps the skin and protects the dermis. Known for its ability to...'
+        },
+        {
+            image: garlicImg,
+            title: 'Garlic',
+            tag: 'Nourishing Agent',
+            description: 'Garlic has long been used in folk medicine for its various benefits. Its bioactive compounds, like allicin, are believed to provide antioxidants to aid in purifying...'
+        },
+        {
+            image: algeaImg,
+            title: "Laminaria algae",
+            tag: 'Soothing Agent',
+            description: 'A perennial herbaceous plant native to Asia and southern Europe, licorice is valued not just for its sweet, aromatic flavor, but also for its antioxidant and...'
+        },
+        {
+            image: AschophyImg,
+            title: 'Acetylcholine algae',
+            tag: 'Soothing Agent',
+            description: 'Acetylcholine algae is a unique marine organism known for its calming and nourishing properties. Rich in natural moisturizers, amino acids, and antioxidants, it is...'
+        },
+        {
+            image: AltanioImg,
+            title: 'Allantoin',
+            tag: 'Calming Agent',
+            description: 'Allantoin is a botanical extract naturally present in the comfrey plant, known for its soothing and healing properties. It reduces irritation and supports skin barrier...'
+        },
+        {
+            image: Alovera,
+            title: 'Aloe Vera',
+            tag: 'Hydrating & Soothing Agent',
+            description: 'Aloe vera is a succulent plant renowned for its healing and soothing properties. Packed with vitamins, minerals, and antioxidants, its water-rich gel deeply and...'
+        },
+        {
+            image: AlmondImg,
+            title: 'Sweet Almond',
+            tag: 'Nourishing Oil',
+            description: 'Sweet Almond oil is a gentle and nourishing oil extracted from almonds. Packed with vitamins E and A, it provides deep hydration, softens the skin, and calms inflammation...'
+        },
+        {
+            image: clay,
+            title: 'Green Clay',
+            tag: 'Hydrating & Soothing Agent',
+            description: 'Green clay is a mineral-rich substance known for its absorbent properties, making it especially beneficial for oily skin. It gently purifies, removes impurities...'
+        },
+        {
+            image: Avacado,
+            title: 'Lawyer (Avocado)',
+            tag: 'Nourishing Agent',
+            description: 'Avocado oil, known as "Lawyer" in Spanish, supplies vitamins A, D, and E along with essential fatty acids. Its deep penetration helps skin and hair, and curbs moisture...'
+        }
+    ];
+
+
+    const [isOpen, setIsOpen] = useState(false);
+
+    const categoryOptions = [
+        'All Categories',
+        'Hydrating Agents',
+        'Soothing Agents',
+        'Calming Agents',
+        'Nourishing Oils',
+        'Nourishing Agents'
+    ];
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50">
@@ -105,7 +117,7 @@ const OurIngredients = () => {
                             <Image
                                 className='rounded-lg'
                                 src={ingredient}
-                                
+
                             />
 
                         </div>
@@ -141,21 +153,50 @@ const OurIngredients = () => {
 
                                 {/* Category Dropdown */}
                                 <div className="relative sm:w-56 ">
-                                    <select
-                                        hover="bg-black"
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full px-6 py-3 pr-10 text-sm sm:text-base text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all   "
-
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsOpen(!isOpen)}
+                                        className="w-full px-6 py-3 pr-10 text-sm sm:text-base text-gray-900 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all text-left"
                                     >
-                                        <option  >All Categories</option>
-                                        <option>Hydrating Agents</option>
-                                        <option>Soothing Agents</option>
-                                        <option>Calming Agents</option>
-                                        <option>Nourishing Oils</option>
-                                        <option>Nourishing Agents</option>
-                                    </select>
-                                    <IoChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
+                                        {category}
+                                    </button>
+                                    <IoChevronDown
+                                        className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none transition-transform duration-300 ${isOpen ? 'rotate-180' : ''
+                                            }`}
+                                    />
+
+                                    {isOpen && (
+                                        <div className="
+                absolute left-0 top-full mt-2 z-20
+                w-full max-h-[280px] overflow-auto
+                bg-white rounded-lg shadow-2xl border border-gray-200
+                py-2 text-sm font-medium
+                scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50 
+            ">
+                                            {categoryOptions.map((option) => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    className={`
+                            w-full text-left px-4 py-2.5
+                            hover:bg-black hover:text-white
+                            transition-colors duration-150
+                            cursor-pointer
+                            ${category === option
+                                                            ? 'bg-gray-100 text-gray-900 font-semibold'
+                                                            : 'text-gray-700'
+                                                        }
+                        `}
+                                                    onClick={() => {
+                                                        setCategory(option);
+                                                        setIsOpen(false);
+                                                    }}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -187,7 +228,7 @@ const OurIngredients = () => {
                     </div>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </>
     );
 };

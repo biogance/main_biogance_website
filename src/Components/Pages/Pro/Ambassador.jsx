@@ -437,7 +437,7 @@ export default function BioganceAmbassadorForm() {
                               </div>
             <div className=" bg-white p-12 mt-10">
 
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-5xl mx-auto">
                     {/* Header */}
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold text-black mb-2">
@@ -451,7 +451,7 @@ export default function BioganceAmbassadorForm() {
                     {/* Tabs */}
                     <div className="border-b border-gray-300 mb-6">
                         <div className="overflow-x-auto scrollbar-hide">
-                            <div className="flex gap-1 min-w-max">
+                            <div className="flex lg:gap-7 gap-1 min-w-max">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab}
@@ -610,7 +610,7 @@ export default function BioganceAmbassadorForm() {
                                 </div>
 
                                 <div className=" py-8">
-                                    <div className="max-w-4xl mx-auto">
+                                    <div className="max-w-5xl mx-auto">
                                         <div className="bg-white border border-gray-300 rounded-lg">
                                             <div className="px-6 py-4 bg-gray-50 rounded-lg border-b border-gray-300">
                                                 <h2 className="text-sm font-semibold text-black">Your Universe</h2>
@@ -853,7 +853,7 @@ export default function BioganceAmbassadorForm() {
                                                                 value={animal.breed}
                                                                 onChange={(e) => handleAnimalChange(animal.id, 'breed', e.target.value)}
                                                                 placeholder="e.g. Golden Retriever, Persian, etc."
-                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
                                                             />
                                                         </div>
 
@@ -887,7 +887,7 @@ export default function BioganceAmbassadorForm() {
                                                                 value={animal.characteristics}
                                                                 onChange={(e) => handleAnimalChange(animal.id, 'characteristics', e.target.value)}
                                                                 placeholder="e.g. Sensitive skin, allergies, rescue animal, senior, etc."
-                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
                                                             />
                                                         </div>
                                                     </div>

@@ -1,6 +1,10 @@
 "use client"
 import { useState } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
+import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
+import DeleteMyAccount from '../MyAccount/ModalBox/DeleteMyAccount';
+import FeedbackForm from '../MyAccount/ModalBox/FeedbackAccount';
+import ConfirmDeletionModal from '../MyAccount/ModalBox/ConfirmDeleteAccount';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,10 +13,81 @@ export default function Login() {
     email: '',
     password: ''
   });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: ''
+  });
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false
+  });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Please enter your email.';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "That doesn't look like a valid email.";
+    }
+    return '';
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Please enter your password.';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters.';
+    }
+    return '';
+  };
+
+  const handleBlur = (field) => {
+    setTouched({ ...touched, [field]: true });
+    
+    let error = '';
+    if (field === 'email') {
+      error = validateEmail(formData.email);
+    } else if (field === 'password') {
+      error = validatePassword(formData.password);
+    }
+    setErrors({ ...errors, [field]: error });
+  };
+
+  const handleChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    
+    if (touched[field]) {
+      let error = '';
+      if (field === 'email') {
+        error = validateEmail(value);
+      } else if (field === 'password') {
+        error = validatePassword(value);
+      }
+      setErrors({ ...errors, [field]: error });
+    }
+  };
+
+  const handleSubmit = () => {
+    const newErrors = {
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password)
+    };
+    
+    setErrors(newErrors);
+    setTouched({
+      email: true,
+      password: true
+    });
+    
+    const hasErrors = Object.values(newErrors).some(error => error !== '');
+    
+    if (!hasErrors) {
+      console.log('Form submitted:', formData);
+    } else {
+      console.log('Form has errors, cannot submit');
+    }
   };
 
   const handleClose = () => {
@@ -20,15 +95,16 @@ export default function Login() {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
+      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
         {/* Close Button */}
-        <button
+         <button
           type="button"
           onClick={handleClose}
-          className="absolute -top-3 -right-3 w-10 h-10 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center text-white transition-colors shadow-md"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
         >
-          <AiOutlineClose className="w-5 h-5" />
+          <AiOutlineClose className="w-4 h-4"/>
         </button>
 
         {/* Header */}
@@ -40,7 +116,7 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm mb-2 text-black">
@@ -51,9 +127,17 @@ export default function Login() {
               type="email"
               placeholder="eg: john_doe@gmail.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-50"
+              onChange={(e) => handleChange('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              className={`w-full px-3 py-2.5 border text-black rounded-lg focus:outline-none text-sm ${
+                touched.email && errors.email
+                  ? 'bg-red-50 border-red-300'
+                  : 'bg-gray-50 border-gray-300'
+              }`}
             />
+            {touched.email && errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -67,13 +151,18 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-50 pr-10"
+                onChange={(e) => handleChange('password', e.target.value)}
+                onBlur={() => handleBlur('password')}
+                className={`w-full px-3 text-black py-2.5 border rounded-lg focus:outline-none text-sm pr-10 ${
+                  touched.password && errors.password
+                    ? 'bg-red-50 border-red-300'
+                    : 'bg-gray-50 border-gray-300'
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
               >
                 {showPassword ? (
                   <AiOutlineEyeInvisible className="w-5 h-5" />
@@ -82,6 +171,9 @@ export default function Login() {
                 )}
               </button>
             </div>
+            {touched.password && errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
           {/* Remember Me & Forgot Password */}
@@ -91,7 +183,7 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
+                className="w-4 h-4 border border-gray-300 rounded cursor-pointer accent-black"
               />
               <span className="text-sm text-gray-700">Remember Me</span>
             </label>
@@ -102,12 +194,13 @@ export default function Login() {
 
           {/* Submit Button */}
           <button
-            type="submit"
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6"
+            type="button"
+            onClick={handleSubmit}
+            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6 cursor-pointer"
           >
             Login
           </button>
-        </form>
+        </div>
 
         {/* Divider */}
         <div className="relative my-6">
@@ -162,6 +255,8 @@ export default function Login() {
           </a>
         </p>
       </div>
+
     </div>
+    </>
   );
 }

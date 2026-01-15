@@ -1,12 +1,49 @@
+"use client"
+
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 
 export default function Forgotpassword() {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [touched, setTouched] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Reset link sent to:', email);
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Please enter your email.';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "That doesn't look like a valid email.";
+    }
+    return '';
+  };
+
+  const handleBlur = () => {
+    setTouched(true);
+    const validationError = validateEmail(email);
+    setError(validationError);
+  };
+
+  const handleChange = (value) => {
+    setEmail(value);
+    
+    if (touched) {
+      const validationError = validateEmail(value);
+      setError(validationError);
+    }
+  };
+
+  const handleSubmit = () => {
+    const validationError = validateEmail(email);
+    setError(validationError);
+    setTouched(true);
+    
+    if (!validationError) {
+      console.log('Reset link sent to:', email);
+    } else {
+      console.log('Form has errors, cannot submit');
+    }
   };
 
   const handleClose = () => {
@@ -15,14 +52,14 @@ export default function Forgotpassword() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
+      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
         {/* Close Button */}
         <button
           type="button"
           onClick={handleClose}
-          className="absolute -top-3 -right-3 w-10 h-10 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center text-white transition-colors shadow-md"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
         >
-          <AiOutlineClose className="w-5 h-5" />
+          <AiOutlineClose className="w-4 h-4"/>
         </button>
 
         {/* Header */}
@@ -34,7 +71,7 @@ export default function Forgotpassword() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm mb-2 text-black">
@@ -45,19 +82,28 @@ export default function Forgotpassword() {
               type="email"
               placeholder="eg: john_doe@gmail.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-50 text-black"
+              onChange={(e) => handleChange(e.target.value)}
+              onBlur={handleBlur}
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none text-sm text-black ${
+                touched && error
+                  ? 'bg-red-50 border-red-300'
+                  : 'bg-gray-50 border-gray-300'
+              }`}
             />
+            {touched && error && (
+              <p className="text-red-500 text-xs mt-1">{error}</p>
+            )}
           </div>
 
           {/* Submit Button */}
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
           >
             Send Reset Link
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

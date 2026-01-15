@@ -10,6 +10,7 @@ import partner from "../../../../public/partnerImg.jpg"
 import { useRouter } from 'next/navigation';
 import Footer from '../Footer';
 import Link from 'next/link';
+import DeleteMyAccount from '../MyAccount/ModalBox/DeleteMyAccount';
 
 export function Pro() {
     const [activeTab, setActiveTab] = useState("distributor");
@@ -17,8 +18,8 @@ export function Pro() {
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50">
-                   <Navbar />
-                 </div>
+                <Navbar />
+            </div>
 
             {/* Hero Section */}
             <div className="relative h-[500px] w-full">
@@ -39,7 +40,7 @@ export function Pro() {
                     <div className="flex items-center gap-2 text-white text-xs sm:text-sm">
                         <Link href="/" className="hover:underline">Home</Link>
                         <span>/</span>
-                        <a  className="underline">Pro</a>
+                        <a className="underline">Pro</a>
                     </div>
                 </div>
             </div>
@@ -48,28 +49,36 @@ export function Pro() {
             <div className="max-w-8xl mx-auto px-6 py-16">
 
                 {/* Tabs */}
-                <div className="flex justify-center gap-4 mb-12 px-4">
-                    <div className="inline-flex rounded-full bg-gray-50 p-1.5 sm:p-2 w-full sm:w-auto max-w-full overflow-x-auto">
+                <div className="flex justify-center mb-12 px-4">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-gray-100 to-gray-50 p-1 shadow-inner">
                         <button
                             onClick={() => setActiveTab('distributor')}
-                            className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 text-xs sm:text-sm md:text-[15px] font-semibold whitespace-nowrap ${activeTab === 'distributor'
-                                    ? 'bg-white shadow-sm'
-                                    : 'bg-transparent text-gray-600'
-                                }`}
-                                style={{fontSize:'15px', fontWeight:'600', color:'black'}}
+                            className={`
+                relative px-6 sm:px-8 py-3 sm:py-3.5 rounded-full 
+                transition-all duration-300 ease-in-out
+                text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
+                ${activeTab === 'distributor'
+                                    ? 'bg-white text-gray-900 shadow-lg shadow-gray-200/50'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                                }
+            `}
                         >
-                            Distributor or Retailer
+                            <span className="relative z-10">Distributor or Retailer</span>
                         </button>
 
                         <button
                             onClick={() => setActiveTab('partner')}
-                            className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 text-xs sm:text-sm md:text-[15px] font-bold whitespace-nowrap ${activeTab === 'partner'
-                                    ? 'bg-white shadow-sm'
-                                    : 'bg-transparent text-gray-600'
-                                }`}
-                                 style={{fontSize:'15px', fontWeight:'600', color:'black'}}
+                            className={`
+                relative px-6 sm:px-8 py-3 sm:py-3.5 rounded-full 
+                transition-all duration-300 ease-in-out
+                text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
+                ${activeTab === 'partner'
+                                    ? 'bg-white text-gray-900 shadow-lg shadow-gray-200/50'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                                }
+            `}
                         >
-                            Partner or an Ambassador
+                            <span className="relative z-10">Partner or Ambassador</span>
                         </button>
                     </div>
                 </div>
@@ -79,15 +88,15 @@ export function Pro() {
                     {/* Distributor Tab Content */}
                     <div
                         className={`transition-all duration-500 ease-in-out ${activeTab === 'distributor'
-                                ? 'opacity-100 translate-x-0'
-                                : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
+                            ? 'opacity-100 translate-x-0'
+                            : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
                             }`}
                     >
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             {/* Left Text */}
                             <div className={`transition-all duration-700 delay-100 ${activeTab === 'distributor' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                                 }`}>
-                                <h2 className="mb-2" style={{ fontSize: '32px', fontWeight: 700, lineHeight: '1.3', color:'black' }}>
+                                <h2 className="mb-2" style={{ fontSize: '32px', fontWeight: 700, lineHeight: '1.3', color: 'black' }}>
                                     Resellers & Professionals
                                 </h2>
                                 <p className="mb-6 text-gray-700" style={{ fontSize: '16px', fontWeight: 600 }}>
@@ -167,8 +176,8 @@ export function Pro() {
                     {/* Partner Tab Content */}
                     <div
                         className={`transition-all duration-600 ease-in-out ${activeTab === 'partner'
-                                ? 'opacity-100 translate-x-0'
-                                : 'opacity-0 translate-x-full absolute inset-0 pointer-events-none'
+                            ? 'opacity-100 translate-x-0'
+                            : 'opacity-0 translate-x-full absolute inset-0 pointer-events-none'
                             }`}
                     >
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
