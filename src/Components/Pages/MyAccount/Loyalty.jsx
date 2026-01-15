@@ -80,7 +80,7 @@ export default function Loyalty() {
     return(
         <>
          <div className="min-h-screen bg-gray-100">
-          <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+          <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
             <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8 flex justify-between items-start">

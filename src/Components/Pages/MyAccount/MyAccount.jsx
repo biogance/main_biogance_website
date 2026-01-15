@@ -13,12 +13,27 @@ import Loyalty from './Loyalty';
 import UserProfile from './UserProfile';
 import PetProfile from './PetProfile';
 import Address from './Address';
+import Settings from './Setting';
+import Support from './Support/Support';
+import SupportChat from './Support/SupportChat';
 
 
 
 
 export default function MyAccount() {
     const [activeContent, setActiveContent] = useState('dashboard');
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState(null);
+
+    const handleOpenChat = (ticket) => {
+        setSelectedTicket(ticket);
+        setIsChatOpen(true);
+    };
+
+    const handleCloseChat = () => {
+        setIsChatOpen(false);
+        setSelectedTicket(null);
+    };
 
     const renderContent = () => {
         switch (activeContent) {
@@ -38,7 +53,15 @@ export default function MyAccount() {
                    case 'addresses':
 
                 return <Address/>;
-               
+
+                 case 'settings':
+
+                return <Settings/>;
+
+                 case 'support':
+
+                return <Support onOpenChat={handleOpenChat} />;
+              
                 
             // Add cases for other components like 'orders' in the future
             default:
