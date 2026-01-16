@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 
-export default function DeleteMyAccount() {
+export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
   const handleConfirm = () => {
     console.log('Account deletion confirmed');
+    onClose();
+    onFeedback();
   };
 
   const handleClose = () => {
     console.log('Modal closed');
+    onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4">

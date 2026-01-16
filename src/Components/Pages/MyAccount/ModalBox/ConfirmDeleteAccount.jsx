@@ -4,7 +4,7 @@ import container from "../../../../../public/DeleteIllustration.svg"
 import Image from 'next/image';
 
 
-export default function ConfirmDeletionModal() {
+export default function ConfirmDeletionModal({ onClose }) {
     const [password, setPassword] = useState('Joh@1234');
     const [showPassword, setShowPassword] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
@@ -15,7 +15,7 @@ export default function ConfirmDeletionModal() {
 
     if (isDeleted) {
         return (
-            <div className="min-h-screen bg-transparent bg-opacity-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
 
                     {/* Illustration Placeholder */}
@@ -52,7 +52,7 @@ export default function ConfirmDeletionModal() {
     }
 
     return (
-        <div className="min-h-screen bg-transparent bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
 
                 {/* Header */}
@@ -82,9 +82,9 @@ export default function ConfirmDeletionModal() {
                             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
                         >
                             {showPassword ? (
-                                <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
+                                 <AiOutlineEye className="w-5 h-5 cursor-pointer" />
                             ) : (
-                                <AiOutlineEye className="w-5 h-5 cursor-pointer" />
+                                <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
                             )}
                         </button>
                     </div>
@@ -98,7 +98,10 @@ export default function ConfirmDeletionModal() {
                     >
                         Confirm Delete My Account
                     </button>
-                    <button className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
+                    <button 
+                        onClick={onClose}
+                        className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                         No, Go Back
                     </button>
                 </div>

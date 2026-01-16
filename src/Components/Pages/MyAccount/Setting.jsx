@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { FiLock, FiEye, FiEyeOff, FiMail, FiTrash2 } from 'react-icons/fi';
 import { MdLockOutline } from 'react-icons/md';
+import DeleteMyAccount from './ModalBox/DeleteMyAccount';
+import FeedbackAccount from './ModalBox/FeedbackAccount';
+import ConfirmDeletionModal from './ModalBox/ConfirmDeleteAccount';
 
 // Custom Toggle Component
 const CustomToggle = ({ checked, onChange }) => {
@@ -75,6 +78,10 @@ export default function Settings() {
     productRecommendations: false,
     tipsArticles: false
   });
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
 
   const handlePasswordChange = (field, value) => {
     setPasswords({
@@ -160,9 +167,27 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      console.log('Delete account');
-    }
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const openFeedbackModal = () => {
+    setIsFeedbackModalOpen(true);
+  };
+
+  const closeFeedbackModal = () => {
+    setIsFeedbackModalOpen(false);
+  };
+
+  const openConfirmDeleteModal = () => {
+    setIsConfirmDeleteModalOpen(true);
+  };
+
+  const closeConfirmDeleteModal = () => {
+    setIsConfirmDeleteModalOpen(false);
   };
 
   return (
@@ -382,7 +407,7 @@ export default function Settings() {
                 <div className="flex justify-end -mt-10">
                   <button
                     onClick={handleDeleteAccount}
-                    className="px-6 py-3 bg-[#D00416] text-white rounded-lg hover:bg-red-700 transition-colors"
+                    className="px-6 py-3 cursor-pointer bg-[#D00416] text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
                     Delete Elegance Account
                   </button>
@@ -393,6 +418,9 @@ export default function Settings() {
         </div>
       </div>
     </div>
+    {isDeleteModalOpen && <DeleteMyAccount isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onFeedback={openFeedbackModal} />}
+    {isFeedbackModalOpen && <FeedbackAccount isOpen={isFeedbackModalOpen} onClose={closeFeedbackModal} onContinueToDelete={openConfirmDeleteModal} />}
+    {isConfirmDeleteModalOpen && <ConfirmDeletionModal onClose={closeConfirmDeleteModal} />}
      </div>
   );
 }
