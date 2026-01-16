@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 
-export default function ContactUs() {
+export default function ContactUs({ onClose }) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -24,6 +24,7 @@ export default function ContactUs() {
       phoneNumber: '',
       message: ''
     });
+    if (onClose) onClose();
   };
 
   const phoneInputStyles = `
@@ -64,7 +65,7 @@ export default function ContactUs() {
   return (
     <>
       <style>{phoneInputStyles}</style>
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
           {/* Header */}
           <div className="text-center mb-6">

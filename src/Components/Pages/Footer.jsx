@@ -1,4 +1,6 @@
-import React from 'react';
+"use client"
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaInstagram, FaYoutube, FaLinkedinIn, FaTwitter, FaTiktok } from 'react-icons/fa';
 import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
@@ -6,12 +8,15 @@ import { LuFacebook } from "react-icons/lu";
 import { SlSocialFacebook, SlSocialLinkedin, SlSocialYoutube } from "react-icons/sl";
 import { PiTiktokLogo, PiTwitterLogo } from 'react-icons/pi';
 import { BsTiktok } from "react-icons/bs";
+import ContactUs from './Onboarding/ContactUs';
 
 
 
 
 
 export default function Footer() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <footer className="bg-[#2a2a2a] text-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
@@ -263,7 +268,7 @@ export default function Footer() {
                 <li><a href="#" className="hover:text-white transition">Our expert tips</a></li>
                 <li><Link href="/ingredients" className="hover:text-white transition">Our ingredients</Link></li>
                 <li><Link href="loyalty" className="hover:text-white transition">Join the loyalty program</Link></li>
-                <li><a href="#" className="hover:text-white transition">Write to us</a></li>
+                <li><button onClick={() => setShowModal(true)} className="hover:text-white transition text-left cursor-pointer">Write to us</button></li>
               </ul>
             </div>
 
@@ -315,6 +320,13 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Contact Us Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
+          <ContactUs onClose={() => setShowModal(false)} />
+        </div>
+      )}
     </footer>
   );
 }
