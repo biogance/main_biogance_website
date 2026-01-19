@@ -1,9 +1,36 @@
-import { useState } from 'react';
+"use client"
+
+import { useEffect, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { CancelOrderModal } from './CancelOrderModal';
 
 export function OrderDetailsModal({ isOpen, onClose, order }) {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      return () => {
+        // Restore scrolling
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -21,6 +48,7 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
       { name: 'Organic Paw Balm', price: 15.99, quantity: 1 },
     ]
   };
+  
 
   const orderData = order || defaultOrder;
   const orderItems = Array.isArray(orderData.items) ? orderData.items : defaultOrder.items;
@@ -28,6 +56,7 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
   const totalPrice = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-2 sm:p-4 z-50">
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">

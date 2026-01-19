@@ -156,7 +156,7 @@ export default function Navbar() {
           >
             <div>
               <button
-                onClick={() => setIsProductsOpen(!isProductsOpen)}
+                onClick={toggleProductsModal}
                 className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400] hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
               >
                 <div className="flex items-center space-x-2">
@@ -205,9 +205,9 @@ export default function Navbar() {
                 <FiSearch className="w-5 h-5" />
               </button>
               <Link href="/my-account">
-              <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
-                <FiUser className="w-5 h-5" />
-              </button>
+                <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+                  <FiUser className="w-5 h-5" />
+                </button>
               </Link>
               <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />

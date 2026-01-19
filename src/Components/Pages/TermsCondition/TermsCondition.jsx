@@ -43,7 +43,7 @@ function TermsConditionContent() {
                 <Navbar/>
              </div>
       {/* Mobile Navigation - Horizontal Scrollable Tabs */}
-      <div className="lg:hidden sticky top-0 bg-white border-b  border-gray-200 z-10 shadow-sm">
+      <div className="lg:hidden lg:top-0 sticky top-16 bg-white  z-100  ">
         <div className="overflow-x-auto">
           <nav className="flex space-x-2 px-4 py-3 min-w-max">
             <button

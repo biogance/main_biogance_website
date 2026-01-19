@@ -10,7 +10,7 @@ export default function WhoWeJourneyLife() {
 
   const timelineData = [
     {
-      year: "2015",
+      year: "2012",
       position: "right",
       award: {
         logo:"/L1.svg",
@@ -117,9 +117,18 @@ export default function WhoWeJourneyLife() {
 
         {/* Timeline Container */}
         <div ref={timelineRef} className="relative">
-          {/* Center Vertical Line - Desktop Only */}
+          {/* Center Vertical Line - Desktop */}
           <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-[2px] bg-gray-300 transform -translate-x-1/2">
             {/* Animated black line */}
+            <div 
+              className="absolute top-0 left-0 w-full bg-gray-900"
+              style={{ height: `${scrollProgress * 100}%`, transition: 'height 0.1s linear' }}
+            />
+          </div>
+
+          {/* Mobile Vertical Line - Only visible on mobile/tablet */}
+          <div className="lg:hidden absolute left-[46px] top-0 bottom-0 w-[2px] bg-gray-300">
+            {/* Animated black line for mobile */}
             <div 
               className="absolute top-0 left-0 w-full bg-gray-900"
               style={{ height: `${scrollProgress * 100}%`, transition: 'height 0.1s linear' }}
@@ -132,7 +141,7 @@ export default function WhoWeJourneyLife() {
               <div key={index} className="relative" ref={el => yearRefs.current[index] = el}>
                 
                 {/* Mobile Layout */}
-                <div className="lg:hidden flex gap-6">
+                <div className="lg:hidden flex gap-6 relative z-10">
                   {/* Year and Line */}
                   <div className="flex flex-col items-center flex-shrink-0 pt-1">
                     <div className={`text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors duration-300 ${
@@ -143,9 +152,6 @@ export default function WhoWeJourneyLife() {
                     <div className={`w-3 h-3 rounded-full my-3 border-[3px] transition-all duration-300 ${
                       activeYears.has(index) ? 'bg-white border-black' : 'bg-gray-300 border-gray-300'
                     }`}></div>
-                    {index !== timelineData.length - 1 && (
-                      <div className="w-[2px] bg-gray-300 flex-1"></div>
-                    )}
                   </div>
 
                   {/* Content */}

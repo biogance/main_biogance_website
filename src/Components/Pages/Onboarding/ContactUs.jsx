@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 
@@ -11,6 +11,29 @@ export default function ContactUs({ onClose }) {
     phoneNumber: '',
     message: ''
   });
+
+  // Prevent background scroll when component is mounted
+  useEffect(() => {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+    
+    // Prevent scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    return () => {
+      // Restore scrolling
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      
+      // Restore scroll position
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   const handleSubmit = () => {
     console.log('Form submitted:', formData);
