@@ -208,7 +208,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-black text-sm mb-2">Current Password</label>
               <div className="relative">
@@ -293,7 +293,7 @@ export default function Settings() {
             </ul>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
             <button className="px-6 py-3 cursor-pointer text-black border border-gray-300 rounded-lg hover:border-gray-400 transition-colors">
               Cancel
             </button>
@@ -308,7 +308,8 @@ export default function Settings() {
 
         <div className="bg-white rounded-xl p-4 mb-6 border border-gray-200">
           <div className="flex items-start gap-3 mb-6">
-            <FiMail className="text-gray-700 mt-3" size={20} />
+            <FiMail className="text-gray-700 mt-3 w-16 h-16 sm:w-5 sm:h-5" />
+
             <div>
               <h2 className="font-medium text-black">Email Notification Preferences</h2>
               <p className="text-sm text-gray-600">
@@ -318,7 +319,7 @@ export default function Settings() {
           </div>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">Order Updates</h3>
@@ -342,7 +343,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">Refund Status</h3>
@@ -366,7 +367,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">Product Recommendations</h3>
@@ -393,21 +394,21 @@ export default function Settings() {
         </div>
 
         <div className="bg-white rounded-lg p-3 rounded-xl mb-6 border border-gray-200">
-          <div className="flex items-start gap-2 mb-4">
+          <div className="flex items-start gap-1 mb-4">
             <FiTrash2 className="text-gray-700 mt-1" size={20} />
             <div className="flex-1">
               <h2 className="font-medium text-black mb-4">Delete My Account</h2>
               
-              <div className="bg-red-50  rounded-xl p-3">
-                <p className="text-sm font-semibold text-red-600">
-                  <span className="font-semibold">Deleting your account will remove all your data permanently.</span>
-                  <br />
-                  This action cannot be undone.
-                </p>
-                <div className="flex justify-end -mt-10">
+             <div className="bg-red-50 rounded-xl p-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <p className="text-sm font-semibold text-red-600">
+                    <span className="font-semibold">Deleting your account will remove all your data permanently.</span>
+                    <br />
+                    This action cannot be undone.
+                  </p>
                   <button
                     onClick={handleDeleteAccount}
-                    className="px-6 py-3 cursor-pointer bg-[#D00416] text-white rounded-lg hover:bg-red-700 transition-colors"
+                    className="w-full sm:w-auto sm:flex-shrink-0 px-6 py-3 cursor-pointer bg-[#D00416] text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
                   >
                     Delete Elegance Account
                   </button>

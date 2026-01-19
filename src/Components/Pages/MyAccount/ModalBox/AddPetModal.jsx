@@ -21,7 +21,7 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "" }) =
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between px-4 py-3 
-          bg-gray-50 border  border-gray-200 rounded-lg text-left cursor-pointer
+          bg-gray-50 border border-gray-200 rounded-lg text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
           ${isOpen ? 'border-gray-400 shadow-sm' : 'hover:border-gray-300'}
@@ -152,7 +152,6 @@ const AgePicker = ({ value, onChange }) => {
     label: `${currentYear - i}`
   }));
 
-  // Function to calculate age from birthdate string
   const calculateAge = (birthDateString) => {
     if (!birthDateString) return '';
     try {
@@ -172,7 +171,6 @@ const AgePicker = ({ value, onChange }) => {
     }
   };
 
-  // Parse initial value (format: "9 January 2026")
   useEffect(() => {
     if (value) {
       try {
@@ -193,7 +191,7 @@ const AgePicker = ({ value, onChange }) => {
   const displayYear = selectedDate ? selectedDate.getFullYear() : currentYear;
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
-  const firstDay = new Date(displayYear, displayMonth, 1).getDay(); // 0 = Sunday
+  const firstDay = new Date(displayYear, displayMonth, 1).getDay();
 
   const handleDayClick = (day) => {
     const newDate = new Date(displayYear, displayMonth, day);
@@ -244,7 +242,6 @@ const AgePicker = ({ value, onChange }) => {
             bg-white rounded-2xl shadow-2xl border border-gray-200 p-5
             w-full md:w-[340px]
           ">
-            {/* Month & Year Dropdowns */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <CustomDropdown
                 label="Month"
@@ -271,14 +268,12 @@ const AgePicker = ({ value, onChange }) => {
               />
             </div>
 
-            {/* Calendar Grid */}
             <div className="mb-6">
               <div className="grid grid-cols-7 text-center text-xs text-gray-500 mb-2 font-medium">
                 {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d}>{d}</div>)}
               </div>
 
               <div className="grid grid-cols-7 gap-1 text-center">
-                {/* Empty cells before first day */}
                 {Array(firstDay === 0 ? 6 : firstDay - 1).fill(null).map((_, i) => (
                   <div key={`empty-${i}`} className="py-2" />
                 ))}
@@ -305,12 +300,11 @@ const AgePicker = ({ value, onChange }) => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 cursor-pointer border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
               >
                 Cancel
               </button>
@@ -318,10 +312,7 @@ const AgePicker = ({ value, onChange }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selectedDate}
-                className={`flex-1 py-3 rounded-xl font-medium transition-colors cursor-pointer
-                  ${selectedDate 
-                    ? 'bg-black text-white hover:bg-gray-900' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                className={`flex-1 py-3 rounded-xl font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
               >
                 Apply
               </button>
@@ -347,8 +338,25 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
   });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (isOpen || isSuccessModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+     
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen, isSuccessModalOpen]);
+
+  const handleSubmit = () => {
     onAddPet(formData);
     setIsSuccessModalOpen(true);
   };
@@ -437,47 +445,76 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
       {/* Main Add Pet Modal */}
       {!isSuccessModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl w-full max-w-4xl">
-            <div className="flex items-center justify-between p-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Add Pet</h2>
-              {/* <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                <IoClose className="w-6 h-6" />
-              </button> */}
+          <div className="
+            bg-white rounded-2xl sm:rounded-3xl 
+            w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl 
+            h-[90vh] sm:h-auto 
+            flex flex-col 
+            overflow-hidden
+          ">
+            {/* Fixed Header */}
+            <div className="
+              px-5 sm:px-6 py-4 
+              border-b border-gray-100 
+              bg-white shrink-0
+            ">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                Add Pet
+              </h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="flex flex-col md:flex-row gap-8 mb-8">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 sm:py-6">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
                 {/* Image Section */}
                 <div className="flex flex-col items-center gap-4 md:min-w-[160px]">
-                  <div className="w-32 h-32 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                     {formData.image ? (
                       <img src={formData.image} alt="Pet preview" className="w-full h-full object-cover" />
                     ) : (
-                      <PiPawPrint className="w-16 h-16 text-gray-300" />
+                      <PiPawPrint className="w-14 h-14 sm:w-16 sm:h-16 text-gray-300" />
                     )}
                   </div>
 
                   {formData.image ? (
-                    <div className="flex flex-col gap-2 w-full">
-                      <button type="button" onClick={handleUploadClick} className="text-sm border border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="flex flex-col gap-2 w-full max-w-[160px]">
+                      <button 
+                        type="button" 
+                        onClick={handleUploadClick} 
+                        className="text-sm border border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                      >
                         Update Image
                       </button>
-                      <button type="button" onClick={handleRemoveImage} className="text-sm text-red-600 font-medium hover:text-red-700 transition-colors cursor-pointer text-center">
+                      <button 
+                        type="button" 
+                        onClick={handleRemoveImage} 
+                        className="text-sm text-red-600 font-medium hover:text-red-700 transition-colors text-center"
+                      >
                         Remove
                       </button>
                     </div>
                   ) : (
-                    <button type="button" onClick={handleUploadClick} className="text-sm border border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                    <button 
+                      type="button" 
+                      onClick={handleUploadClick} 
+                      className="text-sm border border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    >
                       Upload Image
                     </button>
                   )}
 
-                  <input id="pet-image-upload" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <input 
+                    id="pet-image-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="hidden" 
+                  />
                 </div>
 
                 {/* Form Fields */}
-                <div className="flex-1 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex-1 space-y-5 sm:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1.5">Pet Name</label>
                       <input
@@ -485,56 +522,46 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                         placeholder="e.g. Scooby"
                         value={formData.name}
                         onChange={(e) => handleChange('name', e.target.value)}
-                        className="w-full px-4 text-black py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
                       />
                     </div>
 
-                    <div>
-                      <CustomDropdown
-                        label="Category"
-                        placeholder="Select category"
-                        options={categoryOptions}
-                        value={formData.category}
-                        onChange={(val) => handleChange('category', val)}
-                      />
-                    </div>
+                    <CustomDropdown
+                      label="Category"
+                      placeholder="Select category"
+                      options={categoryOptions}
+                      value={formData.category}
+                      onChange={(val) => handleChange('category', val)}
+                    />
 
-                    <div>
-                      <CustomDropdown
-                        label="Breed"
-                        placeholder="Select breed"
-                        options={breedOptions}
-                        value={formData.breed}
-                        onChange={(val) => handleChange('breed', val)}
-                      />
-                    </div>
+                    <CustomDropdown
+                      label="Breed"
+                      placeholder="Select breed"
+                      options={breedOptions}
+                      value={formData.breed}
+                      onChange={(val) => handleChange('breed', val)}
+                    />
 
-                    <div>
-                      <AgePicker
-                        value={formData.age}
-                        onChange={(val) => handleChange('age', val)}
-                      />
-                    </div>
+                    <AgePicker
+                      value={formData.age}
+                      onChange={(val) => handleChange('age', val)}
+                    />
 
-                    <div>
-                      <CustomDropdown
-                        label="Gender"
-                        placeholder="Select gender"
-                        options={genderOptions}
-                        value={formData.gender}
-                        onChange={(val) => handleChange('gender', val)}
-                      />
-                    </div>
+                    <CustomDropdown
+                      label="Gender"
+                      placeholder="Select gender"
+                      options={genderOptions}
+                      value={formData.gender}
+                      onChange={(val) => handleChange('gender', val)}
+                    />
 
-                    <div>
-                      <CustomDropdown
-                        label="Weight (kg)"
-                        placeholder="Select weight range"
-                        options={weightOptions}
-                        value={formData.weight}
-                        onChange={(val) => handleChange('weight', val)}
-                      />
-                    </div>
+                    <CustomDropdown
+                      label="Weight (kg)"
+                      placeholder="Select weight"
+                      options={weightOptions}
+                      value={formData.weight}
+                      onChange={(val) => handleChange('weight', val)}
+                    />
 
                     <div className="md:col-span-2">
                       <MultiSelectDropdown
@@ -548,23 +575,28 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 cursor-pointer px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 cursor-pointer px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
-                >
-                  Add Pet
-                </button>
-              </div>
-            </form>
+            {/* Fixed Bottom Buttons */}
+            <div className="
+              px-5 sm:px-6 py-4 
+              border-t border-gray-100 
+              bg-white shrink-0
+              flex flex-col sm:flex-row gap-3 sm:gap-4
+            ">
+              <button
+                onClick={onClose}
+                className="flex-1 px-6 py-3 cursor-pointer border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="flex-1 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium order-1 sm:order-2"
+              >
+                Add Pet
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -573,27 +605,24 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
       {isSuccessModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
-            {/* Success Illustration */}
             <div className="flex justify-center mb-6">
               <img src="successpet.svg" alt="" />
             </div>
 
-            {/* Success Message */}
             <h2 className="text-xl text-black font-semibold text-center mb-3">
               Pet Added Successfully!
             </h2>
 
-            <p className="text-center text-gray-700 ">
+            <p className="text-center text-gray-700">
               You've earned <span className='text-[#DFB400] font-semibold'>20 loyalty points</span> for adding your pet.
             </p>
-             <p className="text-center text-gray-700 mb-6">
+            <p className="text-center text-gray-700 mb-6">
               Tailored recommendations are now on the way!
             </p>
 
-            {/* Okay Button */}
             <button
               onClick={handleCloseAll}
-              className="w-full px-6 py-3 cursor-pointer bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="w-full px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
               Okay!
             </button>

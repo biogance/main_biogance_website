@@ -97,7 +97,7 @@ export default function SupportChat({ ticket, onClose }) {
   return (
     <div className="bg-white  flex flex-col ">
       {/* Header */}
-      <div className="-mx-8 px-1 pl-4 pr-4 pb-4 border-b border-gray-300">
+      <div className="-mx-8 px-1 pl-5 pr-5 pb-4 border-b border-gray-300">
         <div className="max-w-10xl mx-auto flex items-center justify-between">
           <div className="flex items-start gap-4">
             <button onClick={onClose} className="text-gray-700 cursor-pointer mt-2 hover:text-black transition-colors">
@@ -137,12 +137,12 @@ export default function SupportChat({ ticket, onClose }) {
                       </div>
                     </div>
                     {msg.hasIcon && (
-                      <div className="flex flex-col items-center gap-2 ">
-                        <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <img src="sup.svg" alt="Support icon" />
-                        </div>
-                        <span className="text-xs text-gray-500 -mb-10">{msg.time}</span>
-                      </div>
+                      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                              <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </div>
+                            <span className="text-[10px] sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
+                          </div>
                     )}
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function SupportChat({ ticket, onClose }) {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-xs text-gray-500 -mb-10">{msg.time}</span>
+                    <span className="text-[10px] -mb-4 sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
                     </div>
                   )}
                   <div className="max-w-xl">

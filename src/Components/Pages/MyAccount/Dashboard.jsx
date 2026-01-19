@@ -1,7 +1,128 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OrderDetailsModal } from "./ModalBox/OrderDetailsModal";
+
+// Shimmer Card Component for StatCard
+const StatCardShimmer = () => (
+  <div className="bg-white rounded-xl p-6">
+    {/* Value Shimmer */}
+    <div
+      style={{
+        width: '60px',
+        height: '36px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite',
+        marginBottom: '8px'
+      }}
+    />
+    {/* Title Shimmer */}
+    <div
+      style={{
+        width: '80px',
+        height: '14px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite',
+        marginBottom: '4px'
+      }}
+    />
+    {/* Subtitle Shimmer */}
+    <div
+      style={{
+        width: '100px',
+        height: '12px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite'
+      }}
+    />
+  </div>
+);
+
+// Shimmer Card Component for Order Items
+const OrderItemShimmer = () => (
+  <div className="flex items-center justify-between py-4 border border-gray-200 p-4 rounded-xl">
+    <div className="flex-1">
+      {/* Order ID Shimmer */}
+      <div
+        style={{
+          width: '80px',
+          height: '16px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '4px'
+        }}
+      />
+      {/* Date Shimmer */}
+      <div
+        style={{
+          width: '120px',
+          height: '14px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '8px'
+        }}
+      />
+      {/* Status Shimmer */}
+      <div
+        style={{
+          width: '100px',
+          height: '20px',
+          borderRadius: '12px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+    <div className="text-right">
+      {/* Amount Shimmer */}
+      <div
+        style={{
+          width: '60px',
+          height: '20px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '4px'
+        }}
+      />
+      {/* Items Shimmer */}
+      <div
+        style={{
+          width: '50px',
+          height: '14px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '12px'
+        }}
+      />
+      {/* Button Shimmer */}
+      <div
+        style={{
+          width: '100px',
+          height: '32px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+  </div>
+);
 
 function StatCard({ title, value, subtitle }) {
   return (
@@ -16,6 +137,16 @@ function StatCard({ title, value, subtitle }) {
 export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [loadingState, setLoadingState] = useState('shimmer');
+
+    useEffect(() => {
+      // Simulate loading for 2 seconds
+      const timer = setTimeout(() => {
+        setLoadingState('loaded');
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, []);
   // Sample orders data - set to empty array to show empty state
   const recentOrders = [
    {
@@ -56,37 +187,58 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="p-8 max-w-10xl mx-auto">
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: calc(200px + 100%) 0;
+          }
+        }
+      `}} />
+
+      <div className="p-4 md:p-8 max-w-10xl mx-auto">
         {/* Welcome Message */}
-        <h1 className="text-2xl mb-8 mt-10 font-semibold text-gray-900">
+        <h1 className="text-xl md:text-2xl mb-6 md:mb-8 mt-6 md:mt-10 font-semibold text-gray-900">
           Welcome back, John!
         </h1>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <StatCard 
-            title="Loyalty Points"
-            value={hasOrders ? 1250 : 0}
-            subtitle={hasOrders ? "150 points this month" : "0 points this month"}
-          />
-          <StatCard 
-            title="Recent Orders"
-            value={recentOrders.length}
-            subtitle={`${deliveredCount} delivered • ${processingCount} processing • ${shippingCount} shipping`}
-          />
-          <StatCard 
-            title="Wishlist"
-            value={hasOrders ? 8 : 0}
-            subtitle="Items saved for later"
-          />
+          {loadingState === 'shimmer' ? (
+            <>
+              <StatCardShimmer />
+              <StatCardShimmer />
+              <StatCardShimmer />
+            </>
+          ) : (
+            <>
+              <StatCard
+                title="Loyalty Points"
+                value={hasOrders ? 1250 : 0}
+                subtitle={hasOrders ? "150 points this month" : "0 points this month"}
+              />
+              <StatCard
+                title="Recent Orders"
+                value={recentOrders.length}
+                subtitle={`${deliveredCount} delivered • ${processingCount} processing • ${shippingCount} shipping`}
+              />
+              <StatCard
+                title="Wishlist"
+                value={hasOrders ? 8 : 0}
+                subtitle="Items saved for later"
+              />
+            </>
+          )}
         </div>
 
         {/* Recent Orders Section */}
-        <div className="bg-white rounded-xl p-8 ">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
+        <div className="bg-white rounded-xl p-4 md:p-8">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900">Recent Orders</h2>
             {hasOrders && (
-              <button className="text-md  text-black cursor-pointer  hover:underline decoration-gray-400">
+              <button className="text-sm md:text-md text-black cursor-pointer hover:underline decoration-gray-400">
                 See All
               </button>
             )}
@@ -95,54 +247,62 @@ export default function Dashboard() {
           {hasOrders ? (
             /* Orders List */
             <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div 
-                  key={order.id} 
-                  className="flex items-center justify-between py-4 border border-gray-200 p-4 rounded-xl"
-                >
-                  <div className="flex-1">
-                    <div className="font-bold text-black mb-1">#{order.id}</div>
-                    <div className="text-sm text-gray-500 mb-2">Placed on {order.date}</div>
-                    <span 
-                      className={`inline-block px-3 py-1 text-xs font-medium rounded ${
-                        order.statusColor === 'green' 
-                          ? 'bg-green-50 text-green-700' 
-                          : order.statusColor === 'orange'
-                          ? 'bg-orange-50 text-orange-700'
-                          : 'bg-yellow-50 text-yellow-700'
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xl font-semibold text-gray-900 mb-1">
-                      {order.amount}
+              {loadingState === 'shimmer' ? (
+                // Show shimmer order items
+                Array.from({ length: recentOrders.length }).map((_, index) => (
+                  <OrderItemShimmer key={index} />
+                ))
+              ) : (
+                // Show actual orders
+                recentOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between py-4 border border-gray-200 p-4 rounded-xl"
+                  >
+                    <div className="flex-1">
+                      <div className="font-bold text-black mb-1">#{order.id}</div>
+                      <div className="text-sm text-gray-500 mb-2">Placed on {order.date}</div>
+                      <span
+                        className={`inline-block px-3 py-1 text-xs font-medium rounded ${
+                          order.statusColor === 'green'
+                            ? 'bg-green-50 text-green-700'
+                            : order.statusColor === 'orange'
+                            ? 'bg-orange-50 text-orange-700'
+                            : 'bg-yellow-50 text-yellow-700'
+                        }`}
+                      >
+                        {order.status}
+                      </span>
                     </div>
-                    <div className="text-sm text-gray-500 mb-3">
-                      {order.items} {order.items === 1 ? 'Item' : 'Items'}
+                    <div className="text-right">
+                      <div className="text-xl font-semibold text-gray-900 mb-1">
+                        {order.amount}
+                      </div>
+                      <div className="text-sm text-gray-500 mb-3">
+                        {order.items} {order.items === 1 ? 'Item' : 'Items'}
+                      </div>
+                      <button className="bg-gray-900 text-white cursor-pointer px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"   onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}  >
+                        More Details
+                      </button>
                     </div>
-                    <button className="bg-gray-900 text-white cursor-pointer px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"   onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}  >
-                      More Details
-                    </button>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           ) : (
             /* Empty State */
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-64 h-64 mb-6  flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center py-8 md:py-12">
+              <div className="w-48 md:w-64 h-48 md:h-64 mb-4 md:mb-6 flex items-center justify-center">
                <img src="empty.svg" alt="" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                 Your Cart is Empty
               </h3>
-              <p className="text-sm text-gray-500 mb-6 text-center max-w-md">
+              <p className="text-sm text-gray-500 mb-4 md:mb-6 text-center max-w-md">
                 Looks like you haven't placed any orders yet.<br />
                 Start exploring and find the perfect products for your pet!
               </p>
-              <button className="bg-gray-900 text-white cursor-pointer px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+              <button className="bg-gray-900 text-white cursor-pointer px-4 md:px-6 py-2 md:py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
                 Browse Products
               </button>
             </div>

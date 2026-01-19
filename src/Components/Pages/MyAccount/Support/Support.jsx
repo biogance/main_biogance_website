@@ -1,11 +1,114 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BsChatText } from 'react-icons/bs';
 import { FiSearch, FiMessageCircle } from 'react-icons/fi';
 import { IoChevronDown } from 'react-icons/io5';
 import { LuFilter } from 'react-icons/lu';
 import SupportChat from './SupportChat';
+
+// Support Ticket Shimmer Component
+const SupportTicketShimmer = () => (
+  <div className="bg-white rounded-xl border border-gray-200 p-4">
+    {/* Header with Ticket ID and Status */}
+    <div className="flex items-center justify-between mb-3">
+      <div
+        style={{
+          width: '100px',
+          height: '20px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+      <div
+        style={{
+          width: '80px',
+          height: '24px',
+          borderRadius: '12px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+
+    {/* Order Reference */}
+    <div
+      style={{
+        width: '120px',
+        height: '14px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite',
+        marginBottom: '8px'
+      }}
+    />
+
+    {/* Created On */}
+    <div
+      style={{
+        width: '140px',
+        height: '14px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite',
+        marginBottom: '24px'
+      }}
+    />
+
+    {/* Description Box */}
+    <div className="bg-gray-100 p-3 rounded-xl w-full mb-3">
+      <div
+        style={{
+          width: '100px',
+          height: '16px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '8px'
+        }}
+      />
+      <div
+        style={{
+          width: '100%',
+          height: '14px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '4px'
+        }}
+      />
+      <div
+        style={{
+          width: '80%',
+          height: '14px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+
+    {/* Button */}
+    <div
+      style={{
+        width: '100%',
+        height: '44px',
+        borderRadius: '8px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite'
+      }}
+    />
+  </div>
+);
 
 export default function Support({ onOpenChat }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,6 +116,7 @@ export default function Support({ onOpenChat }) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [loadingState, setLoadingState] = useState('shimmer');
 
   // ← Your ticket data (later you will fetch this from API)
   const [tickets, setTickets] = useState([
@@ -62,10 +166,30 @@ export default function Support({ onOpenChat }) {
 
   const hasTickets = displayedTickets.length > 0;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingState('loaded');
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className=" sm:p-6 md:p-8 max-w-10xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: calc(200px + 100%) 0;
+          }
+        }
+      `}} />
+
+      <div className="min-h-screen bg-gray-100">
+        <div className=" sm:p-6 md:p-8 max-w-10xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
 
           {isChatOpen ? (
             <SupportChat ticket={selectedTicket} onClose={handleCloseChat} />
@@ -141,43 +265,49 @@ export default function Support({ onOpenChat }) {
 
                   {/* Tickets Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {displayedTickets.map((ticket) => (
-                      <div
-                        key={ticket.id}
-                        className="bg-white rounded-xl border border-gray-200 p-4 hover: transition-shadow"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-semibold text-black">Ticket ID: {ticket.id}</h3>
-                          <span
-                            className={`px-4 py-2 rounded-full text-xs font-medium ${ticket.statusColor}`}
-                          >
-                            {ticket.status}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-gray-600 mb-1">
-                          Order Reference: {ticket.orderRef}
-                        </p>
-                        <p className="text-sm text-gray-600 mb-6">
-                          Created On: {ticket.createdOn}
-                        </p>
-
-                          <div className='bg-gray-100 p-3 rounded-xl w-full mb-3 text black'>
-                        <h4 className="font-medium mb-2 text-black">{ticket.title}</h4>
-                        <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
-                          {ticket.description}
-                        </p>
-                        </div>
-
-                        <button
-                          onClick={() => handleOpenChat(ticket)}
-                          className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
+                    {loadingState === 'shimmer' ? (
+                      Array.from({ length: displayedTickets.length }).map((_, index) => (
+                        <SupportTicketShimmer key={index} />
+                      ))
+                    ) : (
+                      displayedTickets.map((ticket) => (
+                        <div
+                          key={ticket.id}
+                          className="bg-white rounded-xl border border-gray-200 p-4 hover: transition-shadow"
                         >
-                          <BsChatText size={18} />
-                          Open Support Chat
-                        </button>
-                      </div>
-                    ))}
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-semibold text-black">Ticket ID: {ticket.id}</h3>
+                            <span
+                              className={`px-4 py-2 rounded-full text-xs font-medium ${ticket.statusColor}`}
+                            >
+                              {ticket.status}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-gray-600 mb-1">
+                            Order Reference: {ticket.orderRef}
+                          </p>
+                          <p className="text-sm text-gray-600 mb-6">
+                            Created On: {ticket.createdOn}
+                          </p>
+
+                            <div className='bg-gray-100 p-3 rounded-xl w-full mb-3 text black'>
+                          <h4 className="font-medium mb-2 text-black">{ticket.title}</h4>
+                          <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
+                            {ticket.description}
+                          </p>
+                          </div>
+
+                          <button
+                            onClick={() => handleOpenChat(ticket)}
+                            className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
+                          >
+                            <BsChatText size={18} />
+                            Open Support Chat
+                          </button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </>
               ) : (
@@ -218,5 +348,6 @@ export default function Support({ onOpenChat }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -96,17 +96,17 @@ export default function UserProfile() {
     return(
         <>
             <style>{phoneInputStyles}</style>
-            <div className="max-w-10xl mx-auto px-6 py-8">
-                <div className="bg-white rounded-xl p-8">
+            <div className="max-w-10xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
+                <div className="bg-white rounded-xl p-4 sm:p-8">
                     {/* Header */}
                     <h2 className="text-2xl text-black font-semibold mb-1">User Profile</h2>
                     <p className="text-gray-600 text-sm mb-8">Update your personal details</p>
                     
                     {/* Form with Upload Image */}
-                    <div className="flex gap-8">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                         {/* Upload Image Section */}
                         <div className="flex flex-col items-center">
-                            <div className="w-34 h-34 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            <div className="w-24 h-24 sm:w-34 sm:h-34 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                 {profileImage ? (
                                     <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -188,7 +188,7 @@ export default function UserProfile() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-end gap-3 mt-10">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10">
                         <button
                             onClick={handleCancel}
                             className="px-6 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer"

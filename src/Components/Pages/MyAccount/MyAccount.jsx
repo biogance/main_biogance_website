@@ -98,7 +98,7 @@ export default function MyAccount() {
                     </div>
                 </div>
 
-                <div className="bg-gray-100 flex">
+                <div className="bg-gray-100 flex flex-col lg:flex-row">
                     <Sidebar activeItem={activeContent} onItemClick={setActiveContent} />
                     <div className="flex-1">
                         {renderContent()}

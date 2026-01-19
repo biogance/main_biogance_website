@@ -1,15 +1,131 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { TbPencil } from "react-icons/tb";
 import { AddAddressModal } from "./ModalBox/AddAddressModal";
 
+// Address Card Shimmer Component
+const AddressCardShimmer = () => (
+  <div className="bg-white rounded-xl p-4 border border-gray-200">
+    {/* Header */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center gap-3">
+        {/* Radio button shimmer */}
+        <div
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+        {/* Type shimmer */}
+        <div
+          style={{
+            width: '60px',
+            height: '20px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        {/* Edit button shimmer */}
+        <div
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+        {/* Delete button shimmer */}
+        <div
+          style={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Street address shimmer */}
+    <div
+      style={{
+        width: '100%',
+        height: '40px',
+        borderRadius: '4px',
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200px 100%',
+        animation: 'shimmer 1.5s infinite',
+        marginBottom: '24px'
+      }}
+      className=" pb-4 mb-6 border-b border-gray-200"
+    />
+
+    {/* Details shimmer */}
+    <div className="space-y-1.5 text-sm">
+      <div className="flex justify-between">
+        <span className="text-gray-500">City</span>
+        <div
+          style={{
+            width: '80px',
+            height: '16px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+      </div>
+      <div className="flex justify-between">
+        <span className="text-gray-500">Postal Code</span>
+        <div
+          style={{
+            width: '70px',
+            height: '16px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+      </div>
+      <div className="flex justify-between">
+        <span className="text-gray-500">Country</span>
+        <div
+          style={{
+            width: '60px',
+            height: '16px',
+            borderRadius: '4px',
+            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+            backgroundSize: '200px 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
+      </div>
+    </div>
+  </div>
+);
+
 export default function Address() {
   const [activeTab, setActiveTab] = useState("delivery");
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingState, setLoadingState] = useState('shimmer');
 
   const [addresses, setAddresses] = useState([
     {
@@ -77,8 +193,28 @@ export default function Address() {
 
   const hasAddresses = addresses.length > 0;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingState('loaded');
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: calc(200px + 100%) 0;
+          }
+        }
+      `}} />
+
+      <div className="min-h-screen bg-gray-100">
       <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           {/* Header */}
@@ -137,64 +273,70 @@ export default function Address() {
           {/* Main Content */}
           {hasAddresses ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-              {addresses.map((address) => (
-                <div
-                  key={address.id}
-                  className="bg-white rounded-xl p-4 border border-gray-200 cursor-pointer"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setSelectedAddress(address.id)}
-                        className="relative w-5 h-5 flex-shrink-0 mt-0.5"
-                      >
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center">
-                          {selectedAddress === address.id && (
-                            <div className="w-3 h-3 rounded-full bg-gray-900"></div>
-                          )}
-                        </div>
-                      </button>
-                      <h3 className="font-semibold text-gray-900">{address.type}</h3>
+              {loadingState === 'shimmer' ? (
+                Array.from({ length: addresses.length }).map((_, index) => (
+                  <AddressCardShimmer key={index} />
+                ))
+              ) : (
+                addresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className="bg-white rounded-xl p-4 border border-gray-200 cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setSelectedAddress(address.id)}
+                          className="relative w-5 h-5 flex-shrink-0 mt-0.5"
+                        >
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center">
+                            {selectedAddress === address.id && (
+                              <div className="w-3 h-3 rounded-full bg-gray-900"></div>
+                            )}
+                          </div>
+                        </button>
+                        <h3 className="font-semibold text-gray-900">{address.type}</h3>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(address.id)}
+                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                          title="Edit"
+                        >
+                          <TbPencil className="w-5 h-5 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(address.id)}
+                          className="text-red-500 hover:text-red-600 transition-colors"
+                          title="Delete"
+                        >
+                          <RiDeleteBin6Line size={18} />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(address.id)}
-                        className="text-gray-600 hover:text-gray-900 transition-colors"
-                        title="Edit"
-                      >
-                        <TbPencil className="w-5 h-5 text-gray-600" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(address.id)}
-                        className="text-red-500 hover:text-red-600 transition-colors"
-                        title="Delete"
-                      >
-                        <RiDeleteBin6Line size={18} />
-                      </button>
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed -mx-4 px-4 pb-4 mb-6 border-b border-gray-200">
+                      {address.street}
+                    </p>
+
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">City</span>
+                        <span className="text-gray-900 font-medium">{address.city}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Postal Code</span>
+                        <span className="text-gray-900 font-medium">{address.postalCode}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Country</span>
+                        <span className="text-gray-900 font-medium">{address.country}</span>
+                      </div>
                     </div>
                   </div>
-
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed -mx-4 px-4 pb-4 mb-6 border-b border-gray-200">
-                    {address.street}
-                  </p>
-
-                  <div className="space-y-1.5 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">City</span>
-                      <span className="text-gray-900 font-medium">{address.city}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Postal Code</span>
-                      <span className="text-gray-900 font-medium">{address.postalCode}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Country</span>
-                      <span className="text-gray-900 font-medium">{address.country}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 md:py-24">
@@ -237,6 +379,7 @@ export default function Address() {
         onClose={handleCloseModal}
         onSave={handleSaveAddress}
       />
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,14 +1,104 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CiSearch } from "react-icons/ci";
-import { 
-  MdOutlineKeyboardArrowDown, 
-  MdOutlineKeyboardArrowLeft, 
-  MdOutlineKeyboardArrowRight, 
-  MdOutlineKeyboardDoubleArrowLeft, 
-  MdOutlineKeyboardDoubleArrowRight 
+import {
+  MdOutlineKeyboardArrowDown,
+  MdOutlineKeyboardArrowLeft,
+  MdOutlineKeyboardArrowRight,
+  MdOutlineKeyboardDoubleArrowLeft,
+  MdOutlineKeyboardDoubleArrowRight
 } from 'react-icons/md';
+
+// Shimmer Card Component for Order Items
+const OrderItemShimmer = () => (
+  <div className="
+    flex flex-col sm:flex-row sm:items-center
+    justify-between gap-4 p-5
+    border border-gray-200 rounded-xl
+  ">
+    {/* Left Section */}
+    <div className="flex-1">
+      {/* Order ID Shimmer */}
+      <div
+        style={{
+          width: '100px',
+          height: '24px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '8px'
+        }}
+      />
+      
+      {/* Date Shimmer */}
+      <div
+        style={{
+          width: '170px',
+          height: '16px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '12px'
+        }}
+      />
+      
+      {/* Status Shimmer */}
+      <div
+        style={{
+          width: '90px',
+          height: '28px',
+          borderRadius: '6px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+
+    {/* Right Section */}
+    <div className="flex flex-col items-end gap-2 sm:min-w-[200px]">
+      {/* Price Shimmer */}
+      <div
+        style={{
+          width: '90px',
+          height: '28px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+      
+      {/* Items Count Shimmer */}
+      <div
+        style={{
+          width: '60px',
+          height: '16px',
+          borderRadius: '4px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite',
+          marginBottom: '8px'
+        }}
+      />
+      
+      {/* Button Shimmer */}
+      <div
+        style={{
+          width: '130px',
+          height: '44px',
+          borderRadius: '8px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200px 100%',
+          animation: 'shimmer 1.5s infinite'
+        }}
+      />
+    </div>
+  </div>
+);
 
 const Dropdown = ({ label, options, selected, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,6 +173,17 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
 };
 
 export default function MyOrder() {
+  const [loadingState, setLoadingState] = useState('shimmer');
+
+  useEffect(() => {
+    // Simulate loading for 2 seconds
+    const timer = setTimeout(() => {
+      setLoadingState('loaded');
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const [orders] = useState([
     { id: '#ORD-001', date: 'January 8, 2025', status: 'Processing', price: 64.98, items: 4 },
     { id: '#ORD-002', date: 'January 10, 2025', status: 'Awaiting Confirmation', price: 49.50, items: 1 },
@@ -134,7 +235,18 @@ export default function MyOrder() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: calc(200px + 100%) 0;
+          }
+        }
+      `}} />
+
+      <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
         <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">
@@ -154,7 +266,7 @@ export default function MyOrder() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="
                   w-full pl-12 pr-5 py-3 
-                   border border-gray-200 rounded-xl 
+          plz add shimmers         border border-gray-200 rounded-xl 
                   text-sm text-black focus:outline-none focus:ring-2 focus:ring-gray-300 
                   placeholder-gray-500 transition-all duration-200
                 "
@@ -181,50 +293,58 @@ export default function MyOrder() {
 
           {/* Orders List */}
           <div className="space-y-4">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="
-                  flex flex-col sm:flex-row sm:items-center 
-                  justify-between gap-4 p-5 
-                  border border-gray-200 rounded-xl 
-                  hover:border-gray-300 hover:shadow-sm 
-                  transition-all duration-200
-                "
-              >
-                <div className="flex-1">
-                  <div className="font-bold text-lg text-gray-900">{order.id}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Placed on {order.date}
+            {loadingState === 'shimmer' ? (
+              // Show shimmer order items
+              Array.from({ length: orders.length }).map((_, index) => (
+                <OrderItemShimmer key={index} />
+              ))
+            ) : (
+              // Show actual orders
+              orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="
+                    flex flex-col sm:flex-row sm:items-center
+                    justify-between gap-4 p-5
+                    border border-gray-200 rounded-xl
+                    hover:border-gray-300 hover:shadow-sm
+                    transition-all duration-200
+                  "
+                >
+                  <div className="flex-1">
+                    <div className="font-bold  text-lg text-gray-900">{order.id}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Placed on {order.date}
+                    </div>
+                    <span className={`
+                      mt-2.5 inline-block px-3.5 py-1
+                      text-xs font-medium rounded-full
+                      ${getStatusColor(order.status)}
+                    `}>
+                      {order.status}
+                    </span>
                   </div>
-                  <span className={`
-                    mt-2.5 inline-block px-3.5 py-1 
-                    text-xs font-medium rounded-full
-                    ${getStatusColor(order.status)}
-                  `}>
-                    {order.status}
-                  </span>
-                </div>
 
-                <div className="text-right sm:min-w-[180px]">
-                  <div className="text-xl font-bold text-gray-900">
-                    ${order.price.toFixed(2)}
+                  <div className="text-right sm:min-w-[180px]">
+                    <div className="text-xl font-bold text-gray-900">
+                      ${order.price.toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {order.items} Items
+                    </div>
+                    <button className="
+                      mt-4 w-full sm:w-auto
+                      bg-gray-900 hover:bg-gray-800
+                      text-white text-sm font-medium
+                      px-6 py-2.5 rounded-lg
+                      transition-colors duration-200
+                    ">
+                      More Details
+                    </button>
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {order.items} Items
-                  </div>
-                  <button className="
-                    mt-4 w-full sm:w-auto
-                    bg-gray-900 hover:bg-gray-800 
-                    text-white text-sm font-medium
-                    px-6 py-2.5 rounded-lg
-                    transition-colors duration-200
-                  ">
-                    More Details
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Pagination */}
