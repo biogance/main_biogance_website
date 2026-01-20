@@ -1,0 +1,41 @@
+{
+  "hero": {
+    "title": "BECOME PRO MEMBER",
+    "breadcrumb": {
+      "home": "Home",
+      "pro": "Pro"
+    }
+  },
+  "tabs": {
+    "distributor": "Distributor or Retailer",
+    "partner": "Partner or Ambassador"
+  },
+  "distributor": {
+    "title": "Resellers & Professionals",
+    "subtitle": "Join the Biogance & Ekinat network",
+    "description": "Distributor, pet shop, grooming salon, pharmacy, concept store...",
+    "paragraph1": "Joining the Biogance network means choosing products made in France, using organic and natural ingredients, already available in over 40 countries worldwide.",
+    "paragraph2": "Apply by clicking the link below to open your account. Once your application is submitted, our sales team will analyze the information provided and get back to you very soon.",
+    "supportTitle": "We support our resellers with:",
+    "benefits": [
+      "Preferential offers and advantageous B2B terms (download the catalog)",
+      "Customized marketing tools (POS materials, visuals, promotional kits)"
+    ],
+    "buttons": {
+      "distributorApp": "Distributor Application",
+      "resellerApp": "Reseller Application"
+    }
+  },
+  "partner": {
+    "introTitle": "Introduction",
+    "introParagraphs": [
+      "Biogance combines science and nature to create organic, eco-certified, and environmentally friendly hygiene and care products for animals.",
+      "Founded in France, the brand is committed to animal well-being, sustainability, and innovation, offering safe, effective, and responsible formulas designed for the comfort and health of your companions.",
+      "Based in Angers, in the heart of Anjou, Biogance develops and manufactures its products in France, with a strong commitment to quality and transparency at every stage — from ingredient selection to the final formulation.",
+      "Our mission: to offer the best of nature and science for animal well-being."
+    ],
+    "ambassadorTitle": "Become an ambassador",
+    "ambassadorDescription": "At Biogance, we believe in authentic and long-lasting collaborations built on trust, passion, and shared values: respect for animals and the environment, their well-being, quality, and innovation.",
+    "button": "Become an Ambassador"
+  }
+}

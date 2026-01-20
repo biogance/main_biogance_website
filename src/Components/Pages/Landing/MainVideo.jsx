@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import Navbar from '../Navbar';
-
 import LandingCards from './LandingCards';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingProductFinder } from './LandingProductFinder';
@@ -12,6 +11,7 @@ import LandingReview from './LandingReview';
 import LandingBanner from './LandingBanner';
 import Footer from '../Footer';
 import LandingCategories from './LandingCategories';
+import { useTranslation } from 'react-i18next';
 
 const heroSlides = [
   {
@@ -20,7 +20,7 @@ const heroSlides = [
   },
   {
     type: 'video',
-    url: '/LandingVideo.mp4', // Apni video ka naam yahan daalein
+    url: '/LandingVideo.mp4',
   },
   {
     type: 'image',
@@ -28,7 +28,7 @@ const heroSlides = [
   },
   {
     type: 'video',
-    url: '/LandingVideo.mp4', // Apni doosri video ka naam yahan daalein
+    url: '/LandingVideo.mp4',
   },
   {
     type: 'image',
@@ -36,30 +36,25 @@ const heroSlides = [
   },
 ];
 
-const heroContent = {
-  tagline: 'Because pets deserve the best',
-  heading: (
-    <>
-      Organic Care,
-      <br />
-      Inspired by Nature
-    </>
-  ),
-  description: 'Since 2008, Biogance creates pet care products made in France with natural and organic ingredients for healthier, happier pets.',
-};
-
 export default function HeroSection() {
+  const { t } = useTranslation('home');
   const [currentSlide, setCurrentSlide] = useState(0);
   const hasMultipleSlides = heroSlides.length > 1;
+
+  // ✅ heroContent ko component ke ANDAR move kiya
+  const heroContent = {
+    tagline: t('hero.tagline'),
+    heading: t('hero.heading'),
+    description: t('hero.description'),
+  };
 
   const currentSlideData = heroSlides[currentSlide];
   const isCurrentVideo = currentSlideData.type === 'video';
 
-  // Auto-scroll functionality for both images and videos
+  // Auto-scroll functionality
   React.useEffect(() => {
     if (!hasMultipleSlides) return;
 
-    // For images: 2.5 seconds, for videos: approximately video duration (30 seconds as estimate)
     const duration = isCurrentVideo ? 49000 : 2500;
 
     const interval = setInterval(() => {
@@ -120,7 +115,7 @@ export default function HeroSection() {
           {/* Dark Overlay */}
           <div className="absolute inset-0 bg-black/40"></div>
 
-          {/* Content Container - Fixed responsive structure */}
+          {/* Content Container */}
           <div className="relative z-10 w-full h-full flex items-center">
             <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 2xl:px-24">
               <div className="max-w-3xl">
@@ -142,22 +137,21 @@ export default function HeroSection() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <button className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
-                    Shop Now
+                    {t('hero.shopNow')}
                   </button>
                   <button className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
-                    Discover
+                    {t('hero.discover')}
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Navigation Controls - Responsive positioning */}
+          {/* Navigation Controls */}
           {hasMultipleSlides && (
             <>
-              {/* Desktop Navigation - Bottom Right */}
+              {/* Desktop Navigation */}
               <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
-                {/* Arrows */}
                 <div className="flex items-center gap-3 lg:gap-4">
                   <button 
                     onClick={goToPrevious}
@@ -175,7 +169,6 @@ export default function HeroSection() {
                   </button>
                 </div>
 
-                {/* Dots Indicator */}
                 <div className="flex items-center gap-2">
                   {heroSlides.map((_, index) => (
                     <div
@@ -191,11 +184,9 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              {/* Mobile Navigation - Bottom Center */}
-          {/* Mobile Navigation - Bottom Right */}
+              {/* Mobile Navigation */}
               <div className="md:hidden absolute bottom-6 right-6 z-20">
                 <div className="flex flex-col items-center gap-4">
-                  {/* Arrows */}
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={goToPrevious}
@@ -213,7 +204,6 @@ export default function HeroSection() {
                     </button>
                   </div>
 
-                  {/* Dots Indicator */}
                   <div className="flex items-center gap-2">
                     {heroSlides.map((_, index) => (
                       <div
@@ -234,16 +224,16 @@ export default function HeroSection() {
         </div>
       </main>
 
-      {/* Categories Section */}
-      <LandingCategories/>
+      {/* Sections */}
+      <LandingCategories />
       <LandingCards />
-      <LandingFeatures/>
-      <LandingProductFinder/>
+      <LandingFeatures />
+      <LandingProductFinder />
       <LandingCards title="Best Selling" />
-      <LandingExpertAdvice/>
-      <LandingReview/>
-      <LandingBanner/>
-      <Footer/>
+      <LandingExpertAdvice />
+      <LandingReview />
+      <LandingBanner />
+      <Footer />
     </>
   );
 }

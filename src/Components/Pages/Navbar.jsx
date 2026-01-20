@@ -4,14 +4,9 @@ import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
+import { useTranslation } from 'react-i18next';
 
 const logoImage = '/logo.svg';
-
-const navLinks = [
-  { href: '/who-are-we', text: 'Our Laboratory' },
-  { href: '#', text: 'Our Expert Advice' },
-  { href: '/navPro', text: 'Pro' },
-];
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
   return (
@@ -27,10 +22,25 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 };
 
 export default function Navbar() {
+  const { t, i18n } = useTranslation('navbar');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+
+  const navLinks = [
+    { href: '/who-are-we', text: t('ourLaboratory') },
+    { href: '#', text: t('ourExpertAdvice') },
+    { href: '/navPro', text: 'Pro' },
+  ];
+
+  const languages = [
+    { code: 'en', label: 'English', flag: '/UkFlag.svg', shortLabel: 'EN' },
+    { code: 'fr', label: 'Français', flag: '/franceFlag.svg', shortLabel: 'FR' },
+  ];
+
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
   const handleMobileMenuToggle = () => {
     if (isMobileMenuOpen) {
@@ -39,17 +49,22 @@ export default function Navbar() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Toggle function for Products Modal
   const toggleProductsModal = () => {
     setIsProductsModalOpen(!isProductsModalOpen);
+  };
+
+  const changeLanguage = (langCode) => {
+    i18n.changeLanguage(langCode);
+    setIsLanguageDropdownOpen(false);
   };
 
   return (
     <>
       {/* Backdrop overlay */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
         style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         onClick={handleMobileMenuToggle}
       />
@@ -57,7 +72,7 @@ export default function Navbar() {
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div className="relative flex items-center justify-between h-full">
-            {/* Mobile Menu Button & Logo (for mobile and iPad) */}
+            {/* Mobile Menu Button & Logo */}
             <div className="flex items-center lg:hidden">
               <button
                 onClick={handleMobileMenuToggle}
@@ -81,7 +96,7 @@ export default function Navbar() {
                 />
               </Link>
 
-              {/* Center Navigation Links - Desktop Only (lg and above) */}
+              {/* Center Navigation Links - Desktop Only */}
               <div className="hidden lg:flex flex-1 items-center justify-center gap-4">
                 <button
                   onClick={toggleProductsModal}
@@ -89,13 +104,14 @@ export default function Navbar() {
                 >
                   <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
                   <div className="text-left">
-                    <div className="text-sm font-normal text-[#1C1C1C]">Our Products</div>
+                    <div className="text-sm font-normal text-[#1C1C1C]">{t('ourProducts')}</div>
                     <div className="text-xs text-gray-500">
                       <img src="/france.svg" alt="France" />
                     </div>
                   </div>
-                  <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${isProductsModalOpen ? 'rotate-180' : 'rotate-0'
-                    }`} />
+                  <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
+                    isProductsModalOpen ? 'rotate-180' : 'rotate-0'
+                  }`} />
                 </button>
 
                 {navLinks.map((link, index) => (
@@ -111,12 +127,38 @@ export default function Navbar() {
 
             {/* Right Side Icons */}
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <button className="hidden lg:flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
-                <span>EN</span>
-                <FiChevronDown className="w-4 h-4" />
-              </button>
+              {/* Language Dropdown - Desktop */}
+              <div className="hidden lg:block relative">
+                <button 
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+                >
+                  <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-5 h-4 object-cover" />
+                  <span>{currentLanguage.shortLabel}</span>
+                  <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                    isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
+                  }`} />
+                </button>
+                
+                {/* Language Dropdown Menu */}
+                {isLanguageDropdownOpen && (
+                  <div className="absolute top-full mt-2 right-0 bg-black/50 rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] cursor-pointer">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => changeLanguage(lang.code)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
+                          i18n.language === lang.code  
+                        }`}
+                      >
+                        <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />
+                        <span className="font-medium">{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              {/* SEARCH ICON - visible on desktop only (lg and above) */}
               <button
                 onClick={() => setIsSearchModalOpen(true)}
                 className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
@@ -131,7 +173,6 @@ export default function Navbar() {
               <Link href="/wishlist">
                 <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                   <FiHeart className="w-5 h-5" />
-
                 </button>
               </Link>
 
@@ -145,14 +186,16 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu with Ultra Smooth Animation */}
+        {/* Mobile Menu */}
         <div
-          className={`lg:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-            }`}
+          className={`lg:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${
+            isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
         >
           <div
-            className={`px-4 py-4 space-y-4 transform transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'translate-y-0' : '-translate-y-6'
-              }`}
+            className={`px-4 py-4 space-y-4 transform transition-all duration-500 ease-in-out ${
+              isMobileMenuOpen ? 'translate-y-0' : '-translate-y-6'
+            }`}
           >
             <div>
               <button
@@ -161,22 +204,24 @@ export default function Navbar() {
               >
                 <div className="flex items-center space-x-2">
                   <img src="/Menu.svg" className="w-5 h-5" alt="Menu" />
-                  <span>Our Products</span>
+                  <span>{t('ourProducts')}</span>
                 </div>
                 <FiChevronDown
-                  className={`w-4 h-4 transition-transform duration-400 ease-in-out ${isProductsOpen ? 'rotate-180' : 'rotate-0'
-                    }`}
+                  className={`w-4 h-4 transition-transform duration-400 ease-in-out ${
+                    isProductsOpen ? 'rotate-180' : 'rotate-0'
+                  }`}
                 />
               </button>
 
-              {/* Products Dropdown with Smooth Animation */}
               <div
-                className={`overflow-hidden transition-all duration-400 ease-in-out ${isProductsOpen ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
-                  }`}
+                className={`overflow-hidden transition-all duration-400 ease-in-out ${
+                  isProductsOpen ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
+                }`}
               >
                 <div
-                  className={`pl-7 pt-2 space-y-2 transform transition-all duration-400 ease-in-out ${isProductsOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
-                    }`}
+                  className={`pl-7 pt-2 space-y-2 transform transition-all duration-400 ease-in-out ${
+                    isProductsOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                  }`}
                 >
                   <img src="/france.svg" alt="France" className="w-8 h-6" />
                 </div>
@@ -194,10 +239,37 @@ export default function Navbar() {
             ))}
 
             <div className="pt-4 border-t border-gray-200 flex items-center space-x-3">
-              <button className="flex items-center p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
-                <span>EN</span>
-                <FiChevronDown className="w-4 h-4" />
-              </button>
+              {/* Language Dropdown - Mobile */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                >
+                  <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-5 h-4 object-cover" />
+                  <span>{currentLanguage.shortLabel}</span>
+                  <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                    isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
+                  }`} />
+                </button>
+                
+                {isLanguageDropdownOpen && (
+                  <div className="absolute top-full mt-2 left-0 bg-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => changeLanguage(lang.code)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors cursor-pointer ${
+                          i18n.language === lang.code ? 'bg-gray-800' : ''
+                        }`}
+                      >
+                        <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />
+                        <span className="font-medium">{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() => setIsSearchModalOpen(true)}
                 className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"

@@ -1,35 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { FaStar } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
-const reviews = [
-  {
-    name: 'John Doe',
-    date: '05/11/2025',
-    review: 'I stumbled upon this store while searching online, and I couldn\'t be happier! My son adores the toy; his excitement is contagious! The quality is outstanding and delivery was super fast.',
-  },
-  {
-    name: 'Algistino Lionel',
-    date: '04/11/2025',
-    review: 'It was great when I happened to come across the store\'s products while browsing the web. My child really loves this toy. He looks so excited and plays with it every single day. The quality exceeded my expectations and the customer service was fantastic. Highly recommended for all pet parents!',
-  },
-  {
-    name: 'Peter',
-    date: '04/11/2025',
-    review: 'Amazing quality and super fast delivery! My kid hasn\'t stopped playing with it since it arrived. Highly recommend this store to everyone looking for quality pet toys.',
-  },
-  {
-    name: 'Sarah Johnson',
-    date: '03/11/2025',
-    review: 'Best purchase ever! The toy is durable, safe, and keeps my daughter entertained for hours. Will definitely buy again from this store. Customer support was also very helpful when I had questions.',
-  },
-  {
-    name: 'Michael Chen',
-    date: '02/11/2025',
-    review: 'Exceptional service and top-notch products. My twins love their new toys and I appreciate the eco-friendly packaging. Five stars! The attention to detail in packaging shows they really care about their customers and the environment.',
-  },
-];
-
-const ReviewCard = ({ name, date, review }) => {
+const ReviewCard = ({ name, date, review, readMore, showLess, googleAlt }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -50,7 +23,7 @@ const ReviewCard = ({ name, date, review }) => {
         </div>
 
         {/* Google Icon */}
-        <img src="google.svg" alt="Google" className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+        <img src="google.svg" alt={googleAlt} className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
       </div>
 
       {/* 5 Stars */}
@@ -73,7 +46,7 @@ const ReviewCard = ({ name, date, review }) => {
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-xs md:text-sm cursor-pointer font-medium text-gray-600 underline hover:text-gray-800 transition-colors"
         >
-          {isExpanded ? 'Show less' : 'Read more'}
+          {isExpanded ? showLess : readMore}
         </button>
       </div>
     </div>
@@ -81,7 +54,14 @@ const ReviewCard = ({ name, date, review }) => {
 };
 
 export default function LandingReview() {
+  const { t } = useTranslation('home');
   const scrollContainerRef = useRef(null);
+
+  // Get reviews data from translation file
+  const reviews = t('reviews.reviewsData', { returnObjects: true });
+  const readMore = t('reviews.readMore');
+  const showLess = t('reviews.showLess');
+  const googleAlt = t('reviews.googleAlt');
 
   return (
     <section className="py-6 md:py-8 px-4 md:px-6 bg-white">
@@ -99,10 +79,10 @@ export default function LandingReview() {
         {/* Heading - Centered */}
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4 px-4">
-            What Pet Parents Are Saying
+            {t('reviews.title')}
           </h2>
           <p className="text-sm md:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-            Read real reviews from happy pet parents who trust our products.
+            {t('reviews.subtitle')}
           </p>
         </div>
 
@@ -119,6 +99,9 @@ export default function LandingReview() {
                   name={review.name}
                   date={review.date}
                   review={review.review}
+                  readMore={readMore}
+                  showLess={showLess}
+                  googleAlt={googleAlt}
                 />
               ))}
             </div>

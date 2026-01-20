@@ -1,0 +1,175 @@
+{
+  "hero": {
+    "tagline": "Parce que les animaux méritent le meilleur",
+    "heading": "Soins Biologiques, Inspirés par la Nature",
+    "description": "Depuis 2008, Biogance crée des produits de soins pour animaux fabriqués en France avec des ingrédients naturels et biologiques pour des animaux en meilleure santé et plus heureux.",
+    "shopNow": "Acheter Maintenant",
+    "discover": "Découvrir"
+  },
+  "categories": {
+    "title": "Explorez nos collections sélectionnées",
+    "dogs": "Chiens & Chiots",
+    "cats": "Chats & Chatons",
+    "birds": "Oiseaux",
+    "fish": "Poissons & Aquarium",
+    "smallPets": "Petits Animaux",
+    "reptiles": "Reptiles",
+    "farmAnimals": "Animaux de Ferme",
+    "accessories": "Accessoires pour Animaux",
+    "food": "Nourriture pour Animaux",
+    "services": "Services pour Animaux"
+  },
+  "products": {
+    "title": "Produits Populaires",
+    "addToCart": "Ajouter au Panier",
+    "wishlistTitle": "Votre Liste de Souhaits",
+    "removeAll": "Tout Supprimer",
+    "favoriteProducts": "Produits Favoris",
+    "favoriteAdvices": "Conseils d'Experts Favoris"
+  },
+  "bestSelling": {
+    "title": "Meilleures Ventes"
+  },
+  "features": {
+    "title": "Pourquoi Choisir Biogance",
+    "clientService": {
+      "title": "Service Client",
+      "subtitle": "+33 2 41 73 15 15",
+      "description": "Disponible 9h-12h / 14h-16h"
+    },
+    "freeDelivery": {
+      "title": "Livraison Gratuite",
+      "description": "Profitez de la livraison GRATUITE sur les commandes de plus de 39€ (points de collecte France uniquement)"
+    },
+    "madeInFrance": {
+      "title": "100%",
+      "description": "Tous nos produits sont fièrement 100% Fabriqués en France"
+    },
+    "securePayment": {
+      "title": "Paiement Sécurisé",
+      "description": "Achetez en toute confiance avec notre système de paiement sécurisé"
+    }
+  },
+  "productFinder": {
+    "title": "Trouvez Votre Produit Parfait",
+    "heading": "Trouvez le Produit Parfait",
+    "description": "Répondez à quelques questions rapides pour nous aider à trouver la meilleure option pour les besoins de votre animal",
+    "whoIsYourPet": "Qui est votre animal ?",
+    "petTypes": {
+      "dog": "Chien",
+      "puppy": "Chiot",
+      "cat": "Chat",
+      "horse": "Cheval",
+      "reptile": "Reptile",
+      "smallMammal": "Petit Mammifère",
+      "birdFarmyard": "Oiseau & Basse-cour"
+    },
+    "specialAboutPet": "Qu'est-ce qui est spécial chez votre animal ?",
+    "productUniverse": "Univers de produits",
+    "viewProducts": "Voir les Produits"
+  },
+  "expertAdvice": {
+    "title": "Conseils d'Experts",
+    "heading": "Nos Conseils d'Experts",
+    "description": "Obtenez des conseils et des orientations de vétérinaires et d'experts en soins pour animaux pour garder votre animal heureux et en bonne santé.",
+    "discoverMore": "Découvrez plus de conseils de nos spécialistes",
+    "continueReading": "Continuer la Lecture",
+    "showLess": "Afficher Moins",
+    "categories": {
+      "forDogs": "Pour Chiens",
+      "forCats": "Pour Chats"
+    },
+    "articles": {
+      "article1": {
+        "category": "Pour Chiens",
+        "date": "28 Juillet 2025",
+        "title": "Comment prendre soin de la truffe de mon chien ?",
+        "description": "Vous ne savez pas comment prendre soin de la truffe de votre chien ? La truffe d'un chien recèle de nombreux mystères. À la fois fragile et puissante, elle est particulièrement essentielle au maintien de la santé et du bien-être de votre animal tout au long de sa vie."
+      },
+      "article2": {
+        "category": "Pour Chats",
+        "date": "28 Juillet 2025",
+        "tags": ["Comportement"],
+        "title": "Qu'est-ce que le pétrissage chez les chats ?",
+        "description": "En fait, le pétrissage est inné chez les chats. À la naissance, cette action est essentielle à la survie du chaton. Elle stimule la production de lait de la mère et aide à créer un lien fort entre la mère et le chaton. En fait, le pétrissage est inné chez les chats."
+      },
+      "article3": {
+        "category": "Pour Chiens",
+        "date": "30 Mai 2024",
+        "tags": ["Éducation"],
+        "title": "Comment toiletter votre chien à la maison ?",
+        "description": "Vous voulez un chien mignon en tout temps ? Vous n'avez jamais eu le courage de toiletter votre chien ? Souvent, nous avons l'impression que notre boule de poils déteste le processus de toilettage, mais avec les bonnes techniques, cela peut être agréable."
+      },
+      "article4": {
+        "category": "Pour Chats",
+        "date": "15 Juin 2025",
+        "title": "Pourquoi mon chat dort-il autant ?",
+        "description": "Les chats dorment 12 à 16 heures par jour. C'est tout à fait normal ! Mais parfois, un sommeil excessif peut être un signe d'ennui ou de problèmes de santé nécessitant l'attention d'un vétérinaire pour un diagnostic approprié."
+      },
+      "article5": {
+        "category": "Pour Chiens",
+        "date": "10 Août 2025",
+        "tags": ["Santé"],
+        "title": "Signes que votre chien a besoin d'une visite chez le vétérinaire",
+        "description": "Comprendre quand votre chien a besoin d'attention médicale peut être difficile. Apprenez les principaux signes d'avertissement qui indiquent qu'il est temps de planifier une visite chez votre vétérinaire pour un examen approfondi."
+      },
+      "article6": {
+        "category": "Pour Chats",
+        "date": "5 Septembre 2025",
+        "tags": ["Nutrition"],
+        "title": "Meilleure alimentation pour chats âgés",
+        "description": "À mesure que les chats vieillissent, leurs besoins nutritionnels changent considérablement. Découvrez quels aliments sont les meilleurs pour les chats âgés et comment maintenir leur santé et leur vitalité grâce à une nutrition et une planification des repas appropriées."
+      },
+      "article7": {
+        "category": "Pour Chiens",
+        "date": "12 Octobre 2025",
+        "tags": ["Dressage"],
+        "title": "Les bases du dressage des chiots",
+        "description": "Commencer tôt le dressage des chiots pose les bases d'un chien bien élevé. Apprenez les commandes essentielles, les conseils de propreté et les techniques de renforcement positif qui fonctionnent le mieux pour les jeunes chiots."
+      },
+      "article8": {
+        "category": "Pour Chats",
+        "date": "20 Novembre 2025",
+        "title": "Comprendre le langage corporel du chat",
+        "description": "Les chats communiquent principalement par le langage corporel. Des positions de la queue aux mouvements des oreilles, apprenez à lire les signaux de votre chat et à comprendre ce qu'il essaie de vous dire chaque jour."
+      }
+    }
+  },
+  "reviews": {
+    "title": "Ce Que Disent les Parents d'Animaux",
+    "subtitle": "Lisez de vrais avis de parents d'animaux heureux qui font confiance à nos produits.",
+    "readMore": "Lire la suite",
+    "showLess": "Afficher moins",
+    "googleAlt": "Google",
+    "reviewsData": [
+      {
+        "name": "Jean Dupont",
+        "date": "05/11/2025",
+        "review": "Je suis tombé sur cette boutique en cherchant en ligne, et je ne pourrais pas être plus heureux ! Mon fils adore le jouet ; son excitation est contagieuse ! La qualité est exceptionnelle et la livraison était super rapide."
+      },
+      {
+        "name": "Algistino Lionel",
+        "date": "04/11/2025",
+        "review": "C'était génial quand je suis tombé par hasard sur les produits de la boutique en naviguant sur le web. Mon enfant adore vraiment ce jouet. Il a l'air tellement excité et joue avec tous les jours. La qualité a dépassé mes attentes et le service client était fantastique. Hautement recommandé pour tous les parents d'animaux !"
+      },
+      {
+        "name": "Pierre",
+        "date": "04/11/2025",
+        "review": "Qualité incroyable et livraison super rapide ! Mon enfant n'a pas arrêté de jouer avec depuis son arrivée. Je recommande vivement cette boutique à tous ceux qui recherchent des jouets pour animaux de qualité."
+      },
+      {
+        "name": "Sarah Johnson",
+        "date": "03/11/2025",
+        "review": "Meilleur achat jamais fait ! Le jouet est durable, sûr et garde ma fille divertie pendant des heures. Je vais certainement racheter dans cette boutique. Le support client était également très utile lorsque j'avais des questions."
+      },
+      {
+        "name": "Michel Chen",
+        "date": "02/11/2025",
+        "review": "Service exceptionnel et produits de première qualité. Mes jumeaux adorent leurs nouveaux jouets et j'apprécie l'emballage écologique. Cinq étoiles ! L'attention portée aux détails dans l'emballage montre qu'ils se soucient vraiment de leurs clients et de l'environnement."
+      }
+    ]
+  },
+  "banner": {
+    "title": "Rejoignez la Famille Biogance"
+  }
+}

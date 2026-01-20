@@ -1,0 +1,41 @@
+{
+  "hero": {
+    "title": "DEVENEZ MEMBRE PRO",
+    "breadcrumb": {
+      "home": "Maison",
+      "pro": "Pro"
+    }
+  },
+  "tabs": {
+    "distributor": "Distributeur ou Revendeur",
+    "partner": "Partenaire ou Ambassadeur"
+  },
+  "distributor": {
+    "title": "Revendeurs & Professionnels",
+    "subtitle": "Rejoignez le réseau Biogance & Ekinat",
+    "description": "Distributeur, animalerie, salon de toilettage, pharmacie, concept store...",
+    "paragraph1": "Rejoindre le réseau Biogance, c'est choisir des produits fabriqués en France, utilisant des ingrédients biologiques et naturels, déjà disponibles dans plus de 40 pays à travers le monde.",
+    "paragraph2": "Postulez en cliquant sur le lien ci-dessous pour ouvrir votre compte. Une fois votre candidature soumise, notre équipe commerciale analysera les informations fournies et vous contactera très prochainement.",
+    "supportTitle": "Nous soutenons nos revendeurs avec :",
+    "benefits": [
+      "Des offres préférentielles et des conditions B2B avantageuses (télécharger le catalogue)",
+      "Des outils marketing personnalisés (matériel PLV, visuels, kits promotionnels)"
+    ],
+    "buttons": {
+      "distributorApp": "Candidature Distributeur",
+      "resellerApp": "Candidature Revendeur"
+    }
+  },
+  "partner": {
+    "introTitle": "Introduction",
+    "introParagraphs": [
+      "Biogance allie science et nature pour créer des produits d'hygiène et de soins biologiques, éco-certifiés et respectueux de l'environnement pour les animaux.",
+      "Fondée en France, la marque s'engage pour le bien-être animal, la durabilité et l'innovation, offrant des formules sûres, efficaces et responsables conçues pour le confort et la santé de vos compagnons.",
+      "Basée à Angers, au cœur de l'Anjou, Biogance développe et fabrique ses produits en France, avec un fort engagement envers la qualité et la transparence à chaque étape — de la sélection des ingrédients à la formulation finale.",
+      "Notre mission : offrir le meilleur de la nature et de la science pour le bien-être animal."
+    ],
+    "ambassadorTitle": "Devenez ambassadeur",
+    "ambassadorDescription": "Chez Biogance, nous croyons aux collaborations authentiques et durables construites sur la confiance, la passion et des valeurs partagées : le respect des animaux et de l'environnement, leur bien-être, la qualité et l'innovation.",
+    "button": "Devenir Ambassadeur"
+  }
+}

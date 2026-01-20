@@ -3,11 +3,37 @@
 import { PiDog, PiCat, PiHorse, PiBird, PiGameController, PiGridFour } from 'react-icons/pi';
 import { GiRabbit, GiSnake } from 'react-icons/gi';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Products({ isOpen, onClose }) {
+  const { t } = useTranslation('ourproduct');
   const [activeCategory, setActiveCategory] = useState('dogs');
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Icons mapping
+  const iconMap = {
+    dogs: <PiDog size={24} />,
+    cats: <PiCat size={24} />,
+    horses: <PiHorse size={24} />,
+    mammals: <GiRabbit size={24} />,
+    birds: <PiBird size={24} />,
+    reptiles: <GiSnake size={24} />,
+    games: <PiGameController size={24} />,
+    all: <PiGridFour size={24} />
+  };
+
+  // Get data from translation files
+  const categoriesData = t('categories', { returnObjects: true }) || [];
+  const sectionsData = t('sections', { returnObjects: true }) || [];
+
+  // Combine categories with icons
+  const categories = Array.isArray(categoriesData) 
+    ? categoriesData.map(cat => ({
+        ...cat,
+        icon: iconMap[cat.id]
+      }))
+    : [];
 
   // Close modal on ESC key press
   useEffect(() => {
@@ -39,57 +65,6 @@ export default function Products({ isOpen, onClose }) {
       onClose();
     }, 300);
   };
-
-  const categories = [
-    { id: 'dogs', name: 'Dogs & Puppies', icon: <PiDog size={24} /> },
-    { id: 'cats', name: 'Cats & Kittens', icon: <PiCat size={24} /> },
-    { id: 'horses', name: 'Horses', icon: <PiHorse size={24} /> },
-    { id: 'mammals', name: 'Small Mammals', icon: <GiRabbit size={24} /> },
-    { id: 'birds', name: 'Birds & Poultry', icon: <PiBird size={24} /> },
-    { id: 'reptiles', name: 'Reptiles', icon: <GiSnake size={24} /> },
-    { id: 'games', name: 'Games & Treats', icon: <PiGameController size={24} /> },
-    { id: 'all', name: 'All Ranges', icon: <PiGridFour size={24} /> },
-  ];
-
-  const contentSections = [
-    {
-      title: 'Grooming & Care',
-      image: 'https://images.unsplash.com/photo-1641484202528-c33769340d44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGdyb29taW5nJTIwd2hpdGUlMjBkb2d8ZW58MXx8fHwxNzY3OTUzODQ0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      items: [
-        'Shampoos & Conditioners',
-        'Dry & Leave-In Shampoos',
-        'Sensitive Area Care',
-        'Skin & Coat Care',
-        'Shedding Care',
-        'Detanglers & Brushes',
-        'Anti-Free Radical Treatment',
-        'Dermoccare Veto-Pharma Range'
-      ]
-    },
-    {
-      title: 'Lifestyle & Wellness',
-      image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1080&q=80',
-      items: [
-        'Relaxation',
-        'Toys & Treats',
-        'Accessories & Textiles',
-        'Scented Waters',
-        'Our Kits',
-        'What\'s New'
-      ]
-    },
-    {
-      title: 'Health & Nutrition',
-      image: 'https://images.unsplash.com/photo-1629581327302-45202bbc4bd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBidWxsZG9nJTIwb3V0ZG9vcnxlbnwxfHx8fDE3Njc5NTM4NDN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      items: [
-        'Pest Care',
-        'Food Supplements',
-        'Biogance Premium & Natural Range',
-        'ECOCERT Organiclisme Controlled Range',
-        'Plouf Fruity Range (Low Budget)'
-      ]
-    }
-  ];
 
   if (!isOpen) return null;
 
@@ -161,7 +136,7 @@ export default function Products({ isOpen, onClose }) {
               </div>
 
               {/* Desktop Sidebar */}
-              <div className={`hidden lg:block w-[180px] bg-[#2a2a2a] p-3 rounded-lg flex-shrink-0 h-fit transition-all duration-500 delay-100 ${
+              <div className={`hidden lg:block w-[220px] bg-[#2a2a2a] p-6 rounded-lg flex-shrink-0 h-fit transition-all duration-500 delay-100 ${
                 isAnimating ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
               }`}>
                 <div className="space-y-1">
@@ -174,7 +149,7 @@ export default function Products({ isOpen, onClose }) {
                           ? 'bg-white text-black shadow-lg scale-105'
                           : 'text-white hover:bg-[#3a3a3a] hover:translate-x-1'
                       } ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                      style={{ transitionDelay: `${index * 50 + 200}ms` }}
+                      
                     >
                       <span className="flex-shrink-0">{category.icon}</span>
                       <span className="text-xs">{category.name}</span>
@@ -186,7 +161,7 @@ export default function Products({ isOpen, onClose }) {
               {/* Main Content */}
               <div className="flex-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-                  {contentSections.map((section, index) => (
+                  {Array.isArray(sectionsData) && sectionsData.map((section, index) => (
                     <div 
                       key={index} 
                       className={`flex flex-col transition-all duration-500 ${
@@ -208,7 +183,7 @@ export default function Products({ isOpen, onClose }) {
 
                       {/* Section Items */}
                       <div className="space-y-2.5 sm:space-y-3 md:space-y-4">
-                        {section.items.map((item, itemIndex) => (
+                        {Array.isArray(section.items) && section.items.map((item, itemIndex) => (
                           <div 
                             key={itemIndex} 
                             className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:translate-x-2 cursor-pointer transition-all duration-300"

@@ -1,28 +1,25 @@
 import React from 'react'
-import { FaHeadphones } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 export const LandingFeatures = () => {
+  const { t } = useTranslation();
+
   const features = [
     {
       icon: () => <img src="head.svg" alt="" className="w-10 h-10" />,
-      title: 'Service Client',
-      subtitle: '+33 2 41 73 15 15',
-      description: 'Available 9h-12h / 14h-16h',
+      translationKey: 'clientService',
     },
     {
-       icon: () => <img src="truck.svg" alt="" className="w-10 h-10" />,
-      title: 'Free Delivery',
-      description: 'Enjoy FREE delivery on orders over €39 (France collection points only)',
+      icon: () => <img src="truck.svg" alt="" className="w-10 h-10" />,
+      translationKey: 'freeDelivery',
     },
     {
       icon: () => <img src="earth.svg" alt="" className="w-10 h-10" />,
-      title: '100%',
-      description: 'All our products are proudly 100% Made in France',
+      translationKey: 'madeInFrance',
     },
     {
-       icon: () => <img src="card.svg" alt="" className="w-10 h-10" />,
-      title: 'Secure Payment',
-      description: 'Shop confidently with our secure payment system',
+      icon: () => <img src="card.svg" alt="" className="w-10 h-10" />,
+      translationKey: 'securePayment',
     },
   ];
 
@@ -36,11 +33,17 @@ export const LandingFeatures = () => {
               <div key={index} className="flex flex-col border border-[#E2E2E2] rounded-xl p-4 items-start gap-3">
                 <Icon className="w-10 h-10 stroke-[1.5]" />
                 <div>
-                  <h3 className="text-base text-black font-bold mb-1">{feature.title}</h3>
-                  {feature.subtitle && (
-                    <p className="text-sm text-black mb-1">{feature.subtitle}</p>
+                  <h3 className="text-base text-black font-bold mb-1">
+                    {t(`home:features.${feature.translationKey}.title`)}
+                  </h3>
+                  {t(`home:features.${feature.translationKey}.subtitle`, { defaultValue: '' }) && (
+                    <p className="text-sm text-black mb-1">
+                      {t(`home:features.${feature.translationKey}.subtitle`)}
+                    </p>
                   )}
-                  <p className="text-sm text-gray-600">{feature.description}</p>
+                  <p className="text-sm text-gray-600">
+                    {t(`home:features.${feature.translationKey}.description`)}
+                  </p>
                 </div>
               </div>
             );

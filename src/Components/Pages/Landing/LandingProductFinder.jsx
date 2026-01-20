@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export function LandingProductFinder() {
+  const { t } = useTranslation('home');
   const [selectedPet, setSelectedPet] = useState('');
   const [expandedSection, setExpandedSection] = useState(null);
   
@@ -42,7 +44,13 @@ export function LandingProductFinder() {
   };
 
   const petTypes = [
-    'Dog', 'Puppy', 'Cat', 'Horse', 'Reptile', 'Small Mammal', 'Bird & Farmyard',
+    { key: 'dog' },
+    { key: 'puppy' },
+    { key: 'cat' },
+    { key: 'horse' },
+    { key: 'reptile' },
+    { key: 'smallMammal' },
+    { key: 'birdFarmyard' },
   ];
 
   return (
@@ -70,30 +78,30 @@ export function LandingProductFinder() {
           {/* Header */}
           <div className="mb-6 sm:mb-8">
             <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3">
-              Find the Perfect Product
+              {t('productFinder.heading')}
             </h2>
             <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
-              Answer a few quick questions to help us find the best match for your pet's needs
+              {t('productFinder.description')}
             </p>
           </div>
 
           {/* Pet Selector */}
           <div className="mb-6 sm:mb-8">
             <h3 className="text-white text-xs sm:text-sm font-medium mb-3 sm:mb-4">
-              Who is your pet?
+              {t('productFinder.whoIsYourPet')}
             </h3>
             <div className="flex flex-wrap gap-2 sm:gap-3"> 
               {petTypes.map((pet) => (
                 <button
-                  key={pet}
-                  onClick={() => setSelectedPet(pet)}
+                  key={pet.key}
+                  onClick={() => setSelectedPet(pet.key)}
                   className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
-                    selectedPet === pet
+                    selectedPet === pet.key
                       ? 'bg-white text-black shadow-lg border border-white'
                       : 'bg-white/10 text-white hover:bg-white/20 border border-white/30' 
                   }`}
                 >
-                  {pet}
+                  {t(`productFinder.petTypes.${pet.key}`)}
                 </button>
               ))}
             </div>
@@ -106,7 +114,7 @@ export function LandingProductFinder() {
                 onClick={() => setExpandedSection(expandedSection === 'special' ? null : 'special')}
                 className="text-white/90 hover:text-white text-xs sm:text-sm font-medium transition"
               >
-                What's special about your pet?
+                {t('productFinder.specialAboutPet')}
               </button>
               <button
                 onClick={() => setExpandedSection(expandedSection === 'special' ? null : 'special')}
@@ -121,7 +129,7 @@ export function LandingProductFinder() {
                 onClick={() => setExpandedSection(expandedSection === 'universe' ? null : 'universe')}
                 className="text-white/90 hover:text-white text-xs sm:text-sm font-medium transition"
               >
-                Product universe
+                {t('productFinder.productUniverse')}
               </button>
               <button
                 onClick={() => setExpandedSection(expandedSection === 'universe' ? null : 'universe')}
@@ -134,7 +142,7 @@ export function LandingProductFinder() {
 
           {/* View Products Button */}
           <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-3.5 sm:py-4 md:py-5 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
-            View Products
+            {t('productFinder.viewProducts')}
           </button>
         </div>
       </div>

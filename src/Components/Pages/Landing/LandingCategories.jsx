@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PiDog } from 'react-icons/pi';
+import { useTranslation } from 'react-i18next';
 
 // Shimmer Card Component with inline styles
 const ShimmerCard = () => (
@@ -60,19 +61,20 @@ const LoadingCard = () => (
 );
 
 export default function LandingCategories() {
+  const { t } = useTranslation('home');
   const [loadingState, setLoadingState] = useState('shimmer'); // shimmer, spinner, loaded
 
   const categories = [
-    { icon: PiDog, label: 'Dogs & Puppies' },
-    { icon: PiDog, label: 'Cats & Kittens' },
-    { icon: PiDog, label: 'Birds' },
-    { icon: PiDog, label: 'Fish & Aquarium' },
-    { icon: PiDog, label: 'Small Pets' },
-    { icon: PiDog, label: 'Reptiles' },
-    { icon: PiDog, label: 'Farm Animals' },
-    { icon: PiDog, label: 'Pet Accessories' },
-    { icon: PiDog, label: 'Pet Food' },
-    { icon: PiDog, label: 'Pet Services' },
+    { icon: PiDog, label: t('categories.dogs') },
+    { icon: PiDog, label: t('categories.cats') },
+    { icon: PiDog, label: t('categories.birds') },
+    { icon: PiDog, label: t('categories.fish') },
+    { icon: PiDog, label: t('categories.smallPets') },
+    { icon: PiDog, label: t('categories.reptiles') },
+    { icon: PiDog, label: t('categories.farmAnimals') },
+    { icon: PiDog, label: t('categories.accessories') },
+    { icon: PiDog, label: t('categories.food') },
+    { icon: PiDog, label: t('categories.services') },
   ];
 
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function LandingCategories() {
 
       <div className="max-w-7xl mx-auto">
         <h2 className="text-center text-3xl font-semibold text-black mb-12">
-          Explore our curated collections
+          {t('categories.title')}
         </h2>
 
         {/* Horizontal Scrollable Container */}

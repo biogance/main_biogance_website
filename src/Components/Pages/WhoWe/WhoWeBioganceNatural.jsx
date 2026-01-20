@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaLeaf, FaTrophy, FaCertificate } from 'react-icons/fa';
 import { GiTowerFlag } from 'react-icons/gi';
+import forest from "../../../../public/forest.svg"
+import Image from 'next/image';
 
 export default function WhoWeBioganceNatural() {
   return (
@@ -8,11 +10,14 @@ export default function WhoWeBioganceNatural() {
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/forest.svg')",
-          backgroundPosition: 'center',
-        }}
       >
+        <Image
+        src={forest}
+        alt="Lush green forest background"
+        fill
+        className="object-cover object-center"
+        priority               
+      />
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-white/10"></div>
         

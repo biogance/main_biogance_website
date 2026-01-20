@@ -10,11 +10,17 @@ import partner from "../../../../public/partnerImg.jpg"
 import { useRouter } from 'next/navigation';
 import Footer from '../Footer';
 import Link from 'next/link';
-import DeleteMyAccount from '../MyAccount/ModalBox/DeleteMyAccount';
+import { useTranslation } from 'react-i18next';
 
 export function Pro() {
+    const { t } = useTranslation('pro');
     const [activeTab, setActiveTab] = useState("distributor");
     const router = useRouter();
+
+    // Get data from translation
+    const benefits = t('distributor.benefits', { returnObjects: true }) || [];
+    const introParagraphs = t('partner.introParagraphs', { returnObjects: true }) || [];
+
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50">
@@ -34,13 +40,13 @@ export function Pro() {
 
                 <div className="relative h-full flex flex-col items-center justify-center text-white px-4">
                     <h1 className="text-white mb-3 sm:mb-4 tracking-wide text-center text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold leading-tight">
-                        BECOME PRO MEMBER
+                        {t('hero.title')}
                     </h1>
 
                     <div className="flex items-center gap-2 text-white text-xs sm:text-sm">
-                        <Link href="/" className="hover:underline">Home</Link>
+                        <Link href="/" className="hover:underline">{t('hero.breadcrumb.home')}</Link>
                         <span>/</span>
-                        <a className="underline">Pro</a>
+                        <a className="underline">{t('hero.breadcrumb.pro')}</a>
                     </div>
                 </div>
             </div>
@@ -63,7 +69,7 @@ export function Pro() {
                                 }
             `}
                         >
-                            <span className="relative z-10">Distributor or Retailer</span>
+                            <span className="relative z-10">{t('tabs.distributor')}</span>
                         </button>
 
                         <button
@@ -78,7 +84,7 @@ export function Pro() {
                                 }
             `}
                         >
-                            <span className="relative z-10">Partner or Ambassador</span>
+                            <span className="relative z-10">{t('tabs.partner')}</span>
                         </button>
                     </div>
                 </div>
@@ -97,65 +103,51 @@ export function Pro() {
                             <div className={`transition-all duration-700 delay-100 ${activeTab === 'distributor' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                                 }`}>
                                 <h2 className="mb-2" style={{ fontSize: '32px', fontWeight: 700, lineHeight: '1.3', color: 'black' }}>
-                                    Resellers & Professionals
+                                    {t('distributor.title')}
                                 </h2>
                                 <p className="mb-6 text-gray-700" style={{ fontSize: '16px', fontWeight: 600 }}>
-                                    Join the Biogance & Ekinat network
+                                    {t('distributor.subtitle')}
                                 </p>
                                 <p className="mb-4 text-gray-800" style={{ fontSize: '15px', fontWeight: 600, lineHeight: '1.5' }}>
-                                    Distributor, pet shop, grooming salon, pharmacy, concept store...
+                                    {t('distributor.description')}
                                 </p>
                                 <p className="mb-4 text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.6' }}>
-                                    Joining the Biogance network means choosing products made in France,
-                                    using organic and natural ingredients, already available in over 40
-                                    countries worldwide.
+                                    {t('distributor.paragraph1')}
                                 </p>
                                 <p className="mb-6 text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.6' }}>
-                                    Apply by clicking the link below to open your account. Once your
-                                    application is submitted, our sales team will analyze the information
-                                    provided and get back to you very soon.
+                                    {t('distributor.paragraph2')}
                                 </p>
                                 <p className="mb-3 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                    We support our resellers with:
+                                    {t('distributor.supportTitle')}
                                 </p>
 
                                 <div className="space-y-2 mb-8">
-                                    <div className="flex items-start gap-2">
-                                        <Image
-                                            src={doubleTick}
-                                            alt="Check"
-                                            width={20}
-                                            height={20}
-                                            className="mt-0.5 shrink-0"
-                                        />
-                                        <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.5' }}>
-                                            Preferential offers and advantageous B2B terms (download the catalog)
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <Image
-                                            src={doubleTick}
-                                            alt="Check"
-                                            width={20}
-                                            height={20}
-                                            className="mt-0.5 shrink-0"
-                                        />
-                                        <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.5' }}>
-                                            Customized marketing tools (POS materials, visuals, promotional kits)
-                                        </p>
-                                    </div>
+                                    {Array.isArray(benefits) && benefits.map((benefit, index) => (
+                                        <div key={index} className="flex items-start gap-2">
+                                            <Image
+                                                src={doubleTick}
+                                                alt="Check"
+                                                width={20}
+                                                height={20}
+                                                className="mt-0.5 shrink-0"
+                                            />
+                                            <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.5' }}>
+                                                {benefit}
+                                            </p>
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <Link href="/distributor"  >
+                                    <Link href="/distributor">
                                         <button
                                             className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
-                                            Distributor Application
+                                            {t('distributor.buttons.distributorApp')}
                                         </button>
                                     </Link>
-                                    <Link href="/reseller"  >
+                                    <Link href="/reseller">
                                         <button className="px-6 py-3 bg-white text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
-                                            Reseller Application
+                                            {t('distributor.buttons.resellerApp')}
                                         </button>
                                     </Link>
                                 </div>
@@ -184,42 +176,24 @@ export function Pro() {
                             {/* Left Content */}
                             <div className={`space-y-6 transition-all duration-700 delay-100 ${activeTab === 'partner' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                                 }`}>
-                                <h2 className="text-3xl font-bold text-gray-900">Introduction</h2>
+                                <h2 className="text-3xl font-bold text-gray-900">{t('partner.introTitle')}</h2>
 
-                                <p className="text-gray-700 leading-relaxed">
-                                    Biogance combines science and nature to create organic, eco-certified,
-                                    and environmentally friendly hygiene and care products for animals.
-                                </p>
-
-                                <p className="text-gray-700 leading-relaxed">
-                                    Founded in France, the brand is committed to animal well-being,
-                                    sustainability, and innovation, offering safe, effective, and responsible
-                                    formulas designed for the comfort and health of your companions.
-                                </p>
-
-                                <p className="text-gray-700 leading-relaxed">
-                                    Based in Angers, in the heart of Anjou, Biogance develops and
-                                    manufactures its products in France, with a strong commitment to quality
-                                    and transparency at every stage — from ingredient selection to the final
-                                    formulation.
-                                </p>
-
-                                <p className="text-gray-700 leading-relaxed">
-                                    Our mission: to offer the best of nature and science for animal well-being.
-                                </p>
+                                {Array.isArray(introParagraphs) && introParagraphs.map((paragraph, index) => (
+                                    <p key={index} className="text-gray-700 leading-relaxed">
+                                        {paragraph}
+                                    </p>
+                                ))}
 
                                 <div className="pt-4">
                                     <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                                        Become an ambassador
+                                        {t('partner.ambassadorTitle')}
                                     </h3>
                                     <p className="text-gray-700 leading-relaxed mb-6">
-                                        At Biogance, we believe in authentic and long-lasting collaborations built on
-                                        trust, passion, and shared values: respect for animals and the environment, their
-                                        well-being, quality, and innovation.
+                                        {t('partner.ambassadorDescription')}
                                     </p>
-                                    <Link href="/ambassador"  >
+                                    <Link href="/ambassador">
                                         <button className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
-                                            Become an Ambassador
+                                            {t('partner.button')}
                                         </button>
                                     </Link>
                                 </div>
