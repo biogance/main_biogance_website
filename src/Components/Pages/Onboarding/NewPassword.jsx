@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AiOutlineClose, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
-export default function CreateNewPasswordModal() {
+export default function CreateNewPasswordModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
@@ -77,7 +77,31 @@ export default function CreateNewPasswordModal() {
     }
   };
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();           // ← Prevents page refresh
+
     const newErrors = {
       password: validatePassword(formData.password),
       confirmPassword: validateConfirmPassword(formData.confirmPassword, formData.password)
@@ -93,26 +117,29 @@ export default function CreateNewPasswordModal() {
     
     if (!hasErrors) {
       console.log('Save Password clicked:', formData);
-    } else {
-      console.log('Form has errors, cannot submit');
+      // Here you would normally call your API to update the password
+      // e.g. await resetPasswordApi(formData.password);
+      
+      // Optionally close modal or show success message
+      // onClose();
     }
   };
 
   const handleClose = () => {
-    console.log('Close button clicked');
+    if (onClose) onClose();
   };
 
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
-      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-80">
+      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 overflow-y-auto">
         {/* Close Button */}
         <button
-          type="button"
-          onClick={handleClose}
-          className="absolute cursor-pointer top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <AiOutlineClose className="w-6 h-6"/>
-        </button>
+            type="button"
+            onClick={handleClose}
+            className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+          >
+            <AiOutlineClose size={20}/>
+          </button>
 
         {/* Title */}
         <h1 className="text-xl font-semibold text-center mb-4 text-black">
@@ -124,11 +151,11 @@ export default function CreateNewPasswordModal() {
           Enter your new password below to securely update your account. Make sure it meets the security requirements.
         </p>
 
-        {/* Form Fields */}
-        <div className="space-y-5">
+        {/* ─── FORM ─── */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm mb-2 text-black font-medium">
+            <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
               Password
             </label>
             <div className="relative">
@@ -151,9 +178,9 @@ export default function CreateNewPasswordModal() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 {showPassword ? (
-                  <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
-                ) : (
                   <AiOutlineEye className="w-5 h-5 cursor-pointer" />
+                ) : (
+                  <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
                 )}
               </button>
             </div>
@@ -164,7 +191,7 @@ export default function CreateNewPasswordModal() {
 
           {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm mb-2 text-black font-medium">
+            <label htmlFor="confirmPassword" className="block text-sm mb-2 text-black font-semibold">
               Confirm Password
             </label>
             <div className="relative">
@@ -184,12 +211,12 @@ export default function CreateNewPasswordModal() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700"
               >
                 {showConfirmPassword ? (
-                  <AiOutlineEyeInvisible className="w-5 h-5" />
-                ) : (
                   <AiOutlineEye className="w-5 h-5" />
+                ) : (
+                  <AiOutlineEyeInvisible className="w-5 h-5" />
                 )}
               </button>
             </div>
@@ -197,21 +224,20 @@ export default function CreateNewPasswordModal() {
               <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
             )}
           </div>
-        </div>
 
-        {/* Password Requirements */}
-        <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
-          Password must be at least 8 characters, include 1 number, 1 special character, and not repeat old passwords.
-        </p>
+          {/* Password Requirements */}
+          <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
+            Password must be at least 8 characters, include 1 number, 1 special character, and not repeat old passwords.
+          </p>
 
-        {/* Submit Button */}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer"
-        >
-          Save Password
-        </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer"
+          >
+            Save Password
+          </button>
+        </form>
       </div>
     </div>
   );

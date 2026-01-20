@@ -1,13 +1,13 @@
 "use client"
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
 
-export default function Signup() {
+export default function SignupModal({ isOpen, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -116,6 +116,31 @@ export default function Signup() {
     }
   };
 
+  useEffect(() => {
+      if (isOpen) {
+        // Save current scroll position
+        const scrollY = window.scrollY;
+        
+        // Prevent scrolling
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+        
+        return () => {
+          // Restore scrolling
+          document.body.style.overflow = '';
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.width = '';
+          
+          // Restore scroll position
+          window.scrollTo(0, scrollY);
+        };
+      }
+    }, [isOpen]);
+  if (!isOpen) return null;
+
   const handleSubmit = () => {
     const newErrors = {
       fullName: validateFullName(formData.fullName),
@@ -143,6 +168,7 @@ export default function Signup() {
 
   const handleClose = () => {
     console.log('Close button clicked');
+    onClose();
   };
 
   const phoneInputStyles = `
@@ -184,18 +210,20 @@ export default function Signup() {
     }
   `;
 
+  if (!isOpen) return null;
+
   return (
     <>
       <style>{phoneInputStyles}</style>
-      <div className="bg-transparent flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50">
+        <div className="relative bg-white rounded-3xl  w-full max-w-lg p-6 overflow-y-auto ">
           {/* Close Button */}
           <button
             type="button"
             onClick={handleClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
           >
-            <AiOutlineClose className="w-6 h-6"/>
+            <AiOutlineClose size={20}/>
           </button>
 
           {/* Header */}
@@ -211,7 +239,7 @@ export default function Signup() {
             {/* Full Name and Email Row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="fullName" className="block text-sm mb-2 text-black font-medium">
+                <label htmlFor="fullName" className="block text-sm mb-2 text-black font-semibold">
                   Full Name
                 </label>
                 <input
@@ -221,7 +249,7 @@ export default function Signup() {
                   value={formData.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   onBlur={() => handleBlur('fullName')}
-                  className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none text-sm ${
+                  className={`w-full px-3 py-2.5 border text-black rounded-lg focus:outline-none text-sm ${
                     touched.fullName && errors.fullName
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
@@ -232,7 +260,7 @@ export default function Signup() {
                 )}
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm mb-2 text-black font-medium">
+                <label htmlFor="email" className="block text-sm mb-2 text-black font-semibold">
                   Email
                 </label>
                 <input
@@ -242,7 +270,7 @@ export default function Signup() {
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   onBlur={() => handleBlur('email')}
-                  className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none text-sm ${
+                  className={`w-full px-3 py-2.5 border text-black rounded-lg focus:outline-none text-sm ${
                     touched.email && errors.email
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
@@ -256,7 +284,7 @@ export default function Signup() {
 
             {/* Phone Number */}
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-medium">
+              <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-semibold">
                 Phone Number
               </label>
               <div className={touched.phoneNumber && errors.phoneNumber ? 'error-border' : ''}>
@@ -275,7 +303,7 @@ export default function Signup() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm mb-2 text-black font-medium">
+              <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
                 Password
               </label>
               <div className="relative">
@@ -298,9 +326,9 @@ export default function Signup() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPassword ? (
-                    <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
-                  ) : (
                     <AiOutlineEye className="w-5 h-5 cursor-pointer" />
+                  ) : (
+                     <AiOutlineEyeInvisible className="w-5 h-5 cursor-pointer" />
                   )}
                 </button>
               </div>
@@ -317,8 +345,8 @@ export default function Signup() {
             {/* Submit Button */}
             <button
               type="button"
-              onClick={handleSubmit}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6 font-medium cursor-pointer"
+              onClick={onClose}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-1 font-medium cursor-pointer"
             >
               Create My Account
             </button>
@@ -342,7 +370,7 @@ export default function Signup() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-4 bg-white text-gray-500">OR LOGIN WITH</span>
+              <span className="px-4 bg-white text-black text-sm">OR LOGIN WITH</span>
             </div>
           </div>
 
@@ -384,9 +412,9 @@ export default function Signup() {
           {/* Footer */}
           <p className="text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="text-black underline font-medium">
+            <span className="text-black underline font-medium cursor-pointer" onClick={onClose}>
               Login
-            </Link>
+            </span>
           </p>
         </div>
       </div>

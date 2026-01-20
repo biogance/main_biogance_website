@@ -1,16 +1,16 @@
-import { useState } from 'react';
+"use client"
+
 import { LuLayoutDashboard } from 'react-icons/lu';
 import { TbNotes } from "react-icons/tb";
 import { RxRocket } from "react-icons/rx";
 import { FaRegHeart } from 'react-icons/fa';
 import { IoLocationOutline, IoPersonOutline, IoSettingsOutline } from 'react-icons/io5';
-import { MdLogout } from 'react-icons/md';
 import { BsArrowBarLeft } from 'react-icons/bs';
 
-export function Sidebar({ activeItem, onItemClick }) {
+export function Sidebar({ activeItem, onItemClick, onDelete }) {
 
   return (
-    <aside className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10">
+    <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10">
       {/* Menu Items */}
       <nav className="flex-1">
         <ul className="flex overflow-x-auto lg:flex-col lg:overflow-visible px-4 py-6 lg:px-0 lg:py-6 space-x-2 lg:space-x-0 lg:space-y-5">
@@ -155,7 +155,7 @@ export function Sidebar({ activeItem, onItemClick }) {
           {/* Logout - Only visible on small screens (as tab) */}
           <li className="lg:hidden">
             <button
-              onClick={() => onItemClick('logout')}
+               onClick={onDelete}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg text-md transition-colors duration-150 ${
                 activeItem === 'logout'
                   ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A]'
@@ -172,13 +172,13 @@ export function Sidebar({ activeItem, onItemClick }) {
       {/* Logout - Only visible on large screens (outside nav) */}
       <div className="hidden lg:block px-5 py-6 border-t border-gray-200">
         <button 
-          onClick={() => onItemClick('logout')}
+            onClick={onDelete}
           className="w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg text-md text-[#333333] hover:bg-gray-200 transition-colors duration-150"
         >
           <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
           <span>Log Out</span>
         </button>
       </div>
-    </aside>
+    </div>
   );
 }

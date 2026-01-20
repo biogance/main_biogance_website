@@ -2,15 +2,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
-import { IoClose } from 'react-icons/io5';
-// import { RxCross2 } from "react-icons/rx";
+import { IoChevronBack, IoChevronForward, IoClose } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
+ 
 
-// Loading Card Component (unchanged)
+// Loading Card Component
 const LoadingCard = () => (
-  <div className="group">
+  <div className="w-full">
     <div
-      className="rounded-2xl border border-[#E3E3E3] p-3 relative mb-3"
+      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[3/4]"
       style={{
         backgroundColor: '#f9fafb',
         background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
@@ -18,90 +18,91 @@ const LoadingCard = () => (
         animation: 'shimmer 1.5s infinite'
       }}
     >
-      <div style={{ position: 'absolute', top: '12px', left: '12px', width: '60px', height: '24px', borderRadius: '6px', zIndex: 10, background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
-      <div style={{ position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '12px', zIndex: 10, background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
-      <div className="relative h-40 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
-        <div style={{ border: '2px solid #f3f3f3', borderTop: '2px solid #000000', borderRadius: '50%', width: '24px', height: '24px', animation: 'spin 0.8s linear infinite' }} />
+      <div className="absolute top-3 left-3 w-14 h-6 rounded-md bg-gray-300 animate-pulse" />
+      <div className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-gray-300 animate-pulse" />
+      <div className="flex items-center justify-center h-full">
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
       </div>
-      <div className="flex justify-center gap-1">
+      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1">
         {[1, 2, 3].map((idx) => (
-          <div key={idx} style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
+          <div key={idx} className="w-1.5 h-1.5 rounded-full bg-gray-300" />
         ))}
       </div>
     </div>
-    <div>
-      <div style={{ width: '100%', height: '14px', marginBottom: '8px', borderRadius: '4px', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
-      <div style={{ width: '70%', height: '14px', marginBottom: '12px', borderRadius: '4px', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
-      <div className="flex items-center justify-between gap-2">
-        <div style={{ width: '60px', height: '24px', borderRadius: '4px', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
-        <div style={{ width: '100px', height: '40px', borderRadius: '8px', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200px 100%', animation: 'shimmer 1.5s infinite' }} />
+    <div className="space-y-2">
+      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+      <div className="flex items-center justify-between gap-2 mt-3">
+        <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse" />
       </div>
     </div>
   </div>
 );
 
 const LandingCards = ({ product, showNav }) => {
-  const [isLiked, setIsLiked] = useState(false);
+  const { t } = useTranslation('home');
+ 
+  const [isLiked, setIsLiked] = useState(product.liked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handlePrevImage = (e) => {
     e.stopPropagation();
-    if (currentImageIndex === 0) return; // Do nothing if already at first
+    if (currentImageIndex === 0) return;
     setCurrentImageIndex((prev) => prev - 1);
   };
 
   const handleNextImage = (e) => {
     e.stopPropagation();
-    if (currentImageIndex === product.images.length - 1) return; // Do nothing if already at last
+    if (currentImageIndex === product.images.length - 1) return;
     setCurrentImageIndex((prev) => prev + 1);
   };
 
   return (
-    <div className="group">
-      <div className="bg-gray-50 rounded-2xl border border-[#E3E3E3] p-3 relative mb-3">
+    <div className="w-full h-full flex flex-col">
+      <div className="bg-gray-50 rounded-2xl border border-gray-200  relative mb-3 aspect-[3/4] flex flex-col">
         {product.discount && (
-          <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#1FC16B1A] text-black border border-[#84EBB4] text-xs font-semibold px-2 py-1 md:px-3 rounded-md z-10">
+          <div className="absolute top-3 left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
             {product.discount}
           </div>
         )}
 
         <button
           onClick={() => setIsLiked(!isLiked)}
-          className="absolute top-3 right-3 md:top-4 md:right-4 cursor-pointer w-7 h-7 md:w-8 md:h-8 bg-white rounded-xl border border-[#E3E3E3] flex items-center justify-center z-10"
+          className="absolute top-3 right-3 cursor-pointer w-8 h-8 bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
         >
           {isLiked ? (
-            <FaHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
+            <FaHeart className="w-4 h-4 text-black" />
           ) : (
-            <FaRegHeart className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
+            <FaRegHeart className="w-4 h-4 text-gray-700" />
           )}
         </button>
 
-        <div className="relative h-40 md:h-64 flex items-center justify-center mb-3 md:mb-4 mt-3 md:mt-4">
-          {/* Navigation Arrows - Always visible (if multiple images), but disabled at ends */}
+        <div className="flex-1 flex items-center justify-center relative px-8 py-4">
           {showNav && product.images.length > 1 && (
             <>
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
-                className={`absolute left-[-15px] md:left-[-18px] w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center z-20 transition-all
+                className={`absolute left-0 w-7 h-7  bg-transparent flex items-center justify-center z-20 transition-all 
                   ${currentImageIndex === 0
-                    ? 'opacity-70 cursor-not-allowed'
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
-                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+                <IoChevronBack className="w-6 h-6 text-gray-700" />
               </button>
 
               <button
                 onClick={handleNextImage}
                 disabled={currentImageIndex === product.images.length - 1}
-                className={`absolute right-[-15px] md:right-[-18px] w-7 h-7 md:w-8 md:h-8 bg-transparent rounded-full flex items-center justify-center z-20 transition-all
+                className={`absolute right-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all
                   ${currentImageIndex === product.images.length - 1
-                    ? 'opacity-70 cursor-not-allowed'
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
-                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+                <IoChevronForward className="w-6 h-6 text-gray-700" />
               </button>
             </>
           )}
@@ -109,34 +110,35 @@ const LandingCards = ({ product, showNav }) => {
           <img
             src={product.images[currentImageIndex] || product.image}
             alt={product.name}
-            className="h-28 w-28 md:h-48 md:w-48 object-contain cursor-pointer hover:scale-110 transition-transform duration-500"
+            className="max-w-full max-h-full object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
           />
         </div>
 
         {product.images.length > 1 && (
-          <div className="flex justify-center gap-1">
+          <div className="flex justify-center mb-2 gap-1 pb-1">
             {product.images.map((_, idx) => (
               <div
                 key={idx}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
-                  }`}
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                  idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
+                }`}
               />
             ))}
           </div>
         )}
       </div>
 
-      <div>
-        <h3 className="text-xs md:text-sm text-gray-800 mb-2 md:mb-3 line-clamp-2 md:line-clamp-1">
+      <div className="flex-shrink-0">
+        <h3 className="text-sm text-gray-800 mb-2 line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-lg md:text-xl font-bold text-gray-900">
+          <span className="text-xl font-bold text-gray-900">
             €{product.price}
           </span>
-          <button className="bg-black text-white cursor-pointer text-xs md:text-sm font-medium px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
-            Add to Cart
+          <button className="bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
+            {t('products.addToCart')}
           </button>
         </div>
       </div>
@@ -144,43 +146,37 @@ const LandingCards = ({ product, showNav }) => {
   );
 };
 
-export default function PopularProducts({ title = 'Popular Products', isWishlist = false, isFavourite = false, isHorizontal = false }) {
+export default function PopularProducts({ 
+  title = 'Popular Products', 
+  isWishlist = false, 
+  isFavourite = false, 
+  isHorizontal = false 
+}) {
+  const { t } = useTranslation('home');
+ 
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('favorite');
-
-  const handleRemoveAll = () => {
-    console.log('Remove all clicked');
-  };
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const products = [
-    // ... (your products array remains exactly the same)
     {
       id: 1,
       name: 'Natural sunscreen for dogs and cats - Sun Protection',
       price: '15.90',
-      originalPrice: null,
       discount: '20% Off',
-      image: "https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: false
     },
     {
       id: 2,
       name: 'Refreshing mist for dogs and cats - Fresh',
       price: '12.60',
-      originalPrice: null,
       discount: '20% Off',
-      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: true
     },
     {
@@ -188,26 +184,17 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       name: 'Universal shampoo 2 in 1 Biogance',
       price: '11.25',
       originalPrice: '35.30',
-      discount: null,
-      image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: false
     },
     {
       id: 4,
       name: 'Also Repair Repair Spray',
       price: '12.60',
-      originalPrice: null,
       discount: '20% Off',
-      image: "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: false
     },
     {
@@ -216,28 +203,27 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       price: '18.90',
       originalPrice: '24.90',
       discount: '20% Off',
-      image: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: false
     },
     {
       id: 6,
       name: 'Natural Pet Cologne',
       price: '14.50',
-      originalPrice: null,
-      discount: null,
-      image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
-        "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop"
-      ],
+      image: "/product1.svg",
+      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
       liked: false
     }
   ];
+
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
 
   useEffect(() => {
     const imageUrls = products.flatMap(product => product.images);
@@ -249,20 +235,38 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
       });
     });
 
-    Promise.all([Promise.all(imagePromises), new Promise(resolve => setTimeout(resolve, 2000))]).then(() => {
+    Promise.all([
+      Promise.all(imagePromises), 
+      new Promise(resolve => setTimeout(resolve, 2000))
+    ]).then(() => {
       setIsLoading(false);
+      setTimeout(checkScrollPosition, 100);
     });
 
-    const fallbackTimer = setTimeout(() => setIsLoading(false), 5000);
+    const fallbackTimer = setTimeout(() => {
+      setIsLoading(false);
+      setTimeout(checkScrollPosition, 100);
+    }, 5000);
+    
     return () => clearTimeout(fallbackTimer);
   }, []);
 
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      window.addEventListener('resize', checkScrollPosition);
+      
+      return () => {
+        container.removeEventListener('scroll', checkScrollPosition);
+        window.removeEventListener('resize', checkScrollPosition);
+      };
+    }
+  }, [isLoading]);
+
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.querySelector('.product-card')?.offsetWidth || 0;
-      const gap = 16;
-      const scrollAmount = isHorizontal ? (cardWidth + gap) * 4 : cardWidth + gap;
-
+      const scrollAmount = 300;
       scrollContainerRef.current.scrollBy({
         left: direction === 'next' ? scrollAmount : -scrollAmount,
         behavior: 'smooth',
@@ -274,85 +278,155 @@ export default function PopularProducts({ title = 'Popular Products', isWishlist
     <div className="w-full bg-white">
       <style dangerouslySetInnerHTML={{
         __html: `
-        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes shimmer { 
+          0% { background-position: -200px 0; } 
+          100% { background-position: 200px 0; } 
+        }
+        .hide-scrollbar { 
+          -ms-overflow-style: none; 
+          scrollbar-width: none; 
+        }
+        .hide-scrollbar::-webkit-scrollbar { 
+          display: none; 
+        }
       `}} />
 
-      <div className={isFavourite ? "px-4" : isWishlist ? "px-4" : "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"}>
+      <div className={
+        isFavourite ? "px-4 py-6" : 
+        isWishlist ? "px-4 py-6" : 
+        "px-4 md:px-6 lg:px-10 py-6 md:py-8 lg:py-10"
+      }>
         {isFavourite ? null : isWishlist ? (
-          <div className="w-full max-w-8xl mx-auto bg-white py-8   ">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                Your Products Wishlist
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                {t('products.wishlistTitle')}
+ 
               </h1>
-              <button className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-700 hover:text-black transition-colors self-start sm:self-auto">
-                <IoClose className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Remove All</span>
+              <button className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-black transition-colors self-start">
+                <IoClose className="w-5 h-5" />
+                <span>{t('products.removeAll')}</span>
               </button>
             </div>
 
-            <div className="flex gap-2 sm:gap-4 lg:gap-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-4 border-b border-gray-200">
               <button
                 onClick={() => setActiveTab('favorite')}
-                className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${activeTab === 'favorite'
-                    ? 'bg-black text-white shadow-sm'
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap ${
+                  activeTab === 'favorite'
+                    ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'
-                  }`}
+                }`}
               >
-                Favorite Products
+                 {t('products.favoriteProducts')}
+ 
               </button>
               <button
                 onClick={() => setActiveTab('advice')}
-                className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${activeTab === 'advice'
-                    ? 'bg-black text-white shadow-sm'
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap ${
+                  activeTab === 'advice'
+                    ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'
-                  }`}
+                }`}
               >
-                Favorite Expert Advices
+                 {t('products.favoriteAdvices')}
+ 
               </button>
             </div>
           </div>
         ) : isHorizontal ? (
-          <div className="flex justify-end mb-4 md:mb-6">
+          <div className="flex justify-end mb-6">
             <div className="flex gap-2">
-              <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              <button 
+                onClick={() => scroll('prev')}
+                disabled={!canScrollLeft}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollLeft
+                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronBack className="w-5 h-5 text-gray-700" />
               </button>
-              <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              <button 
+                onClick={() => scroll('next')}
+                disabled={!canScrollRight}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollRight
+                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronForward className="w-5 h-5 text-gray-700" />
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title} ›</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">{title} ›</h2>
             <div className="flex gap-2">
-              <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              <button 
+                onClick={() => scroll('prev')}
+                disabled={!canScrollLeft}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollLeft
+                    ? 'bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300   cursor-not-allowed'
+                }`}
+              >
+                <IoChevronBack className="w-5 h-5" />
               </button>
-              <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              <button 
+                onClick={() => scroll('next')}
+                disabled={!canScrollRight}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollRight
+                    ? 'bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300  cursor-not-allowed'
+                }`}
+              >
+                <IoChevronForward className="w-5 h-5 " />
               </button>
             </div>
           </div>
         )}
 
-        <div ref={scrollContainerRef} className={isFavourite ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : isWishlist ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4" : isHorizontal ? "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory" : "flex overflow-x-auto gap-3 md:gap-4 pb-4 hide-scrollbar snap-x snap-mandatory"}>
+        <div 
+          ref={scrollContainerRef} 
+          className={
+            isFavourite || isWishlist
+              ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+              : isHorizontal
+              ? "flex overflow-x-auto gap-4 pb-4 hide-scrollbar"
+              : "flex overflow-x-auto gap-4 pb-4 hide-scrollbar"
+          }
+        >
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={isFavourite ? "product-card" : isWishlist ? "product-card" : isHorizontal ? "product-card flex-shrink-0 snap-start w-[calc(25%-12px)]" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+              <div 
+                key={index} 
+                className={
+                  isFavourite || isWishlist
+                    ? "w-full"
+                    : "flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)]"
+                }
+              >
                 <LoadingCard />
               </div>
             ))
             : products.map((product) => (
-              <div key={product.id} className={isFavourite ? "product-card" : isWishlist ? "product-card" : isHorizontal ? "product-card flex-shrink-0 snap-start w-[calc(25%-12px)]" : "product-card flex-shrink-0 snap-start w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] xl:w-[calc(20%-12.8px)]"}>
+              <div 
+                key={product.id} 
+                className={
+                  isFavourite || isWishlist
+                    ? "w-full"
+                    : "flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)]"
+                }
+              >
                 <LandingCards product={product} showNav={!isFavourite} />
               </div>
             ))}
         </div>
-        
       </div>
     </div>
   );

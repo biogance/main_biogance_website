@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Navbar from "../Navbar"
 import Footer from "../Footer"
 import Link from "next/link"
-import Image from "next/image"
 import { Sidebar } from "./Sidebar"
 import Dashboard from './Dashboard';
 import MyOrder from './MyOrder';
@@ -15,13 +14,12 @@ import PetProfile from './PetProfile';
 import Address from './Address';
 import Settings from './Setting';
 import Support from './Support/Support';
-import SupportChat from './Support/SupportChat';
-
-
+import LogoutModal from './ModalBox/LogoutModal';
 
 
 export default function MyAccount() {
     const [activeContent, setActiveContent] = useState('dashboard');
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null);
 
@@ -32,7 +30,7 @@ export default function MyAccount() {
 
     const handleCloseChat = () => {
         setIsChatOpen(false);
-        setSelectedTicket(null);
+        setSelectedTicket(null); 
     };
 
     const renderContent = () => {
@@ -99,13 +97,17 @@ export default function MyAccount() {
                 </div>
 
                 <div className="bg-gray-100 flex flex-col lg:flex-row">
-                    <Sidebar activeItem={activeContent} onItemClick={setActiveContent} />
+                    <Sidebar activeItem={activeContent} onItemClick={setActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
                     <div className="flex-1">
                         {renderContent()}
                     </div>
                 </div>
 
             <Footer />
+            <LogoutModal 
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+            />
         </>
     )
 }
