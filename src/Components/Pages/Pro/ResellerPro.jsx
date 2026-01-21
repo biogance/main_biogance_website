@@ -5,8 +5,10 @@ import Navbar from '../Navbar';
 import Footer from '../Footer';
 import { useRouter } from 'next/navigation';
 import ThankYouModal from './ThankyouModal';
+import { useTranslation } from 'react-i18next';
 
 export function ResellerForm() {
+    const { t } = useTranslation('pro');
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
     const [errors, setErrors] = useState({});
@@ -326,10 +328,10 @@ export function ResellerForm() {
                 {/* Form Header */}
                 <div className="mb-8">
                     <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
-                        Become a Biogance Reseller
+                        {t('resellerForm.title')}
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
-                        Offer your customers premium, eco-friendly pet care made in France. Join Biogance's professional network and bring natural, effective grooming and wellness products to pet owners in your community.
+                        {t('resellerForm.description')}
                     </p>
                 </div>
 
@@ -339,11 +341,11 @@ export function ResellerForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Company Name*
+                                {t('resellerForm.labels.companyName')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. The Pet Nook"
+                                placeholder={t('resellerForm.placeholders.companyName')}
                                 value={formData.companyName}
                                 onChange={(e) => {
                                     setFormData({ ...formData, companyName: e.target.value });
@@ -356,16 +358,16 @@ export function ResellerForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.companyName && (
-                                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('resellerForm.errors.companyNameRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Company Registration Number (SIRET or VAT)*
+                                {t('resellerForm.labels.registrationNumber')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. CA9876543210"
+                                placeholder={t('resellerForm.placeholders.registrationNumber')}
                                 value={formData.registrationNumber}
                                 onChange={(e) => {
                                     setFormData({ ...formData, registrationNumber: e.target.value });
@@ -378,7 +380,7 @@ export function ResellerForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.registrationNumber && (
-                                <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('resellerForm.errors.registrationNumberRequired')}</p>
                             )}
                         </div>
                     </div>
@@ -387,11 +389,11 @@ export function ResellerForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Contact Name*
+                                {t('resellerForm.labels.contactName')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Megan Carter"
+                                placeholder={t('resellerForm.placeholders.contactName')}
                                 value={formData.contactName}
                                 onChange={(e) => {
                                     setFormData({ ...formData, contactName: e.target.value });
@@ -404,16 +406,16 @@ export function ResellerForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.contactName && (
-                                <p className="mt-1 text-sm text-red-600">{errors.contactName}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('resellerForm.errors.contactNameRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Job Title*
+                                {t('resellerForm.labels.jobTitle')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Owner"
+                                placeholder={t('resellerForm.placeholders.jobTitle')}
                                 value={formData.jobTitle}
                                 onChange={(e) => {
                                     setFormData({ ...formData, jobTitle: e.target.value });
@@ -426,7 +428,7 @@ export function ResellerForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.jobTitle && (
-                                <p className="mt-1 text-sm text-red-600">{errors.jobTitle}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('resellerForm.errors.jobTitleRequired')}</p>
                             )}
                         </div>
                     </div>
@@ -435,11 +437,11 @@ export function ResellerForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Email*
+                                {t('resellerForm.labels.email')}
                             </label>
                             <input
                                 type="email"
-                                placeholder="e.g. megan@thetpetnook.com"
+                                placeholder={t('resellerForm.placeholders.email')}
                                 value={formData.email}
                                 onChange={(e) => {
                                     setFormData({ ...formData, email: e.target.value });
@@ -452,12 +454,12 @@ export function ResellerForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.email && (
-                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('resellerForm.errors.emailRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Phone
+                                {t('resellerForm.labels.phone')}
                             </label>
                             <div className="flex gap-2">
                                 <div className="relative" ref={dropdownRef}>
@@ -533,11 +535,11 @@ export function ResellerForm() {
                     {/* Row 4: Website */}
                     <div className="mb-6">
                         <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Website
+                            {t('resellerForm.labels.website')}
                         </label>
                         <input
                             type="url"
-                            placeholder="e.g. www.whitepetcompanies.com"
+                            placeholder={t('resellerForm.placeholders.website')}
                             value={formData.website}
                             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                             className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -548,10 +550,10 @@ export function ResellerForm() {
                     {/* Row 5: Message / Comments */}
                     <div className="mb-6">
                         <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Message / Comments
+                            {t('resellerForm.labels.message')}
                         </label>
                         <textarea
-                            placeholder="e.g. Looking forward to offering Biogance in our boutique."
+                            placeholder={t('resellerForm.placeholders.message')}
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
@@ -564,7 +566,7 @@ export function ResellerForm() {
                     {/* Reseller Type Checkboxes */}
                     <div className="mb-8">
                         <label className="block mb-3 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Become a Biogance Reseller
+                           {t('resellerForm.title')} 
                         </label>
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer">
@@ -574,7 +576,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('petShop')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer"
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Pet Shop / Specialty Store</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Pet Shop / Specialty Store')}</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -583,7 +585,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('gardenCenter')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Garden Center</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Garden Center')}</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -592,7 +594,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('groomingSalon')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Grooming Salon</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Grooming Salon')}</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -601,7 +603,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('professionalBreeder')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Professional Breeder</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Professional Breeder')}</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -610,7 +612,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('veterinaryClinic')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Veterinary Clinic</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Veterinary Clinic')}</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -619,7 +621,7 @@ export function ResellerForm() {
                                     onChange={() => handleCheckboxChange('onlineStore')}
                                     className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
                                 />
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>Online Store</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Online Store')}</span>
                             </label>
                         </div>
                     </div>
@@ -639,7 +641,7 @@ export function ResellerForm() {
 
                             className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Submit
+                            {t('resellerForm.buttons.submit')}
                         </button>
                     </div>
                 </form>

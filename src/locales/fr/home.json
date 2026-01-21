@@ -171,5 +171,19 @@
   },
   "banner": {
     "title": "Rejoignez la Famille Biogance"
+  },
+  
+    "wishlist": {
+      "title": "LISTE DE SOUHAITS",
+      "breadcrumb": {
+        "home": "Accueil",
+        "wishlist": "Liste de Souhaits"
+      },
+      "empty": {
+        "heading": "Votre liste de souhaits est vide",
+        "description": "Vous n'avez pas encore de produits enregistrés.",
+        "subDescription": "Ajoutez les articles que vous aimez pour y revenir plus tard.",
+        "browseButton": "Parcourir les Produits"
+      }
   }
 }

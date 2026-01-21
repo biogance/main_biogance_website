@@ -10,9 +10,11 @@ import tick from "../../../../public/tick.svg"
 import { BsTicket } from 'react-icons/bs';
 import Footer from '../Footer';
 import Forgotpassword from '../Onboarding/ForgetPassword';
+import { useTranslation } from 'react-i18next';
 // import { FaCheck } from 'react-icons/fa';
 
 export default function Loyalty() {
+    const { t } = useTranslation('ourloyalty');
     return (
         <>
         <div className="fixed top-0 left-0 right-0 z-50 ">
@@ -31,34 +33,34 @@ export default function Loyalty() {
 
     <div className="relative h-full flex flex-col justify-center text-white px-5 sm:px-6 md:px-8 lg:px-12 py-8">
         <h1 className="text-white mb-4 sm:mb-4 tracking-wide text-[22px] sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight max-w-full sm:max-w-[90%] md:max-w-[70%] lg:max-w-[600px]">
-            Join the Biogance Loyalty Program
+            {t('joinLoyaltyProgram')}
         </h1>
 
         <p className="text-white/90 text-[13px] sm:text-sm md:text-base mb-5 sm:mb-6 md:mb-8 max-w-full sm:max-w-[85%] md:max-w-[65%] lg:max-w-[55%] leading-relaxed pr-4 sm:pr-0">
-            Give your pet the best care—while we reward your trust. With Biogance Loyalty, every purchase brings you closer to exclusive savings, special bonuses, and member-only rewards.
+            {t('loyaltyDescription')}
         </p>
 
         <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
             <div className="flex items-center gap-2.5 sm:gap-3 text-white">
                 <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">Register</span>
+                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('register')}</span>
             </div>
             <div className="flex items-center gap-2.5 sm:gap-3 text-white">
                 <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">Earn Points</span>
+                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('earnPoints')}</span>
             </div>
             <div className="flex items-center gap-2.5 sm:gap-3 text-white">
                 <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">Get Rewards</span>
+                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('getRewards')}</span>
             </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-full sm:max-w-[500px]">
             <button className="bg-white text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
-                Register Now
+                {t('Registernow')}
             </button>
             <button className="bg-transparent text-white border-2 border-white px-6 py-3 rounded-lg hover:bg-white/10 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
-                Discover Products
+                 {t('discoverproduct')}
             </button>
         </div>
     </div>
@@ -81,57 +83,53 @@ export default function Loyalty() {
          <div className=" bg-white p-2 md:p-12">
       <div className="max-w-7xl">
         <p className="text-xs tracking-widest text-gray-500 mb-4">
-          JOIN THE LOYALTY PROGRAM
+          {t('joinLoyaltyProgramTitle')}
         </p>
-        
+
         <h1 className="text-4xl mb-6 text-gray-900">
-          Rewarding Your Loyalty with Biogance
+          {t('rewardingLoyaltyTitle')}
         </h1>
-        
+
         <p className="text-gray-700 leading-relaxed mb-6">
-          To reward your loyalty, we are pleased to present our Biogance loyalty program valid on all our products. To become a member, simply create an account at{' '}
-          <a href="https://website-dev.biogance.com/" className="text-gray-900 underline">
-            www.biogance.com
-          </a>
-          {' '}or log in if you already have one.
+          {t('loyaltyProgramDescription')}
         </p>
         
         {/* Bullet Points List */}
         <ul className="space-y-3 mb-6 list-disc pl-5">
           <li className="text-gray-700 leading-relaxed">
-            Earn 1 point for every 10 euros spent*
+            {t('earnPointsDescription')}
           </li>
           <li className="text-gray-700 leading-relaxed">
-            Collect or convert to a discount voucher from the first point earned. 1 point gives you an immediate €1 discount.
+            {t('discountVoucherDescription')}
           </li>
           <li className="text-gray-700 leading-relaxed">
-            Bonus: Collect points for your birthday, subscribing to our newsletter, responding to our satisfaction survey or even during competitions or social media events!
+            {t('bonusDescription')}
           </li>
         </ul>
         
         <p className="text-gray-700 leading-relaxed mb-6 italic">
-          *Excluding shipping costs / points are accumulated for all orders placed from September 4, 2021. Orders previously placed on the site are not eligible to accumulate points.
+          {t('exclusionNote')}
         </p>
-        
+
         {/* Summary Box */}
         <div className="bg-gray-100 p-6 mb-6">
           <p className="text-gray-900 mb-3">
-            In Summary:
+            {t('inSummary')}
           </p>
-          
+
           <ul className="space-y-2 list-disc pl-5">
             <li className="text-gray-700">
-              10 euros spent = 1 point earned
+              {t('summaryPoint1')}
             </li>
             <li className="text-gray-700">
-              1 point used = 1 euro saved
+              {t('summaryPoint2')}
             </li>
           </ul>
         </div>
-        
+
         {/* Button */}
         <button className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
-          Manage Loyalty Points
+          {t('manageLoyaltyPoints')}
         </button>
       </div>
     </div>

@@ -6,8 +6,10 @@ import Footer from '../Footer';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ThankYouModal from './ThankyouModal';
+import { useTranslation } from 'react-i18next';
 
 export function DistributorForm() {
+    const { t } = useTranslation('pro');
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -313,12 +315,10 @@ export function DistributorForm() {
                 {/* Form Header */}
                 <div className="mb-8">
                     <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
-                        Become a Biogance Distributor
+                        {t('distributorForm.title')}
                     </h2>
                     <p className="text-gray-700" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.6' }}>
-                        Join our global distribution network and represent Biogance in your region. Partner with a trusted
-                        French laboratory known for its organic, eco-certified, and innovative pet care solutions distributed in
-                        over 40 countries worldwide.
+                        {t('distributorForm.description')}
                     </p>
                 </div>
 
@@ -328,11 +328,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Company Name*
+                                {t('distributorForm.labels.companyName')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Pawsome Inc."
+                                placeholder={t('distributorForm.placeholders.companyName')}
                                 value={formData.companyName}
                                 onChange={(e) => {
                                     setFormData({ ...formData, companyName: e.target.value });
@@ -346,16 +346,16 @@ export function DistributorForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.companyName && (
-                                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('distributorForm.errors.companyNameRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                First Name*
+                                {t('distributorForm.labels.firstName')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Jane Smith"
+                                placeholder={t('distributorForm.placeholders.firstName')}
                                 value={formData.firstName}
                                 onChange={(e) => {
                                     setFormData({ ...formData, firstName: e.target.value });
@@ -368,7 +368,7 @@ export function DistributorForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.firstName && (
-                                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('distributorForm.errors.firstNameRequired')}</p>
                             )}
                         </div>
                     </div>
@@ -377,11 +377,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Business Email*
+                                {t('distributorForm.labels.businessEmail')}
                             </label>
                             <input
                                 type="email"
-                                placeholder="e.g. sales@example.com"
+                                placeholder={t('distributorForm.placeholders.businessEmail')}
                                 value={formData.businessEmail}
                                 onChange={(e) => {
                                     setFormData({ ...formData, businessEmail: e.target.value });
@@ -394,12 +394,12 @@ export function DistributorForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.businessEmail && (
-                                <p className="mt-1 text-sm text-red-600">{errors.businessEmail}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('distributorForm.errors.businessEmailRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Business Phone
+                                {t('distributorForm.labels.businessPhone')}
                             </label>
                             <div className="flex gap-2">
                                 <div className="relative" ref={dropdownRef}>
@@ -423,10 +423,10 @@ export function DistributorForm() {
                                             <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
                                                 <input
                                                     type="text"
-                                                    placeholder="Search country..."
+                                                    placeholder={t('distributorForm.placeholders.searchCountry')}
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className="w-full ... placeholder:text-gray-500 px-3 py-2  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
+                                                    className="w-full ... placeholder:text-gray-500 px-3 py-2  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm text-black"
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             </div>
@@ -452,7 +452,7 @@ export function DistributorForm() {
                                                 ))}
                                                 {filteredCountries.length === 0 && (
                                                     <div className="px-3 py-4 text-center text-sm text-gray-500">
-                                                        No countries found
+                                                        {t('distributorForm.messages.noCountriesFound')}
                                                     </div>
                                                 )}
                                             </div>
@@ -462,7 +462,7 @@ export function DistributorForm() {
 
                                 <input
                                     type="tel"
-                                    placeholder="e.g. 555-123-4567"
+                                    placeholder={t('distributorForm.placeholders.businessPhone')}
                                     value={formData.businessPhone}
                                     onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
                                     className="flex-1 px-4 py-3 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -476,11 +476,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Company Registration Number (SIRET or VAT)*
+                                {t('distributorForm.labels.registrationNumber')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. 123456789"
+                                placeholder={t('distributorForm.placeholders.registrationNumber')}
                                 value={formData.registrationNumber}
                                 onChange={(e) => {
                                     setFormData({ ...formData, registrationNumber: e.target.value });
@@ -493,16 +493,16 @@ export function DistributorForm() {
                                 style={{ fontSize: '14px' }}
                             />
                             {errors.registrationNumber && (
-                                <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
+                                <p className="mt-1 text-sm text-red-600">{t('distributorForm.errors.registrationNumberRequired')}</p>
                             )}
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Company Website
+                                {t('distributorForm.labels.website')}
                             </label>
                             <input
                                 type="url"
-                                placeholder="e.g. www.yourwebsite.com"
+                                placeholder={t('distributorForm.placeholders.website')}
                                 value={formData.website}
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -515,11 +515,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Job Title
+                                {t('distributorForm.labels.jobTitle')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Sales Manager"
+                                placeholder={t('distributorForm.placeholders.jobTitle')}
                                 value={formData.jobTitle}
                                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -528,11 +528,11 @@ export function DistributorForm() {
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Number of Sales Representatives
+                                {t('distributorForm.labels.salesReps')}
                             </label>
                             <input
                                 type="number"
-                                placeholder="e.g. 10"
+                                placeholder={t('distributorForm.placeholders.salesReps')}
                                 value={formData.salesReps}
                                 onChange={(e) => setFormData({ ...formData, salesReps: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -544,11 +544,11 @@ export function DistributorForm() {
                     {/* Row 5: Company Address */}
                     <div className="mb-6">
                         <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Company Address
+                            {t('distributorForm.labels.address')}
                         </label>
                         <input
                             type="text"
-                            placeholder="e.g. 123 Main Street, Suite 100"
+                            placeholder={t('distributorForm.placeholders.address')}
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                             className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -560,11 +560,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Country
+                                {t('distributorForm.labels.country')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. United States"
+                                placeholder={t('distributorForm.placeholders.country')}
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -573,11 +573,11 @@ export function DistributorForm() {
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                City
+                                {t('distributorForm.labels.city')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Anytown"
+                                placeholder={t('distributorForm.placeholders.city')}
                                 value={formData.city}
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -590,11 +590,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Street
+                                {t('distributorForm.labels.street')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. 123 Main Street"
+                                placeholder={t('distributorForm.placeholders.street')}
                                 value={formData.street}
                                 onChange={(e) => setFormData({ ...formData, street: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -603,11 +603,11 @@ export function DistributorForm() {
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                ZIP Code
+                                {t('distributorForm.labels.zipCode')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. 12345"
+                                placeholder={t('distributorForm.placeholders.zipCode')}
                                 value={formData.zipCode}
                                 onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -620,11 +620,11 @@ export function DistributorForm() {
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Brand (Distributor)
+                                {t('distributorForm.labels.brand')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. Biogance/Ekinat"
+                                placeholder={t('distributorForm.placeholders.brand')}
                                 value={formData.brand}
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -633,11 +633,11 @@ export function DistributorForm() {
                         </div>
                         <div>
                             <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                                Geographic Coverage
+                                {t('distributorForm.labels.geographicCoverage')}
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g. North America"
+                                placeholder={t('distributorForm.placeholders.geographicCoverage')}
                                 value={formData.geographicCoverage}
                                 onChange={(e) => setFormData({ ...formData, geographicCoverage: e.target.value })}
                                 className="w-full px-4 py-3 ... placeholder:text-gray-500 text-black  bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -649,10 +649,10 @@ export function DistributorForm() {
                     {/* Row 9: Message / Comments */}
                     <div className="mb-8">
                         <label className="block mb-2 text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                            Message / Comments
+                            {t('distributorForm.labels.message')}
                         </label>
                         <textarea
-                            placeholder="e.g. Interested in distributing Biogance products"
+                            placeholder={t('distributorForm.placeholders.message')}
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
@@ -678,7 +678,7 @@ export function DistributorForm() {
                             className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer "
                             style={{ fontSize: '14px', fontWeight: 600  }}
                         >
-                            Submit
+                            {t('distributorForm.buttons.submit')}
                         </button>
                     </div>
                 </form>

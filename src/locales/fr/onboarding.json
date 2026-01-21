@@ -1,0 +1,19 @@
+{
+  "contactUs": {
+    "title": "Contactez-nous",
+    "description": "Salut ! Nous aimerions vraiment nous connecter et en savoir plus sur vous. Envoyez-nous simplement un message, et nous vous répondrons très rapidement !",
+    "form": {
+      "fullName": "Nom Complet",
+      "fullNamePlaceholder": "ex : Jean Dupont",
+      "email": "Email",
+      "emailPlaceholder": "ex : jean_dupont@gmail.com",
+      "phoneNumber": "Numéro de Téléphone",
+      "message": "Message",
+      "messagePlaceholder": "ex : Parlez-nous davantage !"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "submit": "Envoyer"
+    }
+  }
+}

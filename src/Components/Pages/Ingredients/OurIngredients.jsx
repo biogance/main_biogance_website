@@ -16,65 +16,67 @@ import Alovera from "../../../../public/AloveraImg.png"
 import clay from "../../../../public/clayImg.png"
 import Avacado from "../../../../public/AvacadoImg.png"
 import Footer from '../Footer';
+import { useTranslation } from 'react-i18next';
 
 const OurIngredients = () => {
+    const { t } = useTranslation('ingredients');
     const [searchValue, setSearchValue] = useState('');
-    const [category, setCategory] = useState('All Categories');
+    const [category, setCategory] = useState(t('allCategories'));
 
     const ingredients = [
         {
             image: cardImg,
-            title: 'Hyaluronic Acid',
-            tag: 'Hydrating Agent',
-            description: 'Hyaluronic acid is a powerful humectant that attracts and binds moisture to the skin. It plumps the skin and protects the dermis. Known for its ability to...'
+            title: t('ingredients.hyaluronicAcid.title'),
+            tag: t('ingredients.hyaluronicAcid.tag'),
+            description: t('ingredients.hyaluronicAcid.description')
         },
         {
             image: garlicImg,
-            title: 'Garlic',
-            tag: 'Nourishing Agent',
-            description: 'Garlic has long been used in folk medicine for its various benefits. Its bioactive compounds, like allicin, are believed to provide antioxidants to aid in purifying...'
+            title: t('ingredients.garlic.title'),
+            tag: t('ingredients.garlic.tag'),
+            description: t('ingredients.garlic.description')
         },
         {
             image: algeaImg,
-            title: "Laminaria algae",
-            tag: 'Soothing Agent',
-            description: 'A perennial herbaceous plant native to Asia and southern Europe, licorice is valued not just for its sweet, aromatic flavor, but also for its antioxidant and...'
+            title: t('ingredients.laminariaAlgae.title'),
+            tag: t('ingredients.laminariaAlgae.tag'),
+            description: t('ingredients.laminariaAlgae.description')
         },
         {
             image: AschophyImg,
-            title: 'Acetylcholine algae',
-            tag: 'Soothing Agent',
-            description: 'Acetylcholine algae is a unique marine organism known for its calming and nourishing properties. Rich in natural moisturizers, amino acids, and antioxidants, it is...'
+            title: t('ingredients.acetylcholineAlgae.title'),
+            tag: t('ingredients.acetylcholineAlgae.tag'),
+            description: t('ingredients.acetylcholineAlgae.description')
         },
         {
             image: AltanioImg,
-            title: 'Allantoin',
-            tag: 'Calming Agent',
-            description: 'Allantoin is a botanical extract naturally present in the comfrey plant, known for its soothing and healing properties. It reduces irritation and supports skin barrier...'
+            title: t('ingredients.allantoin.title'),
+            tag: t('ingredients.allantoin.tag'),
+            description: t('ingredients.allantoin.description')
         },
         {
             image: Alovera,
-            title: 'Aloe Vera',
-            tag: 'Hydrating & Soothing Agent',
-            description: 'Aloe vera is a succulent plant renowned for its healing and soothing properties. Packed with vitamins, minerals, and antioxidants, its water-rich gel deeply and...'
+            title: t('ingredients.aloeVera.title'),
+            tag: t('ingredients.aloeVera.tag'),
+            description: t('ingredients.aloeVera.description')
         },
         {
             image: AlmondImg,
-            title: 'Sweet Almond',
-            tag: 'Nourishing Oil',
-            description: 'Sweet Almond oil is a gentle and nourishing oil extracted from almonds. Packed with vitamins E and A, it provides deep hydration, softens the skin, and calms inflammation...'
+            title: t('ingredients.sweetAlmond.title'),
+            tag: t('ingredients.sweetAlmond.tag'),
+            description: t('ingredients.sweetAlmond.description')
         },
         {
             image: clay,
-            title: 'Green Clay',
-            tag: 'Hydrating & Soothing Agent',
-            description: 'Green clay is a mineral-rich substance known for its absorbent properties, making it especially beneficial for oily skin. It gently purifies, removes impurities...'
+            title: t('ingredients.greenClay.title'),
+            tag: t('ingredients.greenClay.tag'),
+            description: t('ingredients.greenClay.description')
         },
         {
             image: Avacado,
-            title: 'Lawyer (Avocado)',
-            tag: 'Nourishing Agent',
-            description: 'Avocado oil, known as "Lawyer" in Spanish, supplies vitamins A, D, and E along with essential fatty acids. Its deep penetration helps skin and hair, and curbs moisture...'
+            title: t('ingredients.lawyerAvocado.title'),
+            tag: t('ingredients.lawyerAvocado.tag'),
+            description: t('ingredients.lawyerAvocado.description')
         }
     ];
 
@@ -82,12 +84,12 @@ const OurIngredients = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     const categoryOptions = [
-        'All Categories',
-        'Hydrating Agents',
-        'Soothing Agents',
-        'Calming Agents',
-        'Nourishing Oils',
-        'Nourishing Agents'
+        t('allCategories'),
+        t('hydratingAgents'),
+        t('soothingAgents'),
+        t('calmingAgents'),
+        t('nourishingOils'),
+        t('nourishingAgents')
     ];
     return (
         <>
@@ -101,15 +103,15 @@ const OurIngredients = () => {
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <p className="text-xs sm:text-sm font-semibold tracking-wider text-gray-500 uppercase">
-                                    Our Ingredients.
+                                    {t('ourIngredients')}
                                 </p>
                                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                                    For the most natural products
+                                    {t('forTheMostNaturalProducts')}
                                 </h2>
                             </div>
 
                             <p className="text-sm sm:text-base lg:text-lg text-gray-700 leading-relaxed">
-                                At Biogance, we believe in the power of natural ingredients to care for our four-legged friends. Our products are formulated with carefully selected organic and natural ingredients, specifically tailored to the needs of their skin and coat.
+                                {t('ingredientsDescription')}
                             </p>
                         </div>
 
@@ -128,10 +130,10 @@ const OurIngredients = () => {
                             {/* Header Text */}
                             <div className="text-center mb-8 space-y-3">
                                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                                    Biogance Ingredient Library
+                                    {t('bioganceIngredientLibrary')}
                                 </h1>
                                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl mx-auto">
-                                    Discover our premium collection of natural and organic ingredients, carefully selected to nurture your pet's health, well-being, and support a sustainable planet.
+                                    {t('libraryDescription')}
                                 </p>
                             </div>
 
@@ -143,7 +145,7 @@ const OurIngredients = () => {
                                         type="text"
                                         value={searchValue}
                                         onChange={(e) => setSearchValue(e.target.value)}
-                                        placeholder="Search Ingredients"
+                                        placeholder={t('searchIngredients')}
                                         className="w-full px-4 py-3 pr-12 text-sm sm:text-base text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all"
                                     />
                                     <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -221,7 +223,7 @@ const OurIngredients = () => {
                             {/* Load More Button */}
                             <div className="flex justify-center">
                                 <button className="px-8 py-3 bg-black text-white text-sm hover:bg-gray-800 transition-colors cursor-pointer rounded-lg">
-                                    Load More
+                                  {t('Loadmore')}
                                 </button>
                             </div>
                         </div>

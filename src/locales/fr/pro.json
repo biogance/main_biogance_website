@@ -37,5 +37,404 @@
     "ambassadorTitle": "Devenez ambassadeur",
     "ambassadorDescription": "Chez Biogance, nous croyons aux collaborations authentiques et durables construites sur la confiance, la passion et des valeurs partagées : le respect des animaux et de l'environnement, leur bien-être, la qualité et l'innovation.",
     "button": "Devenir Ambassadeur"
+  },
+  "ambassador": {
+    "title": "Devenez Ambassadeur Biogance",
+    "description": "Rejoignez notre communauté d'amoureux des animaux et représentez les soins naturels et éco-certifiés de Biogance. Partagez nos valeurs de bien-être, d'innovation et de durabilité avec les propriétaires d'animaux du monde entier.",
+    "tabs": {
+      "contentCreator": "Créateur de Contenu",
+      "breeder": "Éleveur",
+      "groomer": "Toiletteur",
+      "clubAssociation": "Club ou Association",
+      "healthProfessional": "Professionnel de Santé",
+      "animalWelfare": "Organisation de protection animale ou refuge"
+    },
+    "common": {
+      "basicInformation": "Informations de Base",
+      "firstName": "Prénom*",
+      "lastName": "Nom de Famille*",
+      "email": "Email*",
+      "contact": "Contact*",
+      "cityRegion": "Ville / Région*",
+      "organizationName": "Nom de l'Organisation/Refuge*",
+      "contactName": "Nom du Contact*",
+      "professionalEmail": "Adresse email professionnelle*",
+      "motivation": "Votre Motivation",
+      "motivationQuestion": "En quelques mots, pourquoi souhaitez-vous devenir ambassadeur Biogance ?",
+      "agreement": "J'accepte que mes informations soient utilisées pour examiner ma candidature.",
+      "submit": "Soumettre",
+      "placeholders": {
+        "firstName": "ex. Le Coin des Animaux",
+        "lastName": "ex. CA987654321",
+        "email": "ex. megan@whiskersnwags.com",
+        "contact": "ex. CA124653",
+        "cityRegion": "ex. megan@whiskersnwags.com",
+        "organizationName": "ex. Refuge des Pattes Heureuses",
+        "contactName": "ex. Jean Smith",
+        "professionalEmail": "ex. contact@refuge.com"
+      },
+      "errors": {
+        "firstNameRequired": "Le prénom est requis",
+        "lastNameRequired": "Le nom de famille est requis",
+        "emailRequired": "L'email est requis",
+        "emailInvalid": "Veuillez saisir une adresse email valide",
+        "contactRequired": "Le contact est requis",
+        "cityRegionRequired": "Ville/Région est requise",
+        "organizationNameRequired": "Le nom de l'organisation/refuge est requis",
+        "contactNameRequired": "Le nom du contact est requis",
+        "professionalEmailRequired": "L'adresse email professionnelle est requise",
+        "agreementRequired": "Vous devez accepter l'examen des informations pour soumettre"
+      }
+    },
+    "contentCreator": {
+      "yourUniverse": "Votre Univers",
+      "mainSocialMediaLink": "Lien Principal des Réseaux Sociaux*",
+      "numberOfFollowers": "Nombre d'Abonnés",
+      "mainTheme": "Thème Principal*",
+      "mainThemeText": "Thème Principal",
+      "typeOfContent": "Type de contenu que vous aimez créer",
+      "yourPets": "Vos animaux",
+      "mainThemeForPet": "Thème Principal",
+      "doYouHaveMultipleAnimals": "Avez-vous un ou plusieurs animaux ?*",
+      "multipleAnimalsNote": "Pour plusieurs animaux, veuillez remplir le formulaire ci-dessous pour chacun (max 3 animaux)",
+      "animalSpecies": "Espèce*",
+      "breed": "Race",
+      "coatType": "Type de Pelage",
+      "specialCharacteristics": "Caractéristiques spéciales ou besoins (optionnel)",
+      "addAnotherAnimal": "Ajouter un Autre Animal",
+      "placeholders": {
+        "socialMediaLink": "ex. https://instagram.com/votrepage",
+        "mainThemeText": "ex: Tapez ici",
+        "petMainTheme": "ex: Autre animal",
+        "breed": "ex. Golden Retriever, Persan, etc.",
+        "characteristics": "ex. Peau sensible, allergies, animal de sauvetage, senior, etc."
+      },
+      "options": {
+        "followers": ["< 1 000", "1 000 - 5 000", "5 000 - 10 000", "10 000 - 50 000", "50 000+"],
+        "mainThemes": ["Animaux", "Mode de Vie / Famille", "Beauté / Soins pour Animaux", "Autres"],
+        "contentTypes": ["Reels / Vidéos Avant-Après", "Photos Créatives", "Conseils ou critiques de produits"],
+        "petTypes": ["Chien", "Chat", "Cheval", "Autres"],
+        "species": ["Chien", "Chat", "Cheval", "Lapin", "Autres"],
+        "coatTypes": ["Court", "Moyen", "Long", "Bouclé", "Sans Poils"],
+        "multipleAnimals": ["Un", "Plusieurs"]
+      },
+      "errors": {
+        "socialMediaLinkRequired": "Le lien principal des réseaux sociaux est requis",
+        "mainThemeRequired": "Le thème principal est requis",
+        "hasMultipleAnimalsRequired": "Veuillez sélectionner si vous avez un ou plusieurs animaux",
+        "animalSpeciesRequired": "L'espèce pour l'Animal 1 est requise"
+      }
+    },
+    "breeder": {
+      "yourActivity": "Votre Activité",
+      "speciesBreed": "Espèce Élevée*",
+      "breedName": "Nom de la Race",
+      "mainBreeds": "Race(s) Principale(s)",
+      "howLongBreeding": "Depuis combien de temps élevez-vous ?*",
+      "breedingSize": "Taille de l'Élevage",
+      "yourCollaboration": "Votre Collaboration avec Biogance",
+      "familiarWithProducts": "Connaissez-vous déjà nos produits ?*",
+      "wouldYouLikeTo": "Souhaiteriez-vous",
+      "placeholders": {
+        "breedName": "ex: Tapez ici",
+        "mainBreeds": "ex: Tapez ici"
+      },
+      "options": {
+        "speciesBreeds": ["Chien", "Chat", "Cheval", "Autres"],
+        "breedingDuration": ["Moins de 5 ans", "5 à 10 ans", "Plus de 10 ans"],
+        "breedingSizes": ["Éleveur familial (1 - 3 portées / an)", "Éleveur professionnel (plus de 3 portées / an)"],
+        "familiarity": ["Oui, je les utilise régulièrement", "Oui, je connais la marque", "Non, je découvre"],
+        "collaborationTypes": ["Participer aux tests de produits", "Écrire des articles ou conseils d'experts", "Recevoir nos kits chiots/chatons"]
+      },
+      "errors": {
+        "speciesBreedRequired": "L'espèce élevée est requise",
+        "breedingDurationRequired": "La durée d'élevage est requise",
+        "familiarWithProductsRequired": "Veuillez sélectionner si vous connaissez nos produits"
+      }
+    },
+    "groomer": {
+      "mainSpeciality": "Spécialité Principale*",
+      "mainOtherSpeciality": "Autre Spécialité Principale",
+      "onlinePresence": "Présence en Ligne",
+      "linkToMainAccount": "Lien vers votre compte principal",
+      "wouldYouLikeToShare": "Souhaiteriez-vous partager",
+      "placeholders": {
+        "mainOtherSpeciality": "ex: Tapez ici",
+        "linkToMainAccount": "ex: Tapez ici"
+      },
+      "options": {
+        "specialities": ["Toilettage Canin", "Toilettage Félin", "Toilettage Équin", "Autres"],
+        "shareOptions": ["Vidéos Avant/Après de toilettage", "Routine complète mettant en avant nos produits", "Photos professionnelles du résultat final"]
+      },
+      "errors": {
+        "specialityRequired": "La spécialité est requise"
+      }
+    },
+    "clubAssociation": {
+      "yourStructure": "Votre Structure",
+      "typeOfOrganization": "Type d'organisation*",
+      "organizationName": "Organisation",
+      "numberOfActiveMembers": "Nombre de membres actifs*",
+      "doYouOrganizeEvents": "Organisez-vous des événements (concours, expositions, journées de sensibilisation) ?*",
+      "breedsRepresented": "Races Représentées",
+      "breedGroup1": "Groupe de Race #1",
+      "species": "Espèce",
+      "mainBreeds": "Race(s) Principale(s)",
+      "addAnotherBreedGroup": "Ajouter un Autre Groupe de Race",
+      "collaborationWithBiogance": "Collaboration avec Biogance",
+      "whyCollaborate": "Pourquoi souhaitez-vous collaborer avec Biogance ?*",
+      "promotionActions": "Quels types d'actions seriez-vous prêt à mettre en œuvre pour promouvoir Biogance ?*",
+      "otherTypeOfActions": "Autre type d'actions",
+      "placeholders": {
+        "organizationName": "ex: Tapez ici",
+        "mainBreeds": "ex: Border Collie, Maine Coon, Selle Français",
+        "otherPromotionActions": "ex: Border Collie, Maine Coon, Selle Français"
+      },
+      "options": {
+        "organizationTypes": ["Club / association de loisirs", "Club / association de compétition / exposition", "Autres"],
+        "memberCounts": ["Moins de 50", "50 - 200", "Plus de 200"],
+        "events": ["Oui", "Non"],
+        "species": ["Chien", "Chat", "Cheval", "Autres"],
+        "promotionActions": ["Offrir un code promo à vos membres", "Distribuer des prix Biogance lors de vos concours / événements", "Publier des articles / posts sur vos réseaux sociaux / site web", "Autres"]
+      },
+      "errors": {
+        "organizationTypeRequired": "Le type d'organisation est requis",
+        "memberCountRequired": "Le nombre de membres actifs est requis",
+        "organizeEventsRequired": "Veuillez sélectionner si vous organisez des événements",
+        "collaborationReasonRequired": "Veuillez expliquer pourquoi vous souhaitez collaborer",
+        "promotionActionsRequired": "Veuillez sélectionner les actions de promotion"
+      }
+    },
+    "healthProfessional": {
+      "professionSpeciality": "Profession/Spécialité*",
+      "otherProfessionSpeciality": "Autre Profession/Spécialité",
+      "nameOfClinic": "Nom de la Clinique/Cabinet/Organisation",
+      "yourActivity": "Votre Activité",
+      "howLongPracticing": "Depuis combien de temps pratiquez-vous ?*",
+      "youMainlyWorkWith": "Vous travaillez principalement avec",
+      "familiarWithBiogance": "Connaissez-vous déjà Biogance ou Eskadron ?",
+      "collaborationOpportunities": "Opportunités de Collaboration",
+      "wouldYouLikeToParticipate": "Souhaiteriez-vous participer à",
+      "expertArticleTopics": "Quels sujets pourriez-vous aborder dans un article d'expert ?",
+      "placeholders": {
+        "otherProfessionSpeciality": "ex: Tapez ici",
+        "nameOfClinic": "ex. Clinique de Santé Animale",
+        "professionalEmail": "ex. jean@clinique.com",
+        "contact": "ex. +33123456789",
+        "cityRegion": "ex. Paris"
+      },
+      "options": {
+        "professions": ["Vétérinaire", "Ostéopathe", "Nutritionniste", "Comportementaliste", "Autres"],
+        "practicingYears": ["Moins de 5 ans", "5 à 10 ans", "Plus de 10 ans"],
+        "workWith": ["Chiens", "Chats", "Chevaux", "Autres Animaux"],
+        "familiarity": ["Oui, j'utilise vos produits", "Oui, je connais la marque", "Non, je découvre"],
+        "participateIn": ["Rédaction d'articles / conseils d'experts", "Tests de produits / retours techniques", "Conférences ou interviews", "Collaborations sur le terrain (cliniques, foires, etc.)"]
+      },
+      "errors": {
+        "professionRequired": "La profession/spécialité est requise",
+        "yearsExperienceRequired": "Les années d'expérience sont requises"
+      }
+    },
+    "animalWelfare": {
+      "yourStructure": "Votre Structure",
+      "legalStatus": "Statut Juridique*",
+      "rinaSirenNumber": "Numéro RINA ou SIREN (le cas échéant)",
+      "animalsInCare": "Nombre d'animaux actuellement en soin",
+      "speciesConcerned": "Espèces Concernées",
+      "yourCollaboration": "Votre Collaboration avec Biogance",
+      "hearAboutBiogance": "Comment avez-vous entendu parler de Biogance ?",
+      "usefulProducts": "Quels produits seraient les plus utiles pour vous ?",
+      "otherProducts": "Autre Produit",
+      "shareInitiatives": "Souhaiteriez-vous partager vos initiatives sur nos réseaux sociaux (photos, témoignages, remerciements) ?",
+      "yourMessage": "Votre Message",
+      "shelterMessage": "En quelques mots, parlez-nous de votre organisation et de sa mission",
+      "placeholders": {
+        "organizationName": "ex. Refuge des Pattes Heureuses",
+        "contactName": "ex. Jean Smith",
+        "professionalEmail": "ex. contact@refuge.com",
+        "cityRegion": "ex. Los Angeles",
+        "rinaSirenNumber": "ex: Tapez ici",
+        "otherProducts": "ex: tapez ici",
+        "shelterMessage": "En quelques mots, parlez-nous de votre organisation..."
+      },
+      "options": {
+        "legalStatus": ["Association à but non lucratif", "Fondation", "Autres"],
+        "animalsInCare": ["Moins de 20", "20 - 50", "Plus de 50"],
+        "speciesConcerned": ["Chiens", "Chats", "Petits animaux/Autres"],
+        "hearAboutBiogance": ["Réseaux sociaux", "Recommandation", "Salon professionnel / événement", "Autres"],
+        "usefulProducts": ["Shampoings et soins d'hygiène", "Produits anti-parasitaires", "Produits de nettoyage / désinfection", "Autres"],
+        "shareInitiatives": ["Oui", "Non"]
+      },
+      "errors": {
+        "legalStatusRequired": "Le statut juridique est requis"
+      }
+    }
+  },
+
+  
+  "distributorForm": {
+    "title": "Devenir Distributeur Biogance",
+    "description": "Rejoignez notre réseau de distribution mondial et représentez Biogance dans votre région. Partenaire avec un laboratoire français de confiance connu pour ses solutions de soins pour animaux organiques, éco-certifiées et innovantes distribuées dans plus de 40 pays à travers le monde.",
+    "labels": {
+      "companyName": "Nom de l'entreprise*",
+      "firstName": "Prénom*",
+      "businessEmail": "Email professionnel*",
+      "businessPhone": "Téléphone professionnel",
+      "registrationNumber": "Numéro d'enregistrement de l'entreprise (SIRET ou TVA)*",
+      "website": "Site web de l'entreprise",
+      "jobTitle": "Titre du poste",
+      "salesReps": "Nombre de représentants commerciaux",
+      "address": "Adresse de l'entreprise",
+      "country": "Pays",
+      "city": "Ville",
+      "street": "Rue",
+      "zipCode": "Code postal",
+      "brand": "Marque (Distributeur)",
+      "geographicCoverage": "Couverture géographique",
+      "message": "Message / Commentaires"
+    },
+    "placeholders": {
+      "companyName": "ex. Pawsome Inc.",
+      "firstName": "ex. Jane Smith",
+      "businessEmail": "ex. sales@example.com",
+      "businessPhone": "ex. 555-123-4567",
+      "registrationNumber": "ex. 123456789",
+      "website": "ex. www.votresiteweb.com",
+      "jobTitle": "ex. Directeur commercial",
+      "salesReps": "ex. 10",
+      "address": "ex. 123 Rue Principale, Bureau 100",
+      "country": "ex. France",
+      "city": "ex. Anytown",
+      "street": "ex. 123 Rue Principale",
+      "zipCode": "ex. 12345",
+      "brand": "ex. Biogance/Ekinat",
+      "geographicCoverage": "ex. Europe du Nord",
+      "message": "ex. Intéressé par la distribution des produits Biogance",
+      "searchCountry": "Rechercher un pays..."
+    },
+    "errors": {
+      "companyNameRequired": "Le nom de l'entreprise est requis",
+      "firstNameRequired": "Le prénom est requis",
+      "businessEmailRequired": "L'email professionnel est requis",
+      "businessEmailInvalid": "Veuillez saisir une adresse email valide",
+      "registrationNumberRequired": "Le numéro d'enregistrement est requis"
+    },
+    "buttons": {
+      "submit": "Soumettre"
+    },
+    "messages": {
+      "noCountriesFound": "Aucun pays trouvé"
+    }
+  },
+
+  "distributorForm": {
+    "title": "Devenir Distributeur Biogance",
+    "description": "Rejoignez notre réseau de distribution mondial et représentez Biogance dans votre région. Partenairez avec un laboratoire français de confiance connu pour ses solutions de soins pour animaux organiques, éco-certifiées et innovantes distribuées dans plus de 40 pays à travers le monde.",
+    "labels": {
+      "companyName": "Nom de l'Entreprise*",
+      "firstName": "Prénom*",
+      "businessEmail": "Email Professionnel*",
+      "businessPhone": "Téléphone Professionnel",
+      "registrationNumber": "Numéro d'Enregistrement de l'Entreprise (SIRET ou TVA)*",
+      "website": "Site Web de l'Entreprise",
+      "jobTitle": "Titre du Poste",
+      "salesReps": "Nombre de Représentants Commerciaux",
+      "address": "Adresse de l'Entreprise",
+      "country": "Pays",
+      "city": "Ville",
+      "street": "Rue",
+      "zipCode": "Code Postal",
+      "brand": "Marque (Distributeur)",
+      "geographicCoverage": "Couverture Géographique",
+      "message": "Message / Commentaires"
+    },
+    "placeholders": {
+      "companyName": "ex. Pawsome Inc.",
+      "firstName": "ex. Jane Smith",
+      "businessEmail": "ex. ventes@example.com",
+      "businessPhone": "ex. 555-123-4567",
+      "registrationNumber": "ex. 123456789",
+      "website": "ex. www.votresiteweb.com",
+      "jobTitle": "ex. Directeur Commercial",
+      "salesReps": "ex. 10",
+      "address": "ex. 123 Rue Principale, Bureau 100",
+      "country": "ex. États-Unis",
+      "city": "ex. Touteville",
+      "street": "ex. 123 Rue Principale",
+      "zipCode": "ex. 12345",
+      "brand": "ex. Biogance/Ekinat",
+      "geographicCoverage": "ex. Amérique du Nord",
+      "message": "ex. Intéressé par la distribution des produits Biogance",
+      "searchCountry": "Rechercher un pays..."
+    },
+    "errors": {
+      "companyNameRequired": "Le nom de l'entreprise est requis",
+      "firstNameRequired": "Le prénom est requis",
+      "businessEmailRequired": "L'email professionnel est requis",
+      "businessEmailInvalid": "Veuillez saisir une adresse email valide",
+      "registrationNumberRequired": "Le numéro d'enregistrement est requis"
+    },
+    "buttons": {
+      "submit": "Soumettre"
+    },
+    "messages": {
+      "noCountriesFound": "Aucun pays trouvé"
+    }
+  },
+  "resellerForm": {
+    "title": "Devenir Revendeur Biogance",
+    "description": "Offrez à vos clients des soins pour animaux premium, écologiques et fabriqués en France. Rejoignez le réseau professionnel de Biogance et apportez des produits de toilettage et de bien-être naturels et efficaces aux propriétaires d'animaux de votre communauté.",
+    "labels": {
+      "companyName": "Nom de l'Entreprise*",
+      "registrationNumber": "Numéro d'Enregistrement de l'Entreprise (SIRET ou TVA)*",
+      "contactName": "Nom du Contact*",
+      "jobTitle": "Titre du Poste*",
+      "email": "Email*",
+      "phone": "Téléphone",
+      "website": "Site Web",
+      "message": "Message / Commentaires",
+      "resellerTypes": "Devenir Revendeur Biogance"
+    },
+    "placeholders": {
+      "companyName": "ex. Le Coin des Animaux",
+      "registrationNumber": "ex. CA9876543210",
+      "contactName": "ex. Megan Carter",
+      "jobTitle": "ex. Propriétaire",
+      "email": "ex. megan@lecoindesanimaux.com",
+      "phone": "ex. 555-777-8888",
+      "website": "ex. www.lecoindesanimaux.com",
+      "message": "ex. Impatient d'offrir Biogance dans notre boutique.",
+      "searchCountry": "Rechercher un pays..."
+    },
+    "resellerTypes": {
+      "petShop": "Animalerie / Magasin Spécialisé",
+      "gardenCenter": "Jardin Centre",
+      "groomingSalon": "Salon de Toilettage",
+      "professionalBreeder": "Éleveur Professionnel",
+      "veterinaryClinic": "Clinique Vétérinaire",
+      "onlineStore": "Boutique en Ligne"
+    },
+    "errors": {
+      "companyNameRequired": "Le nom de l'entreprise est requis",
+      "registrationNumberRequired": "Le numéro d'enregistrement est requis",
+      "contactNameRequired": "Le nom du contact est requis",
+      "jobTitleRequired": "Le titre du poste est requis",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez saisir une adresse email valide"
+    },
+    "checkbox": {
+      "Pet Shop / Specialty Store": "Animalerie / Magasin spécialisé",
+      "Garden Center": "Jardinerie",
+      "Grooming Salon": "Salon de toilettage",
+      "Professional Breeder": "Éleveur professionnel",
+      "Veterinary Clinic": "Clinique vétérinaire",
+      "Online Store": "Boutique en ligne"
+    },
+    "buttons": {
+      "submit": "Soumettre"
+    },
+    "messages": {
+      "noCountriesFound": "Aucun pays trouvé"
+    }
   }
 }

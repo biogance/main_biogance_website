@@ -1,10 +1,15 @@
+"use client"
+
 import React from "react";
 import { MdVerified } from "react-icons/md";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { FaCheck } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 export default function Certifications() {
+  const { t } = useTranslation('certificates');
+
   return (
     <>
        <div className="fixed top-0 left-0 right-0 z-50">
@@ -48,38 +53,27 @@ export default function Certifications() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                  OUR CERTIFICATIONS
+                  {t('ourCertifications')}
                 </p>
                 <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
-                  Compliance with standards
+                  {t('complianceWithStandards')}
                 </h2>
               </div>
 
               <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                At Biogance, compliance with standards is an inseparable
-                priority of our quality and ethical approach.
+                {t('complianceDescription')}
               </p>
 
               <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                Pioneers in the field of organic and natural care for animals,
-                we were the first to offer a range certified "Ecosoin" by
-                ECOCERT through our Organissime line.
+                {t('pioneersDescription')}
               </p>
 
               <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                This recognition guarantees natural, controlled and transparent
-                formulas, complying with the strictest requirements of
-                ecological cosmetics for animals.
+                {t('recognitionDescription')}
               </p>
 
               <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                At the same time, our production site is ISO 22716 certified, an
-                international standard governing Good Manufacturing Practices
-                (GMP). This certification confirms our commitment to producing
-                safe and consistent quality across all our products. With
-                Biogance, you have the guarantee of choosing certified, safe,
-                and responsible animal care, developed in compliance with the
-                most demanding standards.
+                {t('isoCertificationDescription')}
               </p>
             </div>
 
@@ -100,13 +94,10 @@ export default function Certifications() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-gray-900 text-sm md:text-base mb-2 md:mb-3 leading-tight">
-                        We're a Certified Pet
-                        <br />
-                        Care Brand
+                        {t('certifiedPetCareBrand')}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-700 leading-relaxed">
-                        ECOCERT and ISO 22716 certified for safe and
-                        eco-responsible pet care.
+                        {t('certificationDetails')}
                       </p>
                     </div>
                   </div>
@@ -129,28 +120,23 @@ export default function Certifications() {
               {/* Content */}
               <div className="flex-1">
                 <h2 className="mb-6 text-2xl font-bold text-gray-900">
-                  Controlled by Ecocert
+                  {t('controlledByEcocert')}
                 </h2>
 
                 <div className="space-y-4 text-gray-700 leading-relaxed mb-6">
                   <p>
-                    Biogance is the first company to offer a range of animal
-                    care products labeled "Ecosoin bio" by ECOCERT, through its
-                    Organissime line.
+                    {t('ecocertFirstCompany')}
                   </p>
 
                   <p>
-                    Although this label is not mandatory in the sector, we have
-                    made the deliberate and committed choice to apply it, in
-                    order to offer our animals products subject to the same
-                    demanding standards as human cosmetology.
+                    {t('labelChoice')}
                   </p>
                 </div>
 
                 {/* ECOCERT Standard Section */}
                 <div className="mb-6">
                   <h3 className="mb-4 text-black font-medium">
-                    The ECOCERT Standard Is Based On:
+                    {t('ecocertStandardBasedOn')}
                   </h3>
 
                   <div className="space-y-3">
@@ -161,7 +147,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Use of ingredients from renewable resources
+                        {t('renewableResources')}
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
@@ -171,7 +157,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Environmentally friendly processing methods
+                        {t('environmentallyFriendlyMethods')}
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
@@ -181,8 +167,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Absence of GMOs, parabens, phenoxyethanol, or
-                        controversial substances
+                        {t('absenceOfControversialSubstances')}
                       </span>
                     </div>
                   </div>
@@ -191,7 +176,7 @@ export default function Certifications() {
                 {/* Organissime Range Section */}
                 <div className="  mb-6">
                   <h3 className="mb-4 text-black font-medium">
-                    Our Organissime Range Meets These Requirements:
+                    {t('organissimeRequirements')}
                   </h3>
 
                   <div className="space-y-3">
@@ -202,8 +187,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        98% of the plant ingredients used in our formulas come
-                        from organic farming.
+                        {t('organicIngredients')}
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
@@ -213,8 +197,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Effective, safe, and ethical care, fully aligned with
-                        our values
+                        {t('effectiveSafeEthical')}
                       </span>
                     </div>
                   </div>
@@ -222,9 +205,7 @@ export default function Certifications() {
 
                 {/* Final Statement */}
                 <p className="text-gray-700 leading-relaxed">
-                  With this label, Biogance confirms its desire to go beyond
-                  regulatory obligations, to offer eco-responsible, transparent,
-                  and trustworthy care.
+                  {t('beyondObligations')}
                 </p>
               </div>
             </div>
@@ -265,7 +246,7 @@ export default function Certifications() {
                 {/* ECOCERT Standard Section */}
                 <div className="mb-6">
                   <h3 className="mb-4 text-black font-medium">
-                    What This Certification Means:{" "}
+                    {t('certificationMeans')}
                   </h3>
 
                   <div className="space-y-3">
@@ -276,8 +257,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Commitment to high-quality products developed under
-                        strict regulations
+                        {t('highQualityCommitment')}
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
@@ -287,8 +267,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        First company to obtain ISO certification for animal
-                        hygiene products
+                        {t('firstIsoCertification')}
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
@@ -298,7 +277,7 @@ export default function Certifications() {
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
                       <span className="text-gray-700">
-                        Recognition of our expertise and quality-first approach
+                        {t('expertiseRecognition')}
                       </span>
                     </div>
                   </div>
@@ -307,11 +286,10 @@ export default function Certifications() {
                 {/* Organissime Range Section */}
                 <div className="  mb-6">
                   <h3 className="mb-2 text-black font-medium">
-                    Why It Matters:
+                    {t('whyItMatters')}
                   </h3>
                   <p className="text-black mb-2">
-                    Thanks to this standard, we can guarantee that each Biogance
-                    product meets strict criteria of:
+                    {t('strictCriteria')}
                   </p>
 
                   <div className="space-y-3">
@@ -321,7 +299,7 @@ export default function Certifications() {
                         alt=""
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
-                      <span className="text-gray-700">Safety</span>
+                      <span className="text-gray-700">{t('safety')}</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <img
@@ -329,7 +307,7 @@ export default function Certifications() {
                         alt=""
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
-                      <span className="text-gray-700">Efficacys</span>
+                      <span className="text-gray-700">{t('efficacy')}</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <img
@@ -337,15 +315,14 @@ export default function Certifications() {
                         alt=""
                         className="w-5 h-5 text-gray-800 flex-shrink-0 mt-0.5"
                       />
-                      <span className="text-gray-700">Traceability</span>
+                      <span className="text-gray-700">{t('traceability')}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Final Statement */}
                 <p className="text-gray-700 leading-relaxed">
-                  All while respecting the environment and industry
-                  requirements.{" "}
+                  {t('respectingEnvironment')}
                 </p>
               </div>
             </div>

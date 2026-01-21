@@ -1,0 +1,19 @@
+{
+  "contactUs": {
+    "title": "Contact Us",
+    "description": "Hey there! We'd really like to connect and hear more about you. Just shoot us a message, and we'll get back to you super quick!",
+    "form": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "eg: John Doe",
+      "email": "Email",
+      "emailPlaceholder": "eg: john_doe@gmail.com",
+      "phoneNumber": "Phone Number",
+      "message": "Message",
+      "messagePlaceholder": "eg: Tell us more!"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit"
+    }
+  }
+}

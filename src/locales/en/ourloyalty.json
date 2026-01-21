@@ -1,0 +1,22 @@
+{
+  "joinLoyaltyProgram": "Join the Biogance Loyalty Program",
+  "loyaltyDescription": "Give your pet the best care—while we reward your trust. With Biogance Loyalty, every purchase brings you closer to exclusive savings, special bonuses, and member-only rewards.",
+  "register": "Register",
+  "earnPoints": "Earn Points",
+  "getRewards": "Get Rewards",
+  "registerNow": "Register Now",
+  "discoverProducts": "Discover Products",
+  "joinLoyaltyProgramTitle": "JOIN THE LOYALTY PROGRAM",
+  "rewardingLoyaltyTitle": "Rewarding Your Loyalty with Biogance",
+  "loyaltyProgramDescription": "To reward your loyalty, we are pleased to present our Biogance loyalty program valid on all our products. To become a member, simply create an account at www.biogance.com or log in if you already have one.",
+  "earnPointsDescription": "Earn 1 point for every 10 euros spent*",
+  "discountVoucherDescription": "Collect or convert to a discount voucher from the first point earned. 1 point gives you an immediate €1 discount.",
+  "bonusDescription": "Bonus: Collect points for your birthday, subscribing to our newsletter, responding to our satisfaction survey or even during competitions or social media events!",
+  "exclusionNote": "*Excluding shipping costs / points are accumulated for all orders placed from September 4, 2021. Orders previously placed on the site are not eligible to accumulate points.",
+  "inSummary": "In Summary:",
+  "summaryPoint1": "10 euros spent = 1 point earned",
+  "summaryPoint2": "1 point used = 1 euro saved",
+  "manageLoyaltyPoints": "Manage Loyalty Points",
+  "discoverproduct": "Discover product",
+  "Registernow": "Register Now"
+}

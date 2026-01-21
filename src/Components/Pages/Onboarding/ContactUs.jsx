@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
+import { useTranslation } from 'react-i18next';
 
 export default function ContactUs({ onClose }) {
+  const { t } = useTranslation('onboarding');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -92,9 +94,9 @@ export default function ContactUs({ onClose }) {
         <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold mb-2 text-black">Contact Us</h1>
+            <h1 className="text-2xl font-semibold mb-2 text-black">{t('contactUs.title')}</h1>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Hey there! We'd really like to connect and hear more about you. Just shoot us a message, and we'll get back to you super quick!
+              {t('contactUs.description')}
             </p>
           </div>
 
@@ -104,12 +106,12 @@ export default function ContactUs({ onClose }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="fullName" className="block text-sm mb-2 text-black font-medium">
-                  Full Name
+                  {t('contactUs.form.fullName')}
                 </label>
                 <input
                   id="fullName"
                   type="text"
-                  placeholder="eg: John Doe"
+                  placeholder={t('contactUs.form.fullNamePlaceholder')}
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-black text-sm"
@@ -117,12 +119,12 @@ export default function ContactUs({ onClose }) {
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm mb-2 text-black font-medium">
-                  Email
+                  {t('contactUs.form.email')}
                 </label>
                 <input
                   id="email"
                   type="email"
-                  placeholder="eg: john_doe@gmail.com"
+                  placeholder={t('contactUs.form.emailPlaceholder')}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-black text-sm"
@@ -133,7 +135,7 @@ export default function ContactUs({ onClose }) {
             {/* Phone Number */}
             <div>
               <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-medium">
-                Phone Number
+                {t('contactUs.form.phoneNumber')}
               </label>
               <PhoneInput
                 defaultCountry="fr"
@@ -145,11 +147,11 @@ export default function ContactUs({ onClose }) {
             {/* Message */}
             <div>
               <label htmlFor="message" className="block text-sm mb-2 text-black font-medium">
-                Message
+                {t('contactUs.form.message')}
               </label>
               <textarea
                 id="message"
-                placeholder="eg: Tell us more!"
+                placeholder={t('contactUs.form.messagePlaceholder')}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 rows={5}
@@ -164,14 +166,14 @@ export default function ContactUs({ onClose }) {
                 onClick={handleCancel}
                 className="w-full bg-white text-black py-3 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors font-medium cursor-pointer"
               >
-                Cancel
+                {t('contactUs.buttons.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
                 className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium cursor-pointer"
               >
-                Submit
+                {t('contactUs.buttons.submit')}
               </button>
             </div>
           </div>

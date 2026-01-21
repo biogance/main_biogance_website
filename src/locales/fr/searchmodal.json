@@ -1,0 +1,39 @@
+{
+  "recentSearch": "Recherche Récente",
+  "popularProducts": "Produits Populaires",
+  "bestSelling": "Meilleures Ventes",
+  "searchPlaceholder": "Rechercher des Produits",
+  "selectCategory": "Sélectionner une Catégorie",
+  "searches": [
+    "Comportement",
+    "Santé",
+    "Trucs et Astuces",
+    "Hygiène",
+    "Pour Chats",
+    "Pour Nacs",
+    "Pour Chien",
+    "Éducation"
+  ],
+  "searchCategories": [
+    {
+      "value": "all",
+      "label": "Sélectionner une Catégorie"
+    },
+    {
+      "value": "dogs",
+      "label": "Chiens"
+    },
+    {
+      "value": "cats",
+      "label": "Chats"
+    },
+    {
+      "value": "horses",
+      "label": "Chevaux"
+    },
+    {
+      "value": "small-mammals",
+      "label": "Petits Mammifères"
+    }
+  ]
+}

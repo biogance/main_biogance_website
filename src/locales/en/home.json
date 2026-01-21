@@ -171,5 +171,20 @@
   },
   "banner": {
     "title": "Join the Biogance Family"
+  },
+   
+    "wishlist": {
+      "title": "WISHLIST",
+      "breadcrumb": {
+        "home": "Home",
+        "wishlist": "Wishlist"
+      },
+      "empty": {
+        "heading": "Your wishlist is empty",
+        "description": "You don't have any products saved yet.",
+        "subDescription": "Add items you love to come back to them later.",
+        "browseButton": "Browse Products"
+      }
+    
   }
 }
