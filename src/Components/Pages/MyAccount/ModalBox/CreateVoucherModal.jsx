@@ -1,9 +1,11 @@
 "use client"
 import { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { FaRegEdit } from "react-icons/fa";
 import { FiChevronDown, FiAlertCircle, FiCopy } from "react-icons/fi"
 
 export default function CreateVoucherModal({ isOpen, onClose }) {
+    const { t } = useTranslation("myaccount");
     const [selectedPoints, setSelectedPoints] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -15,12 +17,12 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
     const userBalance = 20;
 
     const pointsOptions = [
-      { value: "10", label: "10 points" },
-      { value: "20", label: "20 points" },
-      { value: "50", label: "50 points" },
-      { value: "100", label: "100 points" },
-      { value: "200", label: "200 points" },
-      { value: "220", label: "220 points" },
+      { value: "10", label: t('createVoucher.pointsOption', { points: 10 }) },
+      { value: "20", label: t('createVoucher.pointsOption', { points: 20 }) },
+      { value: "50", label: t('createVoucher.pointsOption', { points: 50 }) },
+      { value: "100", label: t('createVoucher.pointsOption', { points: 100 }) },
+      { value: "200", label: t('createVoucher.pointsOption', { points: 200 }) },
+      { value: "220", label: t('createVoucher.pointsOption', { points: 220 }) },
     ];
 
     const generateVoucherCode = () => {
@@ -100,20 +102,20 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                 }}
             >
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 ">
-                <h2 className="text-xl text-black font-semibold mb-3">Create Voucher</h2>
+                <h2 className="text-xl text-black font-semibold mb-3">{t('createVoucher.title')}</h2>
                 
                 <div className="mb-6">
                   <p className="text-gray-700 mb-1">
-                    Redeem your loyalty points to generate a discount voucher.
+                    {t('createVoucher.description1')}
                   </p>
                   <p className="text-gray-700">
-                    10 loyalty points = 1 euro. Use your points to save on your next order!
+                    {t('createVoucher.description2')}
                   </p>
                 </div>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Points to Redeem
+                    {t('createVoucher.pointsToRedeem')}
                   </label>
                   <div className="relative">
                     <button
@@ -126,7 +128,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                       }`}
                     >
                       <span className={selectedPoints ? 'text-gray-700' : 'text-gray-400'}>
-                        {selectedPoints ? `${selectedPoints} points` : "Select Points"}
+                        {selectedPoints ? t('createVoucher.pointsOption', { points: selectedPoints }) : t('createVoucher.selectPoints')}
                       </span>
                       <FiChevronDown className={`text-gray-600 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} size={20} />
                     </button>
@@ -149,15 +151,15 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                   {showError && (
                     <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
                       <FiAlertCircle size={16} />
-                      <span>*You don't have enough points to redeem</span>
+                      <span>{t('createVoucher.notEnoughPoints')}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="flex justify-between items-center text-sm mb-8">
-                  <span className="text-gray-600">Minimum redeemable: {minimumPoints} points</span>
+                  <span className="text-gray-600">{t('createVoucher.minimumRedeemable', { points: minimumPoints })}</span>
                   <span className="text-gray-900">
-                    Your balance: <span className="font-semibold">{userBalance} points</span>
+                    {t('createVoucher.yourBalance')}: <span className="font-semibold">{t('createVoucher.balancePoints', { points: userBalance })}</span>
                   </span>
                 </div>
 
@@ -166,14 +168,14 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                     onClick={onClose}
                     className="flex-1 px-6 py-3 cursor-pointer bg-white border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                   >
-                    Cancel
+                    {t('createVoucher.cancel')}
                   </button>
                   <button
                     onClick={handleRedeem}
                     disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints}
                     className="flex-1 px-6 py-3 cursor-pointer bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Redeem
+                    {t('createVoucher.redeem')}
                   </button>
                 </div>
               </div>
@@ -186,33 +188,31 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
                 {/* Success Illustration */}
                 <div className="flex justify-center mb-6">
-                 
                     <img src="success.svg" alt="" />
-                  
                 </div>
                 
                 {/* Success Message */}
                 <h2 className="text-xl text-black font-semibold text-center mb-3">
-                  Voucher Created Successfully!
+                  {t('createVoucher.success.title')}
                 </h2>
                 
                 <p className="text-center text-gray-700 mb-6">
-                  You've successfully redeemed{' '}
-                  <span className="text-[#DFB400] font-semibold">{redeemedPoints} points</span> for a{' '}
-                  <span className="text-[#DFB400] font-semibold">€{discountAmount} discount</span>.
+                  {t('createVoucher.success.description1')}{' '}
+                  <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.redeemedPoints', { points: redeemedPoints })}</span> {t('createVoucher.success.for')}{' '}
+                  <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.discount', { amount: discountAmount })}</span>.
                   <br />
-                  Use this voucher at checkout to save on your next order.
+                  {t('createVoucher.success.description2')}
                 </p>
                 
                 {/* Voucher Code */}
                 <div className="mb-8">
-                  <p className="text-center text-sm text-gray-600 mb-2">Voucher Code</p>
+                  <p className="text-center text-sm text-gray-600 mb-2">{t('createVoucher.success.voucherCode')}</p>
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-lg text-black font-semibold">{voucherCode}</span>
                     <button
                       onClick={copyVoucherCode}
                       className="p-1 hover:bg-gray-100 rounded transition-colors"
-                      title="Copy voucher code"
+                      title={t('createVoucher.success.copyCode')}
                     >
                       <FaRegEdit size={18} className="text-gray-600" />
                     </button>
@@ -224,7 +224,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                   onClick={handleCloseAll}
                   className="w-full px-6 py-3 cursor-pointer bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
                 >
-                  Okay!
+                  {t('createVoucher.success.okay')}
                 </button>
               </div>
             </div>

@@ -1,0 +1,12 @@
+{
+  "dashboard": "Dashboard",
+  "orders": "My Orders",
+  "favorites": "Favorites",
+  "loyalty": "Loyalty & Rewards",
+  "profile": "User Profile",
+  "petProfile": "Pet Profile",
+  "addresses": "Addresses",
+  "settings": "Settings",
+  "support": "Support & Refunds",
+  "logout": "Log Out"
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiX } from 'react-icons/fi';
 import { TbPencil } from 'react-icons/tb';
 import DeletePetModal from './ModalBox/DeletePetModal';
@@ -181,7 +182,7 @@ const ProgressiveImage = ({ src, alt, className }) => {
   );
 };
 
-function PetCard({ pet, onEdit, onDelete }) {
+function PetCard({ pet, onEdit, onDelete, t }) {
   return (
     <div className="bg-white rounded-xl p-4 border border-gray-200">
       <div className="-mx-4 px-4 pb-4 mb-6 border-b border-gray-100">
@@ -216,19 +217,19 @@ function PetCard({ pet, onEdit, onDelete }) {
 
       <div className="space-y-3">
         <div className="flex justify-between">
-          <span className="text-gray-600 text-sm sm:text-base">Age</span>
+          <span className="text-gray-600 text-sm sm:text-base">{t('petProfile.petDetails.age')}</span>
           <span className="text-gray-900 text-sm sm:text-base">{pet.age}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600 text-sm sm:text-base">Gender</span>
+          <span className="text-gray-600 text-sm sm:text-base">{t('petProfile.petDetails.gender')}</span>
           <span className="text-gray-900 text-sm sm:text-base">{pet.gender}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600 text-sm sm:text-base">Weight</span>
+          <span className="text-gray-600 text-sm sm:text-base">{t('petProfile.petDetails.weight')}</span>
           <span className="text-gray-900 text-sm sm:text-base">{pet.weight}</span>
         </div>
         <div className="flex justify-between items-start">
-          <span className="text-gray-600 text-sm sm:text-base">Special Needs</span>
+          <span className="text-gray-600 text-sm sm:text-base">{t('petProfile.petDetails.specialNeeds')}</span>
           <span className="text-gray-900 text-right max-w-[60%] text-sm sm:text-base">{pet.specialNeeds}</span>
         </div>
       </div>
@@ -237,6 +238,7 @@ function PetCard({ pet, onEdit, onDelete }) {
 }
 
 export default function PetProfile() {
+  const { t } = useTranslation('myaccount');
   const [pets, setPets] = useState([
     {
       id: 1,
@@ -327,9 +329,9 @@ export default function PetProfile() {
           <div className="bg-white rounded-xl p-4 sm:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
               <div>
-                <h2 className="text-xl sm:text-2xl text-black font-semibold mb-1">Pet Profile</h2>
+                <h2 className="text-xl sm:text-2xl text-black font-semibold mb-1">{t('petProfile.title')}</h2>
                 <p className="text-gray-600 text-xs sm:text-sm">
-                  All your pets in one place. Add profiles to get personalized product recommendations.
+                  {t('petProfile.subtitle')}
                 </p>
               </div>
               {pets.length > 0 && (
@@ -337,7 +339,7 @@ export default function PetProfile() {
                   onClick={handleAddPet}
                   className="bg-gray-900 cursor-pointer text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm whitespace-nowrap"
                 >
-                  Add Pet
+                  {t('petProfile.addPet')}
                 </button>
               )}
             </div>
@@ -351,18 +353,18 @@ export default function PetProfile() {
                 </div>
 
                 <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-3">
-                  No Pet Profiles yet
+                  {t('petProfile.noPets.title')}
                 </h3>
 
                 <p className="text-gray-500 text-sm sm:text-base text-center max-w-lg mb-8 leading-relaxed px-4">
-                  Add your pet's details for personalized product recommendations - and earn 20 loyalty points for each pet you add!
+                  {t('petProfile.noPets.description')}
                 </p>
 
                 <button
                   onClick={handleAddPet}
                   className="bg-gray-900 cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm"
                 >
-                  Add Your First Pet
+                  {t('petProfile.noPets.addFirstPet')}
                 </button>
               </div>
             ) : (
@@ -378,6 +380,7 @@ export default function PetProfile() {
                       pet={pet}
                       onEdit={() => handleEdit(pet.id)}
                       onDelete={() => handleDelete(pet)}
+                      t={t}
                     />
                   ))
                 )}

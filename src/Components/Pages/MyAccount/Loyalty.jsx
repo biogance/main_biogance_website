@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { FiExternalLink } from "react-icons/fi"
 import CreateVoucherModal from "./ModalBox/CreateVoucherModal";
 import { FaRegEdit } from "react-icons/fa";
@@ -137,6 +138,7 @@ const VoucherShimmer = () => (
 );
 
 export default function Loyalty() {
+    const { t } = useTranslation('myaccount');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loadingState, setLoadingState] = useState('shimmer');
     const [vouchers, setVouchers] = useState([
@@ -148,7 +150,7 @@ export default function Loyalty() {
         pointsRedeemed: 100,
         dateCreated: 'July 10, 2025',
         expiryDate: 'August 10, 2025',
-        status: 'Active'
+        statusKey: 'loyalty.status.active'
       },
       {
         code: 'SAVE20-ABC456',
@@ -156,7 +158,7 @@ export default function Loyalty() {
         pointsRedeemed: 200,
         dateCreated: 'August 1, 2025',
         expiryDate: 'September 1, 2025',
-        status: 'Active'
+        statusKey: 'loyalty.status.active'
       },
       {
         code: 'SAVE15-DEF789',
@@ -164,7 +166,7 @@ export default function Loyalty() {
         pointsRedeemed: 150,
         dateCreated: 'June 15, 2025',
         expiryDate: 'July 15, 2025',
-        status: 'Used'
+        statusKey: 'loyalty.status.used'
       },
       {
         code: 'SAVE25-GHI101',
@@ -172,7 +174,7 @@ export default function Loyalty() {
         pointsRedeemed: 250,
         dateCreated: 'September 5, 2025',
         expiryDate: 'October 5, 2025',
-        status: 'Active'
+        statusKey: 'loyalty.status.active'
       },
       {
         code: 'SAVE5-JKL202',
@@ -180,7 +182,7 @@ export default function Loyalty() {
         pointsRedeemed: 50,
         dateCreated: 'May 20, 2025',
         expiryDate: 'June 20, 2025',
-        status: 'Expired'
+        statusKey: 'loyalty.status.expired'
       }
       
     ]);
@@ -207,17 +209,16 @@ export default function Loyalty() {
       return () => clearTimeout(timer);
     }, [loadingState]);
 
-    const getStatusBadgeColor = (status) => {
-      switch (status) {
-        case 'Active':
-          return 'bg-[#1FC16B]';
-        case 'Used':
-          return 'bg-[#DFB400]';
-        case 'Expired':
-          return 'bg-[#D00416]';
-        default:
-          return 'bg-gray-500';
+    const getStatusBadgeColor = (statusKey) => {
+      // Extract the actual status from the key
+      if (statusKey.includes('active')) {
+        return 'bg-[#1FC16B]';
+      } else if (statusKey.includes('used')) {
+        return 'bg-[#DFB400]';
+      } else if (statusKey.includes('expired')) {
+        return 'bg-[#D00416]';
       }
+      return 'bg-gray-500';
     };
 
     return(
@@ -238,21 +239,21 @@ export default function Loyalty() {
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8 flex justify-between items-start">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Loyalty & Rewards</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('loyalty.title')}</h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    Manage your points and redeem rewards
+                    {t('loyalty.subtitle')}
                   </p>
                 </div>
                 {hasPoints && vouchers.length > 0 && (
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <button className="bg-white text-black border border-gray-300 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
-                      Loyalty Points Details
+                      {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
                       className="bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm cursor-pointer"
                     >
-                      Create Voucher
+                      {t('loyalty.createVoucher')}
                     </button>
                   </div>
                 )}
@@ -270,23 +271,23 @@ export default function Loyalty() {
                   </div>
 
                   <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
-                    You don't have any points yet.
+                    {t('loyalty.noPoints.title')}
                   </h3>
 
                   <p className="text-gray-500 text-base text-center max-w-2xl mb-8 leading-relaxed">
-                    Start shopping with Biogance and earn rewards every time you make a purchase.
+                    {t('loyalty.noPoints.description')}
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
                       className="bg-white text-black border border-black px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
-                      Loyalty Points Details
+                      {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       className="bg-gray-900 text-white px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
-                      Shop & Earn
+                      {t('loyalty.noPoints.shopEarn')}
                     </button>
                   </div>
                 </div>
@@ -296,7 +297,7 @@ export default function Loyalty() {
               {hasPoints && vouchers.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 md:py-20">
                   <div className="bg-[#FFFBEC] w-full text-center p-4 border-dotted border-2 rounded-lg border-yellow-500 mb-8">
-                    <p className="text-black">You've <span className="text-[#DFB400] font-semibold">{userBalance} points</span> so far! 🎉</p>
+                    <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
                   </div>
 
                   <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
@@ -308,27 +309,27 @@ export default function Loyalty() {
                   </div>
 
                   <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
-                    No Vouchers yet.
+                    {t('loyalty.hasPoints.noVouchers.title')}
                   </h3>
 
                   <p className="text-gray-500 text-base text-center max-w-2xl leading-relaxed">
-                    You haven't created any vouchers from your loyalty points.
+                    {t('loyalty.hasPoints.noVouchers.description1')}
                   </p>
                   <p className="text-gray-500 text-base text-center max-w-2xl mb-8 leading-relaxed">
-                    Turn your points into discount codes and save on your next order!
+                    {t('loyalty.hasPoints.noVouchers.description2')}
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
                       className="bg-white text-black border border-black px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
-                      Loyalty Points Details
+                      {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
                       className="bg-gray-900 text-white px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
-                      Create Voucher
+                      {t('loyalty.createVoucher')}
                     </button>
                   </div>
                 </div>
@@ -339,12 +340,12 @@ export default function Loyalty() {
                 <>
                   {/* Points Banner */}
                   <div className="bg-[#FFFBEC] w-full text-center border-2 border-dotted border-yellow-500 p-4 rounded-lg mb-8">
-                    <p className="text-black">You've <span className="text-[#DFB400] font-semibold">{userBalance} points</span> so far! 🎉</p>
+                    <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
                   </div>
 
                   {/* Vouchers History */}
                   <div>
-                    <h3 className="text-xl text-black font-semibold mb-6">Your Vouchers History</h3>
+                    <h3 className="text-xl text-black font-semibold mb-6">{t('loyalty.vouchersHistory')}</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {loadingState === 'shimmer' ? (
@@ -361,26 +362,26 @@ export default function Loyalty() {
                                 <span className="font-bold text-lg text-gray-900">{voucher.code}</span>
                                 <FaRegEdit className="text-black" size={16} />
                               </div>
-                              <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.status)} text-white text-sm rounded-md font-medium`}>
-                                {voucher.status}
+                              <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.statusKey)} text-white text-sm rounded-md font-medium`}>
+                                {t(voucher.statusKey)}
                               </span>
                             </div>
 
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span className="text-gray-600">Value of Voucher:</span>
+                                <span className="text-gray-600">{t('loyalty.voucherDetails.value')}</span>
                                 <span className="font-medium text-gray-900">€{voucher.value.toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-600">Points Redeemed:</span>
+                                <span className="text-gray-600">{t('loyalty.voucherDetails.pointsRedeemed')}</span>
                                 <span className="font-medium text-gray-900">{voucher.pointsRedeemed}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-600">Date Created:</span>
+                                <span className="text-gray-600">{t('loyalty.voucherDetails.dateCreated')}</span>
                                 <span className="font-medium text-gray-900">{voucher.dateCreated}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-600">Expiry Date:</span>
+                                <span className="text-gray-600">{t('loyalty.voucherDetails.expiryDate')}</span>
                                 <span className="font-medium text-gray-900">{voucher.expiryDate}</span>
                               </div>
                             </div>

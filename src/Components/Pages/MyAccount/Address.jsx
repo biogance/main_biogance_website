@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { TbPencil } from "react-icons/tb";
@@ -122,6 +123,7 @@ const AddressCardShimmer = () => (
 );
 
 export default function Address() {
+  const { t } = useTranslation('myaccount');
   const [activeTab, setActiveTab] = useState("delivery");
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -220,9 +222,9 @@ export default function Address() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 md:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t('address.title')}</h2>
               <p className="text-sm text-gray-600 mt-1">
-                Manage your addresses for faster checkout.
+                {t('address.subtitle')}
               </p>
             </div>
 
@@ -238,7 +240,7 @@ export default function Address() {
                   shadow-sm
                 "
               >
-                Add Address
+                {t('address.addAddress')}
               </button>
             )}
           </div>
@@ -254,7 +256,7 @@ export default function Address() {
                     : "border-gray-300 text-gray-600 hover:border-gray-500"
                 }`}
               >
-                Delivery Address
+                {t('address.deliveryAddress')}
               </button>
 
               <button
@@ -265,7 +267,7 @@ export default function Address() {
                     : "border-gray-300 text-gray-600 hover:border-gray-500"
                 }`}
               >
-                Invoice Address
+                {t('address.invoiceAddress')}
               </button>
             </div>
           )}
@@ -322,15 +324,15 @@ export default function Address() {
 
                     <div className="space-y-1.5 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">City</span>
+                        <span className="text-gray-500">{t('address.city')}</span>
                         <span className="text-gray-900 font-medium">{address.city}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Postal Code</span>
+                        <span className="text-gray-500">{t('address.postalCode')}</span>
                         <span className="text-gray-900 font-medium">{address.postalCode}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Country</span>
+                        <span className="text-gray-500">{t('address.country')}</span>
                         <span className="text-gray-900 font-medium">{address.country}</span>
                       </div>
                     </div>
@@ -343,7 +345,7 @@ export default function Address() {
               <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
                 <img
                   src="/address.svg"
-                  alt="Empty addresses illustration"
+                  alt={t('address.emptyAlt')}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -353,7 +355,7 @@ export default function Address() {
               </h3>
 
               <p className="text-gray-500 text-base text-center max-w-md md:max-w-xl mb-8 leading-relaxed">
-                You haven't saved any shipping or billing addresses yet. Add one now to speed up checkout and manage your orders more easily.
+                {t('address.emptyDescription')}
               </p>
 
               <button
@@ -367,7 +369,7 @@ export default function Address() {
                   shadow-sm
                 "
               >
-                Add Your First Address
+                {t('address.addFirstAddress')}
               </button>
             </div>
           )}

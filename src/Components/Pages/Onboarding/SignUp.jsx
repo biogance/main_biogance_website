@@ -354,13 +354,13 @@ export default function SignupModal({ isOpen, onClose }) {
             {/* Terms */}
             <p className="text-center text-xs text-gray-600 mt-4">
               By signing up, you agree to our{' '}
-              <a href="#" className="text-black underline">
+              <Link href="/termsCondition?section=terms" className="text-black underline">
                 Terms & Conditions
-              </a>{' '}
+              </Link>{' '}
               and{' '}
-              <a href="#" className="text-black underline">
+              <Link href="/termsCondition?section=privacy" className="text-black underline">
                 Privacy Policy
-              </a>
+              </Link>
             </p>
           </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IoClose, IoCalendarOutline } from 'react-icons/io5';
 import { PiPawPrint } from 'react-icons/pi';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
@@ -137,12 +138,23 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
 
 // ── Age Picker with Day Selection ───────────────────────────────────────────
 const AgePicker = ({ value, onChange }) => {
+  const { t } = useTranslation("myaccount");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    t('addPet.months.january'),
+    t('addPet.months.february'),
+    t('addPet.months.march'),
+    t('addPet.months.april'),
+    t('addPet.months.may'),
+    t('addPet.months.june'),
+    t('addPet.months.july'),
+    t('addPet.months.august'),
+    t('addPet.months.september'),
+    t('addPet.months.october'),
+    t('addPet.months.november'),
+    t('addPet.months.december')
   ];
   const monthOptions = months.map((m, i) => ({ value: i, label: m }));
 
@@ -217,16 +229,26 @@ const AgePicker = ({ value, onChange }) => {
     );
   };
 
+  const weekDays = [
+    t('addPet.weekDays.mon'),
+    t('addPet.weekDays.tue'),
+    t('addPet.weekDays.wed'),
+    t('addPet.weekDays.thu'),
+    t('addPet.weekDays.fri'),
+    t('addPet.weekDays.sat'),
+    t('addPet.weekDays.sun')
+  ];
+
   return (
     <div className="relative w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">Age</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('addPet.age')}</label>
 
       <div className="relative">
         <input
           type="text"
           readOnly
-          placeholder="Select birthdate"
-          value={value ? `${calculateAge(value)} years` : ''}
+          placeholder={t('addPet.selectBirthdate')}
+          value={value ? t('addPet.yearsOld', { years: calculateAge(value) }) : ''}
           onClick={() => setIsOpen(true)}
           className="w-full px-4 text-black py-3 pr-10 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
         />
@@ -244,7 +266,7 @@ const AgePicker = ({ value, onChange }) => {
           ">
             <div className="grid grid-cols-2 gap-4 mb-6">
               <CustomDropdown
-                label="Month"
+                label={t('addPet.month')}
                 options={monthOptions}
                 value={displayMonth}
                 onChange={(m) => {
@@ -256,7 +278,7 @@ const AgePicker = ({ value, onChange }) => {
               />
 
               <CustomDropdown
-                label="Year"
+                label={t('addPet.year')}
                 options={yearOptions}
                 value={displayYear}
                 onChange={(y) => {
@@ -270,7 +292,7 @@ const AgePicker = ({ value, onChange }) => {
 
             <div className="mb-6">
               <div className="grid grid-cols-7 text-center text-xs text-gray-500 mb-2 font-medium">
-                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <div key={d}>{d}</div>)}
+                {weekDays.map(d => <div key={d}>{d}</div>)}
               </div>
 
               <div className="grid grid-cols-7 gap-1 text-center">
@@ -306,7 +328,7 @@ const AgePicker = ({ value, onChange }) => {
                 onClick={() => setIsOpen(false)}
                 className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
               >
-                Cancel
+                {t('addPet.cancel')}
               </button>
               <button
                 type="button"
@@ -314,7 +336,7 @@ const AgePicker = ({ value, onChange }) => {
                 disabled={!selectedDate}
                 className={`flex-1 py-3 rounded-xl font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
               >
-                Apply
+                {t('addPet.apply')}
               </button>
             </div>
           </div>
@@ -326,6 +348,7 @@ const AgePicker = ({ value, onChange }) => {
 
 // ── Main AddPetModal ────────────────────────────────────────────────────────
 export function AddPetModal({ isOpen, onClose, onAddPet }) {
+  const { t } = useTranslation("myaccount");
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -384,45 +407,45 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
   if (!isOpen) return null;
 
   const categoryOptions = [
-    { value: 'dog', label: 'Dog' },
-    { value: 'cat', label: 'Cat' },
-    { value: 'bird', label: 'Bird' },
-    { value: 'other', label: 'Other' },
+    { value: 'dog', label: t('addPet.categories.dog') },
+    { value: 'cat', label: t('addPet.categories.cat') },
+    { value: 'bird', label: t('addPet.categories.bird') },
+    { value: 'other', label: t('addPet.categories.other') },
   ];
 
   const genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'unknown', label: 'Unknown' },
+    { value: 'male', label: t('addPet.genders.male') },
+    { value: 'female', label: t('addPet.genders.female') },
+    { value: 'unknown', label: t('addPet.genders.unknown') },
   ];
 
   const weightOptions = [
-    { value: '0-5', label: '0-5 kg' },
-    { value: '5-10', label: '5-10 kg' },
-    { value: '10-20', label: '10-20 kg' },
-    { value: '20-30', label: '20-30 kg' },
-    { value: '30+', label: '30+ kg' },
+    { value: '0-5', label: t('addPet.weights.0-5') },
+    { value: '5-10', label: t('addPet.weights.5-10') },
+    { value: '10-20', label: t('addPet.weights.10-20') },
+    { value: '20-30', label: t('addPet.weights.20-30') },
+    { value: '30+', label: t('addPet.weights.30+') },
   ];
 
   const breedOptions = [
-    { value: 'labrador_retriever', label: 'Labrador Retriever' },
-    { value: 'german_shepherd', label: 'German Shepherd' },
-    { value: 'golden_retriever', label: 'Golden Retriever' },
-    { value: 'bulldog', label: 'Bulldog' },
-    { value: 'beagle', label: 'Beagle' },
-    { value: 'poodle', label: 'Poodle' },
-    { value: 'rottweiler', label: 'Rottweiler' },
+    { value: 'labrador_retriever', label: t('addPet.breeds.labrador') },
+    { value: 'german_shepherd', label: t('addPet.breeds.germanShepherd') },
+    { value: 'golden_retriever', label: t('addPet.breeds.goldenRetriever') },
+    { value: 'bulldog', label: t('addPet.breeds.bulldog') },
+    { value: 'beagle', label: t('addPet.breeds.beagle') },
+    { value: 'poodle', label: t('addPet.breeds.poodle') },
+    { value: 'rottweiler', label: t('addPet.breeds.rottweiler') },
   ];
 
   const specialNeedsOptions = [
-    { value: 'dietary_restrictions', label: 'Dietary Restrictions' },
-    { value: 'allergies', label: 'Allergies' },
-    { value: 'vision_support', label: 'Vision Support' },
-    { value: 'hearing_support', label: 'Hearing Support' },
-    { value: 'medication_requirements', label: 'Medication Requirements' },
-    { value: 'mobility_assistance', label: 'Mobility Assistance' },
-    { value: 'grooming_sensitivities', label: 'Grooming Sensitivities' },
-    { value: 'behavioral_needs', label: 'Behavioral Needs' },
+    { value: 'dietary_restrictions', label: t('addPet.specialNeeds.dietary') },
+    { value: 'allergies', label: t('addPet.specialNeeds.allergies') },
+    { value: 'vision_support', label: t('addPet.specialNeeds.vision') },
+    { value: 'hearing_support', label: t('addPet.specialNeeds.hearing') },
+    { value: 'medication_requirements', label: t('addPet.specialNeeds.medication') },
+    { value: 'mobility_assistance', label: t('addPet.specialNeeds.mobility') },
+    { value: 'grooming_sensitivities', label: t('addPet.specialNeeds.grooming') },
+    { value: 'behavioral_needs', label: t('addPet.specialNeeds.behavioral') },
   ];
 
   const handleCloseAll = () => {
@@ -459,7 +482,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
               bg-white shrink-0
             ">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                Add Pet
+                {t('addPet.title')}
               </h2>
             </div>
 
@@ -483,14 +506,14 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                         onClick={handleUploadClick} 
                         className="text-sm border border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                       >
-                        Update Image
+                        {t('addPet.updateImage')}
                       </button>
                       <button 
                         type="button" 
                         onClick={handleRemoveImage} 
                         className="text-sm text-red-600 font-medium hover:text-red-700 transition-colors text-center"
                       >
-                        Remove
+                        {t('addPet.remove')}
                       </button>
                     </div>
                   ) : (
@@ -499,7 +522,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                       onClick={handleUploadClick} 
                       className="text-sm border border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                     >
-                      Upload Image
+                      {t('addPet.uploadImage')}
                     </button>
                   )}
 
@@ -516,10 +539,10 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                 <div className="flex-1 space-y-5 sm:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Pet Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('addPet.petName')}</label>
                       <input
                         type="text"
-                        placeholder="e.g. Scooby"
+                        placeholder={t('addPet.petNamePlaceholder')}
                         value={formData.name}
                         onChange={(e) => handleChange('name', e.target.value)}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
@@ -527,16 +550,16 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                     </div>
 
                     <CustomDropdown
-                      label="Category"
-                      placeholder="Select category"
+                      label={t('addPet.category')}
+                      placeholder={t('addPet.selectCategory')}
                       options={categoryOptions}
                       value={formData.category}
                       onChange={(val) => handleChange('category', val)}
                     />
 
                     <CustomDropdown
-                      label="Breed"
-                      placeholder="Select breed"
+                      label={t('addPet.breed')}
+                      placeholder={t('addPet.selectBreed')}
                       options={breedOptions}
                       value={formData.breed}
                       onChange={(val) => handleChange('breed', val)}
@@ -548,16 +571,16 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                     />
 
                     <CustomDropdown
-                      label="Gender"
-                      placeholder="Select gender"
+                      label={t('addPet.gender')}
+                      placeholder={t('addPet.selectGender')}
                       options={genderOptions}
                       value={formData.gender}
                       onChange={(val) => handleChange('gender', val)}
                     />
 
                     <CustomDropdown
-                      label="Weight (kg)"
-                      placeholder="Select weight"
+                      label={t('addPet.weight')}
+                      placeholder={t('addPet.selectWeight')}
                       options={weightOptions}
                       value={formData.weight}
                       onChange={(val) => handleChange('weight', val)}
@@ -565,11 +588,11 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
 
                     <div className="md:col-span-2">
                       <MultiSelectDropdown
-                        label="Special Needs (Optional)"
+                        label={t('addPet.specialNeedsLabel')}
                         options={specialNeedsOptions}
                         value={formData.specialNeeds}
                         onChange={(vals) => handleChange('specialNeeds', vals)}
-                        placeholder="Select special needs"
+                        placeholder={t('addPet.selectSpecialNeeds')}
                       />
                     </div>
                   </div>
@@ -588,13 +611,13 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                 onClick={onClose}
                 className="flex-1 px-6 py-3 cursor-pointer border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1"
               >
-                Cancel
+                {t('addPet.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
                 className="flex-1 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium order-1 sm:order-2"
               >
-                Add Pet
+                {t('addPet.addPetButton')}
               </button>
             </div>
           </div>
@@ -610,21 +633,21 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
             </div>
 
             <h2 className="text-xl text-black font-semibold text-center mb-3">
-              Pet Added Successfully!
+              {t('addPet.success.title')}
             </h2>
 
             <p className="text-center text-gray-700">
-              You've earned <span className='text-[#DFB400] font-semibold'>20 loyalty points</span> for adding your pet.
+              {t('addPet.success.earnedPoints')} <span className='text-[#DFB400] font-semibold'>{t('addPet.success.pointsAmount')}</span> {t('addPet.success.forAdding')}
             </p>
             <p className="text-center text-gray-700 mb-6">
-              Tailored recommendations are now on the way!
+              {t('addPet.success.recommendations')}
             </p>
 
             <button
               onClick={handleCloseAll}
               className="w-full px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
-              Okay!
+              {t('addPet.success.okay')}
             </button>
           </div>
         </div>

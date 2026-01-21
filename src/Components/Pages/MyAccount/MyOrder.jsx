@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CiSearch } from "react-icons/ci";
 import {
   MdOutlineKeyboardArrowDown,
@@ -173,6 +174,7 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
 };
 
 export default function MyOrder() {
+  const { t } = useTranslation('myaccount');
   const [loadingState, setLoadingState] = useState('shimmer');
 
   useEffect(() => {
@@ -198,23 +200,23 @@ export default function MyOrder() {
   ]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedOrderFilter, setSelectedOrderFilter] = useState('All Orders');
-  const [selectedSort, setSelectedSort] = useState('Most Recent');
+  const [selectedOrderFilter, setSelectedOrderFilter] = useState(t('orderHistory.filters.allOrders'));
+  const [selectedSort, setSelectedSort] = useState(t('orderHistory.sort.mostRecent'));
 
   const orderFilterOptions = [
-    'All Orders',
-    'Delivered',
-    'Processing',
-    'Scheduled for Delivery',
-    'Awaiting Confirmation',
-    'Waiting for Shipment'
+    t('orderHistory.filters.allOrders'),
+    t('orderHistory.filters.delivered'),
+    t('orderHistory.filters.processing'),
+    t('orderHistory.filters.scheduledForDelivery'),
+    t('orderHistory.filters.awaitingConfirmation'),
+    t('orderHistory.filters.waitingForShipment')
   ];
 
   const sortOptions = [
-    'Most Recent',
-    'Oldest First',
-    'Highest Amount',
-    'Lowest Amount'
+    t('orderHistory.sort.mostRecent'),
+    t('orderHistory.sort.oldestFirst'),
+    t('orderHistory.sort.highestAmount'),
+    t('orderHistory.sort.lowestAmount')
   ];
 
   const getStatusColor = (status) => {
@@ -250,8 +252,8 @@ export default function MyOrder() {
         <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Order History</h2>
-            <p className="text-sm text-gray-600 mt-1">View and track all your purchases</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('orderHistory.title')}</h2>
+            <p className="text-sm text-gray-600 mt-1">{t('orderHistory.subtitle')}</p>
           </div>
 
           {/* Search + Filters */}
@@ -261,13 +263,13 @@ export default function MyOrder() {
               <CiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search here "
+                placeholder={t('orderHistory.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="
-                  w-full pl-12 pr-5 py-3 
-          plz add shimmers         border border-gray-200 rounded-xl 
-                  text-sm text-black focus:outline-none focus:ring-2 focus:ring-gray-300 
+                  w-full pl-12 pr-5 py-3
+          plz add shimmers         border border-gray-200 rounded-xl
+                  text-sm text-black focus:outline-none focus:ring-2 focus:ring-gray-300
                   placeholder-gray-500 transition-all duration-200
                 "
               />
@@ -276,14 +278,14 @@ export default function MyOrder() {
             {/* Dropdowns */}
             <div className="flex flex-wrap gap-3">
               <Dropdown
-                label="All Orders"
+                label={t('orderHistory.filters.allOrders')}
                 options={orderFilterOptions}
                 selected={selectedOrderFilter}
                 onSelect={setSelectedOrderFilter}
               />
 
               <Dropdown
-                label="Sort By"
+                label={t('orderHistory.sort.label')}
                 options={sortOptions}
                 selected={selectedSort}
                 onSelect={setSelectedSort}
@@ -314,14 +316,14 @@ export default function MyOrder() {
                   <div className="flex-1">
                     <div className="font-bold  text-lg text-gray-900">{order.id}</div>
                     <div className="text-sm text-gray-600 mt-1">
-                      Placed on {order.date}
+                      {t('orderHistory.placedOn')} {order.date}
                     </div>
                     <span className={`
                       mt-2.5 inline-block px-3.5 py-1
                       text-xs font-medium rounded-full
                       ${getStatusColor(order.status)}
                     `}>
-                      {order.status}
+                      {t(`orderHistory.status.${order.status.toLowerCase().replace(/\s+/g, '')}`)}
                     </span>
                   </div>
 
@@ -330,7 +332,7 @@ export default function MyOrder() {
                       ${order.price.toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {order.items} Items
+                      {order.items} {order.items === 1 ? t('dashboard.item') : t('dashboard.items')}
                     </div>
                     <button className="
                       mt-4 w-full sm:w-auto
@@ -339,7 +341,7 @@ export default function MyOrder() {
                       px-6 py-2.5 rounded-lg
                       transition-colors duration-200
                     ">
-                      More Details
+                      {t('orderHistory.moreDetails')}
                     </button>
                   </div>
                 </div>

@@ -137,7 +137,7 @@ const LandingCards = ({ product, showNav }) => {
           <span className="text-xl font-bold text-gray-900">
             €{product.price}
           </span>
-          <button className="bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
+          <button className="bg-black text-white cursor-pointer text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
             {t('products.addToCart')}
           </button>
         </div>

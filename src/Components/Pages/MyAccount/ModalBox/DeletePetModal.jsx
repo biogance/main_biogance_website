@@ -1,42 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function DeletePetModal({
   isOpen,
   onClose,
   onConfirm,
   petName = "this pet",
-})
+}) {
+  const { t } = useTranslation("myaccount"); // or whatever namespace you use
 
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
 
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
 
-{
+      return () => {
+        document.body.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
 
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
-   useEffect(() => {
-      if (isOpen) {
-        // Save current scroll position
-        const scrollY = window.scrollY;
-        
-        // Prevent scrolling
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        
-        return () => {
-          // Restore scrolling
-          document.body.style.overflow = '';
-          document.body.style.position = '';
-          document.body.style.top = '';
-          document.body.style.width = '';
-          
-          // Restore scroll position
-          window.scrollTo(0, scrollY);
-        };
-      }
-    }, [isOpen]);
   if (!isOpen) return null;
 
   return (
@@ -50,26 +44,21 @@ export default function DeletePetModal({
       >
         <div className="px-6 pt-8 pb-7 text-center">
           <h2 className="text-2xl font-semibold text-black mb-4">
-            Delete Pet Profile
+            {t("deletePet.title")}
           </h2>
 
           <p className="text-gray-500 mb-8 leading-relaxed">
-            Are you sure you want to delete{" "} this pet profile?
-            {/* <span className="font-semibold text-gray-800">{petName}</span>'s */}
-           
+            {t("deletePet.confirmation", { petName })}
             <br />
             <span className="text-gray-500 font-medium">
-              This action cannot be undone.
+              {t("deletePet.warning")}
             </span>
           </p>
 
           <div className="flex flex-col gap-4 justify-center">
-           
-
             <button
               type="button"
               onClick={onConfirm}
-                
               className={`
                 px-8 py-3.5 rounded-xl font-medium text-white
                 bg-[#D00416] hover:bg-red-700 active:bg-red-800
@@ -78,20 +67,21 @@ export default function DeletePetModal({
                 active:scale-[0.98] shadow-sm
               `}
             >
-              Yes, Delete
+              {t("deletePet.confirmButton")}
             </button>
-             <button
+
+            <button
               type="button"
               onClick={onClose}
               className={`
                 px-8 py-3.5 rounded-xl font-medium text-gray-800
-                border border-gray-300 hover: active:bg-gray-300
+                border border-gray-300 hover:bg-gray-100 active:bg-gray-300
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-gray-400/50
                 active:scale-[0.98]
               `}
             >
-              No, Go Back
+              {t("deletePet.cancelButton")}
             </button>
           </div>
         </div>

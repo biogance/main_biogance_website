@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import {
@@ -10,11 +11,11 @@ import {
   MdOutlineKeyboardDoubleArrowRight,
 } from "react-icons/md";
 
-// ─── Loading Card ────────────────────────────────────────
+
 const LoadingCard = () => (
-  <div className="w-full">
+  <div className="w-ful px-4">
     <div
-      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[3/4]"
+      className="rounded-2xl  border  border-gray-200 p-3 relative mb-3 aspect-[3/4]"
       style={{
         backgroundColor: "#f9fafb",
         background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
@@ -46,6 +47,7 @@ const LoadingCard = () => (
 
 // ─── Single Product Card ─────────────────────────────────
 const LandingCards = ({ product, showNav = true }) => {
+  const { t } = useTranslation('myaccount');
   const [isLiked, setIsLiked] = useState(product.liked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -135,7 +137,7 @@ const LandingCards = ({ product, showNav = true }) => {
         <div className="flex items-center justify-between gap-2">
           <span className="text-xl font-bold text-gray-900">€{product.price}</span>
           <button className="bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
-            Add to Cart
+            {t('favourite.addToCart')}
           </button>
         </div>
       </div>
@@ -273,14 +275,14 @@ function PopularProducts({
           ref={containerRef}
           className={`
             ${isFavourite || isWishlist
-              ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 lg:gap-6"
+                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
               : "flex overflow-x-auto gap-6 pb-6 hide-scrollbar snap-x snap-mandatory"
             }
           `}
         >
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-full min-w-[280px]">
+                <div key={i} className="w-full  min-w-[280px]">
                   <LoadingCard />
                 </div>
               ))
@@ -303,6 +305,7 @@ function PopularProducts({
 
 // ─── Main Page ───────────────────────────────────────────
 export default function Favourite() {
+  const { t } = useTranslation('myaccount');
   const hasFavourites = true;
 
   const scrollContainerRefRec = useRef(null);
@@ -352,12 +355,12 @@ export default function Favourite() {
 
   return (
     <div className="min-h-screen ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Wishlist Section */}
         <div className="bg-white rounded-2xl p-6 md:p-8 mb-10">
           <div className="-mb-2">
-            <h1 className="text-2xl md:text-2xl font-semibold text-gray-900">My Wishlist</h1>
-            <p className="text-gray-600 mt-1.5">Products you've saved for later</p>
+            <h1 className="text-2xl md:text-2xl font-semibold text-gray-900">{t('favourite.title')}</h1>
+            <p className="text-gray-600 mt-1.5">{t('favourite.subtitle')}</p>
           </div>
 
           {hasFavourites ? (
@@ -399,12 +402,12 @@ export default function Favourite() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
               <img src="/favacc.svg" alt="Empty wishlist" className="w-64 md:w-80 h-64 md:h-80 object-contain mb-8" />
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Your Wishlist is Empty</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">{t('favourite.empty.title')}</h3>
               <p className="text-gray-500 max-w-md mb-8 leading-relaxed">
-                Save your favorite products here to easily find them later.
+                {t('favourite.empty.description')}
               </p>
               <button className="bg-gray-900 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm">
-                Browse Products
+                {t('favourite.empty.browseProducts')}
               </button>
             </div>
           )}
@@ -414,9 +417,9 @@ export default function Favourite() {
         <div className="bg-white rounded-2xl  p-6 md:p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl lg:text-2xl font-semibold text-gray-900">
-              You Might Also Like
+              {t('favourite.recommended.title')}
             </h2>
-\
+
             <div className="flex gap-2">
               <button
                 onClick={() => scrollRec("prev")}
@@ -443,13 +446,13 @@ export default function Favourite() {
             </div>
           </div>
 
-          <p className="text-gray-600 -mt-6 ml-1 ">Based on your list</p>
+          <p className="text-gray-600 -mt-6 ml-1 ">{t('favourite.recommended.subtitle')}</p>
 
-          <PopularProducts
+          {/* <PopularProducts
             isHorizontal={true}
             showHeader={false}
             scrollContainerRef={scrollContainerRefRec}
-          />
+          /> */}
         </div>
       </div>
     </div>

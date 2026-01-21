@@ -1,0 +1,456 @@
+{
+
+   "common": {
+    "myAccount": "My Account",
+    "home": "Home"
+  },
+  "orderDetails": {
+    "title": "Order Details",
+    "quantity": "Quantity",
+    "trackingInfo": "Tracking Information",
+    "trackingNumber": "Tracking Number",
+    "estimatedDelivery": "Estimated Delivery on",
+    "downloadInvoice": "Download Invoice",
+    "cancelOrder": "Cancel Order",
+    "reorderItem": "Reorder Item"
+  },
+   "cancelOrder": {
+    "title": "Confirm Cancellation",
+    "description": "Are you sure you want to cancel this order? Once canceled, we'll create a support ticket to handle your refund.",
+    "reasonLabel": "Reason to Cancel Order",
+    "reasonPlaceholder": "eg; Cancel Order",
+    "reasons": {
+      "changedMind": "Changed my mind",
+      "betterPrice": "Found a better price",
+      "orderedByMistake": "Ordered by mistake",
+      "deliveryTooLong": "Delivery taking too long",
+      "other": "Other"
+    },
+    "tellUsMoreLabel": "Tell us more",
+    "tellUsMorePlaceholder": "eg; I purchased the 250ml shampoo bottle last week, but the pump isn't working properly and it's difficult to get the product out.",
+    "confirmButton": "Cancel This Order",
+    "keepOrderButton": "Keep My Order"
+  }, 
+  "createVoucher": {
+    "title": "Create Voucher",
+    "description1": "Redeem your loyalty points to generate a discount voucher.",
+    "description2": "10 loyalty points = 1 euro. Use your points to save on your next order!",
+    "pointsToRedeem": "Points to Redeem",
+    "selectPoints": "Select Points",
+    "pointsOption": "{{points}} points",
+    "notEnoughPoints": "*You don't have enough points to redeem",
+    "minimumRedeemable": "Minimum redeemable: {{points}} points",
+    "yourBalance": "Your balance",
+    "balancePoints": "{{points}} points",
+    "cancel": "Cancel",
+    "redeem": "Redeem",
+    "success": {
+      "title": "Voucher Created Successfully!",
+      "description1": "You've successfully redeemed",
+      "redeemedPoints": "{{points}} points",
+      "for": "for a",
+      "discount": "€{{amount}} discount",
+      "description2": "Use this voucher at checkout to save on your next order.",
+      "voucherCode": "Voucher Code",
+      "copyCode": "Copy voucher code",
+      "okay": "Okay!"
+    }
+  },
+  "addPet": {
+    "title": "Add Pet",
+    "petName": "Pet Name",
+    "petNamePlaceholder": "e.g. Scooby",
+    "category": "Category",
+    "selectCategory": "Select category",
+    "breed": "Breed",
+    "selectBreed": "Select breed",
+    "age": "Age",
+    "selectBirthdate": "Select birthdate",
+    "yearsOld": "{{years}} years",
+    "month": "Month",
+    "year": "Year",
+    "gender": "Gender",
+    "selectGender": "Select gender",
+    "weight": "Weight (kg)",
+    "selectWeight": "Select weight",
+    "specialNeedsLabel": "Special Needs (Optional)",
+    "selectSpecialNeeds": "Select special needs",
+    "updateImage": "Update Image",
+    "remove": "Remove",
+    "uploadImage": "Upload Image",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "addPetButton": "Add Pet",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "weekDays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "categories": {
+      "dog": "Dog",
+      "cat": "Cat",
+      "bird": "Bird",
+      "other": "Other"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "unknown": "Unknown"
+    },
+    "weights": {
+      "0-5": "0-5 kg",
+      "5-10": "5-10 kg",
+      "10-20": "10-20 kg",
+      "20-30": "20-30 kg",
+      "30+": "30+ kg"
+    },
+    "breeds": {
+      "labrador": "Labrador Retriever",
+      "germanShepherd": "German Shepherd",
+      "goldenRetriever": "Golden Retriever",
+      "bulldog": "Bulldog",
+      "beagle": "Beagle",
+      "poodle": "Poodle",
+      "rottweiler": "Rottweiler"
+    },
+    "specialNeeds": {
+      "dietary": "Dietary Restrictions",
+      "allergies": "Allergies",
+      "vision": "Vision Support",
+      "hearing": "Hearing Support",
+      "medication": "Medication Requirements",
+      "mobility": "Mobility Assistance",
+      "grooming": "Grooming Sensitivities",
+      "behavioral": "Behavioral Needs"
+    },
+    "success": {
+      "title": "Pet Added Successfully!",
+      "earnedPoints": "You've earned",
+      "pointsAmount": "20 loyalty points",
+      "forAdding": "for adding your pet.",
+      "recommendations": "Tailored recommendations are now on the way!",
+      "okay": "Okay!"
+    }
+  },
+  "deletePet": {
+  "title": "Delete Pet Profile",
+  "confirmation": "Are you sure you want to delete {{petName}}'s profile?",
+  "warning": "This action cannot be undone.",
+  "confirmButton": "Yes, Delete",
+  "cancelButton": "No, Go Back"
+},
+
+"addaddress": {
+
+  "addAddress": "Add Address",
+  "addressType": "Address Type",
+  "addressTypePlaceholder": "eg: Home",
+  "country": "Country",
+  "selectCountryPlaceholder": "Select country",
+  "fullAddress": "Full Address",
+  "fullAddressPlaceholder": "eg: 123 Highland Rd, Someplace, CA 91234",
+  "city": "City",
+   "cancel":"cancel",
+  "cityPlaceholder": "eg: New York",
+  "postalCode": "Postal/Zip Code",
+  "postalCodePlaceholder": "eg: 90210",
+  "saveAddress": "Save Address"
+},
+"setsettings": {
+  
+  "deleteAccount": {
+    
+    "confirmTitle": "Are you sure you want to delete your account?",
+    "confirmDescription": "This action is permanent. All your saved information, including orders, loyalty points, and wishlist items, will be lost.",
+    "confirmButton": "Continue to Delete",
+    "cancelButton": "No, Go Back"
+  }
+},
+  "dashboard": {
+    "welcome": "Welcome back, John!",
+    "loyaltyPoints": "Loyalty Points",
+    "pointsThisMonth": "{{count}} points this month",
+    "recentOrders": "Recent Orders",
+    "orderStats": "{{delivered}} delivered • {{processing}} processing • {{shipping}} shipping",
+    "wishlist": "Wishlist",
+    "itemsSavedForLater": "Items saved for later",
+    "seeAll": "See All",
+    "placedOn": "Placed on",
+    "status": {
+      "delivered": "Delivered",
+      "processing": "Processing",
+      "awaitingConfirmation": "Awaiting Confirmation",
+      "shipping": "Shipping"
+    },
+    "item": "Item",
+    "items": "Items",
+    "moreDetails": "More Details",
+    "emptyCart": {
+      "title": "Your Cart is Empty",
+      "description": "Looks like you haven't placed any orders yet.\nStart exploring and find the perfect products for your pet!",
+      "browseProducts": "Browse Products"
+    }
+  },
+
+  "orderHistory": {
+    "title": "Order History",
+    "subtitle": "View and track all your purchases",
+    "searchPlaceholder": "Search here",
+    "placedOn": "Placed on",
+    "items": "Items",
+    "moreDetails": "More Details",
+    "filters": {
+      "allOrders": "All Orders",
+      "delivered": "Delivered",
+      "processing": "Processing",
+      "scheduledForDelivery": "Scheduled for Delivery",
+      "awaitingConfirmation": "Awaiting Confirmation",
+      "waitingForShipment": "Waiting for Shipment"
+    },
+    "sort": {
+      "label": "Sort By",
+      "mostRecent": "Most Recent",
+      "oldestFirst": "Oldest First",
+      "highestAmount": "Highest Amount",
+      "lowestAmount": "Lowest Amount"
+    },
+    "status": {
+      "delivered": "Delivered",
+      "processing": "Processing",
+      "awaitingConfirmation": "Awaiting Confirmation",
+      "scheduledForDelivery": "Scheduled for Delivery",
+      "waitingForShipment": "Waiting for Shipment"
+    }
+  },
+
+  "favourite": {
+    "title": "My Wishlist",
+    "subtitle": "Products you've saved for later",
+    "empty": {
+      "title": "Your Wishlist is Empty",
+      "description": "Save your favorite products here to easily find them later.",
+      "browseProducts": "Browse Products"
+    },
+    "recommended": {
+      "title": "You Might Also Like",
+      "subtitle": "Based on your list"
+    },
+    "addToCart": "Add to Cart"
+  },
+
+  "loyalty": {
+    "title": "Loyalty & Rewards",
+    "subtitle": "Manage your points and redeem rewards",
+    "pointsDetails": "Loyalty Points Details",
+    "createVoucher": "Create Voucher",
+    "noPoints": {
+      "title": "You don't have any points yet.",
+      "description": "Start shopping with Biogance and earn rewards every time you make a purchase.",
+      "shopEarn": "Shop & Earn"
+    },
+    "hasPoints": {
+      "pointsMessage": "You've {{points}} points so far! 🎉",
+      "noVouchers": {
+        "title": "No Vouchers yet.",
+        "description1": "You haven't created any vouchers from your loyalty points.",
+        "description2": "Turn your points into discount codes and save on your next order!"
+      }
+    },
+    "vouchersHistory": "Your Vouchers History",
+    "voucherDetails": {
+      "value": "Value of Voucher:",
+      "pointsRedeemed": "Points Redeemed:",
+      "dateCreated": "Date Created:",
+      "expiryDate": "Expiry Date:"
+    },
+    "status": {
+      "active": "Active",
+      "used": "Used",
+      "expired": "Expired"
+    }
+  },
+
+  "userProfile": {
+    "title": "User Profile",
+    "subtitle": "Update your personal details",
+    "updateImage": "Update Image",
+    "remove": "Remove",
+    "uploadImage": "Upload Image",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "phoneNumber": "Phone Number",
+    "cancel": "Cancel",
+    "updateProfileDetails": "Update Profile Details"
+  },
+
+  "petProfile": {
+    "title": "Pet Profile",
+    "subtitle": "All your pets in one place. Add profiles to get personalized product recommendations.",
+    "addPet": "Add Pet",
+    "noPets": {
+      "title": "No Pet Profiles yet",
+      "description": "Add your pet's details for personalized product recommendations - and earn 20 loyalty points for each pet you add!",
+      "addFirstPet": "Add Your First Pet"
+    },
+    "petDetails": {
+      "age": "Age",
+      "gender": "Gender",
+      "weight": "Weight",
+      "specialNeeds": "Special Needs"
+    }
+  },
+
+  "address": {
+    "title": "My Addresses",
+    "subtitle": "Manage your addresses for faster checkout.",
+    "addAddress": "Add Address",
+    "deliveryAddress": "Delivery Address",
+    "invoiceAddress": "Invoice Address",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "emptyTitle": "You Haven't Added Any Address",
+    "emptyDescription": "You haven't saved any shipping or billing addresses yet. Add one now to speed up checkout and manage your orders more easily.",
+    "addFirstAddress": "Add Your First Address",
+    "emptyAlt": "Empty addresses illustration"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences.",
+    "updatePassword": {
+      "title": "Update Password",
+      "description": "Keep your account secure by setting a new password.",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "eg: *********",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "eg:*********",
+      "confirmNewPassword": "Confirm New Password",
+      "confirmNewPasswordPlaceholder": "eg: Abc112z#",
+      "note": "Before you continue, please note:",
+      "note1": "You'll be logged out from all other devices.",
+      "note2": "You'll need to sign in again with your new password.",
+      "cancel": "Cancel",
+      "updatePassword": "Update Password",
+      "errors": {
+        "currentRequired": "Current password is required.",
+        "currentIncorrect": "Current password is incorrect.",
+        "newRequired": "New password is required.",
+        "newMustDiffer": "New password must differ from current.",
+        "passwordRequirements": "At least 8 characters, 1 number, 1 special character",
+        "confirmRequired": "Please confirm your new password."
+      }
+    },
+    "emailNotifications": {
+      "title": "Email Notification Preferences",
+      "description": "Tell us what you'd like to hear from us. Stay updated with order alerts, promotions, and pet care tips — or keep it quiet. It's totally up to you.",
+      "orderUpdates": {
+        "title": "Order Updates",
+        "description": "Get important info like order confirmation, shipping, and delivery status. (Required)"
+      },
+      "loyaltyProgram": {
+        "title": "Loyalty Program Updates",
+        "description": "Points balance and reward opportunities"
+      },
+      "refundStatus": {
+        "title": "Refund Status",
+        "description": "Stay updated on the progress of your refund request"
+      },
+      "promotions": {
+        "title": "Promotions & Offers",
+        "description": "Receive special deals, discounts, and exclusive member offers"
+      },
+      "productRecommendations": {
+        "title": "Product Recommendations",
+        "description": "Get personalized suggestions on your pet's needs and past purchases"
+      },
+      "tipsArticles": {
+        "title": "Tips & Articles",
+        "description": "Receive expert advice, grooming guides, and pet wellness content"
+      }
+    },
+    "deleteAccount": {
+      "title": "Delete My Account",
+      "warning": "Deleting your account will remove all your data permanently.",
+      "irreversible": "This action cannot be undone.",
+      "deleteButton": "Delete Elegance Account"
+    }
+  },
+
+ "support": {
+    "title": "Support & Refund",
+    "subtitle": "Manage your cancellations, refund requests, and support tickets all in one place.",
+    "searchPlaceholder": "Search tickets...",
+    "filters": {
+      "allTickets": "All Tickets",
+      "active": "Active",
+      "inProgress": "In Progress",
+      "closed": "Closed"
+    },
+    "status": {
+      "active": "Active",
+      "inProgress": "In Progress",
+      "closed": "Closed"
+    },
+    "ticketId": "Ticket ID:",
+    "orderReference": "Order Reference:",
+    "createdOn": "Created On:",
+    "openSupportChat": "Open Support Chat",
+    "emptyState": {
+      "title": "No Support Tickets Yet",
+      "description": "You haven't created any support or refund requests yet. If you face any issue with your order, you can easily raise a ticket here and track it in real time.",
+      "createNewTicket": "Create New Ticket"
+    },
+    "chat": {
+      "title": "Support Chat",
+      "closeChat": "Close Chat/Ticket",
+      "writeMessage": "Write Message...",
+      "dateSeparator": "Tuesday",
+      "messages": {
+        "support1": "Hi there! 👋 Thanks for contacting Biogance Support. I can see your order has already been dispatched. Please do not receive the package when it arrives. Once it is returned to us, we'll process your refund and credit the amount back to your wallet.",
+        "customer1": "Thank you for the quick response. How long does it usually take for the package to return to you?",
+        "support2": "Great question! 😊 On average, returns take 3–5 business days depending on the courier. As soon as we receive the package at our facility, we'll notify you and begin the refund process immediately.",
+        "customer2": "That's clear. Will the refund be transferred directly to my bank account or just to my Biogance wallet?",
+        "support3": "For faster processing, refunds are first credited to your Biogance wallet balance 💳. From there, you can either keep it for your next purchase or request a transfer back to your original payment method.",
+        "customer3": "Okay, that works for me. Will I be notified when the refund is available in my wallet?",
+        "support4": "Absolutely ✅ You'll receive both an email notification and a dashboard update under 'Support & Refunds' once your refund is credited. No need to follow up — we'll keep you updated every step of the way.",
+        "customer4": "Perfect, thank you for the assistance. This feels very clear now.",
+        "support5": "You're most welcome! 😊 Thank you for choosing Biogance. We're committed to ensuring you and your pets always get the best care. If you have any further questions, feel free to reach out anytime."
+      }
+    },
+    "tickets": {
+      "ticket1": {
+        "title": "Order Refund",
+        "description": "I purchased the 250ml shampoo bottle last week, but the pump isn't working properly and it's difficult to get the product out."
+      },
+      "ticket2": {
+        "title": "Request a Refund",
+        "description": "I ordered a Biogance shampoo but realized I picked the wrong variant. I'd like to request a refund for this order."
+      },
+      "ticket3": {
+        "title": "Quality Issue",
+        "description": "The conditioner I received has an unusual texture and doesn't seem right. I'd like to request a replacement or refund."
+      }
+    }
+  }
+}

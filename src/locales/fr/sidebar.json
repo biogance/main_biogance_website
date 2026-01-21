@@ -1,0 +1,12 @@
+{
+  "dashboard": "Tableau de bord",
+  "orders": "Mes commandes",
+  "favorites": "Favoris",
+  "loyalty": "Fidélité et récompenses",
+  "profile": "Profil utilisateur",
+  "petProfile": "Profil de l'animal",
+  "addresses": "Adresses",
+  "settings": "Paramètres",
+  "support": "Support et remboursements",
+  "logout": "Se déconnecter"
+}

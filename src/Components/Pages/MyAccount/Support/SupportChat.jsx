@@ -4,71 +4,73 @@ import { IoChevronBack, IoSend } from 'react-icons/io5';
 import { FiPlus } from 'react-icons/fi';
 import { BsBag } from 'react-icons/bs';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 export default function SupportChat({ ticket, onClose }) {
+  const { t } = useTranslation("myaccount");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'support',
-      text: "Hi there! 👋 Thanks for contacting Biogance Support. I can see your order has already been dispatched. Please do not receive the package when it arrives. Once it is returned to us, we'll process your refund and credit the amount back to your wallet.",
+      textKey: 'support.chat.messages.support1',
       time: '10:00 am',
       hasIcon: true
     },
     {
       id: 2,
       type: 'customer',
-      text: 'Thank you for the quick response. How long does it usually take for the package to return to you?',
+      textKey: 'support.chat.messages.customer1',
       time: '10:05 am',
       avatar: true
     },
     {
       id: 3,
       type: 'support',
-      text: "Great question! 😊 On average, returns take 3–5 business days depending on the courier. As soon as we receive the package at our facility, we'll notify you and begin the refund process immediately.",
+      textKey: 'support.chat.messages.support2',
       time: '10:10 am',
       hasIcon: true
     },
     {
       id: 4,
       type: 'customer',
-      text: "That's clear. Will the refund be transferred directly to my bank account or just to my Biogance wallet?",
+      textKey: 'support.chat.messages.customer2',
       time: '10:10 am',
       avatar: true
     },
     {
       id: 5,
       type: 'support',
-      text: "For faster processing, refunds are first credited to your Biogance wallet balance 💳. From there, you can either keep it for your next purchase or request a transfer back to your original payment method.",
+      textKey: 'support.chat.messages.support3',
       time: '10:20 am',
       hasIcon: true
     },
     {
       id: 6,
       type: 'customer',
-      text: 'Okay, that works for me. Will I be notified when the refund is available in my wallet?',
+      textKey: 'support.chat.messages.customer3',
       time: '10:25 am',
       avatar: true
     },
     {
       id: 7,
       type: 'support',
-      text: "Absolutely ✅ You'll receive both an email notification and a dashboard update under 'Support & Refunds' once your refund is credited. No need to follow up — we'll keep you updated every step of the way.",
+      textKey: 'support.chat.messages.support4',
       time: '10:20 am',
       hasIcon: true
     },
     {
       id: 8,
       type: 'customer',
-      text: 'Perfect, thank you for the assistance. This feels very clear now.',
+      textKey: 'support.chat.messages.customer4',
       time: '11:25 am',
       avatar: true
     },
     {
       id: 9,
       type: 'support',
-      text: "You're most welcome! 😊 Thank you for choosing Biogance. We're committed to ensuring you and your pets always get the best care. If you have any further questions, feel free to reach out anytime.",
+      textKey: 'support.chat.messages.support5',
       time: '10:20 am',
       hasIcon: true
     }
@@ -119,12 +121,12 @@ export default function SupportChat({ ticket, onClose }) {
                   <FaArrowLeft size={20} />
                 </button>
                 <div>
-                  <h1 className="text-lg text-black font-medium">Support Chat</h1>
-                  <p className="text-sm text-gray-600">Ticket ID: {ticket?.id || '#3021'}</p>
+                  <h1 className="text-lg text-black font-medium">{t('support.chat.title')}</h1>
+                  <p className="text-sm text-gray-600">{t('support.ticketId')} {ticket?.id || '#3021'}</p>
                 </div>
               </div>
               <button onClick={onClose} className="text-sm cursor-pointer text-gray-700 border border-gray-300 rounded-lg p-2 hover:text-black transition-colors" >
-                Close Chat/Ticket
+                {t('support.chat.closeChat')}
               </button>
             </div>
           </div>
@@ -135,7 +137,7 @@ export default function SupportChat({ ticket, onClose }) {
               {/* Date Separator */}
               <div className="flex justify-center">
                 <span className="text-sm text-gray-500 bg-white px-4 py-1 rounded-full border border-gray-200">
-                  Tuesday
+                  {t('support.chat.dateSeparator')}
                 </span>
               </div>
 
@@ -148,7 +150,9 @@ export default function SupportChat({ ticket, onClose }) {
                       <div className="flex items-end  gap-3">
                         <div className="max-w-xl">
                           <div className="text-black border border-gray-300 rounded-2xl rounded-br-sm px-5 py-4 inline-block">
-                            <p className="text-sm leading-relaxed">{msg.text}</p>
+                            <p className="text-sm leading-relaxed">
+                              {msg.textKey ? t(msg.textKey) : msg.text}
+                            </p>
                           </div>
                         </div>
                         {msg.hasIcon && (
@@ -180,7 +184,9 @@ export default function SupportChat({ ticket, onClose }) {
                       )}
                       <div className="max-w-xl">
                         <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-4 inline-block border border-gray-300">
-                          <p className="text-sm leading-relaxed text-gray-800">{msg.text}</p>
+                          <p className="text-sm leading-relaxed text-gray-800">
+                            {msg.textKey ? t(msg.textKey) : msg.text}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -199,7 +205,7 @@ export default function SupportChat({ ticket, onClose }) {
               <div className="flex-1 relative">
                 <input
                   type="text"
-                  placeholder="Write Message..."
+                  placeholder={t('support.chat.writeMessage')}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}

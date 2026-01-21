@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
+import LoginModal from './Onboarding/Login';
 import { useTranslation } from 'react-i18next';
 
 const logoImage = '/logo.svg';
@@ -27,6 +28,7 @@ export default function Navbar() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
 
   const navLinks = [
@@ -142,13 +144,13 @@ export default function Navbar() {
                 
                 {/* Language Dropdown Menu */}
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-black/50 rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] cursor-pointer">
+                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] cursor-pointer">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
-                          i18n.language === lang.code  
+                        className={`w-full flex items-center  gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
+                          i18n.language === lang.code ? 'text-black' : ''
                         }`}
                       >
                         <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />
@@ -165,11 +167,15 @@ export default function Navbar() {
               >
                 <FiSearch className="w-5 h-5" />
               </button>
-              <Link href="/my-account">
-                <button className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50">
-                  <FiUser className="w-5 h-5" />
-                </button>
-              </Link>
+              
+              {/* User Icon with LoginModal */}
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+              >
+                <FiUser className="w-5 h-5" />
+              </button>
+
               <Link href="/wishlist">
                 <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                   <FiHeart className="w-5 h-5" />
@@ -276,11 +282,15 @@ export default function Navbar() {
               >
                 <FiSearch className="w-5 h-5" />
               </button>
-              <Link href="/my-account">
-                <button className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
-                  <FiUser className="w-5 h-5" />
-                </button>
-              </Link>
+              
+              {/* User Icon with LoginModal - Mobile */}
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+              >
+                <FiUser className="w-5 h-5" />
+              </button>
+
               <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />
               </Link>
@@ -297,6 +307,11 @@ export default function Navbar() {
       <OurProducts
         isOpen={isProductsModalOpen}
         onClose={() => setIsProductsModalOpen(false)}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </>
   );

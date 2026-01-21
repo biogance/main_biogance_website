@@ -5,6 +5,7 @@ import { BsChatText } from 'react-icons/bs';
 import { FiSearch, FiMessageCircle } from 'react-icons/fi';
 import { IoChevronDown } from 'react-icons/io5';
 import { LuFilter } from 'react-icons/lu';
+import { useTranslation } from 'react-i18next';
 import SupportChat from './SupportChat';
 
 // Support Ticket Shimmer Component
@@ -111,45 +112,51 @@ const SupportTicketShimmer = () => (
 );
 
 export default function Support({ onOpenChat }) {
+  const { t } = useTranslation("myaccount");
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterOption, setFilterOption] = useState('All Tickets');
+  const [filterOption, setFilterOption] = useState(t('support.filters.allTickets'));
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [loadingState, setLoadingState] = useState('shimmer');
 
-  // ← Your ticket data (later you will fetch this from API)
+  // Ticket data with translations
   const [tickets, setTickets] = useState([
     {
       id: '#3021',
       orderRef: '#56891',
       createdOn: 'July 10, 2025 - 09:18 PM',
-      status: 'Active',
-      title: 'Order Refund',
-      description: "I purchased the 250ml shampoo bottle last week, but the pump isn't working properly and it's difficult to get the product out.",
+      statusKey: 'support.status.active',
+      titleKey: 'support.tickets.ticket1.title',
+      descriptionKey: 'support.tickets.ticket1.description',
       statusColor: 'bg-green-100 text-green-700'
     },
     {
       id: '#3023',
       orderRef: '#56912',
       createdOn: 'July 13, 2025 - 11:05 AM',
-      status: 'In Progress',
-      title: 'Request a Refund',
-      description: "I ordered a Biogance shampoo but realized I picked the wrong variant. I'd like to request a refund for this order.",
+      statusKey: 'support.status.inProgress',
+      titleKey: 'support.tickets.ticket2.title',
+      descriptionKey: 'support.tickets.ticket2.description',
       statusColor: 'bg-yellow-50 text-yellow-500'
     },
     {
       id: '#3024',
       orderRef: '#56925',
       createdOn: 'July 14, 2025 - 04:30 PM',
-      status: 'Closed',
-      title: 'Quality Issue',
-      description: "The conditioner I received has an unusual texture and doesn't seem right. I'd like to request a replacement or refund.",
+      statusKey: 'support.status.closed',
+      titleKey: 'support.tickets.ticket3.title',
+      descriptionKey: 'support.tickets.ticket3.description',
       statusColor: 'bg-gray-200 text-gray-700'
     }
   ]);
 
-  const filterOptions = ['All Tickets', 'Active', 'In Progress', 'Closed'];
+  const filterOptions = [
+    t('support.filters.allTickets'),
+    t('support.filters.active'),
+    t('support.filters.inProgress'),
+    t('support.filters.closed')
+  ];
 
   const handleOpenChat = (ticket) => {
     setSelectedTicket(ticket);
@@ -198,10 +205,10 @@ export default function Support({ onOpenChat }) {
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8">
                 <h2 className="text-2xl md:text-2xl font-semibold text-gray-900">
-                  Support & Refund
+                  {t('support.title')}
                 </h2>
                 <p className="text-sm md:text-base text-gray-600 mt-1">
-                  Manage your cancellations, refund requests, and support tickets all in one place.
+                  {t('support.subtitle')}
                 </p>
               </div>
 
@@ -217,7 +224,7 @@ export default function Support({ onOpenChat }) {
                       />
                       <input
                         type="text"
-                        placeholder="Search tickets..."
+                        placeholder={t('support.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-12 text-black pr-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
@@ -276,25 +283,25 @@ export default function Support({ onOpenChat }) {
                           className="bg-white rounded-xl border border-gray-200 p-4 hover: transition-shadow"
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-semibold text-black">Ticket ID: {ticket.id}</h3>
+                            <h3 className="font-semibold text-black">{t('support.ticketId')} {ticket.id}</h3>
                             <span
                               className={`px-4 py-2 rounded-full text-xs font-medium ${ticket.statusColor}`}
                             >
-                              {ticket.status}
+                              {t(ticket.statusKey)}
                             </span>
                           </div>
 
                           <p className="text-sm text-gray-600 mb-1">
-                            Order Reference: {ticket.orderRef}
+                            {t('support.orderReference')} {ticket.orderRef}
                           </p>
                           <p className="text-sm text-gray-600 mb-6">
-                            Created On: {ticket.createdOn}
+                            {t('support.createdOn')} {ticket.createdOn}
                           </p>
 
                             <div className='bg-gray-100 p-3 rounded-xl w-full mb-3 text black'>
-                          <h4 className="font-medium mb-2 text-black">{ticket.title}</h4>
+                          <h4 className="font-medium mb-2 text-black">{t(ticket.titleKey)}</h4>
                           <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
-                            {ticket.description}
+                            {t(ticket.descriptionKey)}
                           </p>
                           </div>
 
@@ -303,7 +310,7 @@ export default function Support({ onOpenChat }) {
                             className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
                           >
                             <BsChatText size={18} />
-                            Open Support Chat
+                            {t('support.openSupportChat')}
                           </button>
                         </div>
                       ))
@@ -322,11 +329,11 @@ export default function Support({ onOpenChat }) {
                   </div>
 
                   <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
-                    No Support Tickets Yet
+                    {t('support.emptyState.title')}
                   </h3>
 
                   <p className="text-gray-500 text-base text-center max-w-2xl mb-8 leading-relaxed">
-                    You haven't created any support or refund requests yet. If you face any issue with your order, you can easily raise a ticket here and track it in real time.
+                    {t('support.emptyState.description')}
                   </p>
 
                   <button
@@ -339,7 +346,7 @@ export default function Support({ onOpenChat }) {
                       shadow-sm
                     "
                   >
-                    Create New Ticket
+                    {t('support.emptyState.createNewTicket')}
                   </button>
                 </div>
               )}

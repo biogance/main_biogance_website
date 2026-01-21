@@ -6,8 +6,10 @@ import { RxRocket } from "react-icons/rx";
 import { FaRegHeart } from 'react-icons/fa';
 import { IoLocationOutline, IoPersonOutline, IoSettingsOutline } from 'react-icons/io5';
 import { BsArrowBarLeft } from 'react-icons/bs';
+import { useTranslation } from 'react-i18next';
 
 export function Sidebar({ activeItem, onItemClick, onDelete }) {
+  const { t } = useTranslation('sidebar');
 
   return (
     <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10">
@@ -24,7 +26,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <LuLayoutDashboard className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Dashboard</span>
+              <span className="whitespace-nowrap">{t('dashboard')}</span>
             </button>
           </li>
 
@@ -38,7 +40,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <TbNotes className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">My Orders</span>
+              <span className="whitespace-nowrap">{t('orders')}</span>
             </button>
           </li>
 
@@ -52,7 +54,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <FaRegHeart className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Favorites</span>
+              <span className="whitespace-nowrap">{t('favorites')}</span>
             </button>
           </li>
 
@@ -66,7 +68,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <RxRocket className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Loyalty & Rewards</span>
+              <span className="whitespace-nowrap">{t('loyalty')}</span>
             </button>
           </li>
 
@@ -80,7 +82,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <IoPersonOutline className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">User Profile</span>
+              <span className="whitespace-nowrap">{t('profile')}</span>
             </button>
           </li>
 
@@ -100,7 +102,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
                     activeItem === 'pet' ? 'brightness-0 invert' : ''
                   }`}
                 />
-              <span className="whitespace-nowrap">Pet Profile</span>
+              <span className="whitespace-nowrap">{t('petProfile')}</span>
             </button>
           </li>
 
@@ -114,7 +116,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <IoLocationOutline className="w-4 h-4 flex-shrink-0" />
-              <span>Addresses</span>
+              <span>{t('addresses')}</span>
             </button>
           </li>
 
@@ -128,7 +130,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <IoSettingsOutline className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Settings</span>
+              <span className="whitespace-nowrap">{t('settings')}</span>
             </button>
           </li>
 
@@ -148,7 +150,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
                     activeItem === 'support' ? 'brightness-0 invert' : ''
                   }`}
                   />
-              <span className="whitespace-nowrap">Support & Refunds</span>
+              <span className="whitespace-nowrap">{t('support')}</span>
             </button>
           </li>
 
@@ -163,7 +165,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               }`}
             >
               <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Log Out</span>
+              <span className="whitespace-nowrap">{t('logout')}</span>
             </button>
           </li>
         </ul> 
@@ -176,7 +178,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
           className="w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg text-md text-[#333333] hover:bg-gray-200 transition-colors duration-150"
         >
           <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
-          <span>Log Out</span>
+          <span>{t('logout')}</span>
         </button>
       </div>
     </div>
