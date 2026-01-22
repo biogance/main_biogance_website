@@ -134,25 +134,25 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
             </button>
           </li>
 
-          <li>
-            <button
-              onClick={() => onItemClick('support')}
-              className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5  text-md transition-colors duration-150 ${
-               activeItem === 'support'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
-              }`}
-            >
-              <img
-                  src="refund.svg"
-                  alt=""
-                  className={`w-4 h-4 flex-shrink-0 ${
-                    activeItem === 'support' ? 'brightness-0 invert' : ''
-                  }`}
-                  />
-              <span className="whitespace-nowrap">{t('support')}</span>
-            </button>
-          </li>
+       <li>
+  <button
+    onClick={() => onItemClick('support')}
+    className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
+      activeItem === 'support'
+        ? 'border-b-2 border-[#1A1A1A] text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
+        : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+    }`}
+  >
+    <img
+      src="refund.svg"
+      alt=""
+      className={`w-4 h-4 flex-shrink-0 ${
+        activeItem === 'support' ? 'brightness-0 invert' : ''
+      }`}
+    />
+    <span className="flex-1 text-left break-words">{t('support')}</span>
+  </button>
+</li>
 
           {/* Logout - Only visible on small screens (as tab) */}
           <li className="lg:hidden">

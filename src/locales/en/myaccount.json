@@ -168,7 +168,7 @@
   "fullAddress": "Full Address",
   "fullAddressPlaceholder": "eg: 123 Highland Rd, Someplace, CA 91234",
   "city": "City",
-   "cancel":"cancel",
+   "cancel":"Cancel",
   "cityPlaceholder": "eg: New York",
   "postalCode": "Postal/Zip Code",
   "postalCodePlaceholder": "eg: 90210",
@@ -184,6 +184,49 @@
     "cancelButton": "No, Go Back"
   }
 },
+
+ "feedbackForm": {
+    "title": "We'd love your feedback before you go",
+    "subtitle": "Help us improve by telling us why you're leaving.",
+    "reasons": {
+      "noLongerUse": "I no longer use Biogance products",
+      "betterPrices": "I found better prices elsewhere",
+      "betterAlternatives": "I've found better alternatives for my pet's grooming",
+      "sustainability": "I prefer brands that focus on sustainability",
+      "ingredientSafety": "I've become more conscious of ingredient safety",
+      "localBrands": "I now buy from local, cruelty-free companies",
+      "preferInStore": "I prefer shopping in-store",
+      "privacy": "Privacy concerns",
+      "other": "Other"
+    },
+    "tellUsMore": "Please tell us more",
+    "otherPlaceholder": "eg. I already have another account, I don't shop online often, etc.",
+    "goBackButton": "No, Go Back",
+    "continueDeleteButton": "Continue to Delete"
+  },
+   "confirmDeletion": {
+    "title": "Confirm Account Deletion",
+    "subtitle": "To protect your account, please enter your password to confirm.",
+    "currentPassword": "Current Password",
+    "passwordPlaceholder": "Enter password",
+    "confirmButton": "Confirm Delete My Account",
+    "goBackButton": "No, Go Back",
+    "deleted": {
+      "title": "Your account has been deleted",
+      "message": "We're sorry to see you go. Thank you for being part of the Biogance community.",
+      "rejoinButton": "Rejoin Biogance",
+      "browseGuestButton": "Browse as Guest"
+    }
+  },
+   "logoutModal": {
+    "title": "Account Logout",
+    "message": "Are you sure you want to Logout from this Account?",
+    "warning": "This action cannot be undone.",
+    "confirmButton": "Yes, Logout",
+    "cancelButton": "No, Go Back"
+  },
+
+  
   "dashboard": {
     "welcome": "Welcome back, John!",
     "loyaltyPoints": "Loyalty Points",

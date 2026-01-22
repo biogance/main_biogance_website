@@ -336,7 +336,7 @@ export default function MyOrder() {
                     </div>
                     <button className="
                       mt-4 w-full sm:w-auto
-                      bg-gray-900 hover:bg-gray-800
+                      bg-gray-900 hover:bg-gray-800 cursor-pointer
                       text-white text-sm font-medium
                       px-6 py-2.5 rounded-lg
                       transition-colors duration-200

@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IoChevronDown } from 'react-icons/io5';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
@@ -43,6 +44,7 @@ const AccordionItem = ({ question, answer, isOpen, onToggle }) => {
 };
 
 export default function FAQ() {
+  const { t } = useTranslation("faq");
   const [openItems, setOpenItems] = useState({});
 
   const toggleItem = (itemId, sectionId) => {
@@ -80,34 +82,34 @@ export default function FAQ() {
             {/* Sidebar */}
             <div className="md:sticky md:top-18 md:self-start">
               <h1 className="mb-1 text-black font-semibold text-xl">
-                Frequently Asked Questions
+                {t('faq.title')}
               </h1>
-              <p className="text-black font-semibold text-xl">(FAQs)</p>
+              <p className="text-black font-semibold text-xl">{t('faq.subtitle')}</p>
             </div>
 
             {/* Main Content */}
             <div className="space-y-8">
               {/* Section 1: About Biogance */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">1. About Biogance</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.aboutBiogance.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="What makes Biogance products different from other pet care brands?"
-                    answer="Biogance is a pioneer in organic and natural pet care, using ECOCERT-certified ingredients, GMP production standards, and formulas free from parabens, phenoxyethanol, and animal oils."
+                    question={t('faq.sections.aboutBiogance.q1.question')}
+                    answer={t('faq.sections.aboutBiogance.q1.answer')}
                     isOpen={openItems['section1-item-1']}
                     onToggle={() => toggleItem('section1-item-1', 'section1')}
                   />
 
                   <AccordionItem
-                    question="Are Biogance products tested on animals?"
-                    answer="No. Our products are never tested on animals. We are truly committed to animal welfare, safety, and sustainability."
+                    question={t('faq.sections.aboutBiogance.q2.question')}
+                    answer={t('faq.sections.aboutBiogance.q2.answer')}
                     isOpen={openItems['section1-item-2']}
                     onToggle={() => toggleItem('section1-item-2', 'section1')}
                   />
 
                   <AccordionItem
-                    question="Are these all products tested on animals?"
-                    answer="Yes! Our organic range ship-supplies, such as lemon, tea tree, birds, roselle, and small mammals, each formulated for their specific needs."
+                    question={t('faq.sections.aboutBiogance.q3.question')}
+                    answer={t('faq.sections.aboutBiogance.q3.answer')}
                     isOpen={openItems['section1-item-3']}
                     onToggle={() => toggleItem('section1-item-3', 'section1')}
                   />
@@ -116,25 +118,25 @@ export default function FAQ() {
 
               {/* Section 2: Orders & Shipping */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">2. Orders & Shipping</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.ordersShipping.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="How can I track my order?"
-                    answer="Once your order is confirmed, you'll receive a tracking link by email. You can also check your My Account → My Orders."
+                    question={t('faq.sections.ordersShipping.q1.question')}
+                    answer={t('faq.sections.ordersShipping.q1.answer')}
                     isOpen={openItems['section2-item-4']}
                     onToggle={() => toggleItem('section2-item-4', 'section2')}
                   />
 
                   <AccordionItem
-                    question="How long does delivery take?"
-                    answer="Delivery times vary by location, but most orders are processed within 24-48 hours and delivered in 3–5 working days."
+                    question={t('faq.sections.ordersShipping.q2.question')}
+                    answer={t('faq.sections.ordersShipping.q2.answer')}
                     isOpen={openItems['section2-item-5']}
                     onToggle={() => toggleItem('section2-item-5', 'section2')}
                   />
 
                   <AccordionItem
-                    question="Can I cancel my order?"
-                    answer="Yes, if your order hasn't shipped yet, you can cancel it directly from My Orders. If it has already been sent, kindly use either our return process; we'll return it back if you want a refund before it's even delivered."
+                    question={t('faq.sections.ordersShipping.q3.question')}
+                    answer={t('faq.sections.ordersShipping.q3.answer')}
                     isOpen={openItems['section2-item-6']}
                     onToggle={() => toggleItem('section2-item-6', 'section2')}
                   />
@@ -143,18 +145,18 @@ export default function FAQ() {
 
               {/* Section 3: Returns & Refunds */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">3. Returns & Refunds</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.returnsRefunds.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="What if I receive a damaged or defective product?"
-                    answer="If a product arrives faulty (e.g., broken pump, leakage), you can request a refund or exchange from the Support & Refunds tab in your account."
+                    question={t('faq.sections.returnsRefunds.q1.question')}
+                    answer={t('faq.sections.returnsRefunds.q1.answer')}
                     isOpen={openItems['section3-item-7']}
                     onToggle={() => toggleItem('section3-item-7', 'section3')}
                   />
 
                   <AccordionItem
-                    question="How long does a refund take?"
-                    answer="Refunds are usually processed within 7–10 business days after we receive the returned product."
+                    question={t('faq.sections.returnsRefunds.q2.question')}
+                    answer={t('faq.sections.returnsRefunds.q2.answer')}
                     isOpen={openItems['section3-item-8']}
                     onToggle={() => toggleItem('section3-item-8', 'section3')}
                   />
@@ -163,18 +165,18 @@ export default function FAQ() {
 
               {/* Section 4: Loyalty Program */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">4. Loyalty Program</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.loyaltyProgram.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="How does the Biogance Loyalty Program work?"
-                    answer="For every €10 spent, you earn 1 point. Each point equals €1, which you can convert into discount vouchers. You also earn bonus points on your birthday, newsletter signup, or surveys."
+                    question={t('faq.sections.loyaltyProgram.q1.question')}
+                    answer={t('faq.sections.loyaltyProgram.q1.answer')}
                     isOpen={openItems['section4-item-9']}
                     onToggle={() => toggleItem('section4-item-9', 'section4')}
                   />
 
                   <AccordionItem
-                    question="Can I transfer my loyalty points?"
-                    answer="No, points are limited to the account and cannot be transferred or shared."
+                    question={t('faq.sections.loyaltyProgram.q2.question')}
+                    answer={t('faq.sections.loyaltyProgram.q2.answer')}
                     isOpen={openItems['section4-item-10']}
                     onToggle={() => toggleItem('section4-item-10', 'section4')}
                   />
@@ -183,25 +185,25 @@ export default function FAQ() {
 
               {/* Section 5: My Account & Settings */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">5. My Account & Settings</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.accountSettings.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="Can I update my password anywhere?"
-                    answer="Yes. In Settings → Update Password, you can change it anytime. For security, updating your password will log you out of all devices."
+                    question={t('faq.sections.accountSettings.q1.question')}
+                    answer={t('faq.sections.accountSettings.q1.answer')}
                     isOpen={openItems['section5-item-11']}
                     onToggle={() => toggleItem('section5-item-11', 'section5')}
                   />
 
                   <AccordionItem
-                    question="How many pets can I add to my account?"
-                    answer="You can add up to 5 pets. This helps us recommend tailored products."
+                    question={t('faq.sections.accountSettings.q2.question')}
+                    answer={t('faq.sections.accountSettings.q2.answer')}
                     isOpen={openItems['section5-item-12']}
                     onToggle={() => toggleItem('section5-item-12', 'section5')}
                   />
 
                   <AccordionItem
-                    question="What happens if I delete my account?"
-                    answer="When you request account deletion, we'll ask you for a reason (feedback helps us improve). After confirmation, your account and data will be permanently removed."
+                    question={t('faq.sections.accountSettings.q3.question')}
+                    answer={t('faq.sections.accountSettings.q3.answer')}
                     isOpen={openItems['section5-item-13']}
                     onToggle={() => toggleItem('section5-item-13', 'section5')}
                   />
@@ -210,25 +212,25 @@ export default function FAQ() {
 
               {/* Section 6: Support & Refunds */}
               <section>
-                <h2 className="mb-6 text-black font-semibold text-lg">6. Support & Refunds</h2>
+                <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.supportRefunds.title')}</h2>
                 <div className="space-y-4">
                   <AccordionItem
-                    question="How can I contact support?"
-                    answer="You can submit tickets directly in My Account → Support & Refunds. You'll see all active and closed tickets with chat history."
+                    question={t('faq.sections.supportRefunds.q1.question')}
+                    answer={t('faq.sections.supportRefunds.q1.answer')}
                     isOpen={openItems['section6-item-14']}
                     onToggle={() => toggleItem('section6-item-14', 'section6')}
                   />
 
                   <AccordionItem
-                    question="What issues can I raise a ticket for?"
+                    question={t('faq.sections.supportRefunds.q2.question')}
                     answer={
                       <div>
-                        Common reasons include:
+                        {t('faq.sections.supportRefunds.q2.answer')}
                         <ul className="list-disc pl-5 mt-2 space-y-1">
-                          <li>Order Refund</li>
-                          <li>Product Query</li>
-                          <li>Shipping Delay</li>
-                          <li>Quality Issue</li>
+                          <li>{t('faq.sections.supportRefunds.q2.list.item1')}</li>
+                          <li>{t('faq.sections.supportRefunds.q2.list.item2')}</li>
+                          <li>{t('faq.sections.supportRefunds.q2.list.item3')}</li>
+                          <li>{t('faq.sections.supportRefunds.q2.list.item4')}</li>
                         </ul>
                       </div>
                     }

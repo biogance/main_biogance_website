@@ -123,7 +123,7 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
         {/* Fixed Action Buttons */}
         <div className="bg-white border-t border-gray-200 p-4 sm:p-6 rounded-b-xl sm:rounded-b-2xl">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button className="w-full sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base">
+            <button className="w-full cursor-pointer sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base">
               {t('orderDetails.downloadInvoice')}
             </button>
             <button

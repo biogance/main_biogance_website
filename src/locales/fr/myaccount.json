@@ -184,6 +184,49 @@
     "cancelButton": "Non, retour"
   }
 },
+
+ "feedbackForm": {
+    "title": "Nous aimerions vos commentaires avant votre départ",
+    "subtitle": "Aidez-nous à nous améliorer en nous disant pourquoi vous partez.",
+    "reasons": {
+      "noLongerUse": "Je n'utilise plus les produits Biogance",
+      "betterPrices": "J'ai trouvé de meilleurs prix ailleurs",
+      "betterAlternatives": "J'ai trouvé de meilleures alternatives pour le toilettage de mon animal",
+      "sustainability": "Je préfère les marques axées sur la durabilité",
+      "ingredientSafety": "Je suis devenu plus conscient de la sécurité des ingrédients",
+      "localBrands": "J'achète maintenant auprès d'entreprises locales sans cruauté",
+      "preferInStore": "Je préfère faire mes achats en magasin",
+      "privacy": "Préoccupations concernant la confidentialité",
+      "other": "Autre"
+    },
+    "tellUsMore": "Veuillez nous en dire plus",
+    "otherPlaceholder": "ex. J'ai déjà un autre compte, je ne fais pas souvent d'achats en ligne, etc.",
+    "goBackButton": "Non, retour",
+    "continueDeleteButton": "Continuer la suppression"
+  },
+
+   "confirmDeletion": {
+    "title": "Confirmer la suppression du compte",
+    "subtitle": "Pour protéger votre compte, veuillez entrer votre mot de passe pour confirmer.",
+    "currentPassword": "Mot de passe actuel",
+    "passwordPlaceholder": "Entrez le mot de passe",
+    "confirmButton": "Confirmer la suppression de mon compte",
+    "goBackButton": "Non, retour",
+    "deleted": {
+      "title": "Votre compte a été supprimé",
+      "message": "Nous sommes désolés de vous voir partir. Merci d'avoir fait partie de la communauté Biogance.",
+      "rejoinButton": "Rejoindre Biogance",
+      "browseGuestButton": "Parcourir en tant qu'invité"
+    }
+  },
+   "logoutModal": {
+    "title": "Déconnexion du compte",
+    "message": "Êtes-vous sûr de vouloir vous déconnecter de ce compte ?",
+    "warning": "Cette action ne peut pas être annulée.",
+    "confirmButton": "Oui, se déconnecter",
+    "cancelButton": "Non, retour"
+  },
+ 
   "dashboard": {
     "welcome": "Bon retour, John !",
     "loyaltyPoints": "Points de fidélité",

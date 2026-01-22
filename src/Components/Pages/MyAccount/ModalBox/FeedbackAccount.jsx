@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ConfirmDeletionModal from './ConfirmDeleteAccount';
 
 export default function FeedbackForm({ onContinueToDelete, onClose }) {
+  const { t } = useTranslation("myaccount");
   const [selectedReason, setSelectedReason] = useState('');
   const [otherText, setOtherText] = useState('');
   const [showFeedback, setShowFeedback] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const reasons = [
-    "I no longer use Biogance products",
-    "I found better prices elsewhere",
-    "I've found better alternatives for my pet's grooming",
-    "I prefer brands that focus on sustainability",
-    "I've become more conscious of ingredient safety",
-    "I now buy from local, cruelty-free companies",
-    "I prefer shopping in-store",
-    "Privacy concerns",
-    "Other"
+    t('feedbackForm.reasons.noLongerUse'),
+    t('feedbackForm.reasons.betterPrices'),
+    t('feedbackForm.reasons.betterAlternatives'),
+    t('feedbackForm.reasons.sustainability'),
+    t('feedbackForm.reasons.ingredientSafety'),
+    t('feedbackForm.reasons.localBrands'),
+    t('feedbackForm.reasons.preferInStore'),
+    t('feedbackForm.reasons.privacy'),
+    t('feedbackForm.reasons.other')
   ];
 
   return (
@@ -27,10 +29,10 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
 
         {/* Header */}
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-          We'd love your feedback before you go
+          {t('feedbackForm.title')}
         </h2>
         <p className="text-gray-600 text-sm mb-6">
-          Help us improve by telling us why you're leaving.
+          {t('feedbackForm.subtitle')}
         </p>
 
         {/* Radio options */}
@@ -52,13 +54,13 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
               </label>
               
               {/* Show textarea when "Other" is selected */}
-              {reason === "Other" && selectedReason === "Other" && (
+              {reason === t('feedbackForm.reasons.other') && selectedReason === t('feedbackForm.reasons.other') && (
                 <div className="mt-3">
-                  <p className="text-sm text-black mb-2">Please tell us more</p>
+                  <p className="text-sm text-black mb-2">{t('feedbackForm.tellUsMore')}</p>
                   <textarea
                     value={otherText}
                     onChange={(e) => setOtherText(e.target.value)}
-                    placeholder="eg. I already have another account, I don't shop online often, etc."
+                    placeholder={t('feedbackForm.otherPlaceholder')}
                     className="w-full px-3 py-4 bg-gray-100  rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent resize-none"
                     rows="3"
                   />
@@ -74,13 +76,13 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
             onClick={onClose}
             className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer"
           >
-            No, Go Back
+            {t('feedbackForm.goBackButton')}
           </button>
           <button 
             onClick={onContinueToDelete}
             className="flex-1 px-6 py-3 bg-[#D00416] text-white rounded-xl font-medium hover:bg-red-700 transition-colors cursor-pointer"
           >
-            Continue to Delete
+            {t('feedbackForm.continueDeleteButton')}
           </button>
         </div>
       </div>

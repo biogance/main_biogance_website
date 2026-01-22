@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { FiUser } from "react-icons/fi"
+import { useState, useEffect } from "react"
+import { FiUser, FiX } from "react-icons/fi"
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { RiUserLine } from "react-icons/ri";
@@ -16,6 +16,7 @@ export default function UserProfile() {
         phoneNumber: ''
     });
     const [profileImage, setProfileImage] = useState(null);
+    const [showPreview, setShowPreview] = useState(false);
 
     // Custom styles for phone input
     const phoneInputStyles = `
@@ -78,6 +79,7 @@ export default function UserProfile() {
 
     const handleRemoveImage = () => {
         setProfileImage(null);
+        setShowPreview(false);
         document.getElementById('profile-upload').value = '';
     };
 
@@ -88,12 +90,44 @@ export default function UserProfile() {
             phoneNumber: ''
         });
         setProfileImage(null);
+        setShowPreview(false);
     };
 
     const handleSubmit = () => {
         console.log('Form submitted:', formData);
         // Add your submit logic here
     };
+
+    const handleImageClick = () => {
+        if (profileImage) {
+            setShowPreview(true);
+        }
+    };
+
+    // Prevent background scrolling when preview is open
+    useEffect(() => {
+        if (showPreview) {
+            // Save current scroll position
+            const scrollY = window.scrollY;
+            
+            // Prevent scrolling
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            
+            return () => {
+                // Restore scrolling
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                
+                // Restore scroll position
+                window.scrollTo(0, scrollY);
+            };
+        }
+    }, [showPreview]);
 
     return(
         <>
@@ -108,7 +142,12 @@ export default function UserProfile() {
                     <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                         {/* Upload Image Section */}
                         <div className="flex flex-col items-center">
-                            <div className="w-24 h-24 sm:w-34 sm:h-34 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            <div 
+                                onClick={handleImageClick}
+                                className={`w-24 h-24 sm:w-34 sm:h-34 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden ${
+                                    profileImage ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''
+                                }`}
+                            >
                                 {profileImage ? (
                                     <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -206,6 +245,29 @@ export default function UserProfile() {
                     </div>
                 </div>
             </div>
+
+            {/* Image Preview Modal */}
+            {showPreview && (
+               <div 
+    className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50"
+    onClick={() => setShowPreview(false)}
+>
+    <div className="relative">
+        <button
+            onClick={() => setShowPreview(false)}
+            className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors bg-white rounded-full p-1"
+        >
+            <FiX size={24} />
+        </button>
+        <img 
+            src={profileImage} 
+            alt="Profile Preview" 
+            className="w-[500px] h-[500px] object-cover rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+        />
+    </div>
+</div>
+            )}
         </>
     )
 }

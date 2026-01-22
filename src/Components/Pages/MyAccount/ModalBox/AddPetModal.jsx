@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IoClose, IoCalendarOutline } from 'react-icons/io5';
 import { PiPawPrint } from 'react-icons/pi';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
+import { FiX } from 'react-icons/fi';
 
 // ── Single Select Custom Dropdown ───────────────────────────────────────────
-const CustomDropdown = ({ label, options, value, onChange, placeholder = "" }) => {
+const CustomDropdown = ({ label, options, value, onChange, placeholder = "", insideModal = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const selectedOption = options.find(opt => opt.value === value);
   const displayValue = selectedOption ? selectedOption.label : placeholder;
@@ -19,9 +22,10 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "" }) =
       )}
       <button
         type="button"
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          w-full flex items-center justify-between px-4 py-3 
+          w-full flex items-center justify-between px-4 py-3
           bg-gray-50 border border-gray-200 rounded-lg text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
@@ -39,12 +43,16 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "" }) =
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
-          <div className="
-            absolute left-0 right-0 top-full mt-1 z-20 max-h-[280px] overflow-auto 
-            bg-white rounded-lg shadow-2xl border border-gray-200 py-2 text-sm
-            scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50
-          ">
+          <div 
+            className="fixed inset-0 bg-transparent" 
+            style={{ zIndex: insideModal ? 40 : 10 }}
+            onClick={() => setIsOpen(false)} 
+          />
+          <div
+            ref={dropdownRef}
+            className="absolute mt-1 w-full max-h-[280px] overflow-auto bg-white rounded-lg shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
+            style={{ zIndex: insideModal ? 50 : 20 }}
+          >
             {options.map((option) => (
               <button
                 key={option.value}
@@ -70,6 +78,7 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "" }) =
 // ── Multi Select Dropdown ───────────────────────────────────────────────────
 const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder = "Select options" }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef(null);
 
   const toggleOption = (optionValue) => {
     const newValue = value.includes(optionValue)
@@ -90,9 +99,10 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
       <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
       <button
         type="button"
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          w-full flex items-center justify-between px-4 py-3 
+          w-full flex items-center justify-between px-4 py-3
           bg-gray-50 border border-gray-200 rounded-lg text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
@@ -106,11 +116,18 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
-          <div className="
-            absolute left-0 right-0 top-full mt-1 z-20 max-h-[320px] overflow-auto 
-            bg-white rounded-xl shadow-2xl border border-gray-200 py-2 text-sm
-            scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50
-          ">
+          <div
+            className="fixed z-20 max-h-[160px] overflow-auto bg-white rounded-xl shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
+            style={{
+              top: buttonRef.current?.getBoundingClientRect().bottom + 4 + 'px',
+              left: Math.max(8, Math.min(
+                buttonRef.current?.getBoundingClientRect().left || 0,
+                window.innerWidth - (buttonRef.current?.getBoundingClientRect().width || 0) - 8
+              )) + 'px',
+              width: buttonRef.current?.getBoundingClientRect().width + 'px',
+              maxWidth: 'calc(100vw - 16px)',
+            }}
+          >
             {options.map((option) => {
               const isSelected = value.includes(option.value);
               return (
@@ -141,6 +158,7 @@ const AgePicker = ({ value, onChange }) => {
   const { t } = useTranslation("myaccount");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const containerRef = useRef(null);
 
   const months = [
     t('addPet.months.january'),
@@ -240,7 +258,7 @@ const AgePicker = ({ value, onChange }) => {
   ];
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={containerRef}>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('addPet.age')}</label>
 
       <div className="relative">
@@ -259,11 +277,24 @@ const AgePicker = ({ value, onChange }) => {
         <>
           <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
 
-          <div className="
-            absolute left-0 right-0 md:left-auto md:right-0 top-full mt-2 z-30
-            bg-white rounded-2xl shadow-2xl border border-gray-200 p-5
-            w-full md:w-[340px]
-          ">
+          <div
+            className="fixed z-30 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5 w-[90vw] md:w-[340px] max-h-[90vh] overflow-y-auto"
+            style={{
+              top: window.innerWidth < 768 
+                ? '50%' 
+                : Math.min(
+                    containerRef.current?.getBoundingClientRect().bottom + 8 || 0,
+                    window.innerHeight - 400 - 16
+                  ) + 'px',
+              left: window.innerWidth < 768 
+                ? '50%' 
+                : Math.max(8, Math.min(
+                    containerRef.current?.getBoundingClientRect().left || 0,
+                    window.innerWidth - 340 - 8
+                  )) + 'px',
+              transform: window.innerWidth < 768 ? 'translate(-50%, -50%)' : 'none',
+            }}
+          >
             <div className="grid grid-cols-2 gap-4 mb-6">
               <CustomDropdown
                 label={t('addPet.month')}
@@ -275,6 +306,7 @@ const AgePicker = ({ value, onChange }) => {
                     : new Date(displayYear, m, 1);
                   setSelectedDate(newDate);
                 }}
+                insideModal={true}
               />
 
               <CustomDropdown
@@ -287,6 +319,7 @@ const AgePicker = ({ value, onChange }) => {
                     : new Date(y, displayMonth, 1);
                   setSelectedDate(newDate);
                 }}
+                insideModal={true}
               />
             </div>
 
@@ -326,7 +359,7 @@ const AgePicker = ({ value, onChange }) => {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                className="flex-1 py-3 border cursor-pointer border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
               >
                 {t('addPet.cancel')}
               </button>
@@ -334,7 +367,7 @@ const AgePicker = ({ value, onChange }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selectedDate}
-                className={`flex-1 py-3 rounded-xl font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                className={`flex-1 py-3 cursor-pointer rounded-xl font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
               >
                 {t('addPet.apply')}
               </button>
@@ -360,9 +393,10 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
     image: null
   });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   useEffect(() => {
-    if (isOpen || isSuccessModalOpen) {
+    if (isOpen || isSuccessModalOpen || showImagePreview) {
       const scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
@@ -377,7 +411,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
         window.scrollTo(0, scrollY);
       };
     }
-  }, [isOpen, isSuccessModalOpen]);
+  }, [isOpen, isSuccessModalOpen, showImagePreview]);
 
   const handleSubmit = () => {
     onAddPet(formData);
@@ -401,7 +435,14 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
 
   const handleRemoveImage = () => {
     handleChange('image', null);
+    setShowImagePreview(false);
     document.getElementById('pet-image-upload').value = '';
+  };
+
+  const handleImageClick = () => {
+    if (formData.image) {
+      setShowImagePreview(true);
+    }
   };
 
   if (!isOpen) return null;
@@ -491,7 +532,12 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
               <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
                 {/* Image Section */}
                 <div className="flex flex-col items-center gap-4 md:min-w-[160px]">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                  <div 
+                    onClick={handleImageClick}
+                    className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm ${
+                      formData.image ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''
+                    }`}
+                  >
                     {formData.image ? (
                       <img src={formData.image} alt="Pet preview" className="w-full h-full object-cover" />
                     ) : (
@@ -504,14 +550,14 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                       <button 
                         type="button" 
                         onClick={handleUploadClick} 
-                        className="text-sm border border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                        className="text-sm border cursor-pointer border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                       >
                         {t('addPet.updateImage')}
                       </button>
                       <button 
                         type="button" 
                         onClick={handleRemoveImage} 
-                        className="text-sm text-red-600 font-medium hover:text-red-700 transition-colors text-center"
+                        className="text-sm cursor-pointer text-red-600 font-medium hover:text-red-700 transition-colors text-center"
                       >
                         {t('addPet.remove')}
                       </button>
@@ -520,7 +566,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                     <button 
                       type="button" 
                       onClick={handleUploadClick} 
-                      className="text-sm border border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                      className="text-sm border cursor-pointer border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                     >
                       {t('addPet.uploadImage')}
                     </button>
@@ -620,6 +666,29 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                 {t('addPet.addPetButton')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImagePreview && (
+        <div 
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-[60] p-4"
+          onClick={() => setShowImagePreview(false)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <button
+              onClick={() => setShowImagePreview(false)}
+              className="absolute -top-2 -right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-2 shadow-lg"
+            >
+              <FiX size={24} />
+            </button>
+            <img 
+              src={formData.image} 
+              alt="Pet Preview" 
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}

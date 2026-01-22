@@ -1,0 +1,92 @@
+ {
+ "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "(FAQs)",
+    "sections": {
+      "aboutBiogance": {
+        "title": "1. About Biogance",
+        "q1": {
+          "question": "What makes Biogance products different from other pet care brands?",
+          "answer": "Biogance is a pioneer in organic and natural pet care, using ECOCERT-certified ingredients, GMP production standards, and formulas free from parabens, phenoxyethanol, and animal oils."
+        },
+        "q2": {
+          "question": "Are Biogance products tested on animals?",
+          "answer": "No. Our products are never tested on animals. We are truly committed to animal welfare, safety, and sustainability."
+        },
+        "q3": {
+          "question": "Are these all products tested on animals?",
+          "answer": "Yes! Our organic range ship-supplies, such as lemon, tea tree, birds, roselle, and small mammals, each formulated for their specific needs."
+        }
+      },
+      "ordersShipping": {
+        "title": "2. Orders & Shipping",
+        "q1": {
+          "question": "How can I track my order?",
+          "answer": "Once your order is confirmed, you'll receive a tracking link by email. You can also check your My Account → My Orders."
+        },
+        "q2": {
+          "question": "How long does delivery take?",
+          "answer": "Delivery times vary by location, but most orders are processed within 24-48 hours and delivered in 3–5 working days."
+        },
+        "q3": {
+          "question": "Can I cancel my order?",
+          "answer": "Yes, if your order hasn't shipped yet, you can cancel it directly from My Orders. If it has already been sent, kindly use either our return process; we'll return it back if you want a refund before it's even delivered."
+        }
+      },
+      "returnsRefunds": {
+        "title": "3. Returns & Refunds",
+        "q1": {
+          "question": "What if I receive a damaged or defective product?",
+          "answer": "If a product arrives faulty (e.g., broken pump, leakage), you can request a refund or exchange from the Support & Refunds tab in your account."
+        },
+        "q2": {
+          "question": "How long does a refund take?",
+          "answer": "Refunds are usually processed within 7–10 business days after we receive the returned product."
+        }
+      },
+      "loyaltyProgram": {
+        "title": "4. Loyalty Program",
+        "q1": {
+          "question": "How does the Biogance Loyalty Program work?",
+          "answer": "For every €10 spent, you earn 1 point. Each point equals €1, which you can convert into discount vouchers. You also earn bonus points on your birthday, newsletter signup, or surveys."
+        },
+        "q2": {
+          "question": "Can I transfer my loyalty points?",
+          "answer": "No, points are limited to the account and cannot be transferred or shared."
+        }
+      },
+      "accountSettings": {
+        "title": "5. My Account & Settings",
+        "q1": {
+          "question": "Can I update my password anywhere?",
+          "answer": "Yes. In Settings → Update Password, you can change it anytime. For security, updating your password will log you out of all devices."
+        },
+        "q2": {
+          "question": "How many pets can I add to my account?",
+          "answer": "You can add up to 5 pets. This helps us recommend tailored products."
+        },
+        "q3": {
+          "question": "What happens if I delete my account?",
+          "answer": "When you request account deletion, we'll ask you for a reason (feedback helps us improve). After confirmation, your account and data will be permanently removed."
+        }
+      },
+      "supportRefunds": {
+        "title": "6. Support & Refunds",
+        "q1": {
+          "question": "How can I contact support?",
+          "answer": "You can submit tickets directly in My Account → Support & Refunds. You'll see all active and closed tickets with chat history."
+        },
+        "q2": {
+          "question": "What issues can I raise a ticket for?",
+          "answer": "Common reasons include:",
+          "list": {
+            "item1": "Order Refund",
+            "item2": "Product Query",
+            "item3": "Shipping Delay",
+            "item4": "Quality Issue"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import container from "../../../../../public/DeleteIllustration.svg"
 import Image from 'next/image';
 
 
 export default function ConfirmDeletionModal({ onClose }) {
+    const { t } = useTranslation("myaccount");
     const [password, setPassword] = useState('Joh@1234');
     const [showPassword, setShowPassword] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
@@ -33,19 +35,19 @@ export default function ConfirmDeletionModal({ onClose }) {
 
                     {/* Message */}
                     <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">
-                        Your account has been deleted
+                        {t('confirmDeletion.deleted.title')}
                     </h2>
                     <p className="text-gray-600 text-center mb-8 text-sm px-4">
-                        We're sorry to see you go. Thank you for being part of the Biogance community.
+                        {t('confirmDeletion.deleted.message')}
                     </p>
 
                     {/* Buttons */}
                     <div className="space-y-3">
                         <button className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer">
-                            Rejoin Biogance
+                            {t('confirmDeletion.deleted.rejoinButton')}
                         </button>
                         <button className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
-                            Browse as Guest
+                            {t('confirmDeletion.deleted.browseGuestButton')}
                         </button>
                     </div>
                 </div>
@@ -59,16 +61,16 @@ export default function ConfirmDeletionModal({ onClose }) {
 
                 {/* Header */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">
-                    Confirm Account Deletion
+                    {t('confirmDeletion.title')}
                 </h2>
                 <p className="text-gray-600 text-center mb-6 text-sm">
-                    To protect your account, please enter your password to confirm.
+                    {t('confirmDeletion.subtitle')}
                 </p>
 
                 {/* Password Input */}
                 <div className="mb-6">
                     <label className="block text-gray-800 font-medium mb-2 text-sm">
-                        Current Password
+                        {t('confirmDeletion.currentPassword')}
                     </label>
                     <div className="relative">
                         <input
@@ -76,7 +78,7 @@ export default function ConfirmDeletionModal({ onClose }) {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
-                            placeholder="Enter password"
+                            placeholder={t('confirmDeletion.passwordPlaceholder')}
                         />
                         <button
                             type="button"
@@ -98,13 +100,13 @@ export default function ConfirmDeletionModal({ onClose }) {
                         onClick={handleConfirmDelete}
                         className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer"
                     >
-                        Confirm Delete My Account
+                        {t('confirmDeletion.confirmButton')}
                     </button>
                     <button 
                         onClick={onClose}
                         className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                        No, Go Back
+                        {t('confirmDeletion.goBackButton')}
                     </button>
                 </div>
             </div>

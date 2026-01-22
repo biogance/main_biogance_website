@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "../../../../redux/features/authSlice";
@@ -10,6 +11,7 @@ export default function LogoutModal({
   onClose,
 })
 {
+  const { t } = useTranslation("myaccount");
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -56,15 +58,15 @@ export default function LogoutModal({
       >
         <div className="px-6 pt-8 pb-7 text-center">
           <h2 className="text-2xl font-semibold text-black mb-4">
-            Account Logout
+            {t('logoutModal.title')}
           </h2>
 
           <p className="text-black text-md font-medium mb-8 leading-relaxed">
-            Are you sure you want to Logout from this Account?
+            {t('logoutModal.message')}
            
             <br />
             <span className="text-gray-500 font-medium">
-              This action cannot be undone.
+              {t('logoutModal.warning')}
             </span>
           </p>
 
@@ -83,7 +85,7 @@ export default function LogoutModal({
                 active:scale-[0.98] shadow-sm
               `}
             >
-              Yes, Logout
+              {t('logoutModal.confirmButton')}
             </button>
              <button
               type="button"
@@ -96,7 +98,7 @@ export default function LogoutModal({
                 active:scale-[0.98]
               `}
             >
-              No, Go Back
+              {t('logoutModal.cancelButton')}
             </button>
           </div>
         </div>

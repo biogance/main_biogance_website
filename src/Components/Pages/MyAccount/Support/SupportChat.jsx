@@ -1,8 +1,7 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import { IoChevronBack, IoSend } from 'react-icons/io5';
-import { FiPlus } from 'react-icons/fi';
-import { BsBag } from 'react-icons/bs';
+import React, { useState, useEffect, useRef } from 'react';
+import { IoSend } from 'react-icons/io5';
+import { FiPlus, FiX } from 'react-icons/fi';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +9,9 @@ export default function SupportChat({ ticket, onClose }) {
   const { t } = useTranslation("myaccount");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const fileInputRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -83,17 +85,48 @@ export default function SupportChat({ ticket, onClose }) {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (previewImage) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [previewImage]);
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSendMessage = () => {
-    if (message.trim()) {
+    if (message.trim() || selectedImage) {
       const newMessage = {
         id: messages.length + 1,
         type: 'customer',
         text: message,
+        image: selectedImage,
         time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
         avatar: true
       };
       setMessages([...messages, newMessage]);
       setMessage('');
+      setSelectedImage(null);
     }
   };
 
@@ -184,6 +217,14 @@ export default function SupportChat({ ticket, onClose }) {
                       )}
                       <div className="max-w-xl">
                         <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-4 inline-block border border-gray-300">
+                          {msg.image && (
+                            <img 
+                              src={msg.image} 
+                              alt="Uploaded" 
+                              className="max-w-xs rounded-lg mb-2 cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setPreviewImage(msg.image)}
+                            />
+                          )}
                           <p className="text-sm leading-relaxed text-gray-800">
                             {msg.textKey ? t(msg.textKey) : msg.text}
                           </p>
@@ -199,17 +240,49 @@ export default function SupportChat({ ticket, onClose }) {
           {/* Message Input */}
           <div>
             <div className="max-w-10xl mx-auto flex items-center gap-3 mt-10">
-              <button className="py-3 px-3 bg-gray-100 cursor-pointer border border-gray-300 rounded-lg lex items-center justify-center text-gray-600 hover:text-black transition-colors">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageSelect}
+                accept="image/*"
+                className="hidden"
+              />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="py-3 px-3 bg-gray-100 cursor-pointer border border-gray-300 rounded-lg flex items-center justify-center text-gray-600 hover:text-black transition-colors"
+              >
                 <FiPlus size={24} />
               </button>
               <div className="flex-1 relative">
-                <input
+                {/* Image Thumbnail inside Input */}
+                {selectedImage && (
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                    <div className="relative group">
+                      <img 
+                        src={selectedImage} 
+                        alt="Selected" 
+                        className="w-20 h-20 rounded-lg object-cover border border-gray-300 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(selectedImage)}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(null);
+                        }}
+                        className="absolute top-1 right-1 cursor-pointer bg-white text-black rounded-full p-0.5"
+                      >
+                        <FiX size={12} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+               <input
                   type="text"
                   placeholder={t('support.chat.writeMessage')}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="w-full px-4 text-black py-3 bg-gray-100 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400"
+                  className={`w-full ${selectedImage ? 'pl-25 py-10' : 'pl-4 py-3'} pr-4 text-black bg-gray-100 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all`}
                 />
               </div>
               <button
@@ -221,6 +294,29 @@ export default function SupportChat({ ticket, onClose }) {
             </div>
           </div>
         </>
+      )}
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative">
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
+            >
+              <FiX size={24} />
+            </button>
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-[500px] max-h-[500px] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 // components/LandingBanner.jsx
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
+import { FiX } from 'react-icons/fi';
 
 // Fallback (same rakho)
 const ERROR_IMG_SRC = 'data:image/svg+xml;base64,...'; // tumhara wahi
@@ -45,48 +46,33 @@ const LandingBanner = () => {
               fill
               className="object-cover cursor-pointer hover:scale-110 transition-transform duration-700"
               onClick={() => setSelectedImage(imagePath)}
-              // Yeh important changes
-              priority={index < 3}           // pehle 3 images jaldi load (LCP better)
-              loading={index >= 3 ? 'lazy' : 'eager'} // ya sirf priority use karo
-              // placeholder="blur"         // agar low-res blur chahiye (SVG pe limited kaam karta hai)
-              // unoptimized={true}         // agar SVG optimize nahi karna chahte (default false rakho)
+              priority={index < 3}
+              loading={index >= 3 ? 'lazy' : 'eager'}
             />
           </div>
         ))}
       </div>
 
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 ">
-          <div className="relative max-w-[90vw] max-h-[90vh]">
+      {selectedImage && ( 
+        <div 
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
+            >
+              <FiX size={24} />
+            </button>
             <Image
               src={selectedImage}
               alt="Preview"
-              width={800}          // ya jo bhi max size chahiye
-              height={800}
-              className="max-w-full max-h-[80vh] object-contain"
+              width={500}
+              height={500}
+              className="w-[500px] h-[500px] object-cover rounded-lg"
+              onClick={(e) => e.stopPropagation()}
             />
-           <button
-  onClick={() => setSelectedImage(null)}
-  className="
-    absolute 
-    top-4 right-4              // mobile pe right-4 (safe margin)
-    md:right-12                 // medium screens pe thoda zyada space
-    lg:right-12                // large screens pe aur thoda adjust
-    xl:right-20                // large screens pe aur thoda adjust
-    text-white 
-    text-2xl md:text-2xl       // mobile pe chhota, badi screen pe bada
-    bg-black/50 
-    rounded-full 
-    w-10 h-10 md:w-12 md:h-12  // size bhi responsive
-    flex items-center justify-center 
-    cursor-pointer 
-    hover:bg-black/50          // optional: hover effect
-    transition-colors duration-200
-    z-50                       // ensure button content ke upar rahe
-  "
->
-  ×
-</button>
           </div>
         </div>
       )}
