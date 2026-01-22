@@ -15,5 +15,86 @@
       "cancel": "Cancel",
       "submit": "Submit"
     }
+  },
+  "login": {
+    "title": "Welcome Back to Biogance",
+    "description": "Log in to access your account, track your orders, and enjoy exclusive rewards from our loyalty program.",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "eg: john_doe@gmail.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Remember Me",
+      "forgotPassword": "Forgot password?"
+    },
+    "buttons": {
+      "login": "Login",
+      "signup": "Signup"
+    },
+    "divider": "OR LOGIN WITH",
+    "footer": "Don't have account",
+    "errors": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "That doesn't look like a valid email.",
+      "passwordRequired": "Please enter your password.",
+      "passwordMinLength": "Password must be at least 8 characters."
+    }
+  },
+  "signup": {
+    "title": "Create Your Biogance Account",
+    "description": "Discover products crafted for your pet's health and well-being. Earn loyalty points with every purchase and enjoy member-only benefits.",
+    "form": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "john_doe@gmail.com",
+      "phoneNumber": "Phone Number",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Password must be at least 8 characters and include a number & special character."
+    },
+    "buttons": {
+      "createAccount": "Create My Account",
+      "login": "Login"
+    },
+    "terms": "By signing up, you agree to our",
+    "termsLink": "Terms & Conditions",
+    "and": "and",
+    "privacyLink": "Privacy Policy",
+    "divider": "OR LOGIN WITH",
+    "footer": "Already have an account?",
+    "errors": {
+      "fullNameRequired": "Please enter your full name.",
+      "fullNameMinLength": "Name must be at least 2 characters.",
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "That doesn't look like a valid email.",
+      "phoneRequired": "Please enter your phone number.",
+      "passwordRequired": "Please enter a password.",
+      "passwordMinLength": "Password must be at least 8 characters.",
+      "passwordNumber": "Password must include at least 1 number.",
+      "passwordSpecial": "Password must include at least 1 special character."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot your Password?",
+    "description": "Enter your registered email address and we'll send you a link to create a new password.",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "eg: john_doe@gmail.com"
+    },
+    "buttons": {
+      "sendResetLink": "Send Reset Link"
+    },
+    "errors": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "That doesn't look like a valid email."
+    }
+  },
+  "confirmation": {
+    "title": "Password Reset Email Sent",
+    "description": "We've sent a 6-digit verification code to your email. Please enter the code below to verify your identity and reset your password.",
+    "footerText": "Didn't receive the code?",
+    "resendText": "Check your spam folder or",
+    "resendButton": "Resend OTP"
   }
 }

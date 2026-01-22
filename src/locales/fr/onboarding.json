@@ -15,5 +15,86 @@
       "cancel": "Annuler",
       "submit": "Envoyer"
     }
+  },
+  "login": {
+    "title": "Bienvenue chez Biogance",
+    "description": "Connectez-vous pour accéder à votre compte, suivre vos commandes et profiter de récompenses exclusives de notre programme de fidélité.",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "ex : jean_dupont@gmail.com",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?"
+    },
+    "buttons": {
+      "login": "Se connecter",
+      "signup": "S'inscrire"
+    },
+    "divider": "OU SE CONNECTER AVEC",
+    "footer": "Vous n'avez pas de compte",
+    "errors": {
+      "emailRequired": "Veuillez saisir votre email.",
+      "emailInvalid": "Cela ne ressemble pas à un email valide.",
+      "passwordRequired": "Veuillez saisir votre mot de passe.",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères."
+    }
+  },
+  "signup": {
+    "title": "Créez votre compte Biogance",
+    "description": "Découvrez des produits conçus pour la santé et le bien-être de votre animal de compagnie. Gagnez des points de fidélité à chaque achat et profitez d'avantages réservés aux membres.",
+    "form": {
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Jean Dupont",
+      "email": "Email",
+      "emailPlaceholder": "jean_dupont@gmail.com",
+      "phoneNumber": "Numéro de téléphone",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Le mot de passe doit contenir au moins 8 caractères et inclure un chiffre et un caractère spécial."
+    },
+    "buttons": {
+      "createAccount": "Créer mon compte",
+      "login": "Se connecter"
+    },
+    "terms": "En vous inscrivant, vous acceptez nos",
+    "termsLink": "Conditions générales",
+    "and": "et",
+    "privacyLink": "Politique de confidentialité",
+    "divider": "OU SE CONNECTER AVEC",
+    "footer": "Vous avez déjà un compte ?",
+    "errors": {
+      "fullNameRequired": "Veuillez saisir votre nom complet.",
+      "fullNameMinLength": "Le nom doit contenir au moins 2 caractères.",
+      "emailRequired": "Veuillez saisir votre email.",
+      "emailInvalid": "Cela ne ressemble pas à un email valide.",
+      "phoneRequired": "Veuillez saisir votre numéro de téléphone.",
+      "passwordRequired": "Veuillez saisir un mot de passe.",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères.",
+      "passwordNumber": "Le mot de passe doit inclure au moins 1 chiffre.",
+      "passwordSpecial": "Le mot de passe doit inclure au moins 1 caractère spécial."
+    }
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié ?",
+    "description": "Saisissez votre adresse email enregistrée et nous vous enverrons un lien pour créer un nouveau mot de passe.",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "ex : jean_dupont@gmail.com"
+    },
+    "buttons": {
+      "sendResetLink": "Envoyer le lien de réinitialisation"
+    },
+    "errors": {
+      "emailRequired": "Veuillez saisir votre email.",
+      "emailInvalid": "Cela ne ressemble pas à un email valide."
+    }
+  },
+  "confirmation": {
+    "title": "Email de réinitialisation du mot de passe envoyé",
+    "description": "Nous avons envoyé un code de vérification à 6 chiffres à votre email. Veuillez saisir le code ci-dessous pour vérifier votre identité et réinitialiser votre mot de passe.",
+    "footerText": "Vous n'avez pas reçu le code ?",
+    "resendText": "Vérifiez votre dossier spam ou",
+    "resendButton": "Renvoyer OTP"
   }
 }

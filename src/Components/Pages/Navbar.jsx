@@ -144,7 +144,7 @@ export default function Navbar() {
                 
                 {/* Language Dropdown Menu */}
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px] cursor-pointer">
+                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden   min-w-[140px] cursor-pointer">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
@@ -194,7 +194,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden bg-white border-t border-gray-200 overflow-hidden transition-all duration-500 ease-in-out ${
+          className={`lg:hidden bg-white border-t border-gray-200  transition-all duration-500 ease-in-out ${
             isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
@@ -259,13 +259,13 @@ export default function Navbar() {
                 </button>
                 
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-0 bg-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
+                  <div className="absolute top-full mt-2 left-0 bg-white text-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors cursor-pointer ${
-                          i18n.language === lang.code ? 'bg-gray-800' : ''
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-black hover:bg-black transition-colors cursor-pointer ${
+                          i18n.language === lang.code 
                         }`}
                       >
                         <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />

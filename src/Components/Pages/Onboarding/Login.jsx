@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import SignupModal from './SignUp';
 import Forgotpassword from './ForgetPassword';
 
 export default function LoginModal({ isOpen, onClose }) {
+  const { t } = useTranslation('onboarding');
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -26,21 +28,21 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const validateEmail = (email) => {
     if (!email.trim()) {
-      return 'Please enter your email.';
+      return t('login.errors.emailRequired');
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return "That doesn't look like a valid email.";
+      return t('login.errors.emailInvalid');
     }
     return '';
   };
 
   const validatePassword = (password) => {
     if (!password) {
-      return 'Please enter your password.';
+      return t('login.errors.passwordRequired');
     }
     if (password.length < 8) {
-      return 'Password must be at least 8 characters.';
+      return t('login.errors.passwordMinLength');
     }
     return '';
   };
@@ -154,9 +156,9 @@ export default function LoginModal({ isOpen, onClose }) {
 
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl mb-2 font-semibold text-black">Welcome Back to Biogance</h1>
+            <h1 className="text-2xl mb-2 font-semibold text-black">{t('login.title')}</h1>
             <p className="text-black text-sm leading-relaxed">
-              Log in to access your account, track your orders, and enjoy exclusive rewards from our loyalty program.
+              {t('login.description')}
             </p>
           </div>
 
@@ -170,7 +172,7 @@ export default function LoginModal({ isOpen, onClose }) {
               <input
                 id="email"
                 type="email"
-                placeholder="eg: john_doe@gmail.com"
+                placeholder=" {t('login.emailPlaceholder')}"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
                 onBlur={() => handleBlur('email')}
@@ -188,7 +190,7 @@ export default function LoginModal({ isOpen, onClose }) {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm mb-2 font-semibold text-black">
-                Password
+                {t('login.form.password')}
               </label>
               <div className="relative">
                 <input
@@ -230,14 +232,14 @@ export default function LoginModal({ isOpen, onClose }) {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 border border-gray-300 rounded cursor-pointer accent-black"
                 />
-                <span className="text-sm text-gray-700">Remember Me</span>
+                <span className="text-sm text-gray-700">{t('login.form.rememberMe')}</span>
               </label>
               <button
                 type="button"
                 onClick={handleForgotPasswordClick}
                 className="text-sm text-black hover:underline cursor-pointer"
               >
-                Forgot password?
+                {t('login.form.forgotPassword')}
               </button>
             </div>
 
@@ -246,7 +248,7 @@ export default function LoginModal({ isOpen, onClose }) {
               type="submit"
               className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6 cursor-pointer"
             >
-              Login
+              {t('login.buttons.login')}
             </button>
           </form>
 
@@ -256,7 +258,7 @@ export default function LoginModal({ isOpen, onClose }) {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-4 bg-white text-black text-sm">OR LOGIN WITH</span>
+              <span className="px-4 bg-white text-black text-sm">{t('login.divider')}</span>
             </div>
           </div>
 
@@ -297,13 +299,13 @@ export default function LoginModal({ isOpen, onClose }) {
 
           {/* Footer */}
           <p className="text-center text-sm text-black">
-            Don't have account{' '}
+             {t('login.footer')}{' '}
             <button
               type="button"
               onClick={handleSignupClick}
               className="text-black font-semibold underline cursor-pointer"
             >
-              Signup
+              {t('login.buttons.signup')}
             </button>
           </p>
         </div>

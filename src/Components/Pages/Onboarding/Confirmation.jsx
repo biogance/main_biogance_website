@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { LuBadgeCheck } from 'react-icons/lu';
+import { useTranslation } from 'react-i18next';
 
 export default function PasswordResetModal() {
+  const { t } = useTranslation('onboarding');
+
   const handleResendOTP = () => {
     console.log('Resend OTP clicked');
   };
@@ -32,12 +35,12 @@ export default function PasswordResetModal() {
 
         {/* Title */}
         <h1 className="text-xl font-semibold text-center mb-4 text-black">
-          Password Reset Email Sent
+          {t('confirmation.title')}
         </h1>
 
         {/* Description */}
         <p className="text-gray-700 text-center text-sm leading-relaxed mb-6">
-          We've sent a 6-digit verification code to your email. Please enter the code below to verify your identity and reset your password.
+          {t('confirmation.description')}
         </p>
 
         {/* Divider */}
@@ -46,16 +49,16 @@ export default function PasswordResetModal() {
         {/* Footer Text */}
         <div className="text-center">
           <p className="text-gray-700 text-sm mb-1">
-            Didn't receive the code?
+            {t('confirmation.footerText')}
           </p>
           <p className="text-gray-700 text-sm">
-            Check your spam folder or{' '}
+            {t('confirmation.resendText')}{' '}
             <button
               type="button"
               onClick={handleResendOTP}
               className="text-black font-semibold underline hover:text-gray-700 transition-colors cursor-pointer"
             >
-              Resend OTP
+              {t('confirmation.resendButton')}
             </button>
             .
           </p>

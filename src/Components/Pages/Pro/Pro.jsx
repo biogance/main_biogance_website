@@ -64,7 +64,7 @@ export function Pro() {
                 transition-all duration-300 ease-in-out
                 text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
                 ${activeTab === 'distributor'
-                                    ? 'bg-white text-gray-900 shadow-lg shadow-gray-200/50'
+                                    ? 'bg-black text-white shadow-lg shadow-gray-200/50'
                                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                                 }
             `}
@@ -79,7 +79,7 @@ export function Pro() {
                 transition-all duration-300 ease-in-out
                 text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
                 ${activeTab === 'partner'
-                                    ? 'bg-white text-gray-900 shadow-lg shadow-gray-200/50'
+                                    ? 'bg-black text-white shadow-lg shadow-gray-200/50'
                                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                                 }
             `}

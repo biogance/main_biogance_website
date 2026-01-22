@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import VerificationCodeModal from './OtpSecren';
+import { useTranslation } from 'react-i18next';
 
 export default function Forgotpassword({ isOpen, onClose }) {
+  const { t } = useTranslation('onboarding');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [touched, setTouched] = useState(false);
@@ -92,9 +94,9 @@ export default function Forgotpassword({ isOpen, onClose }) {
 
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl mb-3 font-semibold text-black">Forgot your Password?</h1>
+          <h1 className="text-2xl mb-3 font-semibold text-black">{t('forgotPassword.title')}</h1>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Enter your registered email address and we'll send you a link to create a new password.
+            {t('forgotPassword.description')}
           </p>
         </div>
 
@@ -108,7 +110,7 @@ export default function Forgotpassword({ isOpen, onClose }) {
             <input
               id="email"
               type="email"
-              placeholder="eg: john_doe@gmail.com"
+              placeholder= {t('forgotPassword.form.emailPlaceholder')}
               value={email}
               onChange={(e) => handleChange(e.target.value)}
               onBlur={handleBlur}
@@ -119,7 +121,7 @@ export default function Forgotpassword({ isOpen, onClose }) {
               }`}
             />
             {touched && error && (
-              <p className="text-red-500 text-xs mt-1">{error}</p>
+              <p className="text-red-500 text-xs mt-1">{t('forgotPassword.errors.emailRequired')}</p>
             )}
           </div>
 
@@ -128,7 +130,7 @@ export default function Forgotpassword({ isOpen, onClose }) {
             type="submit"           // ← Changed to submit → Enter key now works
             className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
           >
-            Send Reset Link
+            {t('forgotPassword.buttons.sendResetLink')}
           </button>
         </form>
       </div>

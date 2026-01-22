@@ -17,6 +17,9 @@ import ourloyaltyEN from "../src/locales/en/ourloyalty.json";
 import onboardingEN from "../src/locales/en/onboarding.json";
 import sidebarEN from "../src/locales/en/sidebar.json";
 import myaccountEN from "../src/locales/en/myaccount.json";
+import termsconditionEN from "../src/locales/en/termscondition.json";
+import faqEN from "../src/locales/en/faq.json";
+
 
 
 
@@ -38,6 +41,9 @@ import ourloyaltyFR from "../src/locales/fr/ourloyalty.json";
 import onboardingFR from "../src/locales/fr/onboarding.json";
 import sidebarFR from "../src/locales/fr/sidebar.json";
 import myaccountFR from "../src/locales/fr/myaccount.json";
+import termsconditionFR from "../src/locales/fr/termscondition.json";
+import faqFR from "../src/locales/fr/faq.json";
+
 
 i18n
     .use(LanguageDetector) // Ye add karein
@@ -60,6 +66,8 @@ i18n
                 onboarding: onboardingEN,
                  sidebar: sidebarEN,
                 myaccount: myaccountEN,
+                termscondition: termsconditionEN,
+                faq: faqEN,
             },
             fr: {
                 common: commonFR,
@@ -77,6 +85,8 @@ i18n
                 onboarding: onboardingFR,
                 sidebar: sidebarFR,
                 myaccount: myaccountFR,
+                termscondition: termsconditionFR,
+                faq: faqFR,
             },
         },
         fallbackLng: "en",

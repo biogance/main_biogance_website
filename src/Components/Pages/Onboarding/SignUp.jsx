@@ -6,8 +6,10 @@ import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
+import { useTranslation } from 'react-i18next';
 
 export default function SignupModal({ isOpen, onClose }) {
+  const { t } = useTranslation('onboarding');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -228,9 +230,9 @@ export default function SignupModal({ isOpen, onClose }) {
 
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl mb-2 text-black font-semibold">Create Your Biogance Account</h1>
+            <h1 className="text-2xl mb-2 text-black font-semibold">{t('signup.title')}</h1>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Discover products crafted for your pet's health and well-being. Earn loyalty points with every purchase and enjoy member-only benefits.
+              {t('signup.description')}
             </p>
           </div>
 
@@ -240,12 +242,12 @@ export default function SignupModal({ isOpen, onClose }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="fullName" className="block text-sm mb-2 text-black font-semibold">
-                  Full Name
+                  {t('contactUs.form.fullName')}
                 </label>
                 <input
                   id="fullName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t('contactUs.form.fullNamePlaceholder')}
                   value={formData.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   onBlur={() => handleBlur('fullName')}
@@ -266,7 +268,7 @@ export default function SignupModal({ isOpen, onClose }) {
                 <input
                   id="email"
                   type="email"
-                  placeholder="john_doe@gmail.com"
+                  placeholder={t('contactUs.form.emailPlaceholder')}
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   onBlur={() => handleBlur('email')}
@@ -285,7 +287,7 @@ export default function SignupModal({ isOpen, onClose }) {
             {/* Phone Number */}
             <div>
               <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-semibold">
-                Phone Number
+                {t('signup.form.phoneNumber')}
               </label>
               <div className={touched.phoneNumber && errors.phoneNumber ? 'error-border' : ''}>
                 <PhoneInput
@@ -304,13 +306,13 @@ export default function SignupModal({ isOpen, onClose }) {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
-                Password
+                {t('signup.form.password')}
               </label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder={t('signup.form.passwordPlaceholder')}
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   onBlur={() => handleBlur('password')}
@@ -337,7 +339,7 @@ export default function SignupModal({ isOpen, onClose }) {
               )}
               {!errors.password && (
                 <p className="text-gray-600 text-xs mt-1">
-                  Password must be at least 8 characters and include a number & special character.
+                  {t('signup.form.passwordHint')}
                 </p>
               )}
             </div>
@@ -348,18 +350,18 @@ export default function SignupModal({ isOpen, onClose }) {
               onClick={onClose}
               className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-1 font-medium cursor-pointer"
             >
-              Create My Account
+              {t('signup.buttons.createAccount')}
             </button>
 
             {/* Terms */}
             <p className="text-center text-xs text-gray-600 mt-4">
-              By signing up, you agree to our{' '}
+              {t('signup.terms')}{' '}
               <Link href="/termsCondition?section=terms" className="text-black underline">
-                Terms & Conditions
+                {t('signup.termsLink')}
               </Link>{' '}
-              and{' '}
+              {t('signup.and')}{' '}
               <Link href="/termsCondition?section=privacy" className="text-black underline">
-                Privacy Policy
+                {t('signup.privacyLink')}
               </Link>
             </p>
           </div>
@@ -370,7 +372,7 @@ export default function SignupModal({ isOpen, onClose }) {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-4 bg-white text-black text-sm">OR LOGIN WITH</span>
+              <span className="px-4 bg-white text-black text-sm">{t('signup.divider')}</span>
             </div>
           </div>
 
@@ -411,9 +413,9 @@ export default function SignupModal({ isOpen, onClose }) {
 
           {/* Footer */}
           <p className="text-center text-sm text-gray-600">
-            Already have an account?{' '}
+            {t('signup.footer')}{' '}
             <span className="text-black underline font-medium cursor-pointer" onClick={onClose}>
-              Login
+              {t('signup.buttons.login')}
             </span>
           </p>
         </div>

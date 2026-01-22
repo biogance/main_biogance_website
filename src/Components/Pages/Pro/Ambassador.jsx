@@ -801,7 +801,7 @@ export default function BioganceAmbassadorForm() {
                                                 {animalForms.map((animal, index) => (
                                                     <div key={animal.id} className="border-t border-gray-300 pt-7 pb-4">
                                                         <h3 className="text-sm font-semibold text-gray-900 mb-5">
-                                                            {t('ambassador.contentCreator.animalNumber')} {index + 1} {index > 0 && t('ambassador.contentCreator.optional')}
+                                                            {t('ambassador.contentCreator.animalNumber')}  {index + 1} {index > 0 && t('ambassador.contentCreator.optional')}
                                                         </h3>
 
                                                         {/* Species */}
@@ -834,7 +834,7 @@ export default function BioganceAmbassadorForm() {
                                                                     value={animal.otherSpecies}
                                                                     onChange={(e) => handleAnimalChange(animal.id, 'otherSpecies', e.target.value)}
                                                                     placeholder={t('ambassador.contentCreator.pleaseSpecifySpecies')}
-                                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black text-black"
                                                                 />
                                                             </div>
                                                         )}
