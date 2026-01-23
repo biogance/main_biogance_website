@@ -96,5 +96,34 @@
     "footerText": "Vous n'avez pas reçu le code ?",
     "resendText": "Vérifiez votre dossier spam ou",
     "resendButton": "Renvoyer OTP"
+  },
+  "verificationCode": {
+    "title": "Entrez le code de vérification",
+    "description": "Veuillez entrer le code OTP à 6 chiffres que nous avons envoyé à votre adresse e-mail enregistrée pour continuer.",
+    "expiryNote": "Ce code expirera dans 10 minutes pour votre sécurité.",
+    "didntGetIt": "Vous ne l'avez pas reçu?",
+    "resendOTP": "Renvoyer l'OTP",
+    "submitButton": "Créer un nouveau mot de passe",
+    "errors": {
+      "incomplete": "Veuillez entrer le code complet à 6 chiffres.",
+      "incorrect": "Le code que vous avez entré est incorrect. Veuillez réessayer.",
+      "expired": "Votre code de vérification a expiré. Veuillez en demander un nouveau."
+    }
+},
+ "newPassword": {
+    "title": "Créer un nouveau mot de passe",
+    "description": "Entrez votre nouveau mot de passe ci-dessous pour mettre à jour votre compte en toute sécurité. Assurez-vous qu'il répond aux exigences de sécurité.",
+    "passwordLabel": "Mot de passe",
+    "confirmPasswordLabel": "Confirmer le mot de passe",
+    "passwordPlaceholder": "ex: ••••••••",
+    "confirmPasswordPlaceholder": "ex: Abc1234",
+    "requirements": "Le mot de passe doit contenir au moins 8 caractères, inclure 1 chiffre, 1 caractère spécial et ne pas répéter les anciens mots de passe.",
+    "submitButton": "Enregistrer le mot de passe",
+    "errors": {
+      "passwordRequired": "Veuillez entrer un mot de passe.",
+      "passwordInvalid": "Le mot de passe doit contenir au moins 8 caractères avec un chiffre et un caractère spécial.",
+      "confirmRequired": "Veuillez confirmer votre mot de passe.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    }
   }
 }

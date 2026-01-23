@@ -14,7 +14,7 @@ const WhoWe = () => {
       </div>
 
       {/* Main content with viewport height */}
-      <main className="relative bg-white">
+      <main className="sticky top-0 h-screen -z-10">
         <div className="relative w-full min-h-screen flex items-center justify-center">
           {/* Background Video */}
           <div className="absolute inset-0 overflow-hidden">

@@ -172,7 +172,7 @@ export default function LoginModal({ isOpen, onClose }) {
               <input
                 id="email"
                 type="email"
-                placeholder=" {t('login.emailPlaceholder')}"
+                placeholder={t('login.form.emailPlaceholder')}
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
                 onBlur={() => handleBlur('email')}

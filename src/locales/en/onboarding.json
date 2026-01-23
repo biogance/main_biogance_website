@@ -96,5 +96,34 @@
     "footerText": "Didn't receive the code?",
     "resendText": "Check your spam folder or",
     "resendButton": "Resend OTP"
+  },
+  "verificationCode": {
+    "title": "Enter Verification Code",
+    "description": "Please enter the 6-digit OTP we sent to your registered email address to continue.",
+    "expiryNote": "This code will expire in 10 minutes for your security.",
+    "didntGetIt": "Didn't get it?",
+    "resendOTP": "Resend OTP",
+    "submitButton": "Create New Password",
+    "errors": {
+      "incomplete": "Please enter the complete 6-digit code.",
+      "incorrect": "The code you entered is incorrect. Please try again.",
+      "expired": "Your verification code has expired. Please request a new one."
+    }
+},
+ "newPassword": {
+    "title": "Create a New Password",
+    "description": "Enter your new password below to securely update your account. Make sure it meets the security requirements.",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "passwordPlaceholder": "eg: ••••••••",
+    "confirmPasswordPlaceholder": "eg: Abc1234",
+    "requirements": "Password must be at least 8 characters, include 1 number, 1 special character, and not repeat old passwords.",
+    "submitButton": "Save Password",
+    "errors": {
+      "passwordRequired": "Please enter a password.",
+      "passwordInvalid": "Password must be at least 8 characters with a number and special character.",
+      "confirmRequired": "Please confirm your password.",
+      "passwordMismatch": "Passwords do not match."
+    }
   }
 }

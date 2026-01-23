@@ -63,7 +63,7 @@ const LandingBanner = () => {
               onClick={() => setSelectedImage(null)}
               className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
             >
-              <FiX size={24} />
+              <FiX size={20} />
             </button>
             <Image
               src={selectedImage}

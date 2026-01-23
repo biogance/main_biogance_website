@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { AiOutlineClose, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import { useTranslation } from 'react-i18next';
 
 export default function CreateNewPasswordModal({ isOpen, onClose }) {
+  const { t } = useTranslation('onboarding');
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
@@ -21,26 +23,20 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
 
   const validatePassword = (password) => {
     if (!password) {
-      return 'Please enter a password.';
+      return t('newPassword.errors.passwordRequired');
     }
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters with a number and special character.';
-    }
-    if (!/\d/.test(password)) {
-      return 'Password must be at least 8 characters with a number and special character.';
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return 'Password must be at least 8 characters with a number and special character.';
+    if (password.length < 8 || !/\d/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return t('newPassword.errors.passwordInvalid');
     }
     return '';
   };
 
   const validateConfirmPassword = (confirmPassword, password) => {
     if (!confirmPassword) {
-      return 'Please confirm your password.';
+      return t('newPassword.errors.confirmRequired');
     }
     if (confirmPassword !== password) {
-      return 'Passwords do not match.';
+      return t('newPassword.errors.passwordMismatch');
     }
     return '';
   };
@@ -64,7 +60,6 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
       let error = '';
       if (field === 'password') {
         error = validatePassword(value);
-        // Also revalidate confirm password if it was already touched
         if (touched.confirmPassword) {
           const confirmError = validateConfirmPassword(formData.confirmPassword, value);
           setErrors({ ...errors, password: error, confirmPassword: confirmError });
@@ -100,7 +95,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
-    e.preventDefault();           // ← Prevents page refresh
+    e.preventDefault();
 
     const newErrors = {
       password: validatePassword(formData.password),
@@ -117,11 +112,6 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
     
     if (!hasErrors) {
       console.log('Save Password clicked:', formData);
-      // Here you would normally call your API to update the password
-      // e.g. await resetPasswordApi(formData.password);
-      
-      // Optionally close modal or show success message
-      // onClose();
     }
   };
 
@@ -132,37 +122,32 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-80">
       <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 overflow-y-auto">
-        {/* Close Button */}
         <button
-            type="button"
-            onClick={handleClose}
-            className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <AiOutlineClose size={20}/>
-          </button>
+          type="button"
+          onClick={handleClose}
+          className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+        >
+          <AiOutlineClose size={20}/>
+        </button>
 
-        {/* Title */}
         <h1 className="text-xl font-semibold text-center mb-4 text-black">
-          Create a New Password
+          {t('newPassword.title')}
         </h1>
 
-        {/* Description */}
         <p className="text-gray-700 text-center text-sm leading-relaxed mb-6">
-          Enter your new password below to securely update your account. Make sure it meets the security requirements.
+          {t('newPassword.description')}
         </p>
 
-        {/* ─── FORM ─── */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
-              Password
+              {t('newPassword.passwordLabel')}
             </label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="eg: ••••••••"
+                placeholder={t('newPassword.passwordPlaceholder')}
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
                 onBlur={() => handleBlur('password')}
@@ -189,16 +174,15 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm mb-2 text-black font-semibold">
-              Confirm Password
+              {t('newPassword.confirmPasswordLabel')}
             </label>
             <div className="relative">
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="eg: Abc1234"
+                placeholder={t('newPassword.confirmPasswordPlaceholder')}
                 value={formData.confirmPassword}
                 onChange={(e) => handleChange('confirmPassword', e.target.value)}
                 onBlur={() => handleBlur('confirmPassword')}
@@ -225,17 +209,15 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* Password Requirements */}
           <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
-            Password must be at least 8 characters, include 1 number, 1 special character, and not repeat old passwords.
+            {t('newPassword.requirements')}
           </p>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer"
           >
-            Save Password
+            {t('newPassword.submitButton')}
           </button>
         </form>
       </div>
