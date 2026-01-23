@@ -149,7 +149,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.dogs.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300">
                   {dogsItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -159,7 +159,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.cats.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300">
                   {catsItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -169,7 +169,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.horses.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300">
                   {horsesItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -185,7 +185,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.smallMammals.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300">
                   {smallMammalsItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -195,7 +195,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.birdsPoultry.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300">
                   {birdsPoultryItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -205,7 +205,7 @@ export default function Footer() {
                 <h3 className="font-semibold text-white mb-4 text-md">{t('categories.reptiles.title')}</h3>
                 <ul className="space-y-2.5 text-sm text-gray-300 mb-4">
                   {reptilesItems.map((item, index) => (
-                    <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                    <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                   ))}
                 </ul>
               </div>
@@ -220,7 +220,7 @@ export default function Footer() {
               <h3 className="font-semibold text-white mb-4 text-md">{t('productRanges.title')}</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
                 {productRangesItems.map((item, index) => (
-                  <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                  <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                 ))}
               </ul>
             </div>
@@ -229,13 +229,13 @@ export default function Footer() {
             <div>
               <h3 className="font-semibold text-white mb-4 text-md">{t('laboratory.title')}</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
-                <li><Link href="/who-are-we" className="hover:text-white transition">{laboratoryItems[0]}</Link></li>
-                <li><Link href="/commitments" className="hover:text-white transition">{laboratoryItems[1]}</Link></li>
-                <li><Link href="/certifications" className="hover:text-white transition">{laboratoryItems[2]}</Link></li>
-                <li><a href="#" className="hover:text-white transition">{laboratoryItems[3]}</a></li>
-                <li><Link href="/ingredients" className="hover:text-white transition">{laboratoryItems[4]}</Link></li>
-                <li><Link href="loyalty" className="hover:text-white transition">{laboratoryItems[5]}</Link></li>
-                <li><button onClick={() => setShowModal(true)} className="hover:text-white transition text-left cursor-pointer">{laboratoryItems[6]}</button></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/who-are-we" className="hover:text-white transition">{laboratoryItems[0]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/commitments" className="hover:text-white transition">{laboratoryItems[1]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/certifications" className="hover:text-white transition">{laboratoryItems[2]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{laboratoryItems[3]}</a></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/ingredients" className="hover:text-white transition">{laboratoryItems[4]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="loyalty" className="hover:text-white transition">{laboratoryItems[5]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><button onClick={() => setShowModal(true)} className="hover:text-white transition text-left cursor-pointer">{laboratoryItems[6]}</button></li>
               </ul>
             </div>
 
@@ -244,27 +244,47 @@ export default function Footer() {
               <h3 className="font-semibold text-white mb-4 text-md">{t('professional.title')}</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
                 {professionalItems.map((item, index) => (
-                  <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                  <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{item}</a></li>
                 ))}
               </ul>
             </div>
 
             {/* Ambassador */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">{t('ambassador.title')}</h3>
-              <ul className="space-y-2.5 text-sm text-gray-300">
-                {ambassadorItems.map((item, index) => (
-                  <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
-                ))}
-              </ul>
-            </div>
+           <div>
+  <h3 className="font-semibold text-white mb-4 text-md">
+    {t('ambassador.title')}
+  </h3>
+  
+  <ul className="space-y-2 text-sm text-gray-300">
+    {ambassadorItems.map((item, index) => (
+      <li key={index}>
+        <Link
+          href="/ambassador"
+          className={`
+            group flex items-center text-gray-300 
+            hover:text-white transition-colors duration-200
+          `}
+        >
+          <span 
+            className={`
+              inline-block transition-transform duration-300 
+              group-hover:translate-x-2
+            `}
+          >
+            {item}
+          </span>
+        </Link>
+      </li>
+    ))}
+  </ul>
+</div>
 
             {/* News */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">{t('news.title')}</h3>
-              <ul className="space-y-2.5 text-sm text-gray-300">
+            <div clas>
+              <h3 className="font-semibold text-white mb-4 text-md ">{t('news.title')}</h3>
+              <ul className="space-y-2.5 text-sm text-gray-300 ">
                 {newsItems.map((item, index) => (
-                  <li key={index}><a href="#" className="hover:text-white transition">{item}</a></li>
+                  <li key={index} className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition ">{item}</a></li>
                 ))}
               </ul>
             </div>

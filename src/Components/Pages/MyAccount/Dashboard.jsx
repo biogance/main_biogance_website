@@ -264,7 +264,7 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <div className="font-bold text-black mb-1">#{order.id}</div>
                       <div className="text-sm text-gray-500 mb-2">{t('dashboard.placedOn')} {order.date}</div>
-                      <span
+                     <span
                         className={`inline-block px-3 py-1 text-xs font-medium rounded ${
                           order.statusColor === 'green'
                             ? 'bg-green-50 text-green-700'
@@ -273,7 +273,10 @@ export default function Dashboard() {
                             : 'bg-yellow-50 text-yellow-700'
                         }`}
                       >
-                        {t(`dashboard.status.${order.status.toLowerCase().replace(/\s+/g, '')}`)}
+                        {order.status === "Delivered" && t('dashboard.status.delivered')}
+                        {order.status === "Processing" && t('dashboard.status.processing')}
+                        {order.status === "Awaiting Confirmation" && t('dashboard.status.awaitingConfirmation')}
+                        {order.status === "Shipping" && t('dashboard.status.shipping')}
                       </span>
                     </div>
                     <div className="text-right">

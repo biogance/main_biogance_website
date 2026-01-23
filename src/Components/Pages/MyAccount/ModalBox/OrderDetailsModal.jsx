@@ -83,9 +83,20 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">#{orderData.id}</h3>
                 <p className="text-xs sm:text-sm text-gray-600 mb-3">{t('orderHistory.placedOn')} {orderData.date}</p>
-                <span className="inline-block px-2.5 sm:px-3 py-1 sm:py-1.5 bg-green-100 text-green-600 text-xs sm:text-sm font-medium rounded-full">
-                  {t(`orderHistory.status.${orderData.status.toLowerCase().replace(/\s+/g, '')}`)}
-                </span>
+              <span
+                        className={`inline-block px-3 py-1 text-xs font-medium rounded ${
+                          order.statusColor === 'green'
+                            ? 'bg-green-50 text-green-700'
+                            : order.statusColor === 'orange'
+                            ? 'bg-orange-50 text-orange-700'
+                            : 'bg-yellow-50 text-yellow-700'
+                        }`}
+                      >
+                        {order.status === "Delivered" && t('dashboard.status.delivered')}
+                        {order.status === "Processing" && t('dashboard.status.processing')}
+                        {order.status === "Awaiting Confirmation" && t('dashboard.status.awaitingConfirmation')}
+                        {order.status === "Shipping" && t('dashboard.status.shipping')}
+                      </span>
               </div>
               <div className="text-left sm:text-right">
                 <div className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">${totalPrice.toFixed(2)}</div>

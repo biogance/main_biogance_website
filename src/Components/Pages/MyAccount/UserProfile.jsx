@@ -220,7 +220,7 @@ export default function UserProfile() {
                             <div>
                                 <label className="block text-sm text-gray-700 mb-2 font-medium">{t('userProfile.phoneNumber')}</label>
                                 <PhoneInput
-                                    defaultCountry="gb"
+                                    defaultCountry="fr"
                                     value={formData.phoneNumber}
                                     onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
                                 />

@@ -291,26 +291,26 @@ export default function Address() {
                           onClick={() => setSelectedAddress(address.id)}
                           className="relative w-5 h-5 flex-shrink-0 mt-0.5"
                         >
-                          <div className="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full cursor-pointer border-2 border-gray-400 flex items-center justify-center">
                             {selectedAddress === address.id && (
                               <div className="w-3 h-3 rounded-full bg-gray-900"></div>
                             )}
                           </div>
                         </button>
-                        <h3 className="font-semibold text-gray-900">{address.type}</h3>
+                        <h3 onClick={() => setSelectedAddress(address.id)} className="font-semibold text-gray-900">{address.type}</h3>
                       </div>
 
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(address.id)}
-                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                          className="text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
                           title="Edit"
                         >
                           <TbPencil className="w-5 h-5 text-gray-600" />
                         </button>
                         <button
                           onClick={() => handleDelete(address.id)}
-                          className="text-red-500 hover:text-red-600 transition-colors"
+                          className="text-red-500 cursor-pointer hover:text-red-600 transition-colors"
                           title="Delete"
                         >
                           <RiDeleteBin6Line size={18} />

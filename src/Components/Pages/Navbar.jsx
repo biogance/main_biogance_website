@@ -38,7 +38,7 @@ export default function Navbar() {
   ];
 
   const languages = [
-    { code: 'en', label: 'English', flag: '/UkFlag.svg', shortLabel: 'EN' },
+    { code: 'en', label: 'English', flag: '/UsaFlag.svg', shortLabel: 'EN' },
     { code: 'fr', label: 'Français', flag: '/franceFlag.svg', shortLabel: 'FR' },
   ];
 

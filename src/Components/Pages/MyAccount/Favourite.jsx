@@ -13,9 +13,9 @@ import {
 
 
 const LoadingCard = () => (
-  <div className="w-ful px-4">
+  <div className="w-full">
     <div
-      className="rounded-2xl  border  border-gray-200 p-3 relative mb-3 aspect-[3/4]"
+      className="rounded-2xl border border-gray-200 p-2 sm:p-3 relative mb-3 aspect-[3/4]"
       style={{
         backgroundColor: "#f9fafb",
         background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
@@ -23,23 +23,23 @@ const LoadingCard = () => (
         animation: "shimmer 1.5s infinite",
       }}
     >
-      <div className="absolute top-3 left-3 w-14 h-6 rounded-md bg-gray-300 animate-pulse" />
-      <div className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-gray-300 animate-pulse" />
+      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 w-12 sm:w-14 h-5 sm:h-6 rounded-md bg-gray-300 animate-pulse" />
+      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-7 sm:w-8 h-7 sm:h-8 rounded-xl bg-gray-300 animate-pulse" />
       <div className="flex items-center justify-center h-full">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
       </div>
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1">
+      <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 flex justify-center gap-1">
         {[1, 2, 3].map((idx) => (
-          <div key={idx} className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          <div key={idx} className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-gray-300" />
         ))}
       </div>
     </div>
-    <div className="space-y-2">
-      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
-      <div className="flex items-center justify-between gap-2 mt-3">
-        <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
-        <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse" />
+    <div className="space-y-2 px-1">
+      <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+      <div className="flex items-center justify-between gap-2 mt-2 sm:mt-3">
+        <div className="h-5 sm:h-6 w-14 sm:w-16 bg-gray-200 rounded animate-pulse" />
+        <div className="h-8 sm:h-10 w-20 sm:w-24 bg-gray-200 rounded-lg animate-pulse" />
       </div>
     </div>
   </div>
@@ -67,42 +67,42 @@ const LandingCards = ({ product, showNav = true }) => {
     <div className="w-full h-full flex flex-col">
       <div className="bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 aspect-[3/4] flex flex-col overflow-hidden">
         {product.discount && (
-          <div className="absolute top-3 left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
+          <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md z-10">
             {product.discount}
           </div>
         )}
 
         <button
           onClick={() => setIsLiked(!isLiked)}
-          className="absolute top-3 right-3 w-8 h-8 cursor-pointer bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
+          className="absolute top-2 sm:top-3 right-2 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 cursor-pointer bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
           aria-label={isLiked ? "Unlike" : "Like"}
         >
-          {isLiked ? <FaHeart className="w-4 h-4 text-black" /> : <FaRegHeart className="w-4 h-4 text-gray-700" />}
+          {isLiked ? <FaHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" /> : <FaRegHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />}
         </button>
 
-        <div className="relative flex-1 flex items-center justify-center px-6 py-4">
+        <div className="relative flex-1 flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4">
           {product.images?.length > 1 && (
             <>
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
-                className={`absolute left-3 z-20 w-9 h-9 bg-transparent backdrop-blur flex items-center justify-center  transition-all ${
+                className={`absolute left-2 sm:left-3 z-20 w-7 h-7 sm:w-9 sm:h-9 bg-transparent backdrop-blur flex items-center justify-center transition-all ${
                   currentImageIndex === 0 ? "opacity-40 cursor-not-allowed" : "opacity-90 hover:opacity-100 cursor-pointer"
                 }`}
                 aria-label="Previous image"
               >
-                <IoChevronBack className="w-5 h-5 text-gray-800" />
+                <IoChevronBack className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
               </button>
 
               <button
                 onClick={handleNextImage}
                 disabled={currentImageIndex === product.images.length - 1}
-                className={`absolute right-3 z-20 w-9 h-9 bg-transparent backdrop-blur flex items-center justify-center  transition-all ${
+                className={`absolute right-2 sm:right-3 z-20 w-7 h-7 sm:w-9 sm:h-9 bg-transparent backdrop-blur flex items-center justify-center transition-all ${
                   currentImageIndex === product.images.length - 1 ? "opacity-40 cursor-not-allowed" : "opacity-90 hover:opacity-100 cursor-pointer"
                 }`}
                 aria-label="Next image"
               >
-                <IoChevronForward className="w-5 h-5 text-gray-800" />
+                <IoChevronForward className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
               </button>
             </>
           )}
@@ -116,11 +116,11 @@ const LandingCards = ({ product, showNav = true }) => {
         </div>
 
         {product.images?.length > 1 && (
-          <div className="flex justify-center gap-1.5 pb-2.5">
+          <div className="flex justify-center gap-1 sm:gap-1.5 pb-2 sm:pb-2.5">
             {product.images.map((_, idx) => (
               <div
                 key={idx}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-colors ${
                   idx === currentImageIndex ? "bg-gray-900" : "bg-gray-300"
                 }`}
               />
@@ -130,13 +130,13 @@ const LandingCards = ({ product, showNav = true }) => {
       </div>
 
       <div className="flex-shrink-0 px-1">
-        <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2 min-h-[2.75rem]">
+        <h3 className="text-xs sm:text-sm font-medium text-gray-800 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
           {product.name}
         </h3>
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xl font-bold text-gray-900">€{product.price}</span>
-          <button className="bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
+          <span className="text-lg sm:text-xl font-bold text-gray-900">€{product.price}</span>
+          <button className="bg-black text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap">
             {t('favourite.addToCart')}
           </button>
         </div>
@@ -282,7 +282,13 @@ function PopularProducts({
         >
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-full  min-w-[280px]">
+                <div 
+                  key={i} 
+                  className={`
+                    w-full
+                    ${!isFavourite && !isWishlist ? "flex-shrink-0 w-[240px] sm:w-[280px] md:w-[300px] lg:w-[340px] snap-start" : ""}
+                  `}
+                >
                   <LoadingCard />
                 </div>
               ))
@@ -291,7 +297,7 @@ function PopularProducts({
                   key={product.id}
                   className={`
                     w-full
-                    ${!isFavourite && !isWishlist ? "flex-shrink-0 w-[280px] sm:w-[300px] md:w-[340px] snap-start" : ""}
+                    ${!isFavourite && !isWishlist ? "flex-shrink-0 w-[240px] sm:w-[280px] md:w-[300px] lg:w-[340px] snap-start" : ""}
                   `}
                 >
                   <LandingCards product={product} showNav={false} />
