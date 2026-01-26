@@ -9,7 +9,10 @@ import { useTranslation } from 'react-i18next';
 
 export default function BioganceAmbassadorForm() {
     const { t } = useTranslation('pro');
-    const [selectedTab, setSelectedTab] = useState(t('ambassador.tabs.contentCreator'));
+    const [breedGroups, setBreedGroups] = useState([
+        { id: 1, species: '', mainBreeds: '' }
+    ]);
+    const [selectedTab, setSelectedTab] = useState('contentCreator');
     const [formData, setFormData] = useState({
         // Common Fields (All Tabs)
         firstName: '',
@@ -85,12 +88,12 @@ export default function BioganceAmbassadorForm() {
         shelterMessage: ''
     });
     const tabs = [
-        t('ambassador.tabs.contentCreator'),
-        t('ambassador.tabs.breeder'),
-        t('ambassador.tabs.groomer'),
-        t('ambassador.tabs.clubAssociation'),
-        t('ambassador.tabs.healthProfessional'),
-        t('ambassador.tabs.animalWelfare')
+        { key: 'contentCreator', label: t('ambassador.tabs.contentCreator') },
+        { key: 'breeder', label: t('ambassador.tabs.breeder') },
+        { key: 'groomer', label: t('ambassador.tabs.groomer') },
+        { key: 'clubAssociation', label: t('ambassador.tabs.clubAssociation') },
+        { key: 'healthProfessional', label: t('ambassador.tabs.healthProfessional') },
+        { key: 'animalWelfare', label: t('ambassador.tabs.animalWelfare') }
     ];
 
     const handleInputChange = (e) => {
@@ -376,6 +379,30 @@ export default function BioganceAmbassadorForm() {
         }
     };
 
+    // Add new breed group (max 4)
+    const addBreedGroup = () => {
+        if (breedGroups.length < 4) {
+            setBreedGroups([
+                ...breedGroups,
+                { id: Date.now(), species: '', mainBreeds: '' }
+            ]);
+        }
+    };
+
+    // Handle breed group changes
+    const handleBreedGroupChange = (id, field, value) => {
+        setBreedGroups(breedGroups.map(group =>
+            group.id === id ? { ...group, [field]: value } : group
+        ));
+    };
+
+    // Remove breed group
+    const removeBreedGroup = (id) => {
+        if (breedGroups.length > 1) {
+            setBreedGroups(breedGroups.filter(group => group.id !== id));
+        }
+    };
+
     const [motivation, setMotivation] = useState('');
     const [agreeToReview, setAgreeToReview] = useState(false);
     const maxChars = 250;
@@ -456,14 +483,14 @@ export default function BioganceAmbassadorForm() {
                             <div className="flex lg:gap-7 gap-1 min-w-max">
                                 {tabs.map((tab) => (
                                     <button
-                                        key={tab}
-                                        onClick={() => setSelectedTab(tab)}
-                                        className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${selectedTab === tab
+                                        key={tab.key}
+                                        onClick={() => setSelectedTab(tab.key)}
+                                        className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${selectedTab === tab.key
                                             ? 'bg-black text-white'
                                             : 'bg-white text-black'
                                             }`}
                                     >
-                                        {tab}
+                                        {tab.label}
                                     </button>
                                 ))}
                             </div>
@@ -472,7 +499,7 @@ export default function BioganceAmbassadorForm() {
 
                     {/* Content Creator Tab */}
                     {/* Content Creator Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.contentCreator') && (
+                    {selectedTab === 'contentCreator' && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information - Already translated in common section */}
@@ -801,7 +828,8 @@ export default function BioganceAmbassadorForm() {
                                                 {animalForms.map((animal, index) => (
                                                     <div key={animal.id} className="border-t border-gray-300 pt-7 pb-4">
                                                         <h3 className="text-sm font-semibold text-gray-900 mb-5">
-                                                            {t('ambassador.contentCreator.animalNumber')}  {index + 1} {index > 0 && t('ambassador.contentCreator.optional')}
+                                                            {t('ambassador.contentCreator.animalNumber')} {index + 1}
+                                                            {index > 0 && ` ${t('ambassador.contentCreator.optional')}`}
                                                         </h3>
 
                                                         {/* Species */}
@@ -833,7 +861,7 @@ export default function BioganceAmbassadorForm() {
                                                                     type="text"
                                                                     value={animal.otherSpecies}
                                                                     onChange={(e) => handleAnimalChange(animal.id, 'otherSpecies', e.target.value)}
-                                                                    placeholder={t('ambassador.contentCreator.pleaseSpecifySpecies')}
+                                                                    placeholder={t('ambassador.contentCreator.placeholders.breed')}
                                                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black text-black"
                                                                 />
                                                             </div>
@@ -891,7 +919,7 @@ export default function BioganceAmbassadorForm() {
                                                 {animalForms.length < 3 && (
                                                     <button
                                                         onClick={addAnimal}
-                                                        className="mt-6 flex items-center gap-2 px-5 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition"
+                                                        className="mt-6 flex items-center gap-2 px-5 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition cursor-pointer"
                                                     >
                                                         <span className="text-lg">+</span>
                                                         {t('ambassador.contentCreator.addAnotherAnimal')}
@@ -962,7 +990,7 @@ export default function BioganceAmbassadorForm() {
 
                     {/* BreederTab */}
                     {/* Breeder Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.breeder') && (
+                    {selectedTab === 'breeder' && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information */}
@@ -1109,7 +1137,7 @@ export default function BioganceAmbassadorForm() {
                                             <div className="p-6 space-y-6">
                                                 {/* Species Breed */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block  text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.breeder.speciesBreed')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1135,7 +1163,7 @@ export default function BioganceAmbassadorForm() {
                                                 {/* Breed Name and Main Breed(s) */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                                     <div>
-                                                        <label className="block text-xs font-medium text-gray-900 mb-2">
+                                                        <label className="block text-sm font-medium  text-gray-900 mb-2">
                                                             {t('ambassador.breeder.breedName')}
                                                         </label>
                                                         <input
@@ -1148,7 +1176,7 @@ export default function BioganceAmbassadorForm() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium text-gray-900 mb-2">
+                                                        <label className="block text-sm font-medium text-gray-900 mb-2">
                                                             {t('ambassador.breeder.mainBreeds')}
                                                         </label>
                                                         <input
@@ -1164,7 +1192,7 @@ export default function BioganceAmbassadorForm() {
 
                                                 {/* How long have you been breeding? */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.breeder.howLongBreeding')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1189,7 +1217,7 @@ export default function BioganceAmbassadorForm() {
 
                                                 {/* Breeding size */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.breeder.breedingSize')}
                                                     </label>
                                                     <div className="space-y-3">
@@ -1222,7 +1250,7 @@ export default function BioganceAmbassadorForm() {
                                             <div className="p-6 space-y-6">
                                                 {/* Are you already familiar with our products? */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.breeder.familiarWithProducts')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1247,7 +1275,7 @@ export default function BioganceAmbassadorForm() {
 
                                                 {/* Would you like to */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.breeder.wouldYouLikeTo')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1333,7 +1361,7 @@ export default function BioganceAmbassadorForm() {
 
 
                     {/* Groomer Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.groomer') && (
+                    {selectedTab === ('groomer') && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information */}
@@ -1470,7 +1498,7 @@ export default function BioganceAmbassadorForm() {
                                             <div className="p-6 space-y-6">
                                                 {/* Main Speciality */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.groomer.mainSpeciality')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1496,7 +1524,7 @@ export default function BioganceAmbassadorForm() {
                                                 {/* Main Other Speciality */}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-xs font-medium text-gray-900 mb-2">
+                                                        <label className="block text-sm font-medium text-gray-900 mb-2">
                                                             {t('ambassador.groomer.mainOtherSpeciality')}
                                                         </label>
                                                         <input
@@ -1523,7 +1551,7 @@ export default function BioganceAmbassadorForm() {
                                             <div className="p-6 space-y-6">
                                                 {/* Link to Your main account */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-2">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-2">
                                                         {t('ambassador.groomer.linkToMainAccount')}
                                                     </label>
                                                     <input
@@ -1538,7 +1566,7 @@ export default function BioganceAmbassadorForm() {
 
                                                 {/* Would you like to share */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-900 mb-3">
+                                                    <label className="block text-sm font-medium text-gray-900 mb-3">
                                                         {t('ambassador.groomer.wouldYouLikeToShare')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-4">
@@ -1625,7 +1653,7 @@ export default function BioganceAmbassadorForm() {
 
 
                     {/* Club or Association Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.clubAssociation') && (
+                    {selectedTab === ('clubAssociation') && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information */}
@@ -1849,58 +1877,77 @@ export default function BioganceAmbassadorForm() {
                                     </div>
 
                                     {/* Breeds Represented Section */}
+                                    {/* Breeds Represented Section */}
                                     <div className="bg-white rounded-lg border border-gray-300">
                                         <h2 className="text-md font-semibold text-gray-900 mb-2 p-4 bg-gray-50">
                                             {t('ambassador.clubAssociation.breedsRepresented')}
                                         </h2>
                                         <div className="p-6">
-                                            <div className="mb-6">
-                                                <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                                                    {t('ambassador.clubAssociation.breedGroup1')}
-                                                </h3>
+                                            {breedGroups.map((group, index) => (
+                                                <div key={group.id} className={`mb-6 ${index > 0 ? 'pt-6 border-t border-gray-200' : ''}`}>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h3 className="text-sm font-semibold text-gray-900">
+                                                            Breed Group {index + 1} {index > 0 && '(optional)'}
+                                                        </h3>
+                                                        {/* {index > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => removeBreedGroup(group.id)}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        >
+                            Remove
+                        </button>
+                    )} */}
+                                                    </div>
 
-                                                {/* Species */}
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                        {t('ambassador.clubAssociation.species')}
-                                                    </label>
-                                                    <div className="flex flex-wrap gap-4">
-                                                        {t('ambassador.clubAssociation.options.species', { returnObjects: true }).map((option) => (
-                                                            <label key={option} className="flex items-center">
-                                                                <input
-                                                                    type="radio"
-                                                                    name="breedSpecies"
-                                                                    value={option}
-                                                                    checked={formData.breedSpecies === option}
-                                                                    onChange={handleInputChange}
-                                                                    className="w-4 h-4 accent-black cursor-pointer"
-                                                                />
-                                                                <span className="ml-2 text-sm text-gray-700">{option}</span>
-                                                            </label>
-                                                        ))}
+                                                    {/* Species */}
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                            {t('ambassador.clubAssociation.species')}
+                                                        </label>
+                                                        <div className="flex flex-wrap gap-4">
+                                                            {t('ambassador.clubAssociation.options.species', { returnObjects: true }).map((option) => (
+                                                                <label key={option} className="flex items-center">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`breedSpecies-${group.id}`}
+                                                                        value={option}
+                                                                        checked={group.species === option}
+                                                                        onChange={(e) => handleBreedGroupChange(group.id, 'species', e.target.value)}
+                                                                        className="w-4 h-4 accent-black cursor-pointer"
+                                                                    />
+                                                                    <span className="ml-2 text-sm text-gray-700">{option}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Main Breed(s) */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            {t('ambassador.clubAssociation.mainBreeds')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={group.mainBreeds}
+                                                            onChange={(e) => handleBreedGroupChange(group.id, 'mainBreeds', e.target.value)}
+                                                            placeholder={t('ambassador.clubAssociation.placeholders.mainBreeds')}
+                                                            className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                                        />
                                                     </div>
                                                 </div>
+                                            ))}
 
-                                                {/* Main Breed(s) */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        {t('ambassador.clubAssociation.mainBreeds')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="mainBreeds"
-                                                        value={formData.mainBreeds}
-                                                        onChange={handleInputChange}
-                                                        placeholder={t('ambassador.clubAssociation.placeholders.mainBreeds')}
-                                                        className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition">
-                                                <span className="text-lg">+</span>
-                                                {t('ambassador.clubAssociation.addAnotherBreedGroup')}
-                                            </button>
+                                            {breedGroups.length < 4 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={addBreedGroup}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition cursor-pointer"
+                                                >
+                                                    <span className="text-lg">+</span>
+                                                    {t('ambassador.clubAssociation.addAnotherBreedGroup')}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -2027,7 +2074,7 @@ export default function BioganceAmbassadorForm() {
 
 
                     {/* Health Professional Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.healthProfessional') && (
+                    {selectedTab === ('healthProfessional') && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information */}
@@ -2042,7 +2089,7 @@ export default function BioganceAmbassadorForm() {
                                         {/* First Row - First Name and Last Name */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.common.firstName')}
                                                 </label>
                                                 <input
@@ -2064,7 +2111,7 @@ export default function BioganceAmbassadorForm() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.common.lastName')}
                                                 </label>
                                                 <input
@@ -2118,7 +2165,7 @@ export default function BioganceAmbassadorForm() {
 
                                         {/* Other Profession/Speciality */}
                                         <div>
-                                            <label className="block text-sm font-lg text-black mb-2">
+                                            <label className="block text-sm font-medium text-black mb-2">
                                                 {t('ambassador.healthProfessional.otherProfessionSpeciality')}
                                             </label>
                                             <input
@@ -2134,7 +2181,7 @@ export default function BioganceAmbassadorForm() {
                                         {/* Second Row - Clinic Name and Email */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.healthProfessional.nameOfClinic')}
                                                 </label>
                                                 <input
@@ -2148,7 +2195,7 @@ export default function BioganceAmbassadorForm() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.common.professionalEmail')}
                                                 </label>
                                                 <input
@@ -2173,7 +2220,7 @@ export default function BioganceAmbassadorForm() {
                                         {/* Third Row - Contact and City/Region */}
                                         <div className="grid grid-cols-2 gap-5">
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.common.contact')}
                                                 </label>
                                                 <input
@@ -2195,7 +2242,7 @@ export default function BioganceAmbassadorForm() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-lg text-black mb-2">
+                                                <label className="block text-sm font-medium text-black mb-2">
                                                     {t('ambassador.common.cityRegion')}
                                                 </label>
                                                 <input
@@ -2230,10 +2277,10 @@ export default function BioganceAmbassadorForm() {
                                             <div className="p-6">
                                                 {/* How long have you been practicing */}
                                                 <div className="mb-6">
-                                                    <label className="block mb-3 text-black">
+                                                    <label className=" block mb-3 text-black">
                                                         {t('ambassador.healthProfessional.howLongPracticing')}
                                                     </label>
-                                                    <div className="flex gap-6 flex-wrap">
+                                                    <div className="flex gap-6 flex-wrap text-xs font-medium">
                                                         {t('ambassador.healthProfessional.options.practicingYears', { returnObjects: true }).map((option) => (
                                                             <label key={option} className="flex items-center gap-2 cursor-pointer">
                                                                 <input
@@ -2254,16 +2301,16 @@ export default function BioganceAmbassadorForm() {
                                                         ))}
                                                     </div>
                                                     {errors.yearsExperience && (
-                                                        <p className="mt-1 text-xs text-red-600">{t('ambassador.healthProfessional.errors.yearsExperienceRequired')}</p>
+                                                        <p className="mt-1 text-sm text-red-600">{t('ambassador.healthProfessional.errors.yearsExperienceRequired')}</p>
                                                     )}
                                                 </div>
 
                                                 {/* You mainly work with */}
                                                 <div className="mb-6">
-                                                    <label className="block mb-3 text-black">
+                                                    <label className="  block mb-3 text-black">
                                                         {t('ambassador.healthProfessional.youMainlyWorkWith')}
                                                     </label>
-                                                    <div className="flex gap-6 flex-wrap">
+                                                    <div className="flex gap-6 flex-wrap text-xs font-medium">
                                                         {t('ambassador.healthProfessional.options.workWith', { returnObjects: true }).map((option) => (
                                                             <label key={option} className="flex items-center gap-2 cursor-pointer">
                                                                 <input
@@ -2285,7 +2332,7 @@ export default function BioganceAmbassadorForm() {
                                                     <label className="block mb-3 text-black">
                                                         {t('ambassador.healthProfessional.familiarWithBiogance')}
                                                     </label>
-                                                    <div className="flex gap-6 flex-wrap">
+                                                    <div className="text-sm flex gap-6 flex-wrap">
                                                         {t('ambassador.healthProfessional.options.familiarity', { returnObjects: true }).map((option) => (
                                                             <label key={option} className="flex items-center gap-2 cursor-pointer">
                                                                 <input
@@ -2318,7 +2365,7 @@ export default function BioganceAmbassadorForm() {
                                                     </label>
                                                     <div className="space-y-2">
                                                         {t('ambassador.healthProfessional.options.participateIn', { returnObjects: true }).map((option) => (
-                                                            <label key={option} className="flex items-center gap-2 cursor-pointer">
+                                                            <label key={option} className=" text-sm flex items-center gap-2 cursor-pointer">
                                                                 <input
                                                                     type="radio"
                                                                     name="participateIn"
@@ -2396,7 +2443,7 @@ export default function BioganceAmbassadorForm() {
 
 
                     {/* Animal Welfare Organization or Shelter Tab - UPDATED WITH TRANSLATIONS */}
-                    {selectedTab === t('ambassador.tabs.animalWelfare') && (
+                    {selectedTab === ('animalWelfare') && (
                         <>
                             <div className="animate-fadeIn">
                                 {/* Basic Information */}
@@ -2634,7 +2681,7 @@ export default function BioganceAmbassadorForm() {
 
                                             {/* Which products would be most useful to you? */}
                                             <div className="mb-6">
-                                                <label className="block mb-3 text-black">
+                                                <label className="text-sm font-medium block mb-3 text-black">
                                                     {t('ambassador.animalWelfare.usefulProducts')}
                                                 </label>
                                                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-4">
@@ -2655,7 +2702,7 @@ export default function BioganceAmbassadorForm() {
 
                                                 {/* Other Product */}
                                                 <div>
-                                                    <label className="block mb-2 text-black">
+                                                    <label className="font-medium text-sm block mb-2 text-black">
                                                         {t('ambassador.animalWelfare.otherProducts')}
                                                     </label>
                                                     <input
@@ -2671,7 +2718,7 @@ export default function BioganceAmbassadorForm() {
 
                                             {/* Would you like to share your initiatives */}
                                             <div>
-                                                <label className="block mb-3 text-black">
+                                                <label className="text-sm font-medium block mb-3 text-black">
                                                     {t('ambassador.animalWelfare.shareInitiatives')}
                                                 </label>
                                                 <div className="flex gap-6">
@@ -2700,7 +2747,7 @@ export default function BioganceAmbassadorForm() {
                                         </h2>
 
                                         <div className="p-6">
-                                            <label className="block mb-3 text-black">
+                                            <label className="font-medium text-sm block mb-3 text-black">
                                                 {t('ambassador.animalWelfare.shelterMessage')}
                                             </label>
                                             <div className="relative">

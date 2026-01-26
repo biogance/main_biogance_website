@@ -30,7 +30,7 @@ export default function WishlistPage() {
         <Navbar />
       </div>
 
-      <div className="bg-white min-h-screen pt-20"> 
+      <div className="bg-white min-h-screen "> 
         {/* Hero Section */}
         <div className="relative h-[400px] sm:h-[500px] w-full">
           <div className="absolute inset-0">

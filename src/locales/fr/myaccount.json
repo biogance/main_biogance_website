@@ -1,7 +1,7 @@
 {
    "common": {
     "myAccount": "Mon Compte",
-    "home": "Accueil"
+    "home": "Maison"
   },
   "orderDetails": {
     "title": "Détails de la commande",

@@ -176,7 +176,7 @@ export default function PopularProducts({
       price: '12.60',
       discount: '20% Off',
       image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
+      images: ["/product2.svg", "/product1.svg", "/product3.svg"],
       liked: true
     },
     {
@@ -185,7 +185,7 @@ export default function PopularProducts({
       price: '11.25',
       originalPrice: '35.30',
       image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
+      images: ["/product1.svg", "/product3.svg", "/product2.svg"],
       liked: false
     },
     {
@@ -194,7 +194,7 @@ export default function PopularProducts({
       price: '12.60',
       discount: '20% Off',
       image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
+      images: ["/product3.svg", "/product2.svg", "/product1.svg"],
       liked: false
     },
     {
@@ -204,7 +204,7 @@ export default function PopularProducts({
       originalPrice: '24.90',
       discount: '20% Off',
       image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
+      images: ["/product2.svg", "/product1.svg", "/product3.svg"],
       liked: false
     },
     {
@@ -212,7 +212,7 @@ export default function PopularProducts({
       name: 'Natural Pet Cologne',
       price: '14.50',
       image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
+      images: ["/product3.svg", "/product1.svg", "/product2.svg"],
       liked: false
     }
   ];
@@ -303,7 +303,7 @@ export default function PopularProducts({
                 {t('products.wishlistTitle')}
  
               </h1>
-              <button className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-black transition-colors self-start">
+              <button className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-black transition-colors self-start cursor-pointer">
                 <IoClose className="w-5 h-5" />
                 <span>{t('products.removeAll')}</span>
               </button>
@@ -312,7 +312,7 @@ export default function PopularProducts({
             <div className="flex gap-4 border-b border-gray-200">
               <button
                 onClick={() => setActiveTab('favorite')}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap ${
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
                   activeTab === 'favorite'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'
@@ -323,7 +323,7 @@ export default function PopularProducts({
               </button>
               <button
                 onClick={() => setActiveTab('advice')}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap ${
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
                   activeTab === 'advice'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'

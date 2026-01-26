@@ -97,6 +97,8 @@
       "mainThemeForPet": "Thème Principal",
       "doYouHaveMultipleAnimals": "Avez-vous un ou plusieurs animaux ?*",
       "multipleAnimalsNote": "Pour plusieurs animaux, veuillez remplir le formulaire ci-dessous pour chacun (max 3 animaux)",
+      "animalNumber": "Animal",
+      "optional": "(Facultative)",
       "animalSpecies": "Espèce*",
       "breed": "Race",
       "coatType": "Type de Pelage",
