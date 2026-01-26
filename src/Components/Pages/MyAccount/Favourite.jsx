@@ -10,6 +10,7 @@ import {
   MdOutlineKeyboardDoubleArrowLeft,
   MdOutlineKeyboardDoubleArrowRight,
 } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
 
 
 const LoadingCard = () => (
@@ -362,11 +363,20 @@ export default function Favourite() {
   return (
     <div className="min-h-screen ">
       <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Wishlist Section */}
+      {/* Wishlist Section */}
         <div className="bg-white rounded-2xl p-6 md:p-8 mb-10">
-          <div className="-mb-2">
-            <h1 className="text-2xl md:text-2xl font-semibold text-gray-900">{t('favourite.title')}</h1>
-            <p className="text-gray-600 mt-1.5">{t('favourite.subtitle')}</p>
+          <div className="-mb-2 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl md:text-2xl font-semibold text-gray-900">{t('favourite.title')}</h1>
+              <p className="text-gray-600 mt-1.5">{t('favourite.subtitle')}</p>
+            </div>
+            
+            {hasFavourites && (
+              <button className="flex cursor-pointer  items-center gap-1 text-md font-semibold text-gray-700 hover:text-gray-900">
+                <span  ><RxCross2 size={20} /></span>
+                <span>Remove All</span> 
+              </button>
+            )}
           </div>
 
           {hasFavourites ? (
