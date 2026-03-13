@@ -1,0 +1,75 @@
+{
+  "categories": [
+    {
+      "id": "dogs",
+      "name": "Chiens & Chiots"
+    },
+    {
+      "id": "cats",
+      "name": "Chats & Chatons"
+    },
+    {
+      "id": "horses",
+      "name": "Chevaux"
+    },
+    {
+      "id": "mammals",
+      "name": "Petits Mammifères"
+    },
+    {
+      "id": "birds",
+      "name": "Oiseaux & Volaille"
+    },
+    {
+      "id": "reptiles",
+      "name": "Reptiles"
+    },
+    {
+      "id": "games",
+      "name": "Jeux & Friandises"
+    },
+    {
+      "id": "all",
+      "name": "Toutes les Gammes"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Toilettage & Soins",
+      "image": "https://images.unsplash.com/photo-1641484202528-c33769340d44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGdyb29taW5nJTIwd2hpdGUlMjBkb2d8ZW58MXx8fHwxNzY3OTUzODQ0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      "items": [
+        "Shampooings & Après-shampooings",
+        "Shampooings Secs & Sans Rinçage",
+        "Soins des Zones Sensibles",
+        "Soins de la Peau & du Pelage",
+        "Soins de la Mue",
+        "Démêlants & Brosses",
+        "Traitement Anti-Radicaux Libres",
+        "Gamme Dermoccare Véto-Pharma"
+      ]
+    },
+    {
+      "title": "Style de Vie & Bien-être",
+      "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1080&q=80",
+      "items": [
+        "Relaxation",
+        "Jouets & Friandises",
+        "Accessoires & Textiles",
+        "Eaux Parfumées",
+        "Nos Kits",
+        "Nouveautés"
+      ]
+    },
+    {
+      "title": "Santé & Nutrition",
+      "image": "https://images.unsplash.com/photo-1629581327302-45202bbc4bd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBidWxsZG9nJTIwb3V0ZG9vcnxlbnwxfHx8fDE3Njc5NTM4NDN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      "items": [
+        "Soins Antiparasitaires",
+        "Compléments Alimentaires",
+        "Gamme Biogance Premium & Naturel",
+        "Gamme ECOCERT Organissime Contrôlée",
+        "Gamme Plouf Fruité (Petit Budget)"
+      ]
+    }
+  ]
+}

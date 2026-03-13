@@ -1,0 +1,101 @@
+{
+  "hero": {
+    "aboutCompany": "About the Company",
+    "heading": "Pioneers in Natural Pet Care Since 2008",
+    "description": "Biogance creates premium pet care products made in France with natural and organic ingredients. Our commitment to quality and sustainability makes us the trusted choice for pet owners worldwide.",
+    "features": [
+      "Made in France with Natural Ingredients",
+      "Certified Organic & Eco-Friendly",
+      "Dermatologically Tested & Safe",
+      "Trusted by Pet Professionals"
+    ],
+    "badge": {
+      "trustedBy": "Trusted By",
+      "count": "50,000+",
+      "description": "Pet owners and professionals worldwide trust Biogance for quality pet care"
+    },
+    "buttons": {
+      "shopNow": "Shop Now",
+      "discover": "Discover More"
+    }
+  },
+  "natural": {
+    "heading": "Biogance – Care the Natural Way",
+    "imageAlt": "Lush green forest background",
+    "description": {
+      "part1": "Founded in 2008 in the heart of France,",
+      "biogance": "Biogance",
+      "part2": "is a pioneering laboratory dedicated to creating",
+      "products": "organic and natural hygiene & care products for pets",
+      "part3": "With a team of experts in biochemistry, pharmacy, and animal breeding, our mission is simple: prioritize animal well-being while",
+      "solutions": "innovating with eco-responsible solutions",
+      "part4": "Present in more than 40 countries, Biogance continues to grow as a trusted name in pet care."
+    },
+    "features": {
+      "organic": {
+        "title": "Organic",
+        "description": "Formulas enriched with organic & natural ingredients."
+      },
+      "frenchMade": {
+        "title": "French-Made",
+        "description": "Proudly developed and produced in France."
+      },
+      "excellence": {
+        "title": "Recognized Excellence",
+        "description": "Global awards for innovation and growth."
+      },
+      "certified": {
+        "title": "Certified Care",
+        "description": "ECOCERT & ISO certified for safety and trust."
+      }
+    },
+    "buttons": {
+      "shopNow": "Shop Now",
+      "discover": "Discover"
+    }
+  },
+  "journey": {
+    "subtitle": "OUR JOURNEY OF EXCELLENCE",
+    "heading": {
+      "line1": "From a small French laboratory to a",
+      "line2": "global leader in natural pet care."
+    },
+    "timeline": [
+      {
+        "year": "2012",
+        "position": "right",
+        "logo": "/L1.svg",
+        "title": "Communication Trophies",
+        "description": "Biogance was recognized with the Best Professional Website Award, honoring excellence in communication and transparency. This trophy highlights the brand's commitment to clear messaging, digital presence, and its ability to connect effectively with both customers and industry stakeholders in the pet care sector."
+      },
+      {
+        "year": "2015",
+        "position": "left",
+        "logo": "/LL2.svg",
+        "title": "Global PETS Forum Award",
+        "description": "In 2015, Biogance won the prestigious Global PETS Forum Award in Madrid, presented by PETS International. As the first hygiene and care brand to receive it, Biogance was celebrated for innovation, credibility, and international export strategy among leading companies in the pet care industry."
+      },
+      {
+        "year": "2016",
+        "position": "right",
+        "logo": "/L3.svg",
+        "title": "Winner of Start-Up of the Year by Ernst and Young",
+        "description": "Biogance was awarded Start-Up of the Year by Ernst & Young, recognizing entrepreneurial excellence and innovation. This honor highlighted Biogance as a high-potential company that demonstrated leadership, growth capability, and a pioneering role in the organic and natural pet care market."
+      },
+      {
+        "year": "2017",
+        "position": "left",
+        "logo": "/L4.svg",
+        "title": "INNO BIO Bronze Trophy",
+        "description": "At the NATEXPO International Trade Fair, Biogance earned the INNO BIO Bronze Trophy for its ORGANISSIME range. This award celebrated Biogance's dedication to organic, ECOCERT-certified pet care products, reinforcing the company's mission of combining nature and science for healthier, eco-friendly solutions."
+      },
+      {
+        "year": "2020",
+        "position": "right",
+        "logo": "/L5.svg",
+        "title": "Pet Friendly Trophies",
+        "description": "Biogance received the Pet Friendly Trophy in the Entreprise+ category, honoring companies that integrate pets into daily life, travel, and workplaces. This award recognized Biogance's role in promoting animal inclusion, improving pet-friendly environments, and supporting better coexistence between people and their animals."
+      }
+    ]
+  }
+}

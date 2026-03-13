@@ -1,0 +1,297 @@
+{
+  "nav": {
+    "disclaimer": "Clause de Non-Responsabilité",
+    "shipping": "Livraison et Retour",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Termes et Conditions"
+  },
+  "sections": {
+    "disclaimer": "Clause de Non-Responsabilité pour BIOGANCE",
+    "shipping": "Livraison et Retour",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Termes et Conditions"
+  },
+  "disclaimer": {
+    "presentation": {
+      "title": "Présentation du site",
+      "intro": "En vertu de l'article 6 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, les utilisateurs du site www.biogance.fr sont informés de l'identité des différentes parties impliquées dans sa création et son suivi :",
+      "owner": "Propriétaire / Éditeur du site :",
+      "ownerDetails": "BIOGANCE SAS – SIRET : 505 166 892 00024",
+      "address": "23 Allée Atlantique – 49123 Champtocé-sur-Loire – France",
+      "publisher": "Responsable de publication : BIOGANCE SAS",
+      "creator": "Créateur / développement / Agence Quaim : www.agencequaim.com",
+      "host": "Hébergeur :",
+      "hostDetails": "OVH SAS",
+      "hostAddress": "2 rue Kellermann – 59100 Roubaix – France",
+      "hostPhone": "Tél : 1007"
+    },
+    "generalConditions": {
+      "title": "Conditions générales d'utilisation du site",
+      "paragraph1": "L'utilisation du site www.biogance.fr implique l'acceptation pleine et entière des conditions générales d'utilisation décrites ci-dessous. Ces conditions sont susceptibles d'être modifiées à tout moment. Les utilisateurs sont donc encouragés à les consulter régulièrement.",
+      "paragraph2": "Le site est normalement accessible 24h/24 et 7j/7. Cependant, l'éditeur peut décider de l'interrompre pour des raisons de maintenance technique."
+    },
+    "servicesProvided": {
+      "title": "Description des services fournis",
+      "paragraph1": "L'objectif du site www.biogance.fr est de présenter toutes les activités, produits et services proposés par BIOGANCE",
+      "paragraph2": "Les informations fournies sont données à titre informatif uniquement et peuvent changer. Bien que mises à jour régulièrement, elles peuvent contenir des inexactitudes ou des omissions."
+    },
+    "technicalLimitations": {
+      "title": "Limitations techniques",
+      "paragraph1": "Le site utilise la technologie JavaScript.",
+      "paragraph2": "L'utilisateur s'engage à accéder au site avec un matériel récent, à jour, exempt de virus et avec un navigateur à jour.",
+      "paragraph3": "BIOGANCE ne peut être tenu responsable des dommages matériels liés à l'utilisation du site."
+    },
+    "intellectualProperty": {
+      "title": "Propriété intellectuelle",
+      "paragraph1": "BIOGANCE détient les droits de propriété intellectuelle sur tous les éléments du site (textes, images, graphiques, logo, icônes, sons, logiciels, etc.).",
+      "paragraph2": "Toute reproduction ou représentation, totale ou partielle, sans autorisation écrite préalable est interdite et constituerait une contrefaçon selon les articles L.335-2 et suivants du Code de la propriété intellectuelle."
+    },
+    "liability": {
+      "title": "Responsabilité",
+      "paragraph1": "BIOGANCE ne peut être tenu responsable de tout dommage direct ou indirect causé au matériel de l'utilisateur lors de la navigation sur le site, ni de toute incompatibilité ou bug.",
+      "paragraph2": "Des espaces interactifs (formulaire de contact) sont mis à la disposition des utilisateurs. BIOGANCE se réserve le droit de supprimer tout contenu qui violerait la loi (remarques abusives, racistes, diffamatoires, etc.)."
+    },
+    "personalData": {
+      "title": "Données personnelles (RGPD)",
+      "paragraph1": "Les données personnelles sont collectées par BIOGANCE SAS en tant que responsable du traitement, conformément au Règlement (UE) 2016/679 (RGPD) et à la loi modifiée sur la protection des données.",
+      "paragraph2": "Les données sont traitées aux fins de gestion des commandes, de relations clients, de prospection commerciale (si consentie), de statistiques ou d'obligations légales.",
+      "paragraph3": "L'utilisateur dispose des droits suivants :",
+      "right1": "Droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité.",
+      "paragraph4": "Ces droits peuvent être exercés par e-mail à : info@biogance.fr, ou par courrier à : BIOGANCE – ZI Anjou Atlantique – 49123 Champtocé-sur-Loire – France (accompagné d'une pièce d'identité).",
+      "paragraph5": "BIOGANCE ne transmet aucune donnée à des tiers sans consentement, sauf obligation légale ou recours à un sous-traitant autorisé."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "paragraph1": "Lors de la navigation sur www.biogance.fr, des cookies peuvent être placés sur l'appareil de l'utilisateur.",
+      "paragraph2": "Conformément à la réglementation en vigueur, les cookies nécessitant un consentement (mesure d'audience, publicité ou cookies de médias sociaux) ne sont placés qu'après acceptation explicite par l'utilisateur via une bannière dédiée.",
+      "paragraph3": "L'utilisateur peut accepter, refuser ou personnaliser ses préférences à tout moment via la bannière de cookies ou le lien 'Gérer mes cookies'.",
+      "paragraph4": "Une politique relative aux cookies, détaillant leur utilisation, leur durée et les tiers concernés, est accessible [à ce lien] (à adapter selon la page dédiée)."
+    },
+    "applicableLaw": {
+      "title": "Loi applicable et juridiction",
+      "paragraph1": "Tout litige relatif à l'utilisation du site est soumis au droit français. Avant d'engager toute action en justice, l'utilisateur est invité à contacter notre service client. Conformément à l'article L612-1 du Code de la consommation français, une procédure de médiation peut être initiée :",
+      "mediator": "Médiateur FEVAD",
+      "mediatorAddress": "BP 20015 – 75362 Paris CEDEX 8",
+      "mediatorWebsite": "www.mediateurfevad.fr",
+      "paragraph2": "En l'absence d'accord amiable, le tribunal français aura seul compétence."
+    },
+    "referenceText": {
+      "title": "Texte de référence",
+      "item1": "Règlement (UE) 2016/679 du 27 avril 2016 (RGPD)",
+      "item2": "Loi modifiée sur la protection des données (n° 78-17 du 6 janvier 1978)",
+      "item3": "Loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique"
+    },
+    "glossary": {
+      "title": "Glossaire",
+      "user": "Utilisateur : Toute personne accédant au site www.biogance.fr",
+      "personalData": "Données personnelles : Informations pouvant identifier directement ou indirectement une personne physique"
+    }
+  },
+  "shipping": {
+    "orderValidation": {
+      "title": "COMMANDE, VALIDATION ET TRAITEMENT",
+      "paragraph1": "Pour passer commande sur www.biogance.fr, le client doit se connecter à son compte ou en créer un. Une fois les produits ajoutés au panier, il sélectionne le mode de livraison, choisit le mode de paiement et confirme sa commande en cochant la case 'J'accepte les Conditions Générales de Vente' et en validant le paiement.",
+      "paragraph2": "La commande est considérée comme finalisée dès que le paiement est accepté. Une confirmation est alors envoyée par e-mail, avec un numéro de commande récapitulatif.",
+      "paragraph3": "Les Conditions Générales de Vente peuvent être consultées à tout moment en bas de la page du site.",
+      "paragraph4": "Dans le cadre de ses efforts de lutte contre la fraude, BIOGANCE peut être amené à effectuer des vérifications supplémentaires. Cela peut inclure la demande de documents justificatifs. BIOGANCE se réserve le droit d'accepter ou de refuser une commande, même après la fourniture des documents demandés. En cas de vérification, le traitement de la commande peut être retardé de 24 à 48 heures.",
+      "paragraph5": "BIOGANCE se réserve également le droit de refuser une commande d'un client avec lequel un litige est en cours.",
+      "paragraph6": "Le traitement des commandes a lieu du lundi au vendredi, sous réserve de disponibilité des produits.",
+      "timing1": "Toute commande passée avant 11h (livraison standard) est traitée dans les 48 heures (hors week-ends et jours fériés).",
+      "timing2": "Toute commande passée avant 11h (express) est expédiée le jour même (hors week-ends et jours fériés).",
+      "paragraph7": "Le client reçoit un e-mail pour confirmer l'expédition. La facture peut être téléchargée à tout moment depuis l'espace client, sous 'Mon compte → Mes commandes → Voir la facture'.",
+      "paragraph8": "En cas d'erreur dans les informations saisies par le client (adresse, nom, etc.), BIOGANCE ne peut être tenu responsable de tout échec ou retard de livraison. Les frais de réexpédition seront alors à la charge du client."
+    },
+    "delivery": {
+      "title": "LIVRAISON",
+      "areaTitle": "Zone de livraison",
+      "area": "Les commandes sont livrées à l'adresse indiquée par le client lors de la commande, en France métropolitaine, Corse, Allemagne, Belgique, Suisse, Espagne, Italie, Portugal, Luxembourg et Royaume-Uni.",
+      "modesTitle": "Modes et transporteurs",
+      "modes": "BIOGANCE travaille avec La Poste (Colissimo) pour assurer une livraison rapide et fiable. Les commandes de plus de 30 kg ne sont pas éligibles à la livraison express.",
+      "feesTitle": "Frais et conditions",
+      "fees": "Les frais de port sont calculés en fonction du montant total de la commande, ainsi que du poids et du volume des articles. Le montant exact est affiché avant de confirmer la commande.",
+      "problemsTitle": "Problèmes de livraison",
+      "problems1": "À la réception du colis, s'il est visiblement endommagé, le client est invité à refuser la livraison et à informer immédiatement le Service Client BIOGANCE, disponible du lundi au vendredi de 9h à 12h30 et de 13h30 à 16h au 02 41 73 15 15 ou par e-mail à info@biogance.fr.",
+      "problems2": "En cas de doute, le client peut également accepter le colis en faisant des réserves spécifiques et datées sur le bon de livraison (par exemple : 'colis écrasé', 'produit manquant', etc.).",
+      "problems3": "En cas de litige de transport, une enquête peut être ouverte auprès du transporteur. Cette procédure peut prendre jusqu'à 21 jours ouvrables.",
+      "forceMajeureTitle": "Force majeure",
+      "forceMajeure1": "BIOGANCE ne peut être tenu responsable de tout retard ou défaut d'exécution (y compris la livraison) en cas de survenance d'un événement indépendant de sa volonté, qualifié de force majeure au sens de l'article 1218 du Code civil.",
+      "forceMajeure2": "Sont considérés comme cas de force majeure : catastrophes naturelles, incendies, inondations, grèves (totales ou partielles), blocages des moyens de transport ou d'approvisionnement, pannes de réseau ou de système, ou toute autre situation rendant l'exécution du contrat impossible ou excessivement difficile.",
+      "forceMajeure3": "Dans ces situations, les obligations de BIOGANCE sont suspendues pendant la durée de l'événement. Si la situation de force majeure se poursuit au-delà de 30 jours, l'une ou l'autre des parties peut résilier la commande en question sans indemnité."
+    },
+    "withdrawal": {
+      "title": "DROIT DE RÉTRACTATION",
+      "paragraph1": "Conformément aux articles L221-18 à L221-28 du Code de la consommation, le client particulier dispose d'un délai de 14 jours calendaires à compter de la réception de sa commande pour exercer son droit de rétractation, sans avoir à justifier sa décision.",
+      "paragraph2": "Pour exercer ce droit, le client peut informer BIOGANCE de sa décision par tout moyen écrit clair et non ambigu (e-mail, courrier ou formulaire disponible sur demande). Une fois la demande faite, le client dispose de 14 jours supplémentaires pour retourner les produits.",
+      "paragraph3": "Les frais de retour sont à la charge du client.",
+      "paragraph4": "Les produits doivent être retournés complets, dans leur état d'origine (non utilisés), avec leur emballage, accessoires et instructions. Les produits endommagés, souillés ou incomplets ne seront pas remboursés.",
+      "exceptionsTitle": "Exceptions au droit de rétractation",
+      "exceptions": "Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux produits ouverts après livraison et qui ne peuvent être retournés pour des raisons d'hygiène ou de protection de la santé (notamment les produits de soins et cosmétiques pour animaux).",
+      "paragraph5": "BIOGANCE remboursera le montant payé pour les produits en question, ainsi que les frais de livraison standard (hors options express), au plus tard 14 jours après le retour des produits ou la fourniture d'une preuve d'expédition. Le remboursement sera effectué en utilisant le même moyen de paiement que celui utilisé pour l'achat.",
+      "paragraph6": "Le client peut être tenu responsable en cas de dépréciation du produit résultant d'une manipulation autre que celle nécessaire pour s'assurer de sa nature, de ses caractéristiques et de son bon fonctionnement.",
+      "formTitle": "Formulaire de rétractation"
+    },
+    "claims": {
+      "title": "RÉCLAMATIONS ET RÉSOLUTION DES LITIGES",
+      "paragraph1": "Pour toute réclamation, le client peut contacter notre service client à l'adresse suivante : BIOGANCE – ZI Anjou Atlantique, 49123 Champtocé-sur-Loire Ou par e-mail à : info@biogance.fr",
+      "paragraph2": "Conformément aux articles L612-1 et suivants du Code de la consommation, en cas de litige non résolu après contact avec notre service client, le client a la possibilité de recourir à un service de médiation gratuit.",
+      "paragraph3": "BIOGANCE adhère au service de médiateur du e-commerce de la FEVAD (Fédération du e-commerce et de la vente à distance), dont les coordonnées sont les suivantes : Médiateur de la consommation FEVAD BP 20015 – 75362 Paris CEDEX 8 www.mediateurfevad.fr",
+      "paragraph4": "Avant de contacter le médiateur, une demande écrite à notre service client est obligatoire.",
+      "paragraph5": "Le client peut également utiliser la plateforme européenne de règlement des litiges en ligne (RLL) accessible ici : https://ec.europa.eu/consumers/odr/",
+      "paragraph6": "En cas d'échec de la médiation ou d'une solution amiable, le litige sera porté devant les tribunaux français compétents, conformément aux règles juridiques applicables."
+    }
+  },
+  "privacy": {
+    "header": {
+      "title": "Politique de Confidentialité",
+      "lastUpdated": "Dernière mise à jour : 29/06/2020",
+      "intro": "En tant que Biogance SAS, la protection de vos données personnelles est une priorité. Cette politique de confidentialité vous informe sur la manière dont vos données sont collectées, utilisées et partagées lorsque vous visitez notre site www.biogance.fr"
+    },
+    "whoAreWe": {
+      "title": "Qui sommes-nous ?",
+      "company": "Biogance SAS",
+      "address": "Z.I Anjou Atlantique, 49123 Champtocé-sur-Loire",
+      "email": "info@biogance.fr"
+    },
+    "comments": {
+      "title": "Commentaires",
+      "paragraph1": "Lorsque vous laissez un commentaire sur notre site, les données saisies dans le formulaire de commentaire, mais aussi votre adresse IP et l'agent utilisateur de votre navigateur sont collectés pour nous aider à détecter les commentaires indésirables.",
+      "paragraph2": "Une chaîne anonymisée créée à partir de votre adresse e-mail (également appelée hash) peut être fournie au service Gravatar pour voir si vous l'utilisez. La politique de confidentialité du service Gravatar est disponible ici : https://automattic.com/privacy/. Après approbation de votre commentaire, votre photo de profil sera visible publiquement dans le contexte de votre commentaire."
+    },
+    "media": {
+      "title": "Médias",
+      "paragraph1": "Si vous téléchargez des images sur le site, nous vous conseillons d'éviter de télécharger des images avec des données de localisation intégrées (EXIF GPS) incluses. Les visiteurs du site peuvent télécharger et extraire toutes les données de localisation des images."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "paragraph1": "Si vous laissez un commentaire sur notre site, vous pouvez choisir d'enregistrer votre nom, adresse e-mail et site Web dans les cookies. Ceux-ci sont pour votre commodité afin que vous n'ayez pas à remplir à nouveau vos coordonnées lorsque vous laissez un autre commentaire. Ces cookies dureront un an.",
+      "paragraph2": "Si vous visitez la page de connexion, un cookie temporaire sera défini pour déterminer si votre navigateur accepte les cookies. Ce cookie ne contient aucune donnée personnelle et sera supprimé lorsque vous fermerez votre navigateur.",
+      "paragraph3": "Lorsque vous vous connectez, nous configurerons plusieurs cookies pour enregistrer vos informations de connexion et vos choix d'affichage à l'écran. Les cookies de connexion durent deux jours et les cookies d'options d'écran durent un an. Si vous sélectionnez 'Se souvenir de moi', votre connexion persistera pendant deux semaines. Si vous vous déconnectez de votre compte, les cookies de connexion seront supprimés.",
+      "paragraph4": "En modifiant ou en publiant un article, un cookie supplémentaire sera enregistré dans votre navigateur. Ce cookie n'inclut aucune donnée personnelle. Il indique simplement l'ID de l'article que vous venez de modifier. Il expire après 1 jour."
+    },
+    "embeddedContent": {
+      "title": "Contenu intégré provenant d'autres sites",
+      "paragraph1": "Les articles de ce site peuvent inclure du contenu intégré (par exemple des vidéos, des images, des articles, etc.). Le contenu intégré d'autres sites Web se comporte exactement de la même manière que si le visiteur avait visité l'autre site Web.",
+      "paragraph2": "Ces sites Web peuvent collecter des données vous concernant, utiliser des cookies, intégrer des outils de suivi tiers et suivre vos interactions avec ce contenu intégré si vous avez un compte connecté à leur site Web."
+    },
+    "useAndTransmission": {
+      "title": "Utilisation et transmission de vos données personnelles",
+      "paragraph1": "Si vous demandez une réinitialisation de mot de passe, votre adresse IP sera incluse dans l'e-mail de réinitialisation."
+    },
+    "servicesUsed": {
+      "title": "Services utilisés",
+      "paragraph1": "Nous utilisons les services suivants, qui peuvent traiter certaines données :",
+      "service1": "Google Analytics, pour analyser l'audience et améliorer le site.",
+      "service2": "Brevo (ex-Sendinblue) : pour gérer nos campagnes d'e-mailing et newsletters.",
+      "paragraph2": "Ces prestataires sont conformes aux exigences du RGPD."
+    },
+    "storageDuration": {
+      "title": "Durées de conservation de vos données",
+      "paragraph1": "Si vous laissez un commentaire, le commentaire et ses métadonnées sont conservés indéfiniment. C'est ainsi que nous pouvons reconnaître et approuver automatiquement tout commentaire de suivi au lieu de les conserver dans une file d'attente de modération.",
+      "paragraph2": "Pour les utilisateurs qui s'inscrivent sur notre site Web (le cas échéant), nous stockons également les informations personnelles qu'ils fournissent dans leur profil utilisateur. Tous les utilisateurs peuvent voir, modifier ou supprimer leurs informations personnelles à tout moment (sauf qu'ils ne peuvent pas changer leur nom d'utilisateur). Les administrateurs du site Web peuvent également voir et modifier ces informations."
+    },
+    "security": {
+      "title": "Sécurité de vos données",
+      "paragraph1": "Vos données sont stockées en toute sécurité. Nous travaillons avec une agence spécialisée en cybersécurité pour assurer leur protection contre la perte, l'accès non autorisé ou la divulgation."
+    },
+    "rights": {
+      "title": "Les droits que vous avez sur vos données",
+      "paragraph1": "Conformément au RGPD, vous disposez des droits suivants :",
+      "right1": "Accès à vos données",
+      "right2": "Correction",
+      "right3": "Suppression",
+      "right4": "Portabilité",
+      "right5": "Opposition ou restriction du traitement",
+      "paragraph2": "Pour exercer vos droits, contactez-nous à info@biogance.fr. Nous répondrons dans un délai de 30 jours."
+    },
+    "transmission": {
+      "title": "Transmission de vos données personnelles",
+      "paragraph1": "Les commentaires des visiteurs peuvent être vérifiés via un service automatisé de détection de spam."
+    }
+  },
+  "terms": {
+    "scope": {
+      "title": "CHAMP D'APPLICATION ET MODIFICATION DES CONDITIONS GÉNÉRALES DE VENTE",
+      "paragraph1": "Ces Conditions Générales de Vente (CGV) définissent les règles applicables entre BIOGANCE et ses clients pour toute commande passée sur le site www.biogance.fr.",
+      "paragraph2": "En commandant sur notre site, vous acceptez pleinement et sans réserve ces CGV.",
+      "paragraph3": "BIOGANCE se réserve le droit de les mettre à jour à tout moment. En cas de modification, les Conditions Générales en vigueur le jour de la commande s'appliqueront.",
+      "paragraph4": "Ces conditions s'appliquent uniquement aux particuliers résidant en France métropolitaine. Les prix affichés sur le site leur sont réservés exclusivement."
+    },
+    "products": {
+      "title": "PRODUITS ET PRIX",
+      "paragraph1": "Tous les produits proposés par BIOGANCE sont conformes à la législation française en vigueur et répondent aux normes applicables, notamment en matière de santé animale, d'hygiène et de sécurité.",
+      "paragraph2": "BIOGANCE se réserve le droit de modifier son catalogue à tout moment, sans préavis : cela comprend l'ajout, la mise à jour ou la suppression de références de produits.",
+      "paragraph3": "Les prix affichés sur www.biogance.fr sont indiqués en euros, toutes taxes comprises (TTC), hors frais de livraison.",
+      "paragraph4": "Le montant total affiché lors du paiement comprend les détails des produits sélectionnés, les éventuelles réductions et les frais de port applicables. Les codes de réduction ne peuvent pas être combinés et sont soumis à des conditions d'utilisation (validité, montant minimum, etc.). Il appartient au client de vérifier ces conditions avant utilisation.",
+      "paragraph5": "BIOGANCE se réserve le droit de modifier ses prix à tout moment, sans préavis. Cependant, les produits sont facturés en fonction du prix en vigueur au moment de la commande.",
+      "paragraph6": "Pour toute commande livrée hors de France, des droits de douane ou autres taxes locales peuvent s'appliquer et restent à la charge du client. Le client est invité à se renseigner auprès des autorités compétentes de son pays."
+    },
+    "payment": {
+      "title": "PAIEMENT ET SÉCURITÉ",
+      "methodsTitle": "Modes de paiement",
+      "methods": "Le paiement des commandes peut être effectué en utilisant les options suivantes :",
+      "individualsTitle": "Pour les particuliers :",
+      "individual1": "Carte bancaire (Visa, Mastercard, American Express)",
+      "individual2": "PayPal",
+      "professionalsTitle": "Pour les professionnels :",
+      "professional1": "Carte bancaire (Visa, Mastercard, American Express)",
+      "professional2": "PayPal",
+      "professional3": "Virement bancaire (RIB fourni sur demande)",
+      "professional4": "Chèque (à l'ordre de BIOGANCE – 23 Allée Atlantique – 49123 Champtocé-sur-Loire, France)",
+      "checkInfo": "Les commandes payées par chèque ne sont expédiées qu'après réception et validation du paiement. Pour toute commande supérieure à 150 €, l'expédition n'est effectuée qu'après encaissement du chèque. Le nom du client et le numéro de commande doivent figurer au dos du chèque. Les chèques sont conservés pendant 7 jours ; passé ce délai, la commande est automatiquement annulée.",
+      "secureTitle": "Paiement sécurisé",
+      "secure1": "Les transactions par carte bancaire sont totalement sécurisées. Vos coordonnées sont cryptées à l'aide du protocole SSL (Secure Socket Layer) et ne sont jamais transmises en clair. BIOGANCE n'a accès à aucun moment à vos informations bancaires.",
+      "secure2": "Pour renforcer la sécurité, nous utilisons le système 3D Secure (Verified by Visa / MasterCard SecureCode). Il permet à votre banque de vérifier votre identité via une étape d'authentification (code reçu par SMS, date de naissance, mot de passe, etc.).",
+      "secure3": "Si l'authentification 3D Secure échoue, la commande ne peut pas être finalisée."
+    },
+    "ownership": {
+      "title": "RÉSERVE DE PROPRIÉTÉ",
+      "paragraph1": "Conformément à l'article 2367 du Code civil, BIOGANCE reste propriétaire des produits livrés jusqu'au paiement intégral et effectif de leur prix, y compris les frais.",
+      "paragraph2": "Jusqu'à réception du paiement intégral, le client s'engage à ne pas revendre, transformer, mettre en gage ou transférer les produits de quelque manière que ce soit. En cas de non-paiement, BIOGANCE se réserve le droit de récupérer les produits.",
+      "paragraph3": "Le paiement n'est considéré comme effectué qu'après encaissement effectif des sommes dues sur le compte BIOGANCE."
+    },
+    "guarantees": {
+      "title": "GARANTIES LÉGALES",
+      "intro": "Conformément aux dispositions légales en vigueur, tous les produits vendus par BIOGANCE bénéficient de deux garanties légales :",
+      "guarantee1": "la garantie de conformité (articles L217-1 à L217-32 du Code de la consommation).",
+      "guarantee2": "la garantie contre les vices cachés (articles 1641 à 1649 du Code civil).",
+      "conformityTitle": "Garantie légale de conformité",
+      "conformity1": "En cas de produit non conforme (défectueux ou ne correspondant pas à la commande), le client peut demander un remplacement ou un remboursement, gratuitement.",
+      "conformity2": "Le client dispose de 2 ans à compter de la réception du produit pour faire valoir cette garantie.",
+      "conformity3": "Aucune preuve du défaut n'est requise pendant les 12 premiers mois suivant la livraison (sauf pour les biens d'occasion).",
+      "conformity4": "Cette garantie s'applique indépendamment de toute garantie commerciale.",
+      "hiddenDefectsTitle": "Garantie légale contre les vices cachés",
+      "hiddenDefects1": "Si le produit présente un défaut rendant son utilisation impossible ou significativement altérée, le client peut faire appel à la garantie contre les vices cachés dans les 2 ans suivant la découverte du défaut.",
+      "hiddenDefects2": "Il peut demander :",
+      "hiddenDefect1": "soit un remboursement intégral contre retour du produit,",
+      "hiddenDefect2": "soit une réduction du prix si le produit est conservé (article 1644 du Code civil).",
+      "implementationTitle": "Conditions de mise en œuvre",
+      "implementation": "Pour toute demande liée à ces garanties, le client peut contacter le service client BIOGANCE et retourner les produits avec preuve d'achat. Les frais de retour seront remboursés si la garantie est acceptée.",
+      "note": "Ces garanties n'affectent pas le droit de rétractation prévu à l'article 6."
+    },
+    "law": {
+      "title": "LOI APPLICABLE ET LANGUE DU CONTRAT",
+      "paragraph1": "Ces Conditions Générales de Vente sont régies par le droit français.",
+      "paragraph2": "En cas de traduction, seule la version rédigée en français fait foi."
+    },
+    "personalDataScope": {
+      "title": "DONNÉES PERSONNELLES",
+      "paragraph1": "BIOGANCE collecte et traite les données personnelles de ses clients conformément au Règlement (UE) 2016/679 du 27 avril 2016, dit RGPD, et à la loi modifiée sur la protection des données.",
+      "paragraph2": "Les informations collectées sont utilisées uniquement pour la gestion des commandes, les relations clients, la communication commerciale (si acceptée) ou pour répondre aux obligations légales.",
+      "rightsTitle": "Vos droits",
+      "rights": "Le client dispose à tout moment des droits suivants sur ses données :",
+      "right1": "Droit d'accès, de rectification, d'opposition, d'effacement,",
+      "right2": "Droit à la limitation du traitement,",
+      "right3": "Droit à la portabilité des données",
+      "exercise": "Ces droits peuvent être exercés :",
+      "exerciseMethod1": "par courrier : BIOGANCE – ZI Anjou Atlantique, 49123 Champtocé-sur-Loire, France",
+      "exerciseMethod2": "par e-mail : info@biogance.fr",
+      "response": "La demande doit préciser l'objet, les coordonnées complètes du client et être accompagnée d'une pièce d'identité. Une réponse sera fournie dans un délai maximum de 1 mois, prolongeable à 2 mois si nécessaire en cas de demande complexe.",
+      "marketingTitle": "Communication marketing",
+      "marketing": "Le client peut se désabonner des communications (newsletter, offres, SMS) à tout moment :",
+      "marketing1": "via son compte client dans la rubrique 'Mon compte' ;",
+      "marketing2": "ou directement en cliquant sur les liens de désinscription présents dans chaque e-mail/SMS ;",
+      "marketing3": "ou en contactant BIOGANCE par e-mail ou courrier."
+    }
+  }
+
+}

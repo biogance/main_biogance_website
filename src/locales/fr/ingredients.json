@@ -1,0 +1,64 @@
+{
+  "ourIngredients": "Nos Ingrédients.",
+  "forTheMostNaturalProducts": "Pour les produits les plus naturels",
+  "ingredientsDescription": "Chez Biogance, nous croyons au pouvoir des ingrédients naturels pour prendre soin de nos amis à quatre pattes. Nos produits sont formulés avec des ingrédients organiques et naturels soigneusement sélectionnés, spécifiquement adaptés aux besoins de leur peau et de leur pelage.",
+  "bioganceIngredientLibrary": "Bibliothèque d'Ingrédients Biogance",
+  "libraryDescription": "Découvrez notre collection premium d'ingrédients naturels et biologiques, soigneusement sélectionnés pour nourrir la santé, le bien-être de votre animal et soutenir une planète durable.",
+   "Loadmore": "Charger plus",
+  "searchIngredients": "Rechercher des Ingrédients",
+  "allCategories": "Toutes les Catégories",
+  "hydratingAgents": "Agents Hydratants",
+  "soothingAgents": "Agents Apaisants",
+  "calmingAgents": "Agents Calmants",
+  "nourishingOils": "Huiles Nourrissantes",
+  "nourishingAgents": "Agents Nourrissants",
+  "showingResults": "Affichage de 1-9 sur 124",
+  "loadMore": "Charger Plus",
+  "ingredients": {
+    "hyaluronicAcid": {
+      "title": "Acide Hyaluronique",
+      "tag": "Agent Hydratant",
+      "description": "L'acide hyaluronique est un humectant puissant qui attire et lie l'humidité à la peau. Il gonfle la peau et protège le derme. Connu pour sa capacité à..."
+    },
+    "garlic": {
+      "title": "Ail",
+      "tag": "Agent Nourrissant",
+      "description": "L'ail est depuis longtemps utilisé en médecine populaire pour ses divers bienfaits. Ses composés bioactifs, comme l'allicine, sont censés fournir des antioxydants pour aider à purifier..."
+    },
+    "laminariaAlgae": {
+      "title": "Algues Laminaria",
+      "tag": "Agent Apaisant",
+      "description": "Une plante herbacée vivace originaire d'Asie et d'Europe du Sud, la réglisse est appréciée non seulement pour son goût sucré et aromatique, mais aussi pour ses propriétés antioxydantes et..."
+    },
+    "acetylcholineAlgae": {
+      "title": "Algues Acétylcholine",
+      "tag": "Agent Apaisant",
+      "description": "Les algues acétylcholine sont un organisme marin unique connu pour ses propriétés calmantes et nourrissantes. Riches en hydratants naturels, acides aminés et antioxydants, elles sont..."
+    },
+    "allantoin": {
+      "title": "Allantoïne",
+      "tag": "Agent Calmants",
+      "description": "L'allantoïne est un extrait botanique naturellement présent dans la plante de consoude, connue pour ses propriétés apaisantes et cicatrisantes. Elle réduit l'irritation et soutient la barrière cutanée..."
+    },
+    "aloeVera": {
+      "title": "Aloe Vera",
+      "tag": "Agent Hydratant et Apaisant",
+      "description": "L'aloe vera est une plante succulente renommée pour ses propriétés cicatrisantes et apaisantes. Riche en vitamines, minéraux et antioxydants, son gel riche en eau hydrate profondément et..."
+    },
+    "sweetAlmond": {
+      "title": "Amande Douce",
+      "tag": "Huile Nourrissante",
+      "description": "L'huile d'amande douce est une huile douce et nourrissante extraite des amandes. Riche en vitamines E et A, elle procure une hydratation profonde, adoucit la peau et calme les inflammations..."
+    },
+    "greenClay": {
+      "title": "Argile Verte",
+      "tag": "Agent Hydratant et Apaisant",
+      "description": "L'argile verte est une substance riche en minéraux connue pour ses propriétés absorbantes, ce qui la rend particulièrement bénéfique pour la peau grasse. Elle purifie doucement, élimine les impuretés..."
+    },
+    "lawyerAvocado": {
+      "title": "Avocat (Avocat)",
+      "tag": "Agent Nourrissant",
+      "description": "L'huile d'avocat, connue sous le nom de \"Lawyer\" en espagnol, fournit des vitamines A, D et E ainsi que des acides gras essentiels. Sa pénétration profonde aide la peau et les cheveux, et freine la perte d'humidité..."
+    }
+  }
+}

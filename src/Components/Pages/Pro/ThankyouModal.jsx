@@ -78,7 +78,7 @@ export default function ThankYouModal({ onClose }) {
                         <img
                             src="/thankyouPic.png"
                             alt="Laboratory workers"
-                            className="w-[200px] h-[300px] object-fit"
+                            className="w-[250px] h-[300px] object-fit"
                         />
                     </div>
 

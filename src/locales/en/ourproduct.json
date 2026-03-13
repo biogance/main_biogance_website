@@ -1,0 +1,75 @@
+{
+  "categories": [
+    {
+      "id": "dogs",
+      "name": "Dogs & Puppies"
+    },
+    {
+      "id": "cats",
+      "name": "Cats & Kittens"
+    },
+    {
+      "id": "horses",
+      "name": "Horses"
+    },
+    {
+      "id": "mammals",
+      "name": "Small Mammals"
+    },
+    {
+      "id": "birds",
+      "name": "Birds & Poultry"
+    },
+    {
+      "id": "reptiles",
+      "name": "Reptiles"
+    },
+    {
+      "id": "games",
+      "name": "Games & Treats"
+    },
+    {
+      "id": "all",
+      "name": "All Ranges"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Grooming & Care",
+      "image": "https://images.unsplash.com/photo-1641484202528-c33769340d44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGdyb29taW5nJTIwd2hpdGUlMjBkb2d8ZW58MXx8fHwxNzY3OTUzODQ0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      "items": [
+        "Shampoos & Conditioners",
+        "Dry & Leave-In Shampoos",
+        "Sensitive Area Care",
+        "Skin & Coat Care",
+        "Shedding Care",
+        "Detanglers & Brushes",
+        "Anti-Free Radical Treatment",
+        "Dermoccare Veto-Pharma Range"
+      ]
+    },
+    {
+      "title": "Lifestyle & Wellness",
+      "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1080&q=80",
+      "items": [
+        "Relaxation",
+        "Toys & Treats",
+        "Accessories & Textiles",
+        "Scented Waters",
+        "Our Kits",
+        "What's New"
+      ]
+    },
+    {
+      "title": "Health & Nutrition",
+      "image": "https://images.unsplash.com/photo-1629581327302-45202bbc4bd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBidWxsZG9nJTIwb3V0ZG9vcnxlbnwxfHx8fDE3Njc5NTM4NDN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      "items": [
+        "Pest Care",
+        "Food Supplements",
+        "Biogance Premium & Natural Range",
+        "ECOCERT Organiclisme Controlled Range",
+        "Plouf Fruity Range (Low Budget)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "ourIngredients": "Our Ingredients.",
+  "forTheMostNaturalProducts": "For the most natural products",
+  "ingredientsDescription": "At Biogance, we believe in the power of natural ingredients to care for our four-legged friends. Our products are formulated with carefully selected organic and natural ingredients, specifically tailored to the needs of their skin and coat.",
+  "bioganceIngredientLibrary": "Biogance Ingredient Library",
+  "libraryDescription": "Discover our premium collection of natural and organic ingredients, carefully selected to nurture your pet's health, well-being, and support a sustainable planet.",
+  "Loadmore": "Load More",
+  "searchIngredients": "Search Ingredients",
+  "allCategories": "All Categories",
+  "hydratingAgents": "Hydrating Agents",
+  "soothingAgents": "Soothing Agents",
+  "calmingAgents": "Calming Agents",
+  "nourishingOils": "Nourishing Oils",
+  "nourishingAgents": "Nourishing Agents",
+  "showingResults": "Showing 1-9 of 124",
+  "loadMore": "Load More",
+  "ingredients": {
+    "hyaluronicAcid": {
+      "title": "Hyaluronic Acid",
+      "tag": "Hydrating Agent",
+      "description": "Hyaluronic acid is a powerful humectant that attracts and binds moisture to the skin. It plumps the skin and protects the dermis. Known for its ability to..."
+    },
+    "garlic": {
+      "title": "Garlic",
+      "tag": "Nourishing Agent",
+      "description": "Garlic has long been used in folk medicine for its various benefits. Its bioactive compounds, like allicin, are believed to provide antioxidants to aid in purifying..."
+    },
+    "laminariaAlgae": {
+      "title": "Laminaria algae",
+      "tag": "Soothing Agent",
+      "description": "A perennial herbaceous plant native to Asia and southern Europe, licorice is valued not just for its sweet, aromatic flavor, but also for its antioxidant and..."
+    },
+    "acetylcholineAlgae": {
+      "title": "Acetylcholine algae",
+      "tag": "Soothing Agent",
+      "description": "Acetylcholine algae is a unique marine organism known for its calming and nourishing properties. Rich in natural moisturizers, amino acids, and antioxidants, it is..."
+    },
+    "allantoin": {
+      "title": "Allantoin",
+      "tag": "Calming Agent",
+      "description": "Allantoin is a botanical extract naturally present in the comfrey plant, known for its soothing and healing properties. It reduces irritation and supports skin barrier..."
+    },
+    "aloeVera": {
+      "title": "Aloe Vera",
+      "tag": "Hydrating & Soothing Agent",
+      "description": "Aloe vera is a succulent plant renowned for its healing and soothing properties. Packed with vitamins, minerals, and antioxidants, its water-rich gel deeply and..."
+    },
+    "sweetAlmond": {
+      "title": "Sweet Almond",
+      "tag": "Nourishing Oil",
+      "description": "Sweet Almond oil is a gentle and nourishing oil extracted from almonds. Packed with vitamins E and A, it provides deep hydration, softens the skin, and calms inflammation..."
+    },
+    "greenClay": {
+      "title": "Green Clay",
+      "tag": "Hydrating & Soothing Agent",
+      "description": "Green clay is a mineral-rich substance known for its absorbent properties, making it especially beneficial for oily skin. It gently purifies, removes impurities..."
+    },
+    "lawyerAvocado": {
+      "title": "Lawyer (Avocado)",
+      "tag": "Nourishing Agent",
+      "description": "Avocado oil, known as \"Lawyer\" in Spanish, supplies vitamins A, D, and E along with essential fatty acids. Its deep penetration helps skin and hair, and curbs moisture..."
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "company": {
+    "description": "Biogance blends science and nature to craft eco-certified pet care made in France — promoting animal well-being, sustainability, and safe, effective care for your companions.",
+    "address": "ZI Anjou Atlantique, Angers, France",
+    "email": "info@biogance.fr",
+    "phone": "+33 2 41 73 15 15"
+  },
+  "social": {
+    "title": "Share your experience",
+    "biogance": "@bioganceofficiel",
+    "ekinat": "@ekinatofficiel"
+  },
+  "newsletter": {
+    "title": "Subscribe to our newsletter",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "john_doe@gmail.com",
+    "subscribeButton": "Subscribe"
+  },
+  "mobileApp": {
+    "title": "Download App on Mobile",
+    "googlePlay": "Download on Google Play",
+    "appStore": "Download on the App Store"
+  },
+  "categories": {
+    "dogs": {
+      "title": "Dogs & Puppies",
+      "items": [
+        "Shampoos & Conditioners",
+        "Dry & No-Rinse Shampoos",
+        "Detanglers & brushes",
+        "Care for sensitive areas",
+        "Skin & Coat Care",
+        "Parasite control treatment",
+        "Anti-free radical treatment",
+        "Shedding care",
+        "Clean up and protect your environment",
+        "Dietary supplements",
+        "Relaxation & unwinding",
+        "Preparation for exertion & recovery",
+        "Perfumed waters",
+        "Toys & treats",
+        "Bath accessories",
+        "Our selection",
+        "What's new"
+      ]
+    },
+    "cats": {
+      "title": "Cats & Kittens",
+      "items": [
+        "Shampoos & Conditioners",
+        "Dry & No-Rinse Shampoos",
+        "Detanglers & brushes",
+        "Care for sensitive areas",
+        "Skin & Coat Care",
+        "Parasite control treatment",
+        "Anti-free radical treatment",
+        "Shedding care",
+        "Clean up and protect your environment",
+        "Dietary supplements",
+        "Relaxation & unwinding",
+        "Perfumed waters",
+        "Bath accessories",
+        "Our selection",
+        "What's new"
+      ]
+    },
+    "horses": {
+      "title": "Horses",
+      "items": [
+        "Dress care",
+        "Limb care",
+        "Foot care",
+        "Back care",
+        "Preparation for exertion & recovery",
+        "Accessories",
+        "Our selection",
+        "What's new",
+        "Follow the Ekinat adventures"
+      ]
+    },
+    "smallMammals": {
+      "title": "Small Mammals",
+      "items": [
+        "Rabbits",
+        "Ferrets",
+        "Hamster",
+        "Accessories and textiles",
+        "Our selection",
+        "What's new"
+      ]
+    },
+    "birdsPoultry": {
+      "title": "Birds & Poultry",
+      "items": [
+        "Bird",
+        "Farmyard",
+        "Dietary supplements",
+        "What's new"
+      ]
+    },
+    "reptiles": {
+      "title": "Reptiles",
+      "items": [
+        "Tortoise",
+        "Terrarium maintenance"
+      ]
+    }
+  },
+  "productRanges": {
+    "title": "Our Products Ranges",
+    "items": [
+      "BIOGANCE, premium et naturel",
+      "ORGANISSIME, botany",
+      "PLOUIF, fruity at a low price",
+      "DERMOCARE, veterinary pharmacy",
+      "EKINAT, natural equine",
+      "BIOSPOTIX, repellent",
+      "PHYTOCARE, food supplements",
+      "SPA, for a targeted treatment ritual",
+      "ERGOLANCE, ergonomic brushes",
+      "TRIANDISES, official Ossobello reseller",
+      "TOYS, exclusive West Paw retailer"
+    ]
+  },
+  "laboratory": {
+    "title": "Our Laboratory",
+    "items": [
+      "Who are we?",
+      "Nos engagements",
+      "Nos certifications",
+      "Our expert tips",
+      "Our ingredients",
+      "Join the loyalty program",
+      "Write to us"
+    ]
+  },
+  "professional": {
+    "title": "Professional",
+    "items": [
+      "Groomers & other Professionals",
+      "Become one of our Ambassadors"
+    ]
+  },
+  "ambassador": {
+    "title": "Ambassador",
+    "items": [
+      "To become a Biogance ambassador",
+      "Join the Biogance partners",
+      "Become an Ekinat partner"
+    ]
+  },
+  "news": {
+    "title": "News",
+    "items": [
+      "News",
+      "The latest expert advice"
+    ]
+  },
+  "bottom": {
+    "copyright": "© 2025 Biogance. All rights reserved.",
+    "conception": "Conception",
+    "agency": "Agency Fifteen",
+    "faqs": "FAQs",
+    "disclaimer": "Disclaimer for BIOGANCE",
+    "shipping": "Shipping & Return",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PiDog } from 'react-icons/pi';
+import { useTranslation } from 'react-i18next';
 
 // Shimmer Card Component with inline styles
 const ShimmerCard = () => (
@@ -59,20 +60,21 @@ const LoadingCard = () => (
   </div>
 );
 
-export default function LandingCategories() {
+export default function LandingCategories({ data }) {
+  const { t } = useTranslation('home');
   const [loadingState, setLoadingState] = useState('shimmer'); // shimmer, spinner, loaded
 
   const categories = [
-    { icon: PiDog, label: 'Dogs & Puppies' },
-    { icon: PiDog, label: 'Cats & Kittens' },
-    { icon: PiDog, label: 'Birds' },
-    { icon: PiDog, label: 'Fish & Aquarium' },
-    { icon: PiDog, label: 'Small Pets' },
-    { icon: PiDog, label: 'Reptiles' },
-    { icon: PiDog, label: 'Farm Animals' },
-    { icon: PiDog, label: 'Pet Accessories' },
-    { icon: PiDog, label: 'Pet Food' },
-    { icon: PiDog, label: 'Pet Services' },
+    { icon: PiDog, label: t('categories.dogs') },
+    { icon: PiDog, label: t('categories.cats') },
+    { icon: PiDog, label: t('categories.birds') },
+    { icon: PiDog, label: t('categories.fish') },
+    { icon: PiDog, label: t('categories.smallPets') },
+    { icon: PiDog, label: t('categories.reptiles') },
+    { icon: PiDog, label: t('categories.farmAnimals') },
+    { icon: PiDog, label: t('categories.accessories') },
+    { icon: PiDog, label: t('categories.food') },
+    { icon: PiDog, label: t('categories.services') },
   ];
 
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function LandingCategories() {
 
       <div className="max-w-7xl mx-auto">
         <h2 className="text-center text-3xl font-semibold text-black mb-12">
-          Explore our curated collections
+          {t('categories.title')}
         </h2>
 
         {/* Horizontal Scrollable Container */}
@@ -146,7 +148,7 @@ export default function LandingCategories() {
                   return (
                     <div
                       key={index}
-                      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
+                      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
                     >
                       <Icon className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-gray-700 rounded-xl bg-[#F7F7F7] p-3" />
                       <p className="text-center text-xs sm:text-sm font-bold text-gray-600 whitespace-nowrap">

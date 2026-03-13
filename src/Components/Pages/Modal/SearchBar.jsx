@@ -1,13 +1,26 @@
+"use client"
+
 import React, { useState, useRef, useEffect } from 'react';
 import { IoSearch, IoChevronDown } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
 
 const SearchBar = () => {
+  const { t } = useTranslation('searchmodal');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('Select Category');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const dropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
 
-  const categories = ['Select Category', 'Dogs', 'Cats', 'Horses', 'Small Mammals'];
+  // Get categories from translations
+  const categoriesData = t('searchCategories', { returnObjects: true, defaultValue: [] });
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+
+  // Set default category on mount
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0].label);
+    }
+  }, [categories, selectedCategory]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -35,7 +48,7 @@ const SearchBar = () => {
         <div className="hidden md:flex gap-0">
           <input
             type="text"
-            placeholder="Search for Products"
+            placeholder={t('searchPlaceholder')}
             className="flex-1 border border-gray-300 text-gray-700 rounded-l-lg px-4 py-3.5 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
           />
           <div className="relative border-l-0" ref={dropdownRef}>
@@ -43,7 +56,7 @@ const SearchBar = () => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="appearance-none cursor-pointer border-y border-r border-gray-300 px-6 py-3.5 pr-12 text-sm text-gray-500 bg-white focus:outline-none focus:border-gray-400 transition-colors h-full min-w-[180px] text-left"
             >
-              {selectedCategory}
+              {selectedCategory || t('selectCategory')}
             </button>
             <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             {isDropdownOpen && (
@@ -51,10 +64,10 @@ const SearchBar = () => {
                 {categories.map((category, index) => (
                   <div
                     key={index}
-                    onClick={() => handleCategorySelect(category)}
+                    onClick={() => handleCategorySelect(category.label)}
                     className="px-6 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-black hover:text-white transition-colors"
                   >
-                    {category}
+                    {category.label}
                   </div>
                 ))}
               </div>
@@ -71,7 +84,7 @@ const SearchBar = () => {
           <div className="flex gap-0">
             <input
               type="text"
-              placeholder="Search for Products"
+              placeholder={t('searchPlaceholder')}
               className="flex-1 border border-gray-300 text-gray-700 rounded-l-lg px-3 py-3 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
             />
             <button className="bg-black text-white cursor-pointer rounded-r-lg px-6 py-3 hover:bg-gray-800 transition-colors flex items-center justify-center">
@@ -85,7 +98,7 @@ const SearchBar = () => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="w-full appearance-none cursor-pointer border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400 transition-colors text-left"
             >
-              {selectedCategory}
+              {selectedCategory || t('selectCategory')}
             </button>
             <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             {isDropdownOpen && (
@@ -93,10 +106,10 @@ const SearchBar = () => {
                 {categories.map((category, index) => (
                   <div
                     key={index}
-                    onClick={() => handleCategorySelect(category)}
+                    onClick={() => handleCategorySelect(category.label)}
                     className="px-4 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-black hover:text-white transition-colors"
                   >
-                    {category}
+                    {category.label}
                   </div>
                 ))}
               </div>

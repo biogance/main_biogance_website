@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "../redux/provider";
+import I18nProvider from "../Components/I18nProvider"; // Ye component banaenge
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,9 +40,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <ReduxProvider>{children}</ReduxProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <ReduxProvider>
+          <I18nProvider>
+            {children}
+          </I18nProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

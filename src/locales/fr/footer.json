@@ -1,0 +1,169 @@
+{
+  "company": {
+    "description": "Biogance allie science et nature pour créer des soins pour animaux éco-certifiés fabriqués en France — promouvant le bien-être animal, la durabilité et des soins sûrs et efficaces pour vos compagnons.",
+    "address": "ZI Anjou Atlantique, Angers, France",
+    "email": "info@biogance.fr",
+    "phone": "+33 2 41 73 15 15"
+  },
+  "social": {
+    "title": "Partagez votre expérience",
+    "biogance": "@bioganceofficiel",
+    "ekinat": "@ekinatofficiel"
+  },
+  "newsletter": {
+    "title": "Abonnez-vous à notre newsletter",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "john_doe@gmail.com",
+    "subscribeButton": "S'abonner"
+  },
+  "mobileApp": {
+    "title": "Télécharger l'application mobile",
+    "googlePlay": "Télécharger sur Google Play",
+    "appStore": "Télécharger sur l'App Store"
+  },
+  "categories": {
+    "dogs": {
+      "title": "Chiens & Chiots",
+      "items": [
+        "Shampooings & Après-shampooings",
+        "Shampooings Secs & Sans Rinçage",
+        "Démêlants & brosses",
+        "Soins pour zones sensibles",
+        "Soins de la Peau & du Pelage",
+        "Traitement antiparasitaire",
+        "Traitement anti-radicaux libres",
+        "Soins de la mue",
+        "Nettoyer et protéger votre environnement",
+        "Compléments alimentaires",
+        "Relaxation & détente",
+        "Préparation à l'effort & récupération",
+        "Eaux parfumées",
+        "Jouets & friandises",
+        "Accessoires de bain",
+        "Notre sélection",
+        "Nouveautés"
+      ]
+    },
+    "cats": {
+      "title": "Chats & Chatons",
+      "items": [
+        "Shampooings & Après-shampooings",
+        "Shampooings Secs & Sans Rinçage",
+        "Démêlants & brosses",
+        "Soins pour zones sensibles",
+        "Soins de la Peau & du Pelage",
+        "Traitement antiparasitaire",
+        "Traitement anti-radicaux libres",
+        "Soins de la mue",
+        "Nettoyer et protéger votre environnement",
+        "Compléments alimentaires",
+        "Relaxation & détente",
+        "Eaux parfumées",
+        "Accessoires de bain",
+        "Notre sélection",
+        "Nouveautés"
+      ]
+    },
+    "horses": {
+      "title": "Chevaux",
+      "items": [
+        "Soins de la robe",
+        "Soins des membres",
+        "Soins des pieds",
+        "Soins du dos",
+        "Préparation à l'effort & récupération",
+        "Accessoires",
+        "Notre sélection",
+        "Nouveautés",
+        "Suivez les aventures Ekinat"
+      ]
+    },
+    "smallMammals": {
+      "title": "Petits Mammifères",
+      "items": [
+        "Lapins",
+        "Furets",
+        "Hamster",
+        "Accessoires et textiles",
+        "Notre sélection",
+        "Nouveautés"
+      ]
+    },
+    "birdsPoultry": {
+      "title": "Oiseaux & Volaille",
+      "items": [
+        "Oiseau",
+        "Basse-cour",
+        "Compléments alimentaires",
+        "Nouveautés"
+      ]
+    },
+    "reptiles": {
+      "title": "Reptiles",
+      "items": [
+        "Tortue",
+        "Entretien du terrarium"
+      ]
+    }
+  },
+  "productRanges": {
+    "title": "Nos Gammes de Produits",
+    "items": [
+      "BIOGANCE, premium et naturel",
+      "ORGANISSIME, botanique",
+      "PLOUIF, fruité à petit prix",
+      "DERMOCARE, pharmacie vétérinaire",
+      "EKINAT, équin naturel",
+      "BIOSPOTIX, répulsif",
+      "PHYTOCARE, compléments alimentaires",
+      "SPA, pour un rituel de soins ciblés",
+      "ERGOLANCE, brosses ergonomiques",
+      "TRIANDISES, revendeur officiel Ossobello",
+      "TOYS, détaillant exclusif West Paw"
+    ]
+  },
+  "laboratory": {
+    "title": "Notre Laboratoire",
+    "items": [
+      "Qui sommes-nous ?",
+      "Nos engagements",
+      "Nos certifications",
+      "Nos conseils d'experts",
+      "Nos ingrédients",
+      "Rejoindre le programme de fidélité",
+      "Écrivez-nous"
+    ]
+  },
+  "professional": {
+    "title": "Professionnel",
+    "items": [
+      "Toiletteurs & autres Professionnels",
+      "Devenez l'un de nos Ambassadeurs"
+    ]
+  },
+  "ambassador": {
+    "title": "Ambassadeur",
+    "items": [
+      "Devenir ambassadeur Biogance",
+      "Rejoindre les partenaires Biogance",
+      "Devenir partenaire Ekinat"
+    ]
+  },
+  "news": {
+    "title": "Actualités",
+    "items": [
+      "Actualités",
+      "Les derniers conseils d'experts"
+    ]
+  },
+  "bottom": {
+    "copyright": "© 2026 Biogance. Tous droits réservés.",
+    "conception": "Conception",
+    "agency": "Agency Fifteen",
+    "faqs": "FAQs",
+    "disclaimer": "Avertissement pour BIOGANCE",
+    "shipping": "Expédition & Retour",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions Générales"
+  }
+}

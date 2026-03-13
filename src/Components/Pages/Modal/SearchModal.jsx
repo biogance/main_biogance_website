@@ -1,7 +1,10 @@
+"use client"
+
 import React, { useState, useRef, useEffect } from 'react';
 import { IoClose, IoSearch } from 'react-icons/io5';
 import styled, { keyframes } from 'styled-components';
 import SearchBar from './SearchBar';
+import { useTranslation } from 'react-i18next';
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
   return (
@@ -102,17 +105,6 @@ const LoadingProductItem = () => (
 );
 
 // Sample Data
-const recentSearches = [
-  'Behavior',
-  'Health',
-  'Tips & Tricks',
-  'Hygiene',
-  'For Cats',
-  'For Nacs',
-  'For Dog',
-  'Education',
-];
-
 const popularProducts = [
   {
     id: 1,
@@ -169,21 +161,26 @@ const bestSellingProducts = [
   },
 ];
 
-const RecentSearches = ({ searches }) => (
-  <div className="mb-8 max-w-4xl mx-auto">
-    <h3 className="text-sm font-medium text-gray-800 mb-4">Recent Search</h3>
-    <div className="flex flex-wrap gap-2">
-      {searches.map((search, index) => (
-        <button
-          key={index}
-          className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
-        >
-          {search}
-        </button>
-      ))}
+
+const RecentSearches = ({ searches }) => {
+  const { t } = useTranslation('searchmodal');
+  
+  return (
+    <div className="mb-8 max-w-4xl mx-auto">
+      <h3 className="text-sm font-medium text-gray-800 mb-4">{t('recentSearch')}</h3>
+      <div className="flex flex-wrap gap-2">
+        {searches.map((search, index) => (
+          <button
+            key={index}
+            className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
+          >
+            {search}
+          </button>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProductItem = ({ product }) => (
   <div
@@ -221,7 +218,6 @@ const ProductList = ({ title, products, isLoading }) => (
     <h3 className="text-lg font-semibold mb-6 text-gray-900">{title}</h3>
     <div className="space-y-5">
       {isLoading ? (
-        // Show 3 loading items
         Array.from({ length: 3 }).map((_, index) => (
           <LoadingProductItem key={index} />
         ))
@@ -234,17 +230,18 @@ const ProductList = ({ title, products, isLoading }) => (
   </div>
 );
 
-
-
 export const SearchModal = ({ isOpen, onClose }) => {
+  const { t } = useTranslation('searchmodal');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get searches from translations
+  const recentSearches = t('searches', { returnObjects: true, defaultValue: [] });
+  const searchesArray = Array.isArray(recentSearches) ? recentSearches : [];
 
   useEffect(() => {
     if (isOpen) {
-      // Reset loading state when modal opens
       setIsLoading(true);
       
-      // Simulate loading for 3 seconds
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 3000);
@@ -285,20 +282,20 @@ export const SearchModal = ({ isOpen, onClose }) => {
           <SearchBar />
 
           {/* Recent Searches */}
-          <RecentSearches searches={recentSearches} />
+          <RecentSearches searches={searchesArray} />
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Popular Products */}
             <ProductList 
-              title="Popular Products" 
+              title={t('popularProducts')}
               products={popularProducts}
               isLoading={isLoading}
             />
 
             {/* Best Selling */}
             <ProductList 
-              title="Best Selling" 
+              title={t('bestSelling')}
               products={bestSellingProducts}
               isLoading={isLoading}
             />
@@ -308,4 +305,3 @@ export const SearchModal = ({ isOpen, onClose }) => {
     </div>
   );
 };
-

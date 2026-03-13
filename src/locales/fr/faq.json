@@ -1,0 +1,92 @@
+ {
+ "faq": {
+    "title": "Foire Aux Questions",
+    "subtitle": "(FAQ)",
+    "sections": {
+      "aboutBiogance": {
+        "title": "1. À propos de Biogance",
+        "q1": {
+          "question": "Qu'est-ce qui différencie les produits Biogance des autres marques de soins pour animaux ?",
+          "answer": "Biogance est un pionnier des soins pour animaux biologiques et naturels, utilisant des ingrédients certifiés ECOCERT, des normes de production GMP et des formules sans parabènes, phénoxyéthanol et huiles animales."
+        },
+        "q2": {
+          "question": "Les produits Biogance sont-ils testés sur les animaux ?",
+          "answer": "Non. Nos produits ne sont jamais testés sur les animaux. Nous sommes vraiment engagés envers le bien-être animal, la sécurité et la durabilité."
+        },
+        "q3": {
+          "question": "Tous ces produits sont-ils testés sur les animaux ?",
+          "answer": "Oui ! Notre gamme biologique comprend des produits tels que citron, arbre à thé, oiseaux, roselle et petits mammifères, chacun formulé pour leurs besoins spécifiques."
+        }
+      },
+      "ordersShipping": {
+        "title": "2. Commandes et Livraison",
+        "q1": {
+          "question": "Comment puis-je suivre ma commande ?",
+          "answer": "Une fois votre commande confirmée, vous recevrez un lien de suivi par email. Vous pouvez également consulter Mon Compte → Mes Commandes."
+        },
+        "q2": {
+          "question": "Combien de temps prend la livraison ?",
+          "answer": "Les délais de livraison varient selon l'emplacement, mais la plupart des commandes sont traitées dans les 24 à 48 heures et livrées en 3 à 5 jours ouvrables."
+        },
+        "q3": {
+          "question": "Puis-je annuler ma commande ?",
+          "answer": "Oui, si votre commande n'a pas encore été expédiée, vous pouvez l'annuler directement depuis Mes Commandes. Si elle a déjà été envoyée, veuillez utiliser notre processus de retour ; nous la retournerons si vous souhaitez un remboursement avant même qu'elle ne soit livrée."
+        }
+      },
+      "returnsRefunds": {
+        "title": "3. Retours et Remboursements",
+        "q1": {
+          "question": "Que faire si je reçois un produit endommagé ou défectueux ?",
+          "answer": "Si un produit arrive défectueux (par exemple, pompe cassée, fuite), vous pouvez demander un remboursement ou un échange depuis l'onglet Support et Remboursements de votre compte."
+        },
+        "q2": {
+          "question": "Combien de temps prend un remboursement ?",
+          "answer": "Les remboursements sont généralement traités dans les 7 à 10 jours ouvrables après réception du produit retourné."
+        }
+      },
+      "loyaltyProgram": {
+        "title": "4. Programme de Fidélité",
+        "q1": {
+          "question": "Comment fonctionne le programme de fidélité Biogance ?",
+          "answer": "Pour chaque 10 € dépensés, vous gagnez 1 point. Chaque point équivaut à 1 €, que vous pouvez convertir en bons de réduction. Vous gagnez également des points bonus lors de votre anniversaire, inscription à la newsletter ou sondages."
+        },
+        "q2": {
+          "question": "Puis-je transférer mes points de fidélité ?",
+          "answer": "Non, les points sont limités au compte et ne peuvent pas être transférés ou partagés."
+        }
+      },
+      "accountSettings": {
+        "title": "5. Mon Compte et Paramètres",
+        "q1": {
+          "question": "Puis-je mettre à jour mon mot de passe quelque part ?",
+          "answer": "Oui. Dans Paramètres → Mettre à jour le mot de passe, vous pouvez le modifier à tout moment. Pour des raisons de sécurité, la mise à jour de votre mot de passe vous déconnectera de tous les appareils."
+        },
+        "q2": {
+          "question": "Combien d'animaux puis-je ajouter à mon compte ?",
+          "answer": "Vous pouvez ajouter jusqu'à 5 animaux. Cela nous aide à recommander des produits adaptés."
+        },
+        "q3": {
+          "question": "Que se passe-t-il si je supprime mon compte ?",
+          "answer": "Lorsque vous demandez la suppression de votre compte, nous vous demanderons une raison (les commentaires nous aident à nous améliorer). Après confirmation, votre compte et vos données seront définitivement supprimés."
+        }
+      },
+      "supportRefunds": {
+        "title": "6. Support et Remboursements",
+        "q1": {
+          "question": "Comment puis-je contacter le support ?",
+          "answer": "Vous pouvez soumettre des tickets directement dans Mon Compte → Support et Remboursements. Vous verrez tous les tickets actifs et fermés avec l'historique des discussions."
+        },
+        "q2": {
+          "question": "Pour quels problèmes puis-je créer un ticket ?",
+          "answer": "Les raisons courantes incluent :",
+          "list": {
+            "item1": "Remboursement de commande",
+            "item2": "Demande de produit",
+            "item3": "Retard de livraison",
+            "item4": "Problème de qualité"
+          }
+        }
+      }
+    }
+  }
+}
