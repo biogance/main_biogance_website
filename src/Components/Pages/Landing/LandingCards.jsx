@@ -150,7 +150,8 @@ export default function PopularProducts({
   title = 'Popular Products', 
   isWishlist = false, 
   isFavourite = false, 
-  isHorizontal = false 
+  isHorizontal = false,
+  data
 }) {
   const { t } = useTranslation('home');
  

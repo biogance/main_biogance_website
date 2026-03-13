@@ -60,7 +60,7 @@ const LoadingCard = () => (
   </div>
 );
 
-export default function LandingCategories() {
+export default function LandingCategories({ data }) {
   const { t } = useTranslation('home');
   const [loadingState, setLoadingState] = useState('shimmer'); // shimmer, spinner, loaded
 

@@ -1,7 +1,9 @@
-import React from 'react'
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const LandingFeatures = () => {
+// LandingFeatures has no dynamic API data — it's static feature info.
+// The data prop is accepted but unused (keeps interface consistent).
+export const LandingFeatures = ({ data }) => {
   const { t } = useTranslation();
 
   const features = [
@@ -30,8 +32,11 @@ export const LandingFeatures = () => {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <div key={index} className="flex flex-col border border-[#E2E2E2] rounded-xl p-4 items-start gap-3">
-                <Icon className="w-10 h-10 stroke-[1.5]" />
+              <div
+                key={index}
+                className="flex flex-col border border-[#E2E2E2] rounded-xl p-4 items-start gap-3"
+              >
+                <Icon />
                 <div>
                   <h3 className="text-base text-black font-bold mb-1">
                     {t(`home:features.${feature.translationKey}.title`)}

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
+import axios from 'axios';
 import Navbar from '../Navbar';
 import LandingCards from './LandingCards';
 import { LandingFeatures } from './LandingFeatures';
@@ -12,6 +13,7 @@ import LandingBanner from './LandingBanner';
 import Footer from '../Footer';
 import LandingCategories from './LandingCategories';
 import { useTranslation } from 'react-i18next';
+import { BASE_URL } from '../../API/API';
 
 const heroSlides = [
   {
@@ -39,16 +41,29 @@ const heroSlides = [
 export default function HeroSection() {
   const { t } = useTranslation('home');
   const [currentSlide, setCurrentSlide] = useState(0);
-  const hasMultipleSlides = heroSlides.length > 1;
+  const [apiData, setApiData] = useState(null);
+  
+  const slides = apiData?.heroSlides || heroSlides;
+  const hasMultipleSlides = slides.length > 1;
 
-  // ✅ heroContent ko component ke ANDAR move kiya
+  useEffect(() => {
+    axios.post(`${BASE_URL}/web/home`)
+      .then(res => {
+        console.log('=== API Response Start ===');
+        console.log(JSON.stringify(res.data, null, 2));
+        console.log('=== API Response End ===');
+        setApiData(res.data);
+      })
+      .catch(err => console.error('API Error:', err));
+  }, []);
+
   const heroContent = {
-    tagline: t('hero.tagline'),
-    heading: t('hero.heading'),
-    description: t('hero.description'),
+    tagline: apiData?.tagline || t('hero.tagline'),
+    heading: apiData?.heading || t('hero.heading'),
+    description: apiData?.description || t('hero.description'),
   };
 
-  const currentSlideData = heroSlides[currentSlide];
+  const currentSlideData = slides[currentSlide];
   const isCurrentVideo = currentSlideData.type === 'video';
 
   // Auto-scroll functionality
@@ -58,25 +73,25 @@ export default function HeroSection() {
     const duration = isCurrentVideo ? 49000 : 2500;
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, duration);
 
     return () => clearInterval(interval);
-  }, [hasMultipleSlides, isCurrentVideo, currentSlide]);
+  }, [hasMultipleSlides, isCurrentVideo, currentSlide, slides.length]);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
   };
 
   const goToPrevious = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const goToNext = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  const currentImageUrl = heroSlides[currentSlide].url;
+  const currentImageUrl = slides[currentSlide].url;
 
   return (
     <>
@@ -170,7 +185,7 @@ export default function HeroSection() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {heroSlides.map((_, index) => (
+                  {slides.map((_, index) => (
                     <div
                       key={index}
                       onClick={() => goToSlide(index)}
@@ -205,7 +220,7 @@ export default function HeroSection() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {heroSlides.map((_, index) => (
+                    {slides.map((_, index) => (
                       <div
                         key={index}
                         onClick={() => goToSlide(index)}
@@ -225,14 +240,14 @@ export default function HeroSection() {
       </main>
 
       {/* Sections */}
-      <LandingCategories />
-      <LandingCards />
-      <LandingFeatures />
-      <LandingProductFinder />
-      <LandingCards title="Best Selling" />
-      <LandingExpertAdvice />
-      <LandingReview />
-      <LandingBanner />
+      <LandingCategories data={apiData} />
+      <LandingCards data={apiData} />
+      <LandingFeatures data={apiData} />
+      <LandingProductFinder data={apiData} />
+      <LandingCards title="Best Selling" data={apiData} />
+      <LandingExpertAdvice data={apiData} />
+      <LandingReview data={apiData} />
+      <LandingBanner data={apiData} />
       <Footer />
     </>
   );

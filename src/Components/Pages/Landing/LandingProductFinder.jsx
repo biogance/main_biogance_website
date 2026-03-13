@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-export function LandingProductFinder() {
+export function LandingProductFinder({ data }) {
   const { t } = useTranslation('home');
   const [selectedPet, setSelectedPet] = useState('');
   const [expandedSection, setExpandedSection] = useState(null);
