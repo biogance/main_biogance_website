@@ -1,22 +1,16 @@
+import { MEDIA_URL } from '@/Components/API/API';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FiX } from 'react-icons/fi';
 
-const BASE_MEDIA_URL = 'https://your-cdn.com/'; // replace with your actual CDN base URL
-
-// Static fallback images (used only when API has no banner data)
-const FALLBACK_IMAGES = ['/1.svg', '/2.svg', '/3.svg', '/4.svg', '/5.svg'];
-
 const LandingBanner = ({ data }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
 
-  // API provides data.home_middle_banner — array of banner objects with .media paths
-  // Also data.home_header_banner is available for hero banners if needed
-  const apiBanners = data?.home_middle_banner || [];
-  const imageList =
-    apiBanners.length > 0
-      ? apiBanners.map((b) => `${BASE_MEDIA_URL}${b.media}`)
-      : FALLBACK_IMAGES;
+  const blogs = data?.blogs || [];
+  const imageList = blogs.flatMap((blog) =>
+    (blog.images || []).map((img) => `${MEDIA_URL}${img.media}`)
+  ).slice(0, 5);
 
   useEffect(() => {
     if (selectedImage) {
@@ -35,51 +29,67 @@ const LandingBanner = ({ data }) => {
     }
   }, [selectedImage]);
 
-  if (imageList.length === 0) return null;
+  const isLoading = !data;
 
-  // Determine grid columns based on number of banners (max 5)
-  const colCount = Math.min(imageList.length, 5);
+  if (!isLoading && imageList.length === 0) return null;
+
+  const colCount = isLoading ? 5 : Math.min(imageList.length, 5);
   const gridStyle = { gridTemplateColumns: `repeat(${colCount}, 1fr)` };
 
   return (
     <div className="w-full overflow-hidden">
       <div className="grid gap-0 h-48 md:h-64 lg:h-80" style={gridStyle}>
-        {imageList.slice(0, 5).map((src, index) => (
-          <div key={index} className="relative">
+        {isLoading
+          ? Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="relative overflow-hidden bg-gray-200 animate-pulse" />
+            ))
+          : imageList.map((src, index) => (
+          <div key={index} className="relative overflow-hidden">
             <Image
               src={src}
-              alt={`Banner ${index + 1}`}
+              alt={`Blog ${index + 1}`}
               fill
               className="object-cover cursor-pointer hover:scale-110 transition-transform duration-700"
-              onClick={() => setSelectedImage(src)}
+              onClick={() => {
+                const img = new window.Image();
+                img.onload = () => {
+                  const maxW = window.innerWidth * 0.9;
+                  const maxH = window.innerHeight * 0.9;
+                  const ratio = img.naturalWidth / img.naturalHeight;
+                  let w = img.naturalWidth;
+                  let h = img.naturalHeight;
+                  if (w > maxW) { w = maxW; h = w / ratio; }
+                  if (h > maxH) { h = maxH; w = h * ratio; }
+                  setImgSize({ width: Math.round(w), height: Math.round(h) });
+                  setSelectedImage(src);
+                };
+                img.src = src;
+              }}
               priority={index < 3}
               loading={index >= 3 ? 'lazy' : 'eager'}
-              onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
         ))}
       </div>
 
-      {/* Lightbox */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative">
+          <div className="relative" onClick={(e) => e.stopPropagation()} style={{ width: imgSize.width, height: imgSize.height }}>
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
             >
               <FiX size={20} />
             </button>
-            <Image
+            <img
               src={selectedImage}
               alt="Preview"
-              width={500}
-              height={500}
-              className="w-[500px] h-[500px] object-cover rounded-lg"
-              onClick={(e) => e.stopPropagation()}
+              width={imgSize.width}
+              height={imgSize.height}
+              className="w-full h-full object-contain rounded-lg"
             />
           </div>
         </div>

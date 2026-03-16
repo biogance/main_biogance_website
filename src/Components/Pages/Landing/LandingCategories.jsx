@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PiDog } from 'react-icons/pi';
 import { useTranslation } from 'react-i18next';
+import { MEDIA_URL } from '../../API/API';
 
 // Shimmer Card Component with inline styles
 const ShimmerCard = () => (
@@ -61,38 +61,24 @@ const LoadingCard = () => (
 );
 
 export default function LandingCategories({ data }) {
-  const { t } = useTranslation('home');
-  const [loadingState, setLoadingState] = useState('shimmer'); // shimmer, spinner, loaded
+  const { t, i18n } = useTranslation('home');
+  const isFrench = i18n.language === 'fr';
+  const [loadingState, setLoadingState] = useState('shimmer');
 
-  const categories = [
-    { icon: PiDog, label: t('categories.dogs') },
-    { icon: PiDog, label: t('categories.cats') },
-    { icon: PiDog, label: t('categories.birds') },
-    { icon: PiDog, label: t('categories.fish') },
-    { icon: PiDog, label: t('categories.smallPets') },
-    { icon: PiDog, label: t('categories.reptiles') },
-    { icon: PiDog, label: t('categories.farmAnimals') },
-    { icon: PiDog, label: t('categories.accessories') },
-    { icon: PiDog, label: t('categories.food') },
-    { icon: PiDog, label: t('categories.services') },
-  ];
+  const categories = data?.categories || [];
 
   useEffect(() => {
-    // First show shimmer for 1.5 seconds
-    const shimmerTimer = setTimeout(() => {
-      setLoadingState('spinner');
-    }, 1500);
-
-    // Then show spinner for 1.5 seconds
-    const spinnerTimer = setTimeout(() => {
+    if (categories.length > 0) {
       setLoadingState('loaded');
-    }, 3000);
-
+      return;
+    }
+    const shimmerTimer = setTimeout(() => setLoadingState('spinner'), 1500);
+    const spinnerTimer = setTimeout(() => setLoadingState('loaded'), 3000);
     return () => {
       clearTimeout(shimmerTimer);
       clearTimeout(spinnerTimer);
     };
-  }, []);
+  }, [categories.length]);
 
   return (
     <section className="bg-gray-100 py-16 px-6">
@@ -133,30 +119,32 @@ export default function LandingCategories({ data }) {
         <div className="overflow-x-auto hide-scrollbar">
           <div className="flex gap-6 pb-4">
             {loadingState === 'shimmer'
-              ? // Show shimmers
-                Array.from({ length: categories.length }).map((_, index) => (
+              ? Array.from({ length: 8 }).map((_, index) => (
                   <ShimmerCard key={index} />
                 ))
               : loadingState === 'spinner'
-              ? // Show spinner cards
-                Array.from({ length: categories.length }).map((_, index) => (
+              ? Array.from({ length: 8 }).map((_, index) => (
                   <LoadingCard key={index} />
                 ))
-              : // Show actual categories
-                categories.map((category, index) => {
-                  const Icon = category.icon;
-                  return (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
-                    >
-                      <Icon className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-gray-700 rounded-xl bg-[#F7F7F7] p-3" />
-                      <p className="text-center text-xs sm:text-sm font-bold text-gray-600 whitespace-nowrap">
-                        {category.label}
-                      </p>
+              : categories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
+                  >
+                    {/* bg-[#F7F7F7] */}
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gray-200 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={`${MEDIA_URL}${category.media}`}
+                        alt={category.name}
+                        className="w-full h-full object-contain p-2"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
                     </div>
-                  );
-                })}
+                    <p className="text-center text-xs sm:text-sm font-bold text-gray-600 whitespace-nowrap">
+                      {isFrench && category.french_name ? category.french_name : category.name}
+                    </p>
+                  </div>
+                ))}
           </div>
         </div>
       </div>

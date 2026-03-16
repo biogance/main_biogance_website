@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward, IoClose } from 'react-icons/io5';
@@ -41,7 +39,8 @@ const LoadingCard = () => (
 );
 
 const LandingCards = ({ product, showNav }) => {
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
+  const displayName = i18n.language === 'fr' && product.french_name ? product.french_name : product.name;
  
   const [isLiked, setIsLiked] = useState(product.liked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -130,7 +129,7 @@ const LandingCards = ({ product, showNav }) => {
 
       <div className="flex-shrink-0">
         <h3 className="text-sm text-gray-800 mb-2 line-clamp-2 min-h-[2.5rem]">
-          {product.name}
+          {displayName}
         </h3>
 
         <div className="flex items-center justify-between gap-2">
@@ -151,6 +150,7 @@ export default function PopularProducts({
   isWishlist = false, 
   isFavourite = false, 
   isHorizontal = false,
+  isBestSeller = false,
   data
 }) {
   const { t } = useTranslation('home');
@@ -161,62 +161,21 @@ export default function PopularProducts({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const products = [
-    {
-      id: 1,
-      name: 'Natural sunscreen for dogs and cats - Sun Protection',
-      price: '15.90',
-      discount: '20% Off',
-      image: "/product1.svg",
-      images: ["/product1.svg", "/product2.svg", "/product3.svg"],
-      liked: false
-    },
-    {
-      id: 2,
-      name: 'Refreshing mist for dogs and cats - Fresh',
-      price: '12.60',
-      discount: '20% Off',
-      image: "/product1.svg",
-      images: ["/product2.svg", "/product1.svg", "/product3.svg"],
-      liked: true
-    },
-    {
-      id: 3,
-      name: 'Universal shampoo 2 in 1 Biogance',
-      price: '11.25',
-      originalPrice: '35.30',
-      image: "/product1.svg",
-      images: ["/product1.svg", "/product3.svg", "/product2.svg"],
-      liked: false
-    },
-    {
-      id: 4,
-      name: 'Also Repair Repair Spray',
-      price: '12.60',
-      discount: '20% Off',
-      image: "/product1.svg",
-      images: ["/product3.svg", "/product2.svg", "/product1.svg"],
-      liked: false
-    },
-    {
-      id: 5,
-      name: 'Premium Pet Conditioner',
-      price: '18.90',
-      originalPrice: '24.90',
-      discount: '20% Off',
-      image: "/product1.svg",
-      images: ["/product2.svg", "/product1.svg", "/product3.svg"],
-      liked: false
-    },
-    {
-      id: 6,
-      name: 'Natural Pet Cologne',
-      price: '14.50',
-      image: "/product1.svg",
-      images: ["/product3.svg", "/product1.svg", "/product2.svg"],
-      liked: false
-    }
-  ];
+  const apiProducts = data?.popular || [];
+  const bestSellerProducts = data?.best_seller || [];
+  
+  const mapProducts = (items) => items.map(item => ({
+    id: item.id,
+    name: item.name,
+    french_name: item.french_name || '',
+    price: item.products[0]?.price || '0',
+    discount: item.products[0]?.off || '',
+    image: item.products[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : '/product1.svg',
+    images: item.products[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['/product1.svg'],
+    liked: item.favorites_exists
+  }));
+
+  const products = isBestSeller ? mapProducts(bestSellerProducts) : mapProducts(apiProducts);
 
   const checkScrollPosition = () => {
     if (scrollContainerRef.current) {
@@ -227,6 +186,11 @@ export default function PopularProducts({
   };
 
   useEffect(() => {
+    if (products.length === 0) {
+      setIsLoading(true);
+      return;
+    }
+
     const imageUrls = products.flatMap(product => product.images);
     const imagePromises = imageUrls.map((url) => {
       return new Promise((resolve) => {
@@ -238,7 +202,7 @@ export default function PopularProducts({
 
     Promise.all([
       Promise.all(imagePromises), 
-      new Promise(resolve => setTimeout(resolve, 2000))
+      new Promise(resolve => setTimeout(resolve, 1000))
     ]).then(() => {
       setIsLoading(false);
       setTimeout(checkScrollPosition, 100);
@@ -247,10 +211,10 @@ export default function PopularProducts({
     const fallbackTimer = setTimeout(() => {
       setIsLoading(false);
       setTimeout(checkScrollPosition, 100);
-    }, 5000);
+    }, 3000);
     
     return () => clearTimeout(fallbackTimer);
-  }, []);
+  }, [products]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;

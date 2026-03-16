@@ -9,7 +9,9 @@ export const metadata = {
   title: "Biogance - Biogance",
   description: "Pioneers in Natural Pet Care",
   icons: {
-    icon: "/FF.svg",
+    icon: [
+      { url: "/FF.svg", type: "image/svg+xml" },
+    ],
   },
 
   robots: {
@@ -41,6 +43,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/FF.svg" />
+      </head>
       <body className={inter.className} suppressHydrationWarning>
         <ReduxProvider>
           <I18nProvider>
