@@ -57,8 +57,6 @@ export default function LandingReview({ data }) {
   const { t } = useTranslation('home');
   const scrollContainerRef = useRef(null);
 
-  // API provides data.reviews array
-  // Each review: { id, name, message, rating, date }
   const apiReviews = data?.reviews || [];
 
   const readMore = t('reviews.readMore');

@@ -280,7 +280,7 @@ export default function Footer() {
 </div>
 
             {/* News */}
-            <div clas>
+            <div>
               <h3 className="font-semibold text-white mb-4 text-md ">{t('news.title')}</h3>
               <ul className="space-y-2.5 text-sm text-gray-300 ">
                 {newsItems.map((item, index) => (

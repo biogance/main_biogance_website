@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 import Navbar from '../Navbar';
 import LandingCards from './LandingCards';
 import { LandingFeatures } from './LandingFeatures';
@@ -13,7 +14,7 @@ import LandingBanner from './LandingBanner';
 import Footer from '../Footer';
 import LandingCategories from './LandingCategories';
 import { useTranslation } from 'react-i18next';
-import { BASE_URL } from '../../API/API';
+import { BASE_URL, MEDIA_URL } from '../../API/API';
 
 const heroSlides = [
   {
@@ -43,7 +44,7 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [apiData, setApiData] = useState(null);
   
-  const slides = apiData?.heroSlides || heroSlides;
+  const slides = heroSlides;
   const hasMultipleSlides = slides.length > 1;
 
   useEffect(() => {
@@ -52,15 +53,19 @@ export default function HeroSection() {
         console.log('=== API Response Start ===');
         console.log(JSON.stringify(res.data, null, 2));
         console.log('=== API Response End ===');
-        setApiData(res.data);
+        if (res.data.status === false) {
+          toast.error(res.data.action);
+        } else {
+          setApiData(res.data.data);
+        }
       })
       .catch(err => console.error('API Error:', err));
   }, []);
 
   const heroContent = {
-    tagline: apiData?.tagline || t('hero.tagline'),
-    heading: apiData?.heading || t('hero.heading'),
-    description: apiData?.description || t('hero.description'),
+    tagline: t('hero.tagline'),
+    heading: t('hero.heading'),
+    description: t('hero.description'),
   };
 
   const currentSlideData = slides[currentSlide];
@@ -95,6 +100,7 @@ export default function HeroSection() {
 
   return (
     <>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {/* Fixed Navbar at top */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />
@@ -244,7 +250,7 @@ export default function HeroSection() {
       <LandingCards data={apiData} />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
-      <LandingCards title="Best Selling" data={apiData} />
+      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} />
       <LandingExpertAdvice data={apiData} />
       <LandingReview data={apiData} />
       <LandingBanner data={apiData} />

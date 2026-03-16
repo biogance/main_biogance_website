@@ -13,14 +13,6 @@ import SignUp from "@/Components/Pages/Onboarding/SignUp";
 export default function Home() {
   return (
     <div>
-     {/* <Navbar/> */}
-     {/* <Pro/> */}
-     {/* <Commitments/> */}
-     {/* <BioganceAmbassadorForm/> */}
-     {/* <DistributorForm/> */}
-     {/* <ResellerForm/> */}
-     {/* <ThankYouModal/> */}
-     {/* <SignUp/> */}
      <HeroSection/>
     </div>
   );
