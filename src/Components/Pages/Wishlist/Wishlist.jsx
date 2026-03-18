@@ -10,8 +10,9 @@ import Footer from "../Footer";
 import PopularProducts from "../Landing/LandingCards";
 
 const mockWishlist = [
-  // { id: "1", name: "Test Product A", price: 2499, image: "/images/prod1.jpg" },
-  // { id: "2", name: "Test Product B", price: 3999, image: "/images/prod2.jpg" },
+  { id: "1", name: "Natural sunscreen for dogs and cats - Sun Protection", french_name: "", price: "15.90", discount: "20% Off", image: "/product1.svg", images: ["/product1.svg", "/product2.svg", "/product3.svg"], liked: false },
+  { id: "2", name: "Universal shampoo 2 in 1 Biogance", french_name: "", price: "11.25", discount: "", image: "/product1.svg", images: ["/product1.svg", "/product2.svg"], liked: true },
+  { id: "3", name: "Aloe Repair Spray for sensitive skin", french_name: "", price: "12.60", discount: "10% Off", image: "/product1.svg", images: ["/product1.svg"], liked: false },
 ];
 
 export default function WishlistPage() {
@@ -61,7 +62,7 @@ export default function WishlistPage() {
 
         {/* Main Content Area */}
         <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-          {!isEmpty ? (
+          {isEmpty ? (
             // ───── EMPTY STATE ─────
             <div className="flex flex-col items-center justify-center text-center py-16 md:py-24">
               <Image
@@ -85,7 +86,7 @@ export default function WishlistPage() {
               </Link>
             </div>
           ) : (
-            <PopularProducts isWishlist={true} />
+            <PopularProducts isWishlist={true} data={{ popular: mockWishlist }} />
           )}
         </div>
 

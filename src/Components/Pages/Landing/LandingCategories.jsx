@@ -132,7 +132,7 @@ export default function LandingCategories({ data }) {
                     className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
                   >
                     {/* bg-[#F7F7F7] */}
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gray-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-black flex items-center justify-center overflow-hidden">
                       <img
                         src={`${MEDIA_URL}${category.media}`}
                         alt={category.name}
