@@ -168,11 +168,11 @@ export default function PopularProducts({
     id: item.id,
     name: item.name,
     french_name: item.french_name || '',
-    price: item.products[0]?.price || '0',
-    discount: item.products[0]?.off || '',
-    image: item.products[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : '/product1.svg',
-    images: item.products[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['/product1.svg'],
-    liked: item.favorites_exists
+    price: item.price || (item.products?.[0]?.price) || '0',
+    discount: item.discount || (item.products?.[0]?.off) || '',
+    image: item.image || (item.products?.[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : '/product1.svg'),
+    images: item.images || (item.products?.[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['/product1.svg']),
+    liked: item.liked ?? item.favorites_exists
   }));
 
   const products = isBestSeller ? mapProducts(bestSellerProducts) : mapProducts(apiProducts);
