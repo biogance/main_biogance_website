@@ -22,7 +22,7 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
   );
 };
 
-export default function Navbar() {
+export default function Navbar({ transparent = false }) {
   const { t, i18n } = useTranslation('navbar');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
@@ -71,10 +71,17 @@ export default function Navbar() {
         onClick={handleMobileMenuToggle}
       />
 
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
+      <nav
+        className={`z-50 h-16 fixed top-0 left-0 right-0 transition-colors duration-300 ${
+          transparent
+            ? "bg-transparent border-b border-transparent"
+            : "bg-white border-b border-gray-200"
+        }`}
+      >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div className="relative flex items-center justify-between h-full">
-            {/* Mobile Menu Button & Logo */}
+
+            {/* Mobile Menu Button */}
             <div className="flex items-center lg:hidden">
               <button
                 onClick={handleMobileMenuToggle}
@@ -88,8 +95,36 @@ export default function Navbar() {
               </button>
             </div>
 
-            <div className="flex-1 flex items-center justify-center lg:items-stretch lg:justify-start">
-              {/* Logo */}
+            {/* LEFT: Navigation Links - Desktop Only */}
+            <div className="hidden lg:flex items-center gap-4">
+              <button
+                onClick={toggleProductsModal}
+                className="flex items-center gap-2 hover:text-gray-600 transition-colors p-2 cursor-pointer"
+              >
+                <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
+                <div className="text-left">
+                  <div className="text-sm font-normal text-[#1C1C1C]">{t('ourProducts')}</div>
+                  <div className="text-xs text-gray-500">
+                    <img src="/france.svg" alt="France" />
+                  </div>
+                </div>
+                <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
+                  isProductsModalOpen ? 'rotate-180' : 'rotate-0'
+                }`} />
+              </button>
+
+              {navLinks.map((link) => (
+                <React.Fragment key={link.text}>
+                  <span className="text-gray-300">|</span>
+                  <Link href={link.href} className="text-sm font-normal text-[#1C1C1C] hover:text-gray-600 px-2 py-1">
+                    {link.text}
+                  </Link>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* CENTER: Logo - Desktop (absolute center) */}
+            <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center">
               <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
                 <ImageWithFallback
                   src={logoImage}
@@ -97,37 +132,20 @@ export default function Navbar() {
                   className="h-10 sm:h-10"
                 />
               </Link>
-
-              {/* Center Navigation Links - Desktop Only */}
-              <div className="hidden lg:flex flex-1 items-center justify-center gap-4">
-                <button
-                  onClick={toggleProductsModal}
-                  className="flex items-center gap-2 hover:text-gray-600 transition-colors p-2 cursor-pointer"
-                >
-                  <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
-                  <div className="text-left">
-                    <div className="text-sm font-normal text-[#1C1C1C]">{t('ourProducts')}</div>
-                    <div className="text-xs text-gray-500">
-                      <img src="/france.svg" alt="France" />
-                    </div>
-                  </div>
-                  <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
-                    isProductsModalOpen ? 'rotate-180' : 'rotate-0'
-                  }`} />
-                </button>
-
-                {navLinks.map((link, index) => (
-                  <React.Fragment key={link.text}>
-                    <span className="text-gray-300">|</span>
-                    <Link href={link.href} className="text-sm font-normal text-[#1C1C1C] hover:text-gray-600 px-2 py-1">
-                      {link.text}
-                    </Link>
-                  </React.Fragment>
-                ))}
-              </div>
             </div>
 
-            {/* Right Side Icons */}
+            {/* CENTER: Logo - Mobile */}
+            <div className="flex lg:hidden flex-1 items-center justify-center">
+              <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
+                <ImageWithFallback
+                  src={logoImage}
+                  alt="Biogance Logo"
+                  className="h-10 sm:h-10"
+                />
+              </Link>
+            </div>
+
+            {/* RIGHT: Icons */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Language Dropdown - Desktop */}
               <div className="hidden lg:block relative">
@@ -142,14 +160,13 @@ export default function Navbar() {
                   }`} />
                 </button>
                 
-                {/* Language Dropdown Menu */}
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden   min-w-[140px] cursor-pointer">
+                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden min-w-[140px] cursor-pointer">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center  gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
                           i18n.language === lang.code ? 'text-black' : ''
                         }`}
                       >
@@ -168,7 +185,6 @@ export default function Navbar() {
                 <FiSearch className="w-5 h-5" />
               </button>
               
-              {/* User Icon with LoginModal */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 className="p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
@@ -194,7 +210,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden bg-white border-t border-gray-200  transition-all duration-500 ease-in-out ${
+          className={`lg:hidden bg-white border-t border-gray-200 transition-all duration-500 ease-in-out ${
             isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
@@ -283,7 +299,6 @@ export default function Navbar() {
                 <FiSearch className="w-5 h-5" />
               </button>
               
-              {/* User Icon with LoginModal - Mobile */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
