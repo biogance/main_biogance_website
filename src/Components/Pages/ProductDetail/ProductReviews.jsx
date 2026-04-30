@@ -1,0 +1,192 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
+import ProductModalAddReview from "./ProductModalAddReview";
+import ProductLoadMore from "./ProductLoadMore";
+
+const allReviews = [
+  {
+    id: 1,
+    name: "Elia B",
+    role: "Verified Buyer",
+    date: "18/03/2026",
+    rating: 4,
+    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+  },
+  {
+    id: 2,
+    name: "Elia B",
+    role: "Verified Buyer",
+    date: "18/03/2026",
+    rating: 4,
+    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+  },
+  {
+    id: 3,
+    name: "Elia B",
+    role: "Verified Buyer",
+    date: "18/03/2026",
+    rating: 3.5,
+    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+  },
+  {
+    id: 4,
+    name: "Sophie M",
+    role: "Verified Buyer",
+    date: "12/02/2026",
+    rating: 5,
+    text: "Absolutely love this shampoo! My dog's coat has never looked better. The natural ingredients make a huge difference and the scent is very pleasant without being overwhelming.",
+  },
+  {
+    id: 5,
+    name: "Marc D",
+    role: "Verified Buyer",
+    date: "05/01/2026",
+    rating: 4,
+    text: "Great product, very gentle on my cat's sensitive skin. Will definitely buy again. Shipping was fast and packaging was intact.",
+  },
+  {
+    id: 6,
+    name: "Layla K",
+    role: "Verified Buyer",
+    date: "28/12/2025",
+    rating: 5,
+    text: "I've tried many pet shampoos but this one stands out. Coat is visibly shinier and softer after just two washes. Highly recommend!",
+  },
+];
+
+const INITIAL_VISIBLE = 3;
+
+const StarRow = ({ rating }) => (
+  <div className="flex items-center gap-0.5">
+    {[1, 2, 3, 4, 5].map((star) => {
+      if (rating >= star)
+        return <FaStar key={star} className="text-black w-3.5 h-3.5" />;
+      else if (rating >= star - 0.5)
+        return <FaStarHalfAlt key={star} className="text-black w-3.5 h-3.5" />;
+      else return <FaRegStar key={star} className="text-black w-3.5 h-3.5" />;
+    })}
+  </div>
+);
+
+export default function ProductReviews() {
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
+
+  useEffect(() => {
+    if (isModalOpen || isLoadMoreOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [isModalOpen, isLoadMoreOpen]);
+
+  const handleReviewSubmit = ({ rating, feedback }) => {
+    console.log("Review submitted:", { rating, feedback });
+  };
+
+  const visibleReviews = allReviews.slice(0, visibleCount);
+  const hasMore = visibleCount < allReviews.length;
+
+  return (
+    <div className="w-full bg-white">
+      {/* Top Quote Banner */}
+      <div className="hidden lg:flex w-full py-10 flex items-center justify-center gap-3">
+        <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+        <p className="text-base lg:text-lg font-semibold text-[#1C1C1C] text-center">
+          This product is rated 4.4/5, based on over 3424 reviews
+        </p>
+        <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+      </div>
+
+      {/* Main Content: Two Columns */}
+      <div className="w-full flex flex-col lg:flex-row min-h-[520px]">
+
+        {/* LEFT: Reviews List — full width on small/medium, 50% on large */}
+        <div className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-14 py-10 flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">User Reviews</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] rounded-lg px-4 py-2 cursor-pointer"
+            >
+              <span className="text-lg leading-none">+</span> Add Review
+            </button>
+          </div>
+
+          {/* Review Items */}
+          <div className="flex flex-col divide-y divide-gray-200">
+            {visibleReviews.map((review) => (
+              <div key={review.id} className="py-5 first:pt-0">
+                <div className="flex gap-4">
+                  {/* Left Meta */}
+                  <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-0.5">
+                    <span className="text-sm font-semibold text-[#1C1C1C]">
+                      {review.name}
+                    </span>
+                    <span className="text-xs text-[#888]">{review.role}</span>
+                    <span className="text-xs text-[#888]">{review.date}</span>
+                  </div>
+
+                  {/* Right: Stars + Text */}
+                  <div className="flex-1 flex flex-col gap-2">
+                    <StarRow rating={review.rating} />
+                    <p className="text-sm text-[#1C1C1C] leading-relaxed text-justify">
+                      {review.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Load More */}
+            {hasMore && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => setIsLoadMoreOpen(true)}
+                  className="px-8 py-2.5 bg-black border border-[#C0C0C0] rounded-lg text-sm font-medium text-white cursor-pointer"
+                >
+                  Load more
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT: Product Image — hidden on small/medium, visible on large */}
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-[#F0EEE9] relative items-center justify-center min-h-[420px] overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"
+            alt="Biogance 2in1 Shampoo"
+            className="w-full h-full object-cover"
+            style={{ minHeight: 420 }}
+          />
+          {/* Subtle overlay for depth */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(120deg, rgba(240,238,233,0.18) 0%, transparent 60%)",
+            }}
+          />
+        </div>
+      </div>
+
+      <ProductModalAddReview
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleReviewSubmit}
+      />
+      <ProductLoadMore
+        isOpen={isLoadMoreOpen}
+        onClose={() => setIsLoadMoreOpen(false)}
+      />
+    </div>
+  );
+}

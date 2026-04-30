@@ -9,6 +9,10 @@ import AboutProduct from "./AboutProduct";
 import ProductExpertAdvice from "./ProductExpertAdvice";
 import StickyAddToCart from "./StickyAddToCart";
 import Footer from "../Footer";
+import { LandingCards } from "@/Components/Pages/Landing/LandingCards";
+import ProductVideo from "./ProductVideo";
+import ProductReviews from "./ProductReviews";
+import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 const product = {
   name: "Biogance Universal 2-in-1 Shampoo – Gentle Cleansing & Nourishing Care for Healthy Pet Coats",
@@ -36,12 +40,56 @@ const product = {
   ],
 };
 
+const relatedProducts = [
+  {
+    id: 1,
+    name: "Biogance Gentle Shampoo for Sensitive Skin",
+    french_name: "",
+    price: "12.99",
+    discount: "-10%",
+    image:
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&q=80",
+    ],
+    liked: false,
+  },
+  {
+    id: 2,
+    name: "Biogance Nourishing Conditioner for Pets",
+    french_name: "",
+    price: "14.50",
+    discount: "",
+    image:
+      "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=400&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=400&q=80",
+    ],
+    liked: false,
+  },
+  {
+    id: 3,
+    name: "Biogance Detangling Spray for Long Coats",
+    french_name: "",
+    price: "9.99",
+    discount: "-5%",
+    image:
+      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
+    ],
+    liked: false,
+  },
+];
+
 const StarRating = ({ rating }) => {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => {
-        if (rating >= star) return <FaStar key={star} className="text-black w-4 h-4" />;
-        else if (rating >= star - 0.5) return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
+        if (rating >= star)
+          return <FaStar key={star} className="text-black w-4 h-4" />;
+        else if (rating >= star - 0.5)
+          return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
         else return <FaRegStar key={star} className="text-black w-4 h-4" />;
       })}
     </div>
@@ -56,6 +104,7 @@ export default function ProductDetail() {
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
   const [showSticky, setShowSticky] = useState(false);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
@@ -76,6 +125,11 @@ export default function ProductDetail() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowAnnouncement(true), 200);
+    return () => clearTimeout(timer);
   }, []);
 
   // Auto-advance: images use 3s timer, videos use onEnded
@@ -124,12 +178,26 @@ export default function ProductDetail() {
 
   return (
     <div className="w-full bg-white">
-      <Navbar transparent={isTransparent} />
+      {/* Announcement Bar - fixed */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${
+          showAnnouncement ? "h-[40px]" : "h-0"
+        }`}
+      >
+        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
+          Enjoy complimentary standard delivery across France on all orders over
+          €39.
+        </p>
+      </div>
+
+      {/* Navbar floats below announcement bar */}
+      <Navbar
+        transparent={isTransparent}
+        announcementVisible={showAnnouncement}
+      />
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
-
         {/* LEFT: Image/Video Section - 50% sticky */}
-        <div className="w-full lg:w-1/2 bg-[#E1E1E1] relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden">
-
+        <div className="group w-full lg:w-1/2 bg-[#E1E1E1] relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden">
           {isVideo ? (
             /* VIDEO SLIDE */
             <video
@@ -153,17 +221,47 @@ export default function ProductDetail() {
               />
             </div>
           )}
+          {/* Left Arrow - first slide pe hide */}
+          <button
+            onClick={() => goToSlide(currentSlide - 1)}
+            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 
+             bg-white text-black rounded-full w-10 h-10 
+             flex items-center justify-center shadow-md cursor-pointer
+             transition-opacity duration-300
+             ${
+               currentSlide === 0
+                 ? "opacity-0 pointer-events-none"
+                 : "opacity-0 group-hover:opacity-100"
+             }`}
+          >
+            <MdChevronLeft className="w-6 h-6" />
+          </button>
 
+          {/* Right Arrow - last slide pe hide */}
+          <button
+            onClick={() => goToSlide(currentSlide + 1)}
+            className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 
+             bg-white text-black rounded-full w-10 h-10 
+             flex items-center justify-center shadow-md cursor-pointer
+             transition-opacity duration-300
+             ${
+               currentSlide === slides.length - 1
+                 ? "opacity-0 pointer-events-none"
+                 : "opacity-0 group-hover:opacity-100"
+             }`}
+          >
+            <MdChevronRight className="w-6 h-6" />
+          </button>
           {/* Dot Indicators */}
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
             {slides.map((slide, idx) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                className={`rounded-full transition-all duration-300 ${
+                className={`rounded-full transition-all duration-700 ${
                   currentSlide === idx
-                    ? "w-3 h-3 bg-gray-800"
-                    : "w-2 h-2 bg-gray-300"
+                    ? "w-8 h-2 bg-gray-800"
+                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                 }`}
               />
             ))}
@@ -171,15 +269,16 @@ export default function ProductDetail() {
         </div>
 
         {/* RIGHT: Product Info - 50% */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-start px-8 lg:px-14 pt-27 pb-12 bg-white">
-
+        <div className="w-full lg:w-1/2 flex flex-col justify-start px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
           <h1 className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4">
             {product.name}
           </h1>
 
           <div className="flex items-center gap-3 mb-5">
             <StarRating rating={product.rating} />
-            <span className="text-sm text-black">({product.reviewCount} Reviews)</span>
+            <span className="text-sm text-black">
+              ({product.reviewCount} Reviews)
+            </span>
             <button className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
               Add Review
             </button>
@@ -196,20 +295,28 @@ export default function ProductDetail() {
           <button
             onClick={() => setReadMore(!readMore)}
             className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
-              readMore ? "bg-white text-black border-black" : "bg-black text-white border-gray-300"
+              readMore
+                ? "bg-white text-black border-black"
+                : "bg-black text-white border-gray-300"
             }`}
           >
             {readMore ? "less" : "Read more"}{" "}
-            {readMore ? <GoArrowUpRight className="w-4 h-4" /> : <GoArrowDownRight className="w-4 h-4" />}
+            {readMore ? (
+              <GoArrowUpRight className="w-4 h-4" />
+            ) : (
+              <GoArrowDownRight className="w-4 h-4" />
+            )}
           </button>
 
           <div className="mb-6">
-            <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Product Volume:</p>
+            <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
+              Product Volume:
+            </p>
             <div className="flex items-center gap-3 flex-wrap">
               {product.volumes.map((vol) => (
                 <button
                   key={vol}
-                  onClick={() => setSelectedVolume(vol)}
+               onClick={() => setSelectedVolume(vol)}
                   className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
                     selectedVolume === vol
                       ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
@@ -221,30 +328,30 @@ export default function ProductDetail() {
               ))}
             </div>
           </div>
-{/* Color Selector */}
-<div className="mb-6">
-  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Color:</p>
-  <div className="flex items-center gap-3 flex-wrap">
-    {[
-      { name: "Blue",  hex: "#3B6FA0" },
-      { name: "Green", hex: "#C8DBA8" },
-      { name: "Peach", hex: "#E8B48A" },
-      { name: "Gray",  hex: "#8A8A8A" },
-    ].map((color) => (
-      <button
-        key={color.name}
-        onClick={() => setSelectedColor(color.name)}
-        title={color.name}
-        className={`w-5 h-5 rounded-full cursor-pointer transition-all duration-200 ${
-          selectedColor === color.name
-            ? "ring-2 ring-offset-2 ring-gray-800 scale-110"
-            : "hover:scale-105"
-        }`}
-        style={{ backgroundColor: color.hex }}
-      />
-    ))}
-  </div>
-</div>
+          {/* Color Selector */}
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Color:</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              {[
+                { name: "Blue", hex: "#3B6FA0" },
+                { name: "Green", hex: "#C8DBA8" },
+                { name: "Peach", hex: "#E8B48A" },
+                { name: "Gray", hex: "#8A8A8A" },
+              ].map((color) => (
+                <button
+                  key={color.name}
+                  onClick={() => setSelectedColor(color.name)}
+                  title={color.name}
+                  className={`w-5 h-5 rounded-full cursor-pointer transition-all duration-200 ${
+                    selectedColor === color.name
+                      ? "ring-2 ring-offset-2 ring-gray-800 scale-110"
+                      : "hover:scale-105"
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                />
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-3 mb-8">
             <button
               ref={cartBtnRef}
@@ -261,7 +368,9 @@ export default function ProductDetail() {
                   : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
               }`}
             >
-              <FiHeart className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""}`} />
+              <FiHeart
+                className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""}`}
+              />
             </button>
           </div>
 
@@ -271,39 +380,100 @@ export default function ProductDetail() {
                 <p className="text-sm font-semibold text-[#1C1C1C]">
                   {shippingSlides[currentShipping].title}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">{shippingSlides[currentShipping].note}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {shippingSlides[currentShipping].note}
+                </p>
               </div>
               <div className="flex items-center gap-1.5">
                 {shippingSlides.map((_, idx) => (
                   <span
                     key={idx}
-                    className={`rounded-full inline-block transition-all duration-300 ${
+                    className={`rounded-full inline-block transition-all duration-700 ${
                       idx === currentShipping
-                        ? "w-2.5 h-2.5 bg-gray-800"
-                        : "w-2 h-2 bg-[#fff] border border-[#000000]"
+                        ? "w-6 h-2 bg-gray-800"
+                        : "w-2 h-2 bg-white border border-black"
                     }`}
                   />
                 ))}
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
       {/* Quote Section */}
-      <div className="w-full py-16 flex items-center justify-center gap-3">
+      <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
         <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
         <p className="text-lg font-semibold text-[#1C1C1C]">
-          <span className="text-[#1A171B] font-normal">Made in france</span> - 98% ingredients of natural & organic origin - free from parabens - free from phthalates
+          <span className="text-[#1A171B] font-normal">Made in france</span> -
+          98% ingredients of natural & organic origin - free from parabens -
+          free from phthalates
         </p>
         <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
       </div>
 
       <AboutProduct />
-      <StickyAddToCart price={product.price} productName={product.name} visible={showSticky} />
-     <ProductExpertAdvice />
-      <Footer/>
+
+      <StickyAddToCart
+        price={product.price}
+        productName={product.name}
+        visible={showSticky}
+        selectedVolume={selectedVolume}
+        onVolumeChange={setSelectedVolume}
+      />
+
+      <ProductExpertAdvice />
+
+      {/* Related Products - 3 Cards */}
+      <div className="py-4 lg:py-12 px-6 lg:px-14">
+        <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
+          <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+          <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
+            Complete your grooming routine
+          </p>
+          <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+        </div>
+        <div className="flex justify-center gap-6 flex-wrap">
+          {relatedProducts.map((prod) => (
+            <div key={prod.id} className="w-[350px]">
+              <LandingCards product={prod} showNav={true} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="py-4 lg:py-12 px-6 lg:px-14">
+        <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
+          <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+          <p className="text-lg font-semibold text-[#1C1C1C]">
+            Watch the Benefits Live
+          </p>
+          <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+        </div>
+        <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+          <ProductVideo />
+        </div>
+      </div>
+
+      <div className="py-4 lg:py-12 px-6 lg:px-14">
+        <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
+          <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+          <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
+            More Products to Explore
+          </p>
+          <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+        </div>
+        <div className="flex justify-center gap-6 flex-wrap">
+          {relatedProducts.map((prod) => (
+            <div key={prod.id} className="w-[350px]">
+              <LandingCards product={prod} showNav={true} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ProductReviews />
+      <Footer />
     </div>
   );
 }

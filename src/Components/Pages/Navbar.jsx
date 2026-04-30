@@ -22,7 +22,7 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
   );
 };
 
-export default function Navbar({ transparent = false }) {
+export default function Navbar({ transparent = false, announcementVisible = false }) {
   const { t, i18n } = useTranslation('navbar');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
@@ -72,7 +72,9 @@ export default function Navbar({ transparent = false }) {
       />
 
       <nav
-        className={`z-50 h-16 fixed top-0 left-0 right-0 transition-colors duration-300 ${
+        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-700 ${
+          announcementVisible ? "top-[40px]" : "top-0"
+        } ${
           transparent
             ? "bg-transparent border-b border-transparent"
             : "bg-white border-b border-gray-200"

@@ -38,7 +38,7 @@ const LoadingCard = () => (
   </div>
 );
 
-const LandingCards = ({ product, showNav }) => {
+export const LandingCards = ({ product, showNav }) => {
   const { t, i18n } = useTranslation('home');
   const displayName = i18n.language === 'fr' && product.french_name ? product.french_name : product.name;
  
