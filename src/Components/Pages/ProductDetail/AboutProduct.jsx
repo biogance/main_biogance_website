@@ -56,9 +56,9 @@ export default function AboutProduct() {
     <section className="w-full bg-white">
       <div className="flex flex-col lg:flex-row w-full min-h-[600px]">
 
-        {/* LEFT: Accordion — 50% */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 py-14">
-          <h2 className="text-[26px] font-bold text-[#1C1C1C] mb-8">
+        {/* LEFT: Accordion — full width on small/medium, 50% on large */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-6 lg:py-14">
+          <h2 className="text-[22px] sm:text-[24px] lg:text-[26px] font-bold text-[#1C1C1C] mb-8">
             About This Product
           </h2>
 
@@ -73,11 +73,7 @@ export default function AboutProduct() {
                   onClick={() => toggle(idx)}
                   className="w-full flex items-center justify-between py-4 text-left cursor-pointer group"
                 >
-                  <span
-                    className={`text-[15px] font-medium transition-colors duration-200 ${
-                      openIndex === idx ? "text-[#1C1C1C]" : "text-[#1C1C1C]"
-                    }`}
-                  >
+                  <span className="text-[15px] font-medium text-[#1C1C1C] transition-colors duration-200">
                     {item.title}
                   </span>
                   <span className="shrink-0 ml-4 text-[#1C1C1C]">
@@ -104,8 +100,8 @@ export default function AboutProduct() {
           </div>
         </div>
 
-        {/* RIGHT: Image — 50% sticky */}
-        <div className="w-full lg:w-1/2 lg:sticky lg:top-0 lg:h-screen overflow-hidden">
+        {/* RIGHT: Image — hidden on small/medium, visible on large */}
+        <div className="hidden lg:block w-full lg:w-1/2 lg:sticky lg:top-0 lg:h-screen overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=900&q=80"
             alt="About this product"
