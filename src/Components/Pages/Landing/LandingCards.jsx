@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronBack, IoChevronForward, IoClose } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
  
 
 // Loading Card Component
@@ -41,6 +42,7 @@ const LoadingCard = () => (
 export const LandingCards = ({ product, showNav }) => {
   const { t, i18n } = useTranslation('home');
   const displayName = i18n.language === 'fr' && product.french_name ? product.french_name : product.name;
+  const router = useRouter();
  
   const [isLiked, setIsLiked] = useState(product.liked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -109,6 +111,7 @@ export const LandingCards = ({ product, showNav }) => {
           <img
             src={product.images[currentImageIndex] || product.image}
             alt={product.name}
+            onClick={() => router.push(`/product-detail?id=${product.id}`)}
             className="max-w-full max-h-full object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
           />
         </div>
