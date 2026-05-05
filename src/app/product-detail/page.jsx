@@ -1,6 +1,6 @@
-import ProductDetail from "@/Components/Pages/ProductDetail/ProductDetail";
+import ProductDetailWrapper from "@/Components/Pages/ProductDetail/ProductDetailWrapper";
 
 export default function Page() {
-  return <ProductDetail />;
+  return <ProductDetailWrapper />;
 }
 
