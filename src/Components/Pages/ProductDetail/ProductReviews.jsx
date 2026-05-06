@@ -1,9 +1,13 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
 import ProductModalAddReview from "./ProductModalAddReview";
 import ProductLoadMore from "./ProductLoadMore";
+
+const ShimmerLoader = ({ className = "" }) => (
+  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+);
 
 const allReviews = [
   {
@@ -70,10 +74,12 @@ const StarRow = ({ rating }) => (
   </div>
 );
 
-export default function ProductReviews() {
+export default function ProductReviews({ isLoading }) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const imageLoaded = useRef(false);
 
   useEffect(() => {
     if (isModalOpen || isLoadMoreOpen) {
@@ -86,6 +92,13 @@ export default function ProductReviews() {
     };
   }, [isModalOpen, isLoadMoreOpen]);
 
+  const handleImageLoad = () => {
+    if (!imageLoaded.current) {
+      imageLoaded.current = true;
+      setImageLoading(false);
+    }
+  };
+
   const handleReviewSubmit = ({ rating, feedback }) => {
     console.log("Review submitted:", { rating, feedback });
   };
@@ -95,98 +108,174 @@ export default function ProductReviews() {
 
   return (
     <div className="w-full bg-white">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes shimmerMove {
+            0%   { background-position: -600px 0; }
+            100% { background-position:  600px 0; }
+          }
+          .shimmer-bg-reviews {
+            background: linear-gradient(90deg, #d4d4d4 25%, #e8e8e8 50%, #d4d4d4 75%);
+            background-size: 600px 100%;
+            animation: shimmerMove 1.4s infinite linear;
+          }
+          @keyframes spinReviews { to { transform: rotate(360deg); } }
+          @keyframes reviewsFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+          }
+          .reviews-fade-in { animation: reviewsFadeIn 0.4s ease forwards; }
+        `
+      }} />
+
       {/* Top Quote Banner */}
-      <div className="hidden lg:flex w-full py-10 flex items-center justify-center gap-3">
-        <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-        <p className="text-base lg:text-lg font-semibold text-[#1C1C1C] text-center">
-          This product is rated 4.4/5, based on over 3424 reviews
-        </p>
-        <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
-      </div>
+      {!isLoading && (
+        <div className="hidden lg:flex w-full py-10 flex items-center justify-center gap-3">
+          <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+          <p className="text-base lg:text-lg font-semibold text-[#1C1C1C] text-center">
+            This product is rated 4.4/5, based on over 3424 reviews
+          </p>
+          <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+        </div>
+      )}
 
       {/* Main Content: Two Columns */}
       <div className="w-full flex flex-col lg:flex-row min-h-[520px]">
 
-        {/* LEFT: Reviews List — full width on small/medium, 50% on large */}
+        {/* LEFT: Reviews List */}
         <div className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-14 py-10 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
             <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">User Reviews</h2>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] rounded-lg px-4 py-2 cursor-pointer"
-            >
-              <span className="text-lg leading-none">+</span> Add Review
-            </button>
+            {!isLoading && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] rounded-lg px-4 py-2 cursor-pointer"
+              >
+                <span className="text-lg leading-none">+</span> Add Review
+              </button>
+            )}
           </div>
 
           {/* Review Items */}
-          <div className="flex flex-col divide-y divide-gray-200">
-            {visibleReviews.map((review) => (
-              <div key={review.id} className="py-5 first:pt-0">
-                <div className="flex gap-4">
-                  {/* Left Meta */}
-                  <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-0.5">
-                    <span className="text-sm font-semibold text-[#1C1C1C]">
-                      {review.name}
-                    </span>
-                    <span className="text-xs text-[#888]">{review.role}</span>
-                    <span className="text-xs text-[#888]">{review.date}</span>
+          {isLoading ? (
+            <div className="flex flex-col gap-6">
+              {[1, 2, 3].map((idx) => (
+                <div key={idx} className="flex gap-4">
+                  <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-2">
+                    <ShimmerLoader className="h-4 w-16" />
+                    <ShimmerLoader className="h-3 w-12" />
+                    <ShimmerLoader className="h-3 w-14" />
                   </div>
-
-                  {/* Right: Stars + Text */}
                   <div className="flex-1 flex flex-col gap-2">
-                    <StarRow rating={review.rating} />
-                    <p className="text-sm text-[#1C1C1C] leading-relaxed text-justify">
-                      {review.text}
-                    </p>
+                    <ShimmerLoader className="h-4 w-20" />
+                    <ShimmerLoader className="h-12 w-full" />
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col divide-y divide-gray-200">
+              {visibleReviews.map((review) => (
+                <div key={review.id} className="py-5 first:pt-0">
+                  <div className="flex gap-4">
+                    {/* Left Meta */}
+                    <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-0.5">
+                      <span className="text-sm font-semibold text-[#1C1C1C]">
+                        {review.name}
+                      </span>
+                      <span className="text-xs text-[#888]">{review.role}</span>
+                      <span className="text-xs text-[#888]">{review.date}</span>
+                    </div>
 
-            {/* Load More */}
-            {hasMore && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={() => setIsLoadMoreOpen(true)}
-                  className="px-8 py-2.5 bg-black border border-[#C0C0C0] rounded-lg text-sm font-medium text-white cursor-pointer"
-                >
-                  Load more
-                </button>
-              </div>
-            )}
-          </div>
+                    {/* Right: Stars + Text */}
+                    <div className="flex-1 flex flex-col gap-2">
+                      <StarRow rating={review.rating} />
+                      <p className="text-sm text-[#1C1C1C] leading-relaxed text-justify">
+                        {review.text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Load More */}
+              {hasMore && (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    onClick={() => setIsLoadMoreOpen(true)}
+                    className="px-8 py-2.5 bg-black border border-[#C0C0C0] rounded-lg text-sm font-medium text-white cursor-pointer"
+                  >
+                    Load more
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* RIGHT: Product Image — hidden on small/medium, visible on large */}
+        {/* RIGHT: Product Image */}
         <div className="hidden lg:flex w-full lg:w-1/2 bg-[#F0EEE9] relative items-center justify-center min-h-[420px] overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"
-            alt="Biogance 2in1 Shampoo"
-            className="w-full h-full object-cover"
-            style={{ minHeight: 420 }}
-          />
-          {/* Subtle overlay for depth */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(120deg, rgba(240,238,233,0.18) 0%, transparent 60%)",
-            }}
-          />
+
+          {/* State 1: Shimmer */}
+          {isLoading && (
+            <div className="shimmer-bg-reviews absolute inset-0 w-full h-full" />
+          )}
+
+          {/* State 2: Gray bg + Black spinner */}
+          {!isLoading && imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-200">
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  border: "4px solid rgba(0,0,0,0.12)",
+                  borderTopColor: "#111111",
+                  animation: "spinReviews 0.8s linear infinite",
+                }}
+              />
+            </div>
+          )}
+
+          {/* State 3: Image fade in */}
+          {!isLoading && (
+            <>
+              <img
+                src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"
+                alt="Biogance 2in1 Shampoo"
+                onLoad={handleImageLoad}
+                onError={handleImageLoad}
+                className={`w-full h-full object-cover ${
+                  imageLoading ? "opacity-0" : "reviews-fade-in"
+                }`}
+                style={{ minHeight: 420 }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(120deg, rgba(240,238,233,0.18) 0%, transparent 60%)",
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
 
-      <ProductModalAddReview
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleReviewSubmit}
-      />
-      <ProductLoadMore
-        isOpen={isLoadMoreOpen}
-        onClose={() => setIsLoadMoreOpen(false)}
-      />
+      {!isLoading && (
+        <>
+          <ProductModalAddReview
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleReviewSubmit}
+          />
+          <ProductLoadMore
+            isOpen={isLoadMoreOpen}
+            onClose={() => setIsLoadMoreOpen(false)}
+          />
+        </>
+      )}
     </div>
   );
 }
