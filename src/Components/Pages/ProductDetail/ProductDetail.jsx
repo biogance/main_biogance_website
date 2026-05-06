@@ -30,7 +30,6 @@ const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
   const firstImage = firstProduct?.images?.[0];
   const firstProductPrice = firstProduct?.price;
-  
   return {
     id: product.id,
     name: product.name,
@@ -42,6 +41,10 @@ const formatProductForCard = (product) => {
     liked: false,
   };
 };
+
+const ShimmerLoader = ({ className = "" }) => (
+  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+);
 
 export default function ProductDetail() {
   const searchParams = useSearchParams();
@@ -59,9 +62,13 @@ export default function ProductDetail() {
   const [isTransparent, setIsTransparent] = useState(true);
   const [showSticky, setShowSticky] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
+  const isResetting = useRef(false);
 
   // Fetch product detail
   useEffect(() => {
@@ -76,7 +83,6 @@ export default function ProductDetail() {
         if (json.status) {
           setApiProduct(json.data);
           setSelectedProductIdx(0);
-          // Set default selections based on first product type
           const firstProduct = json.data.products?.[0];
           if (firstProduct?.type === "size" || firstProduct?.type === "size-color") {
             setSelectedVolume(firstProduct.size_name);
@@ -86,17 +92,16 @@ export default function ProductDetail() {
           }
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error("API Error:", err));
   }, [productId]);
 
-  // Derived values from API
+  // Derived values
   const displayName = apiProduct?.name || "Product";
   const displayDescription = apiProduct?.description || "";
   const apiProducts = apiProduct?.products || [];
   const productType = apiProducts[0]?.type || "no-size-color";
   const togetherProducts = apiProduct?.together || [];
 
-  // Build slides from selected product's images
   const selectedProduct = apiProducts[selectedProductIdx] || apiProducts[0];
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
   const slides = selectedProduct?.images?.map((img) => ({
@@ -104,31 +109,56 @@ export default function ProductDetail() {
     url: `${MEDIA_URL}${img.media}`,
   })) || [];
 
-  const currentSlideData = slides[currentSlide] || { type: "image", url: "" };
+  // Infinite loop: append clone of first slide at end
+  const infiniteSlides = slides.length > 1 ? [...slides, slides[0]] : slides;
+
+  const currentSlideData = slides[currentSlide % slides.length] || { type: "image", url: "" };
   const isVideo = currentSlideData.type === "video";
 
   // Reset slide when product selection changes
   useEffect(() => {
     setCurrentSlide(0);
+    setImageLoading(true);
+    firstImageLoaded.current = false;
+    isResetting.current = false;
   }, [selectedProductIdx]);
 
-  // Handle volume selection - find matching product
   const handleVolumeSelect = (sizeName) => {
     setSelectedVolume(sizeName);
     const idx = apiProducts.findIndex((p) => p.size_name === sizeName);
     if (idx !== -1) setSelectedProductIdx(idx);
   };
 
-  // Handle color selection - find matching product
   const handleColorSelect = (colorName) => {
     setSelectedColor(colorName);
     const idx = apiProducts.findIndex((p) => p.color_name === colorName);
     if (idx !== -1) setSelectedProductIdx(idx);
   };
 
-  // Unique sizes and colors from products array
   const uniqueSizes = [...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name))];
   const uniqueColors = [...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name))];
+
+  // Auto-advance slides — no upper limit, clone handles loop
+  useEffect(() => {
+    clearTimeout(autoPlayTimerRef.current);
+    if (!isVideo && slides.length > 1) {
+      autoPlayTimerRef.current = setTimeout(() => {
+        setCurrentSlide((prev) => prev + 1);
+      }, 3000);
+    }
+    return () => clearTimeout(autoPlayTimerRef.current);
+  }, [currentSlide, isVideo, slides.length]);
+
+  // When clone (last slide) is reached, silently reset to real first
+  useEffect(() => {
+    if (slides.length > 1 && currentSlide === infiniteSlides.length - 1) {
+      const timer = setTimeout(() => {
+        isResetting.current = true;
+        setCurrentSlide(0);
+      }, 500); // match transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [currentSlide, infiniteSlides.length, slides.length]);
 
   // Scroll handler
   useEffect(() => {
@@ -147,17 +177,6 @@ export default function ProductDetail() {
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
     return () => clearTimeout(timer);
   }, []);
-
-  // Auto-advance slides
-  useEffect(() => {
-    clearTimeout(autoPlayTimerRef.current);
-    if (!isVideo && slides.length > 1) {
-      autoPlayTimerRef.current = setTimeout(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-      }, 3000);
-    }
-    return () => clearTimeout(autoPlayTimerRef.current);
-  }, [currentSlide, isVideo, slides.length]);
 
   useEffect(() => {
     if (isVideo && videoRef.current) {
@@ -191,9 +210,50 @@ export default function ProductDetail() {
   };
 
   const formattedTogetherProducts = togetherProducts.slice(0, 3).map(formatProductForCard);
+  const isLoaded = apiProduct !== null;
 
   return (
     <div className="w-full bg-white">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes shimmerMove {
+            0%   { background-position: -600px 0; }
+            100% { background-position:  600px 0; }
+          }
+          .shimmer-bg {
+            background: linear-gradient(90deg, #d4d4d4 25%, #e8e8e8 50%, #d4d4d4 75%);
+            background-size: 600px 100%;
+            animation: shimmerMove 1.4s infinite linear;
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+          .slides-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .slides-track-no-transition {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: none;
+          }
+          .slide-item {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+          }
+          @keyframes firstFade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+          }
+          .first-fade-in { animation: firstFade 0.4s ease forwards; }
+        `
+      }} />
+
       {/* Announcement Bar */}
       <div
         className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${
@@ -208,11 +268,74 @@ export default function ProductDetail() {
       <Navbar transparent={isTransparent} announcementVisible={showAnnouncement} />
 
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
+
         {/* LEFT: Image Section */}
-        <div className="group w-full lg:w-1/2 bg-[#E1E1E1] relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden">
-          {slides.length === 0 ? (
-            <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-          ) : isVideo ? (
+        <div
+          className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
+          style={{ background: "#E1E1E1" }}
+        >
+          {/* State 1: Shimmer */}
+          {!isLoaded && (
+            <div className="shimmer-bg absolute inset-0 w-full h-full" />
+          )}
+
+          {/* State 2: Black spinner on grey */}
+          {isLoaded && imageLoading && !isVideo && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  border: "4px solid rgba(0,0,0,0.12)",
+                  borderTopColor: "#111111",
+                  animation: "spin 0.8s linear infinite",
+                }}
+              />
+            </div>
+          )}
+
+          {/* State 3: Sliding image track */}
+          {isLoaded && !isVideo && infiniteSlides.length > 0 && (
+            <div
+              className={`absolute inset-0 overflow-hidden ${
+                imageLoading ? "opacity-0" : "first-fade-in"
+              }`}
+            >
+              <div
+                className={isResetting.current ? "slides-track-no-transition" : "slides-track"}
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                onTransitionEnd={() => {
+                  isResetting.current = false;
+                }}
+              >
+                {infiniteSlides.map((slide, idx) => (
+                  <div key={idx} className="slide-item">
+                    <img
+                      src={slide.url}
+                      alt={`Product ${idx + 1}`}
+                      onLoad={() => {
+                        if (!firstImageLoaded.current) {
+                          firstImageLoaded.current = true;
+                          setImageLoading(false);
+                        }
+                      }}
+                      onError={() => {
+                        if (!firstImageLoaded.current) {
+                          firstImageLoaded.current = true;
+                          setImageLoading(false);
+                        }
+                      }}
+                      className="object-contain max-h-[480px] w-auto max-w-full drop-shadow-xl"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Video case */}
+          {isLoaded && isVideo && (
             <video
               ref={videoRef}
               key={currentSlideData.url}
@@ -220,49 +343,52 @@ export default function ProductDetail() {
               muted
               autoPlay
               playsInline
+              onCanPlay={() => setImageLoading(false)}
               onEnded={handleVideoEnded}
             >
               <source src={currentSlideData.url} type="video/mp4" />
             </video>
-          ) : (
-            <div className="relative w-full h-full flex items-center justify-center py-10 px-8">
-              <img
-                src={currentSlideData.url}
-                alt="Product"
-                className="object-contain max-h-[480px] w-auto max-w-full drop-shadow-xl transition-all duration-500"
-              />
-            </div>
           )}
 
           {/* Left Arrow */}
-          <button
-            onClick={() => goToSlide(currentSlide - 1)}
-            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-              currentSlide === 0 ? "opacity-0 pointer-events-none" : "opacity-0 group-hover:opacity-100"
-            }`}
-          >
-            <MdChevronLeft className="w-6 h-6" />
-          </button>
+          {isLoaded && !imageLoading && (
+            <button
+              onClick={() => goToSlide(currentSlide - 1)}
+              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
+                currentSlide === 0
+                  ? "opacity-0 pointer-events-none"
+                  : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              <MdChevronLeft className="w-6 h-6" />
+            </button>
+          )}
 
           {/* Right Arrow */}
-          <button
-            onClick={() => goToSlide(currentSlide + 1)}
-            className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-              currentSlide === slides.length - 1 ? "opacity-0 pointer-events-none" : "opacity-0 group-hover:opacity-100"
-            }`}
-          >
-            <MdChevronRight className="w-6 h-6" />
-          </button>
+          {isLoaded && !imageLoading && (
+            <button
+              onClick={() => goToSlide(currentSlide + 1)}
+              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
+                currentSlide >= slides.length - 1
+                  ? "opacity-0 pointer-events-none"
+                  : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              <MdChevronRight className="w-6 h-6" />
+            </button>
+          )}
 
           {/* Dot Indicators */}
-          {slides.length > 1 && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+          {isLoaded && !imageLoading && slides.length > 1 && (
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
                   className={`rounded-full transition-all duration-700 ${
-                    currentSlide === idx ? "w-8 h-2 bg-gray-800" : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                    currentSlide % slides.length === idx
+                      ? "w-8 h-2 bg-gray-800"
+                      : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                   }`}
                 />
               ))}
@@ -271,164 +397,201 @@ export default function ProductDetail() {
         </div>
 
         {/* RIGHT: Product Info */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-start px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
-          <h1 className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4">
-            {displayName}
-          </h1>
-
-          <div className="flex items-center gap-3 mb-5">
-            <StarRating rating={3.5} />
-            <span className="text-sm text-black">(245 Reviews)</span>
-            <button className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
-              Add Review
-            </button>
-          </div>
-
-          <div className="text-[16px] text-black leading-relaxed mb-5">
-            <p
-              dangerouslySetInnerHTML={{
-                __html: readMore
-                  ? displayDescription
-                  : displayDescription?.replace(/<[^>]+>/g, "").slice(0, 200) + "...",
-              }}
-            />
-          </div>
-
-          <button
-            onClick={() => setReadMore(!readMore)}
-            className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
-              readMore ? "bg-white text-black border-black" : "bg-black text-white border-gray-300"
-            }`}
-          >
-            {readMore ? "less" : "Read more"}{" "}
-            {readMore ? <GoArrowUpRight className="w-4 h-4" /> : <GoArrowDownRight className="w-4 h-4" />}
-          </button>
-
-          {/* Volume Selector - only for type == size or size-color */}
-          {(productType === "size" || productType === "size-color") && uniqueSizes.length > 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Product Volume:</p>
-              <div className="flex items-center gap-3 flex-wrap">
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => handleVolumeSelect(size)}
-                    className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                      selectedVolume === size
-                        ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                        : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
+          {!isLoaded ? (
+            <>
+              <ShimmerLoader className="h-8 w-3/4 mb-4" />
+              <div className="flex items-center gap-3 mb-5">
+                <ShimmerLoader className="h-5 w-24" />
+                <ShimmerLoader className="h-5 w-32" />
               </div>
-            </div>
+              <ShimmerLoader className="h-20 w-full mb-5" />
+              <ShimmerLoader className="h-10 w-32 mb-7" />
+              <ShimmerLoader className="h-12 w-full mb-8" />
+              <ShimmerLoader className="h-32 w-full" />
+            </>
+          ) : (
+            <>
+              <h1 className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4">
+                {displayName}
+              </h1>
+
+              <div className="flex items-center gap-3 mb-5">
+                <StarRating rating={3.5} />
+                <span className="text-sm text-black">(245 Reviews)</span>
+                <button className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
+                  Add Review
+                </button>
+              </div>
+
+              <div className="text-[16px] text-black leading-relaxed mb-5">
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: readMore
+                      ? displayDescription
+                      : displayDescription?.replace(/<[^>]+>/g, "").slice(0, 200) + "...",
+                  }}
+                />
+              </div>
+
+              <button
+                onClick={() => setReadMore(!readMore)}
+                className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
+                  readMore
+                    ? "bg-white text-black border-black"
+                    : "bg-black text-white border-gray-300"
+                }`}
+              >
+                {readMore ? "less" : "Read more"}{" "}
+                {readMore ? (
+                  <GoArrowUpRight className="w-4 h-4" />
+                ) : (
+                  <GoArrowDownRight className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Volume Selector */}
+              {(productType === "size" || productType === "size-color") &&
+                uniqueSizes.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Product Volume:</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {uniqueSizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => handleVolumeSelect(size)}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
+                            selectedVolume === size
+                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Color Selector */}
+              {(productType === "color" || productType === "size-color") &&
+                uniqueColors.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Color:</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {uniqueColors.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => handleColorSelect(color)}
+                          title={color}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
+                            selectedColor === color
+                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                          }`}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Add to Cart */}
+              <div className="flex items-center gap-3 mb-8">
+                <button
+                  ref={cartBtnRef}
+                  id="add-to-cart-btn"
+                  className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Add to cart – €{displayPrice}
+                </button>
+                <button
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                    isWishlisted
+                      ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
+                      : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  <FiHeart className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""}`} />
+                </button>
+              </div>
+
+              {/* Shipping Info */}
+              <div className="border-t border-gray-100 pt-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#1C1C1C]">
+                      {shippingSlides[currentShipping].title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {shippingSlides[currentShipping].note}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {shippingSlides.map((_, idx) => (
+                      <span
+                        key={idx}
+                        className={`rounded-full inline-block transition-all duration-700 ${
+                          idx === currentShipping
+                            ? "w-6 h-2 bg-gray-800"
+                            : "w-2 h-2 bg-white border border-black"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
-
-          {/* Color Selector - only for type == color or size-color */}
-          {(productType === "color" || productType === "size-color") && uniqueColors.length > 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Color:</p>
-              <div className="flex items-center gap-3 flex-wrap">
-                {uniqueColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => handleColorSelect(color)}
-                    title={color}
-                    className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                      selectedColor === color
-                        ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                        : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Add to Cart */}
-          <div className="flex items-center gap-3 mb-8">
-            <button
-              ref={cartBtnRef}
-              id="add-to-cart-btn"
-              className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Add to cart – €{displayPrice}
-            </button>
-            <button
-              onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
-                isWishlisted
-                  ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
-                  : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-              }`}
-            >
-              <FiHeart className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""}`} />
-            </button>
-          </div>
-
-          {/* Shipping Info */}
-          <div className="border-t border-gray-100 pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-[#1C1C1C]">
-                  {shippingSlides[currentShipping].title}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {shippingSlides[currentShipping].note}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {shippingSlides.map((_, idx) => (
-                  <span
-                    key={idx}
-                    className={`rounded-full inline-block transition-all duration-700 ${
-                      idx === currentShipping ? "w-6 h-2 bg-gray-800" : "w-2 h-2 bg-white border border-black"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Quote Section */}
-      <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
-        <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-        <p className="text-lg font-semibold text-[#1C1C1C]">
-          <span className="text-[#1A171B] font-normal">Made in france</span> - 98% ingredients of natural & organic origin - free from parabens - free from phthalates
-        </p>
-        <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
-      </div>
+      {isLoaded && (
+        <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
+          <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+          <p className="text-lg font-semibold text-[#1C1C1C]">
+            <span className="text-[#1A171B] font-normal">Made in france</span> - 98% ingredients of
+            natural & organic origin - free from parabens - free from phthalates
+          </p>
+          <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+        </div>
+      )}
 
       <AboutProduct apiProduct={apiProduct} />
 
-      <StickyAddToCart
-        price={displayPrice}
-        productName={displayName}
-        visible={showSticky}
-        selectedVolume={selectedVolume}
-        onVolumeChange={handleVolumeSelect}
-        volumes={uniqueSizes}
-      />
+      {isLoaded && (
+        <StickyAddToCart
+          price={displayPrice}
+          productName={displayName}
+          visible={showSticky}
+          selectedVolume={selectedVolume}
+          onVolumeChange={handleVolumeSelect}
+          volumes={uniqueSizes}
+        />
+      )}
 
       <ProductExpertAdvice apiProduct={apiProduct} />
 
       {/* Together Products */}
-      {formattedTogetherProducts.length > 0 && (
+      {isLoaded && formattedTogetherProducts.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-            <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">Complete your grooming routine</p>
+            <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
+              Complete your grooming routine
+            </p>
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
             {formattedTogetherProducts.map((prod) => (
-              <div key={prod.id} className="w-[350px] cursor-pointer" onClick={() => handleProductCardClick(prod.id)}>
+              <div
+                key={prod.id}
+                className="w-[350px] cursor-pointer"
+                onClick={() => handleProductCardClick(prod.id)}
+              >
                 <LandingCards product={prod} showNav={true} />
               </div>
             ))}
@@ -436,6 +599,7 @@ export default function ProductDetail() {
         </div>
       )}
 
+      {/* Video Section */}
       <div className="py-4 lg:py-12 px-6 lg:px-14">
         <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
           <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
@@ -443,11 +607,36 @@ export default function ProductDetail() {
           <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
         <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-          <ProductVideo videoLink={apiProduct?.video_link} />
+          <ProductVideo videoLink={apiProduct?.video_link} isLoading={!isLoaded} />
         </div>
       </div>
 
-      <ProductReviews />
+      {/* More Products */}
+      {isLoaded && formattedTogetherProducts.length > 0 && (
+        <div className="py-4 lg:py-12 px-6 lg:px-14">
+          <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
+            <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+            <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
+              More products to explore
+            </p>
+            <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+          </div>
+          <div className="flex justify-center gap-6 flex-wrap">
+            {formattedTogetherProducts.map((prod) => (
+              <div
+                key={prod.id}
+                className="w-[350px] cursor-pointer"
+                onClick={() => handleProductCardClick(prod.id)}
+              >
+                <LandingCards product={prod} showNav={true} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <ProductReviews isLoading={!isLoaded} />
+
       <Footer />
     </div>
   );
