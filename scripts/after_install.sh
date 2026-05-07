@@ -4,6 +4,7 @@
 cd /var/www/biogance-web
 
 #_Remove_Unused_Code
+sudo rm -r pnpm-lock.yaml
 sudo rm -rf node_modules
 sudo rm -rf .next
 

@@ -175,7 +175,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
         <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-              <h3 className="text-[20px] font-bold text-[#1C1C1C]"> {t("expertAdvice")}</h3>
+              <h3 className="text-[20px] font-bold text-[#1C1C1C]"> {t("rating")}</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-[#888] cursor-pointer hover:text-[#1C1C1C] transition-colors"
@@ -184,15 +184,11 @@ export default function ProductExpertAdvice({ apiProduct }) {
               </button>
             </div>
 
-            <div className="mx-4 mb-4 bg-[#FBF7EE] rounded-xl px-5 py-4 flex items-center justify-between shrink-0">
+            <div className="mx-4 mb-4 bg-[#FBF7EE] rounded-xl px-5 -py-1 flex items-center justify-between shrink-0">
               <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
                 {t("getReliableAdvice")}
               </p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {["banner1.svg", "banner2.svg", "banner3.svg", "banner4.svg"].map((src, i) => (
-                  <img key={i} src={`/${src}`} alt={`pet ${i + 1}`} className="w-14 h-14 rounded-full object-cover" />
-                ))}
-              </div>
+             <img src="catexpert.svg" alt="" />
             </div>
 
             <div className="px-4 pb-6 flex flex-col overflow-y-auto">
