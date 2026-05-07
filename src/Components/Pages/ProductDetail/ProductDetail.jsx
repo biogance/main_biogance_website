@@ -62,6 +62,7 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [noTransition, setNoTransition] = useState(false);
   const [readMore, setReadMore] = useState(false);
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
@@ -75,9 +76,8 @@ export default function ProductDetail() {
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
-  const isResetting = useRef(false);
 
-  // Fetch product detail
+  // ─── Fetch product detail ───────────────────────────────────────────────────
   useEffect(() => {
     if (!productId) return;
     fetch(`${BASE_URL}/product/detail`, {
@@ -104,34 +104,45 @@ export default function ProductDetail() {
       .catch((err) => console.error("API Error:", err));
   }, [productId]);
 
-  // Derived values
-  const displayName = language === "fr" ? (apiProduct?.french_name || apiProduct?.name) : (apiProduct?.name || "Product");
+  // ─── Derived values ─────────────────────────────────────────────────────────
+  const displayName =
+    language === "fr"
+      ? apiProduct?.french_name || apiProduct?.name
+      : apiProduct?.name || "Product";
   const apiProducts = apiProduct?.products || [];
   const selectedProduct = apiProducts[selectedProductIdx] || apiProducts[0];
-  const displayDescription = language === "fr" ? (selectedProduct?.french_description || selectedProduct?.description) : (selectedProduct?.description || "");
+  const displayDescription =
+    language === "fr"
+      ? selectedProduct?.french_description || selectedProduct?.description
+      : selectedProduct?.description || "";
   const productType = apiProducts[0]?.type || "no-size-color";
   const togetherProducts = apiProduct?.together || [];
-
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
-  const slides = selectedProduct?.images?.map((img) => ({
-    type: "image",
-    url: `${MEDIA_URL}${img.media}`,
-  })) || [];
+
+  const slides =
+    selectedProduct?.images?.map((img) => ({
+      type: "image",
+      url: `${MEDIA_URL}${img.media}`,
+    })) || [];
 
   // Infinite loop: append clone of first slide at end
   const infiniteSlides = slides.length > 1 ? [...slides, slides[0]] : slides;
 
-  const currentSlideData = slides[currentSlide % slides.length] || { type: "image", url: "" };
+  const currentSlideData = slides[currentSlide % slides.length] || {
+    type: "image",
+    url: "",
+  };
   const isVideo = currentSlideData.type === "video";
 
-  // Reset slide when product selection changes
+  // ─── Reset slide when product changes ───────────────────────────────────────
   useEffect(() => {
     setCurrentSlide(0);
+    setNoTransition(false);
     setImageLoading(true);
     firstImageLoaded.current = false;
-    isResetting.current = false;
   }, [selectedProductIdx]);
 
+  // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleVolumeSelect = (sizeName) => {
     setSelectedVolume(sizeName);
     const idx = apiProducts.findIndex((p) => p.size_name === sizeName);
@@ -144,10 +155,14 @@ export default function ProductDetail() {
     if (idx !== -1) setSelectedProductIdx(idx);
   };
 
-  const uniqueSizes = [...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name))];
-  const uniqueColors = [...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name))];
+  const uniqueSizes = [
+    ...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name)),
+  ];
+  const uniqueColors = [
+    ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
+  ];
 
-  // Auto-advance slides — no upper limit, clone handles loop
+  // ─── Auto-advance slides ─────────────────────────────────────────────────────
   useEffect(() => {
     clearTimeout(autoPlayTimerRef.current);
     if (!isVideo && slides.length > 1) {
@@ -158,35 +173,59 @@ export default function ProductDetail() {
     return () => clearTimeout(autoPlayTimerRef.current);
   }, [currentSlide, isVideo, slides.length]);
 
-  // When clone (last slide) is reached, silently reset to real first
+  // ─── When clone (last slide) is reached → silently reset to real first ───────
   useEffect(() => {
     if (slides.length > 1 && currentSlide === infiniteSlides.length - 1) {
       const timer = setTimeout(() => {
-        isResetting.current = true;
+        setNoTransition(true);
         setCurrentSlide(0);
       }, 500); // match transition duration
       return () => clearTimeout(timer);
     }
   }, [currentSlide, infiniteSlides.length, slides.length]);
 
-  // Scroll handler
+  // ─── Re-enable transition after silent reset ─────────────────────────────────
+  useEffect(() => {
+    if (noTransition) {
+      const timer = setTimeout(() => setNoTransition(false), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [noTransition]);
+
+  // ─── Scroll handler ──────────────────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
-      setIsTransparent(isLoadMoreOpen ? false : window.scrollY < window.innerHeight);
+      setIsTransparent(window.scrollY < window.innerHeight);
       if (cartBtnRef.current) {
         const rect = cartBtnRef.current.getBoundingClientRect();
         setShowSticky(rect.bottom < 0 || rect.top > window.innerHeight);
       }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isLoadMoreOpen]);
+  }, []);
 
+  // ─── When any modal opens → force navbar non-transparent ────────────────────
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (document.body.style.position === "fixed") {
+        setIsTransparent(false);
+      }
+    });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  // ─── Announcement bar ────────────────────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
+  // ─── Video auto-play ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
@@ -194,15 +233,15 @@ export default function ProductDetail() {
     }
   }, [currentSlide, isVideo]);
 
-  const handleVideoEnded = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const handleVideoEnded = () =>
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
 
   const goToSlide = (idx) => {
     clearTimeout(autoPlayTimerRef.current);
     setCurrentSlide(idx);
   };
 
- 
-
+  // ─── Shipping slider ─────────────────────────────────────────────────────────
   const shippingSlides = [
     { title: t("shippingFromFrance"), note: t("shippingNote1") },
     { title: t("freeShipping"), note: t("shippingNote2") },
@@ -220,14 +259,17 @@ export default function ProductDetail() {
     router.push(`/product-detail?id=${productId}`);
   };
 
-  const formattedTogetherProducts = togetherProducts.slice(0, 3).map(formatProductForCard);
+  const formattedTogetherProducts = togetherProducts
+    .slice(0, 3)
+    .map(formatProductForCard);
   const isLoaded = apiProduct !== null;
 
   return (
     <div className="w-full bg-white">
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes shimmerMove {
             0%   { background-position: -600px 0; }
             100% { background-position:  600px 0; }
@@ -263,10 +305,11 @@ export default function ProductDetail() {
             to   { opacity: 1; }
           }
           .first-fade-in { animation: firstFade 0.4s ease forwards; }
-        `
-      }} />
+        `,
+        }}
+      />
 
-      {/* Announcement Bar */}
+      {/* ── Announcement Bar ── */}
       <div
         className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${
           showAnnouncement ? "h-[40px]" : "h-0"
@@ -277,11 +320,14 @@ export default function ProductDetail() {
         </p>
       </div>
 
-      <Navbar transparent={isLoadMoreOpen ? false : isTransparent} announcementVisible={showAnnouncement} />
+      <Navbar
+        transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
+        announcementVisible={showAnnouncement}
+      />
 
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
 
-        {/* LEFT: Image Section */}
+        {/* ── LEFT: Image Section ── */}
         <div
           className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
           style={{ background: "#E1E1E1" }}
@@ -315,11 +361,8 @@ export default function ProductDetail() {
               }`}
             >
               <div
-                className={isResetting.current ? "slides-track-no-transition" : "slides-track"}
+                className={noTransition ? "slides-track-no-transition" : "slides-track"}
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                onTransitionEnd={() => {
-                  isResetting.current = false;
-                }}
               >
                 {infiniteSlides.map((slide, idx) => (
                   <div key={idx} className="slide-item">
@@ -408,7 +451,7 @@ export default function ProductDetail() {
           )}
         </div>
 
-        {/* RIGHT: Product Info */}
+        {/* ── RIGHT: Product Info ── */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
           {!isLoaded ? (
             <>
@@ -431,7 +474,10 @@ export default function ProductDetail() {
               <div className="flex items-center gap-3 mb-5">
                 <StarRating rating={3.5} />
                 <span className="text-sm text-black">({t("reviews")})</span>
-                <button onClick={() => setIsReviewModalOpen(true)} className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
+                <button
+                  onClick={() => setIsReviewModalOpen(true)}
+                  className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
+                >
                   {t("addReview")}
                 </button>
               </div>
@@ -443,7 +489,9 @@ export default function ProductDetail() {
                       dangerouslySetInnerHTML={{
                         __html: readMore
                           ? displayDescription
-                          : displayDescription?.replace(/<[^>]+>/g, "").slice(0, 200) + "...",
+                          : displayDescription
+                              ?.replace(/<[^>]+>/g, "")
+                              .slice(0, 200) + "...",
                       }}
                     />
                   </div>
@@ -470,7 +518,9 @@ export default function ProductDetail() {
               {(productType === "size" || productType === "size-color") &&
                 uniqueSizes.length > 0 && (
                   <div className="mb-6">
-                  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">{t("productVolume")}</p>
+                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
+                      {t("productVolume")}
+                    </p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {uniqueSizes.map((size) => (
                         <button
@@ -493,7 +543,9 @@ export default function ProductDetail() {
               {(productType === "color" || productType === "size-color") &&
                 uniqueColors.length > 0 && (
                   <div className="mb-6">
-                  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">{t("color")}</p>
+                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
+                      {t("color")}
+                    </p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {uniqueColors.map((color) => (
                         <button
@@ -530,7 +582,11 @@ export default function ProductDetail() {
                       : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
                   }`}
                 >
-                  <FiHeart className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""}`} />
+                  <FiHeart
+                    className={`w-5 h-5 ${
+                      isWishlisted ? "fill-black text-black" : ""
+                    }`}
+                  />
                 </button>
               </div>
 
@@ -564,12 +620,13 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Quote Section */}
+      {/* ── Quote Section ── */}
       {isLoaded && (
         <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
           <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
           <p className="text-lg font-semibold text-[#1C1C1C]">
-            <span className="text-[#1A171B] font-normal">{t("madeInFrance")}</span> - {t("ingredientsInfo")}
+            <span className="text-[#1A171B] font-normal">{t("madeInFrance")}</span>{" "}
+            - {t("ingredientsInfo")}
           </p>
           <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
@@ -590,7 +647,7 @@ export default function ProductDetail() {
 
       <ProductExpertAdvice apiProduct={apiProduct} />
 
-      {/* Together Products */}
+      {/* ── Together Products ── */}
       {isLoaded && formattedTogetherProducts.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
@@ -614,19 +671,25 @@ export default function ProductDetail() {
         </div>
       )}
 
-      {/* Video Section */}
+      {/* ── Video Section ── */}
       <div className="py-4 lg:py-12 px-6 lg:px-14">
         <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
           <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-          <p className="text-lg font-semibold text-[#1C1C1C]">{t("watchBenefitsLive")}</p>
+          <p className="text-lg font-semibold text-[#1C1C1C]">
+            {t("watchBenefitsLive")}
+          </p>
           <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
         <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-          <ProductVideo videoLink={apiProduct?.video_link} frenchVideoLink={apiProduct?.french_video_link} isLoading={!isLoaded} />
+          <ProductVideo
+            videoLink={apiProduct?.video_link}
+            frenchVideoLink={apiProduct?.french_video_link}
+            isLoading={!isLoaded}
+          />
         </div>
       </div>
 
-      {/* More Products */}
+      {/* ── More Products ── */}
       {isLoaded && formattedTogetherProducts.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
