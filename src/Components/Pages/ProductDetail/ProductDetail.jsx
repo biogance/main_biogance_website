@@ -62,7 +62,6 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [noTransition, setNoTransition] = useState(false);
   const [readMore, setReadMore] = useState(false);
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
@@ -75,7 +74,8 @@ export default function ProductDetail() {
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
-  const autoPlayTimerRef = useRef(null);
+  // ─── NEW: ref for the product title h1 ──────────────────────────────────────
+  const titleRef = useRef(null);
 
   // ─── Fetch product detail ───────────────────────────────────────────────────
   useEffect(() => {
@@ -113,31 +113,35 @@ export default function ProductDetail() {
   const selectedProduct = apiProducts[selectedProductIdx] || apiProducts[0];
   const displayDescription =
     language === "fr"
-      ? selectedProduct?.french_description || selectedProduct?.description
-      : selectedProduct?.description || "";
+      ? apiProduct?.french_description || apiProduct?.description
+      : apiProduct?.description || "";
   const productType = apiProducts[0]?.type || "no-size-color";
   const togetherProducts = apiProduct?.together || [];
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
 
-  const slides =
-    selectedProduct?.images?.map((img) => ({
-      type: "image",
-      url: `${MEDIA_URL}${img.media}`,
-    })) || [];
+  const isTransparentProduct = selectedProduct?.is_transparent === 1;
 
-  // Infinite loop: append clone of first slide at end
-  const infiniteSlides = slides.length > 1 ? [...slides, slides[0]] : slides;
+  const rawImages = selectedProduct?.images || [];
+  const firstImage = rawImages.find((img) => img.type !== "video");
+  const videoItem = rawImages.find((img) => img.type === "video");
+  const otherImages = rawImages.filter(
+    (img) => img !== firstImage && img.type !== "video"
+  );
 
-  const currentSlideData = slides[currentSlide % slides.length] || {
-    type: "image",
-    url: "",
-  };
+  const slides = [
+    ...(firstImage ? [{ type: "image", url: `${MEDIA_URL}${firstImage.media}`, isFirst: true }] : []),
+    ...(videoItem ? [{ type: "video", url: `${MEDIA_URL}${videoItem.media}` }] : []),
+    ...otherImages.map((img) => ({ type: "image", url: `${MEDIA_URL}${img.media}`, isFirst: false })),
+  ];
+
+  const infiniteSlides = slides;
+
+  const currentSlideData = slides[currentSlide] || { type: "image", url: "" };
   const isVideo = currentSlideData.type === "video";
 
   // ─── Reset slide when product changes ───────────────────────────────────────
   useEffect(() => {
     setCurrentSlide(0);
-    setNoTransition(false);
     setImageLoading(true);
     firstImageLoaded.current = false;
   }, [selectedProductIdx]);
@@ -162,40 +166,10 @@ export default function ProductDetail() {
     ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
   ];
 
-  // ─── Auto-advance slides ─────────────────────────────────────────────────────
-  useEffect(() => {
-    clearTimeout(autoPlayTimerRef.current);
-    if (!isVideo && slides.length > 1) {
-      autoPlayTimerRef.current = setTimeout(() => {
-        setCurrentSlide((prev) => prev + 1);
-      }, 3000);
-    }
-    return () => clearTimeout(autoPlayTimerRef.current);
-  }, [currentSlide, isVideo, slides.length]);
-
-  // ─── When clone (last slide) is reached → silently reset to real first ───────
-  useEffect(() => {
-    if (slides.length > 1 && currentSlide === infiniteSlides.length - 1) {
-      const timer = setTimeout(() => {
-        setNoTransition(true);
-        setCurrentSlide(0);
-      }, 500); // match transition duration
-      return () => clearTimeout(timer);
-    }
-  }, [currentSlide, infiniteSlides.length, slides.length]);
-
-  // ─── Re-enable transition after silent reset ─────────────────────────────────
-  useEffect(() => {
-    if (noTransition) {
-      const timer = setTimeout(() => setNoTransition(false), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [noTransition]);
-
-  // ─── Scroll handler ──────────────────────────────────────────────────────────
+  // ─── Scroll handler — only handles sticky cart, NOT navbar transparency ──────
+  // Navbar transparency is now controlled by the IntersectionObserver below
   useEffect(() => {
     const handleScroll = () => {
-      setIsTransparent(window.scrollY < window.innerHeight);
       if (cartBtnRef.current) {
         const rect = cartBtnRef.current.getBoundingClientRect();
         setShowSticky(rect.bottom < 0 || rect.top > window.innerHeight);
@@ -204,6 +178,29 @@ export default function ProductDetail() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // ─── NEW: IntersectionObserver — watch title h1 against navbar ──────────────
+  // When the title h1 enters the top 80px zone (navbar area), make navbar solid.
+  // When title scrolls back down into view, make navbar transparent again.
+  useEffect(() => {
+    if (!titleRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // jab title ka top edge navbar ke neeche ho → transparent
+        // jab title scroll karke navbar ko touch kare → solid white
+        setIsTransparent(entry.boundingClientRect.top > 80);
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px 0px 0px",
+        threshold: [0, 1],
+      }
+    );
+
+    observer.observe(titleRef.current);
+    return () => observer.disconnect();
+  }, [apiProduct]); // re-run after product loads so titleRef.current is set
 
   // ─── When any modal opens → force navbar non-transparent ────────────────────
   useEffect(() => {
@@ -225,7 +222,7 @@ export default function ProductDetail() {
     return () => clearTimeout(timer);
   }, []);
 
-  // ─── Video auto-play ─────────────────────────────────────────────────────────
+  // ─── Video auto-play when navigated to video slide ────────────────────────
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
@@ -233,11 +230,14 @@ export default function ProductDetail() {
     }
   }, [currentSlide, isVideo]);
 
-  const handleVideoEnded = () =>
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const handleVideoEnded = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  };
 
   const goToSlide = (idx) => {
-    clearTimeout(autoPlayTimerRef.current);
     setCurrentSlide(idx);
   };
 
@@ -353,56 +353,64 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* State 3: Sliding image track */}
-          {isLoaded && !isVideo && infiniteSlides.length > 0 && (
+          {/* State 3: Sliding track (images + video in order) */}
+          {isLoaded && infiniteSlides.length > 0 && (
             <div
               className={`absolute inset-0 overflow-hidden ${
                 imageLoading ? "opacity-0" : "first-fade-in"
               }`}
             >
               <div
-                className={noTransition ? "slides-track-no-transition" : "slides-track"}
+                className="slides-track"
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
-                {infiniteSlides.map((slide, idx) => (
-                  <div key={idx} className="slide-item">
-                    <img
-                      src={slide.url}
-                      alt={`Product ${idx + 1}`}
-                      onLoad={() => {
-                        if (!firstImageLoaded.current) {
-                          firstImageLoaded.current = true;
-                          setImageLoading(false);
-                        }
-                      }}
-                      onError={() => {
-                        if (!firstImageLoaded.current) {
-                          firstImageLoaded.current = true;
-                          setImageLoading(false);
-                        }
-                      }}
-                      className="object-contain max-h-[480px] w-auto max-w-full drop-shadow-xl"
-                    />
-                  </div>
-                ))}
+                {infiniteSlides.map((slide, idx) => {
+                  const useContain = slide.isFirst && isTransparentProduct;
+                  return (
+                    <div
+                      key={idx}
+                      className="slide-item"
+                      style={useContain ? {} : { padding: 0, position: "relative" }}
+                    >
+                      {slide.type === "video" ? (
+                        <video
+                          ref={currentSlide === idx ? videoRef : null}
+                          key={slide.url}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          onEnded={handleVideoEnded}
+                        >
+                          <source src={slide.url} type="video/mp4" />
+                        </video>
+                      ) : (
+                        <img
+                          src={slide.url}
+                          alt={`Product ${idx + 1}`}
+                          onLoad={() => {
+                            if (!firstImageLoaded.current) {
+                              firstImageLoaded.current = true;
+                              setImageLoading(false);
+                            }
+                          }}
+                          onError={() => {
+                            if (!firstImageLoaded.current) {
+                              firstImageLoaded.current = true;
+                              setImageLoading(false);
+                            }
+                          }}
+                          className={
+                            useContain
+                              ? "object-contain h-full w-auto max-w-full drop-shadow-xl"
+                              : "object-cover absolute inset-0 w-full h-full"
+                          }
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          )}
-
-          {/* Video case */}
-          {isLoaded && isVideo && (
-            <video
-              ref={videoRef}
-              key={currentSlideData.url}
-              className="absolute inset-0 w-full h-full object-cover"
-              muted
-              autoPlay
-              playsInline
-              onCanPlay={() => setImageLoading(false)}
-              onEnded={handleVideoEnded}
-            >
-              <source src={currentSlideData.url} type="video/mp4" />
-            </video>
           )}
 
           {/* Left Arrow */}
@@ -412,7 +420,7 @@ export default function ProductDetail() {
               className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
                 currentSlide === 0
                   ? "opacity-0 pointer-events-none"
-                  : "opacity-0 group-hover:opacity-100"
+                  : "opacity-100"
               }`}
             >
               <MdChevronLeft className="w-6 h-6" />
@@ -426,7 +434,7 @@ export default function ProductDetail() {
               className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
                 currentSlide >= slides.length - 1
                   ? "opacity-0 pointer-events-none"
-                  : "opacity-0 group-hover:opacity-100"
+                  : "opacity-100"
               }`}
             >
               <MdChevronRight className="w-6 h-6" />
@@ -441,7 +449,7 @@ export default function ProductDetail() {
                   key={idx}
                   onClick={() => goToSlide(idx)}
                   className={`rounded-full transition-all duration-700 ${
-                    currentSlide % slides.length === idx
+                    currentSlide === idx
                       ? "w-8 h-2 bg-gray-800"
                       : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                   }`}
@@ -467,7 +475,14 @@ export default function ProductDetail() {
             </>
           ) : (
             <>
-              <h1 className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4">
+              {/*
+                ─── CHANGED: added ref={titleRef} so IntersectionObserver
+                    can watch when this title reaches the navbar ───────────────
+              */}
+              <h1
+                ref={titleRef}
+                className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4"
+              >
                 {displayName}
               </h1>
 
@@ -484,17 +499,11 @@ export default function ProductDetail() {
 
               {displayDescription && (
                 <>
-                  <div className="text-[16px] text-black leading-relaxed mb-5">
-                    <p
-                      dangerouslySetInnerHTML={{
-                        __html: readMore
-                          ? displayDescription
-                          : displayDescription
-                              ?.replace(/<[^>]+>/g, "")
-                              .slice(0, 200) + "...",
-                      }}
-                    />
-                  </div>
+                  <div
+                    style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
+                    className="text-[16px] text-black leading-relaxed mb-5"
+                    dangerouslySetInnerHTML={{ __html: displayDescription }}
+                  />
 
                   <button
                     onClick={() => setReadMore(!readMore)}

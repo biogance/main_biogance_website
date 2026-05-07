@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { HiPlus, HiMinus } from "react-icons/hi";
 import { MEDIA_URL } from "@/Components/API/API";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=900&q=80";
+
+const isVideoUrl = (url) => /\.(mp4|webm|ogg|mov)$/i.test(url);
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
@@ -16,12 +18,21 @@ export default function AboutProduct({ apiProduct }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
+  const videoRef = useRef(null);
 
   const toggle = (idx) => setOpenIndex((prev) => (prev === idx ? null : idx));
 
-  const aboutImage = apiProduct?.about_product_media
+  const aboutMedia = apiProduct?.about_product_media
     ? `${MEDIA_URL}${apiProduct.about_product_media}`
     : FALLBACK_IMAGE;
+
+  const isVideo = isVideoUrl(aboutMedia);
+
+  useEffect(() => {
+    if (isVideo && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isVideo, aboutMedia]);
 
   const accordionData = [
     {
@@ -99,7 +110,7 @@ export default function AboutProduct({ apiProduct }) {
         `
       }} />
 
-      <div className="flex flex-col lg:flex-row w-full min-h-[600px]">
+      <div className="flex flex-col lg:flex-row w-full items-start">
 
         {/* LEFT: Accordion */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-6 lg:py-14">
@@ -157,16 +168,16 @@ export default function AboutProduct({ apiProduct }) {
 
         {/* RIGHT: Image */}
         <div
-          className="hidden lg:flex w-full lg:w-1/2 lg:sticky lg:top-0 lg:h-screen overflow-hidden items-center justify-center"
-          style={{ background: "#E1E1E1" }}
+          className="hidden lg:flex w-full lg:w-1/2 lg:sticky overflow-hidden items-center justify-center"
+          style={{ background: "#E1E1E1", top: "104px", height: "calc(100vh - 176px)", alignSelf: "flex-start" }}
         >
           {/* State 1: Shimmer — API nahi aaya abhi */}
           {!isLoaded && (
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner — API aa gaya, image load ho rahi hai */}
-          {isLoaded && imageLoading && (
+          {/* State 2: Black spinner — API aa gaya, image/video load ho rahi hai */}
+          {isLoaded && imageLoading && !isVideo && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div
                 style={{
@@ -181,10 +192,30 @@ export default function AboutProduct({ apiProduct }) {
             </div>
           )}
 
+          {/* State 3: Video autoplay loop */}
+          {isLoaded && isVideo && (
+            <video
+              ref={videoRef}
+              key={aboutMedia}
+              className="w-full h-full object-cover about-fade-in"
+              autoPlay
+              muted
+              playsInline
+              onEnded={() => {
+                if (videoRef.current) {
+                  videoRef.current.currentTime = 0;
+                  videoRef.current.play().catch(() => {});
+                }
+              }}
+            >
+              <source src={aboutMedia} type="video/mp4" />
+            </video>
+          )}
+
           {/* State 3: Image fade in */}
-          {isLoaded && (
+          {isLoaded && !isVideo && (
             <img
-              src={aboutImage}
+              src={aboutMedia}
               alt="About this product"
               onLoad={handleImageLoad}
               onError={handleImageLoad}
