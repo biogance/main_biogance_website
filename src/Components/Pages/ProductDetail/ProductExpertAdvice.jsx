@@ -14,8 +14,10 @@ export default function ProductExpertAdvice({ apiProduct }) {
   const { t, i18n } = useTranslation("expertadvice");
   const language = i18n.language;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => { setCatImgLoading(true); setIsModalOpen(true); };
   const [currentBlogIdx, setCurrentBlogIdx] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
+  const [catImgLoading, setCatImgLoading] = useState(true);
   const imageLoaded = useRef(false);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
                   alt="Expert Advice"
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}
-                  className={`absolute inset-0 w-full h-full object-contain ${
+                  className={`absolute inset-0 w-full h-full object-cover ${
                     imageLoading ? "opacity-0" : "expert-fade-in"
                   }`}
                 />
@@ -159,7 +161,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
                 </div>
                 {remainingBlogs.length > 0 && (
                   <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => openModal()}
                     className="mt-8 w-fit bg-[#1C1C1C] text-white text-[13px] font-medium px-6 py-2.5 rounded-md hover:bg-[#333] transition-colors cursor-pointer"
                   >
                     {t("seeMore")}
@@ -188,7 +190,28 @@ export default function ProductExpertAdvice({ apiProduct }) {
               <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
                 {t("getReliableAdvice")}
               </p>
-             <img src="catexpert.svg" alt="" />
+              <div className="relative flex items-center justify-center" style={{ minWidth: 80, minHeight: 80 }}>
+                {catImgLoading && (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      border: "4px solid rgba(0,0,0,0.12)",
+                      borderTopColor: "#111111",
+                      animation: "spinExpert 0.8s linear infinite",
+                      position: "absolute",
+                    }}
+                  />
+                )}
+                <img
+                  src="catexpert.svg"
+                  alt=""
+                  onLoad={() => setCatImgLoading(false)}
+                  onError={() => setCatImgLoading(false)}
+                  className={catImgLoading ? "opacity-0" : "expert-fade-in"}
+                />
+              </div>
             </div>
 
             <div className="px-4 pb-6 flex flex-col overflow-y-auto">
