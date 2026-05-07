@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { HiPlus, HiMinus } from "react-icons/hi";
 import { MEDIA_URL } from "@/Components/API/API";
 
@@ -10,6 +11,8 @@ const ShimmerLoader = ({ className = "" }) => (
 );
 
 export default function AboutProduct({ apiProduct }) {
+  const { t, i18n } = useTranslation("aboutproduct");
+  const language = i18n.language;
   const [openIndex, setOpenIndex] = useState(null);
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
@@ -22,45 +25,45 @@ export default function AboutProduct({ apiProduct }) {
 
   const accordionData = [
     {
-      title: "Type of coat",
-      content: "This product is suitable for all coat types including short, medium, and long hair.",
+      title: t("typeOfCoat"),
+      content: t("typeOfCoatContent"),
     },
     {
-      title: "Why Choose this Product?",
-      content: apiProduct?.why_choose_this_product || "-",
+      title: t("whyChooseThisProduct"),
+      content: language === "fr" ? (apiProduct?.french_why_choose_this_product || apiProduct?.why_choose_this_product || t("noData")) : (apiProduct?.why_choose_this_product || t("noData")),
     },
     {
-      title: "Ingredients",
+      title: t("ingredients"),
       content: apiProduct?.bundle_ingredients?.length
-        ? apiProduct.bundle_ingredients.map((b) => b.ingredient?.description).filter(Boolean)
-        : ["-"],
+        ? apiProduct.bundle_ingredients.map((b) => language === "fr" ? (b.ingredient?.french_description || b.ingredient?.description) : (b.ingredient?.description)).filter(Boolean)
+        : [t("noData")],
       isList: true,
     },
     {
-      title: "Our Singularity",
+      title: t("ourSingularity"),
       content: apiProduct?.our_singularities?.length
-        ? apiProduct.our_singularities.map((s) => s.description || s.name).filter(Boolean).join(" ")
-        : "-",
+        ? apiProduct.our_singularities.map((s) => language === "fr" ? (s.french_description || s.description || s.french_name || s.name) : (s.description || s.name)).filter(Boolean).join(" ")
+        : t("noData"),
     },
     {
-      title: "Our Commitments",
+      title: t("ourCommitments"),
       content: apiProduct?.our_commitments?.length
-        ? apiProduct.our_commitments.map((c) => c.description || c.name).filter(Boolean).join(" ")
-        : "-",
+        ? apiProduct.our_commitments.map((c) => language === "fr" ? (c.french_description || c.description || c.french_name || c.name) : (c.description || c.name)).filter(Boolean).join(" ")
+        : t("noData"),
     },
     {
-      title: "Directions of Use",
-      content: apiProduct?.direction || "-",
+      title: t("directionsOfUse"),
+      content: language === "fr" ? (apiProduct?.french_direction || apiProduct?.direction || t("noData")) : (apiProduct?.direction || t("noData")),
     },
     {
-      title: "Composition",
-      content: apiProduct?.composition || "-",
+      title: t("composition"),
+      content: language === "fr" ? (apiProduct?.french_composition || apiProduct?.composition || t("noData")) : (apiProduct?.composition || t("noData")),
     },
     {
-      title: "Safety",
+      title: t("safety"),
       content: apiProduct?.safety_items?.length
-        ? apiProduct.safety_items.map((s) => s.short_description).filter(Boolean)
-        : ["-"],
+        ? apiProduct.safety_items.map((s) => language === "fr" ? (s.french_short_description || s.short_description) : (s.short_description)).filter(Boolean)
+        : [t("noData")],
       isList: true,
     },
   ];
@@ -101,7 +104,7 @@ export default function AboutProduct({ apiProduct }) {
         {/* LEFT: Accordion */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-6 lg:py-14">
           <h2 className="text-[22px] sm:text-[24px] lg:text-[26px] font-bold text-[#1C1C1C] mb-8">
-            About This Product
+            {t("aboutThisProduct")}
           </h2>
 
           {!isLoaded ? (

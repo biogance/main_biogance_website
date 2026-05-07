@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
 import ProductModalAddReview from "./ProductModalAddReview";
@@ -9,54 +10,54 @@ const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
 );
 
-const allReviews = [
+const getReviews = (t) => [
   {
     id: 1,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_1_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 4,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_1_text"),
   },
   {
     id: 2,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_2_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 4,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_2_text"),
   },
   {
     id: 3,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_3_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 3.5,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_3_text"),
   },
   {
     id: 4,
-    name: "Sophie M",
-    role: "Verified Buyer",
+    name: t("review_4_name"),
+    role: t("verifiedBuyer"),
     date: "12/02/2026",
     rating: 5,
-    text: "Absolutely love this shampoo! My dog's coat has never looked better. The natural ingredients make a huge difference and the scent is very pleasant without being overwhelming.",
+    text: t("review_4_text"),
   },
   {
     id: 5,
-    name: "Marc D",
-    role: "Verified Buyer",
+    name: t("review_5_name"),
+    role: t("verifiedBuyer"),
     date: "05/01/2026",
     rating: 4,
-    text: "Great product, very gentle on my cat's sensitive skin. Will definitely buy again. Shipping was fast and packaging was intact.",
+    text: t("review_5_text"),
   },
   {
     id: 6,
-    name: "Layla K",
-    role: "Verified Buyer",
+    name: t("review_6_name"),
+    role: t("verifiedBuyer"),
     date: "28/12/2025",
     rating: 5,
-    text: "I've tried many pet shampoos but this one stands out. Coat is visibly shinier and softer after just two washes. Highly recommend!",
+    text: t("review_6_text"),
   },
 ];
 
@@ -74,23 +75,18 @@ const StarRow = ({ rating }) => (
   </div>
 );
 
-export default function ProductReviews({ isLoading }) {
+export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
+  const { t } = useTranslation("productreviews");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
+  const allReviews = getReviews(t);
 
   useEffect(() => {
-    if (isModalOpen || isLoadMoreOpen) {
-      document.body.classList.add("modal-open");
-    } else {
-      document.body.classList.remove("modal-open");
-    }
-    return () => {
-      document.body.classList.remove("modal-open");
-    };
-  }, [isModalOpen, isLoadMoreOpen]);
+    onLoadMoreOpen?.(isLoadMoreOpen);
+  }, [isLoadMoreOpen, onLoadMoreOpen]);
 
   const handleImageLoad = () => {
     if (!imageLoaded.current) {
@@ -133,7 +129,7 @@ export default function ProductReviews({ isLoading }) {
         <div className="hidden lg:flex w-full py-10 flex items-center justify-center gap-3">
           <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
           <p className="text-base lg:text-lg font-semibold text-[#1C1C1C] text-center">
-            This product is rated 4.4/5, based on over 3424 reviews
+            {t("thisProductIsRated")}
           </p>
           <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
@@ -146,13 +142,13 @@ export default function ProductReviews({ isLoading }) {
         <div className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-14 py-10 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">User Reviews</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">{t("userReviews")}</h2>
             {!isLoading && (
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] rounded-lg px-4 py-2 cursor-pointer"
               >
-                <span className="text-lg leading-none">+</span> Add Review
+                <span className="text-lg leading-none">+</span> {t("addReview")}
               </button>
             )}
           </div>
@@ -206,7 +202,7 @@ export default function ProductReviews({ isLoading }) {
                     onClick={() => setIsLoadMoreOpen(true)}
                     className="px-8 py-2.5 bg-black border border-[#C0C0C0] rounded-lg text-sm font-medium text-white cursor-pointer"
                   >
-                    Load more
+                    {t("loadMore")}
                   </button>
                 </div>
               )}

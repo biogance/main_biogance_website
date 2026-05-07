@@ -1,15 +1,20 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { MdWaves } from "react-icons/md";
+import { MEDIA_URL } from "@/Components/API/API";
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
 );
 
 export default function ProductExpertAdvice({ apiProduct }) {
+  const { t, i18n } = useTranslation("expertadvice");
+  const language = i18n.language;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentBlogIdx, setCurrentBlogIdx] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
 
@@ -18,10 +23,23 @@ export default function ProductExpertAdvice({ apiProduct }) {
     return () => { document.body.style.overflow = ""; };
   }, [isModalOpen]);
 
+  useEffect(() => {
+    if (!apiProduct) return;
+    const blogs = apiProduct?.blogs || [];
+    const stored = parseInt(localStorage.getItem("expertBlogIdx") || "-1", 10);
+    const next = blogs.length > 0 ? (stored + 1) % blogs.length : 0;
+    localStorage.setItem("expertBlogIdx", next);
+    setCurrentBlogIdx(next);
+    setImageLoading(true);
+    imageLoaded.current = false;
+  }, [apiProduct]);
+
   const blogs = apiProduct?.blogs || [];
   const visibleBlogs = blogs.slice(0, 5);
   const remainingBlogs = blogs.slice(5);
-  const firstBlogName = blogs[0]?.name || "Expert Advice";
+  const currentBlog = blogs[currentBlogIdx] || blogs[0];
+  const currentBlogName = language === "fr" ? (currentBlog?.french_name || currentBlog?.name) : (currentBlog?.name);
+  const currentBlogImage = currentBlog?.images?.[0]?.media ? `${MEDIA_URL}${currentBlog.images[0].media}` : "/dog.svg";
 
   const isLoaded = apiProduct !== null;
 
@@ -57,17 +75,15 @@ export default function ProductExpertAdvice({ apiProduct }) {
 
         <div className="flex flex-col lg:flex-row w-full">
 
-          {/* LEFT: Dog Image */}
+          {/* LEFT: Blog Image */}
           <div
             className="hidden lg:flex w-full lg:w-1/2 relative group overflow-visible -mt-[40px] -mb-[40px] items-center justify-center"
             style={{ background: "#D7D7D7" }}
           >
-            {/* State 1: Shimmer */}
             {!isLoaded && (
               <div className="shimmer-bg-expert absolute inset-0 w-full h-full" />
             )}
 
-            {/* State 2: Black spinner */}
             {isLoaded && imageLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div
@@ -83,12 +99,11 @@ export default function ProductExpertAdvice({ apiProduct }) {
               </div>
             )}
 
-            {/* State 3: Image fade in */}
             {isLoaded && (
               <>
                 <img
-                  src="dog.svg"
-                  alt="Expert Advice Dog"
+                  src={currentBlogImage}
+                  alt="Expert Advice"
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}
                   className={`absolute inset-0 w-full h-full object-contain ${
@@ -96,18 +111,12 @@ export default function ProductExpertAdvice({ apiProduct }) {
                   }`}
                 />
 
-                {/* Hover card — sirf image load hone ke baad dikhay */}
                 {!imageLoading && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%]
-                                  opacity-0 translate-y-4
-                                  group-hover:opacity-100 group-hover:translate-y-0
-                                  transition-all duration-300 ease-out
-                                  bg-white rounded-md px-5 py-4 shadow-lg
-                                  flex items-center justify-between gap-3 z-20">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out bg-white rounded-md px-5 py-4 shadow-lg flex items-center justify-between gap-3 z-20">
                     <div className="flex items-center gap-3">
                       <MdWaves size={20} className="bg-gray-200 text-[#808080] p-1" />
                       <span className="text-[14px] text-[#1C1C1C] font-medium line-clamp-1">
-                        {firstBlogName}
+                        {currentBlogName}
                       </span>
                     </div>
                     <span className="text-[#1C1C1C] text-sm"><FaArrowRight /></span>
@@ -120,7 +129,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
           {/* RIGHT: Expert Advice list */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-6 lg:py-14 bg-[#F3F3F3]">
             <h2 className="text-[22px] sm:text-[24px] lg:text-[28px] font-bold text-[#1C1C1C] mb-7">
-              Expert Advice
+              {t("expertAdvice")}
             </h2>
 
             {!isLoaded ? (
@@ -134,22 +143,26 @@ export default function ProductExpertAdvice({ apiProduct }) {
             ) : (
               <>
                 <div className="flex flex-col">
-                  {visibleBlogs.map((blog) => (
-                    <div
-                      key={blog.id}
-                      className="flex items-center justify-between py-3.5 border-t border-[#D8D8D8] last:border-b cursor-pointer group"
-                    >
-                      <span className="text-[14px] text-[#1C1C1C] line-clamp-1 pr-4 group-hover:text-gray-400 transition-colors pr-4">{blog.name}</span>
-                      <img src="review.svg" alt="" />
-                    </div>
-                  ))}
+                  {visibleBlogs.map((blog, idx) => {
+                    const displayName = language === "fr" ? (blog.french_name || blog.name) : (blog.name);
+                    return (
+                      <div
+                        key={blog.id}
+                        onClick={() => setCurrentBlogIdx(idx)}
+                        className="flex items-center justify-between py-3.5 border-t border-[#D8D8D8] last:border-b cursor-pointer group"
+                      >
+                        <span className="text-[14px] text-[#1C1C1C] line-clamp-1 pr-4 group-hover:text-gray-400 transition-colors">{displayName}</span>
+                        <img src="review.svg" alt="" />
+                      </div>
+                    );
+                  })}
                 </div>
                 {remainingBlogs.length > 0 && (
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="mt-8 w-fit bg-[#1C1C1C] text-white text-[13px] font-medium px-6 py-2.5 rounded-md hover:bg-[#333] transition-colors cursor-pointer"
                   >
-                    See more
+                    {t("seeMore")}
                   </button>
                 )}
               </>
@@ -158,24 +171,22 @@ export default function ProductExpertAdvice({ apiProduct }) {
         </div>
       </section>
 
-      {/* MODAL */}
       {isLoaded && isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-              <h3 className="text-[20px] font-bold text-[#1C1C1C]">Expert Advice</h3>
+              <h3 className="text-[20px] font-bold text-[#1C1C1C]"> {t("expertAdvice")}</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-[#888] cursor-pointer hover:text-[#1C1C1C]  transition-colors"
+                className="text-[#888] cursor-pointer hover:text-[#1C1C1C] transition-colors"
               >
                 <IoClose size={25} />
-
               </button>
             </div>
 
             <div className="mx-4 mb-4 bg-[#FBF7EE] rounded-xl px-5 py-4 flex items-center justify-between shrink-0">
               <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
-                Get reliable <strong>expert advice</strong> to give your pet the best care every day.
+                {t("getReliableAdvice")}
               </p>
               <div className="grid grid-cols-2 gap-1.5">
                 {["banner1.svg", "banner2.svg", "banner3.svg", "banner4.svg"].map((src, i) => (
@@ -185,17 +196,20 @@ export default function ProductExpertAdvice({ apiProduct }) {
             </div>
 
             <div className="px-4 pb-6 flex flex-col overflow-y-auto">
-              {remainingBlogs.map((blog) => (
-                <div
-                  key={blog.id}
-                  className="flex items-center justify-between py-3.5 border-t last:border-b border-[#E8E8E8] cursor-pointer px-2 group"
-                >
-                  <span className="text-[14px] text-[#1C1C1C] group-hover:text-gray-400 transition-colors pr-4">
-                    {blog.name}
-                  </span>
-                  <img src="review.svg" alt="" />
-                </div>
-              ))}
+              {remainingBlogs.map((blog) => {
+                const displayName = language === "fr" ? (blog.french_name || blog.name) : (blog.name);
+                return (
+                  <div
+                    key={blog.id}
+                    className="flex items-center justify-between py-3.5 border-t last:border-b border-[#E8E8E8] cursor-pointer px-2 group"
+                  >
+                    <span className="text-[14px] text-[#1C1C1C] group-hover:text-gray-400 transition-colors pr-4">
+                      {displayName}
+                    </span>
+                    <img src="review.svg" alt="" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
