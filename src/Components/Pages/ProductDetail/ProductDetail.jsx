@@ -226,14 +226,14 @@ export default function ProductDetail() {
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
     }
   }, [currentSlide, isVideo]);
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
     }
   };
 
@@ -311,9 +311,8 @@ export default function ProductDetail() {
 
       {/* ── Announcement Bar ── */}
       <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${
-          showAnnouncement ? "h-[40px]" : "h-0"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? "h-[40px]" : "h-0"
+          }`}
       >
         <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
           Enjoy complimentary standard delivery across France on all orders over €39.
@@ -356,9 +355,8 @@ export default function ProductDetail() {
           {/* State 3: Sliding track (images + video in order) */}
           {isLoaded && infiniteSlides.length > 0 && (
             <div
-              className={`absolute inset-0 overflow-hidden ${
-                imageLoading ? "opacity-0" : "first-fade-in"
-              }`}
+              className={`absolute inset-0 overflow-hidden ${imageLoading ? "opacity-0" : "first-fade-in"
+                }`}
             >
               <div
                 className="slides-track"
@@ -417,11 +415,10 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
-              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-                currentSlide === 0
+              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide === 0
                   ? "opacity-0 pointer-events-none"
                   : "opacity-100"
-              }`}
+                }`}
             >
               <MdChevronLeft className="w-6 h-6" />
             </button>
@@ -431,11 +428,10 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
-              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-                currentSlide >= slides.length - 1
+              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide >= slides.length - 1
                   ? "opacity-0 pointer-events-none"
                   : "opacity-100"
-              }`}
+                }`}
             >
               <MdChevronRight className="w-6 h-6" />
             </button>
@@ -448,11 +444,10 @@ export default function ProductDetail() {
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
-                  className={`rounded-full transition-all duration-700 ${
-                    currentSlide === idx
+                  className={`rounded-full transition-all duration-700 ${currentSlide === idx
                       ? "w-8 h-2 bg-gray-800"
                       : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -504,14 +499,13 @@ export default function ProductDetail() {
                     className="text-[16px] text-black leading-relaxed mb-5"
                     dangerouslySetInnerHTML={{ __html: displayDescription }}
                   />
-
+                  Hello world
                   <button
                     onClick={() => setReadMore(!readMore)}
-                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
-                      readMore
+                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${readMore
                         ? "bg-white text-black border-black"
                         : "bg-black text-white border-gray-300"
-                    }`}
+                      }`}
                   >
                     {readMore ? t("less") : t("readMore")}{" "}
                     {readMore ? (
@@ -535,11 +529,10 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                            selectedVolume === size
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedVolume === size
                               ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
                               : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
@@ -561,11 +554,10 @@ export default function ProductDetail() {
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           title={color}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                            selectedColor === color
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedColor === color
                               ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
                               : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                          }`}
+                            }`}
                         >
                           {color}
                         </button>
@@ -585,16 +577,14 @@ export default function ProductDetail() {
                 </button>
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
-                    isWishlisted
+                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${isWishlisted
                       ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
                       : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-                  }`}
+                    }`}
                 >
                   <FiHeart
-                    className={`w-5 h-5 ${
-                      isWishlisted ? "fill-black text-black" : ""
-                    }`}
+                    className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""
+                      }`}
                   />
                 </button>
               </div>
@@ -614,11 +604,10 @@ export default function ProductDetail() {
                     {shippingSlides.map((_, idx) => (
                       <span
                         key={idx}
-                        className={`rounded-full inline-block transition-all duration-700 ${
-                          idx === currentShipping
+                        className={`rounded-full inline-block transition-all duration-700 ${idx === currentShipping
                             ? "w-6 h-2 bg-gray-800"
                             : "w-2 h-2 bg-white border border-black"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
