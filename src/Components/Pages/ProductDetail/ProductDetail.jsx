@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { FiHeart } from "react-icons/fi";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import Navbar from "@/Components/Pages/Navbar";
@@ -12,9 +13,11 @@ import StickyAddToCart from "./StickyAddToCart";
 import Footer from "../Footer";
 import { LandingCards } from "@/Components/Pages/Landing/LandingCards";
 import ProductVideo from "./ProductVideo";
+import ProductModalAddReview from "./ProductModalAddReview";
 import ProductReviews from "./ProductReviews";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
+import toast, { Toaster } from "react-hot-toast";
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -49,6 +52,8 @@ const ShimmerLoader = ({ className = "" }) => (
 export default function ProductDetail() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t, i18n } = useTranslation("productdetail");
+  const language = i18n.language;
   const productId = searchParams.get("id");
 
   const [apiProduct, setApiProduct] = useState(null);
@@ -63,6 +68,8 @@ export default function ProductDetail() {
   const [showSticky, setShowSticky] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
@@ -90,19 +97,21 @@ export default function ProductDetail() {
           if (firstProduct?.type === "color" || firstProduct?.type === "size-color") {
             setSelectedColor(firstProduct.color_name);
           }
+        } else {
+          toast.error(json.action_message || json.action || "Something went wrong.");
         }
       })
       .catch((err) => console.error("API Error:", err));
   }, [productId]);
 
   // Derived values
-  const displayName = apiProduct?.name || "Product";
-  const displayDescription = apiProduct?.description || "";
+  const displayName = language === "fr" ? (apiProduct?.french_name || apiProduct?.name) : (apiProduct?.name || "Product");
   const apiProducts = apiProduct?.products || [];
+  const selectedProduct = apiProducts[selectedProductIdx] || apiProducts[0];
+  const displayDescription = language === "fr" ? (selectedProduct?.french_description || selectedProduct?.description) : (selectedProduct?.description || "");
   const productType = apiProducts[0]?.type || "no-size-color";
   const togetherProducts = apiProduct?.together || [];
 
-  const selectedProduct = apiProducts[selectedProductIdx] || apiProducts[0];
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
   const slides = selectedProduct?.images?.map((img) => ({
     type: "image",
@@ -163,7 +172,7 @@ export default function ProductDetail() {
   // Scroll handler
   useEffect(() => {
     const handleScroll = () => {
-      setIsTransparent(window.scrollY < window.innerHeight);
+      setIsTransparent(isLoadMoreOpen ? false : window.scrollY < window.innerHeight);
       if (cartBtnRef.current) {
         const rect = cartBtnRef.current.getBoundingClientRect();
         setShowSticky(rect.bottom < 0 || rect.top > window.innerHeight);
@@ -171,7 +180,7 @@ export default function ProductDetail() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isLoadMoreOpen]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
@@ -192,15 +201,17 @@ export default function ProductDetail() {
     setCurrentSlide(idx);
   };
 
+ 
+
   const shippingSlides = [
-    { title: "Shipping From France", note: "Customers may see typical issues" },
-    { title: "Free Shipping", note: "Starts at 20$" },
-    { title: "Complimentry Gift", note: "With every purchase over 10$" },
+    { title: t("shippingFromFrance"), note: t("shippingNote1") },
+    { title: t("freeShipping"), note: t("shippingNote2") },
+    { title: t("complimentaryGift"), note: t("shippingNote3") },
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentShipping((prev) => (prev + 1) % shippingSlides.length);
+      setCurrentShipping((prev) => (prev + 1) % 3);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -214,6 +225,7 @@ export default function ProductDetail() {
 
   return (
     <div className="w-full bg-white">
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes shimmerMove {
@@ -265,7 +277,7 @@ export default function ProductDetail() {
         </p>
       </div>
 
-      <Navbar transparent={isTransparent} announcementVisible={showAnnouncement} />
+      <Navbar transparent={isLoadMoreOpen ? false : isTransparent} announcementVisible={showAnnouncement} />
 
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
 
@@ -418,43 +430,47 @@ export default function ProductDetail() {
 
               <div className="flex items-center gap-3 mb-5">
                 <StarRating rating={3.5} />
-                <span className="text-sm text-black">(245 Reviews)</span>
-                <button className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
-                  Add Review
+                <span className="text-sm text-black">({t("reviews")})</span>
+                <button onClick={() => setIsReviewModalOpen(true)} className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1">
+                  {t("addReview")}
                 </button>
               </div>
 
-              <div className="text-[16px] text-black leading-relaxed mb-5">
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: readMore
-                      ? displayDescription
-                      : displayDescription?.replace(/<[^>]+>/g, "").slice(0, 200) + "...",
-                  }}
-                />
-              </div>
+              {displayDescription && (
+                <>
+                  <div className="text-[16px] text-black leading-relaxed mb-5">
+                    <p
+                      dangerouslySetInnerHTML={{
+                        __html: readMore
+                          ? displayDescription
+                          : displayDescription?.replace(/<[^>]+>/g, "").slice(0, 200) + "...",
+                      }}
+                    />
+                  </div>
 
-              <button
-                onClick={() => setReadMore(!readMore)}
-                className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
-                  readMore
-                    ? "bg-white text-black border-black"
-                    : "bg-black text-white border-gray-300"
-                }`}
-              >
-                {readMore ? "less" : "Read more"}{" "}
-                {readMore ? (
-                  <GoArrowUpRight className="w-4 h-4" />
-                ) : (
-                  <GoArrowDownRight className="w-4 h-4" />
-                )}
-              </button>
+                  <button
+                    onClick={() => setReadMore(!readMore)}
+                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
+                      readMore
+                        ? "bg-white text-black border-black"
+                        : "bg-black text-white border-gray-300"
+                    }`}
+                  >
+                    {readMore ? t("less") : t("readMore")}{" "}
+                    {readMore ? (
+                      <GoArrowUpRight className="w-4 h-4" />
+                    ) : (
+                      <GoArrowDownRight className="w-4 h-4" />
+                    )}
+                  </button>
+                </>
+              )}
 
               {/* Volume Selector */}
               {(productType === "size" || productType === "size-color") &&
                 uniqueSizes.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Product Volume:</p>
+                  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">{t("productVolume")}</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {uniqueSizes.map((size) => (
                         <button
@@ -477,7 +493,7 @@ export default function ProductDetail() {
               {(productType === "color" || productType === "size-color") &&
                 uniqueColors.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-[#1C1C1C] mb-3">Color:</p>
+                  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">{t("color")}</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {uniqueColors.map((color) => (
                         <button
@@ -504,7 +520,7 @@ export default function ProductDetail() {
                   id="add-to-cart-btn"
                   className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
                 >
-                  Add to cart – €{displayPrice}
+                  {t("addToCart")} – €{displayPrice}
                 </button>
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
@@ -553,8 +569,7 @@ export default function ProductDetail() {
         <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
           <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
           <p className="text-lg font-semibold text-[#1C1C1C]">
-            <span className="text-[#1A171B] font-normal">Made in france</span> - 98% ingredients of
-            natural & organic origin - free from parabens - free from phthalates
+            <span className="text-[#1A171B] font-normal">{t("madeInFrance")}</span> - {t("ingredientsInfo")}
           </p>
           <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
@@ -581,7 +596,7 @@ export default function ProductDetail() {
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
             <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
-              Complete your grooming routine
+              {t("completeGroomingRoutine")}
             </p>
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
@@ -603,11 +618,11 @@ export default function ProductDetail() {
       <div className="py-4 lg:py-12 px-6 lg:px-14">
         <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
           <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-          <p className="text-lg font-semibold text-[#1C1C1C]">Watch the Benefits Live</p>
+          <p className="text-lg font-semibold text-[#1C1C1C]">{t("watchBenefitsLive")}</p>
           <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
         <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-          <ProductVideo videoLink={apiProduct?.video_link} isLoading={!isLoaded} />
+          <ProductVideo videoLink={apiProduct?.video_link} frenchVideoLink={apiProduct?.french_video_link} isLoading={!isLoaded} />
         </div>
       </div>
 
@@ -617,7 +632,7 @@ export default function ProductDetail() {
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
             <p className="text-lg lg:text-xl font-semibold text-[#1C1C1C]">
-              More products to explore
+              {t("moreProductsExplore")}
             </p>
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
@@ -635,7 +650,12 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <ProductReviews isLoading={!isLoaded} />
+      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} />
+
+      <ProductModalAddReview
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+      />
 
       <Footer />
     </div>

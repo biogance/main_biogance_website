@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function StickyAddToCart({
   price = "16.0",
@@ -9,6 +10,8 @@ export default function StickyAddToCart({
   visible = false,
   volumes = [],
 }) {
+  const { t } = useTranslation("stickyaddtocart");
+
   return (
     <div
       className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0E0E0] transition-transform duration-300 ease-in-out ${
@@ -27,7 +30,7 @@ export default function StickyAddToCart({
           {volumes.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[13px] text-[#888] font-medium shrink-0">
-                Quantity:
+                {t("quantity")}
               </span>
               {volumes.map((vol, idx) => (
                 <React.Fragment key={vol}>
@@ -54,7 +57,7 @@ export default function StickyAddToCart({
 
           {/* Add to Cart Button */}
           <button className="bg-[#1C1C1C] text-white text-[13px] font-semibold px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg hover:bg-[#333] transition-colors cursor-pointer shrink-0 w-full sm:w-auto">
-            Add to cart – €{price}
+            {t("addToCart")} – €{price}
           </button>
         </div>
       </div>

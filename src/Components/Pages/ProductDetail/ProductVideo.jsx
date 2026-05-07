@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
@@ -8,15 +9,30 @@ const ShimmerLoader = ({ className = "" }) => (
 const HARDCODED_VIDEO = "https://www.youtube.com/watch?v=23GHPclU39E";
 
 const getYouTubeEmbedUrl = (url) => {
-  const videoId = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  if (!url) return null;
+  
+  // Handle YouTube Shorts: https://www.youtube.com/shorts/VIDEO_ID
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^&\n?#]+)/);
+  if (shortsMatch) {
+    return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+  }
+  
+  // Handle regular YouTube: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID
+  const videoMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+  if (videoMatch) {
+    return `https://www.youtube.com/embed/${videoMatch[1]}`;
+  }
+  
+  return null;
 };
 
-export default function ProductVideo({ videoLink, isLoading }) {
+export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) {
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [iframeLoading, setIframeLoading] = useState(true);
   const iframeLoaded = useRef(false);
 
-  const finalVideoLink = videoLink || HARDCODED_VIDEO;
+  const finalVideoLink = (language === "fr" && frenchVideoLink) ? frenchVideoLink : (videoLink || HARDCODED_VIDEO);
   const embedUrl = getYouTubeEmbedUrl(finalVideoLink);
 
   const handleIframeLoad = () => {

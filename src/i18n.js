@@ -19,9 +19,11 @@ import sidebarEN from "../src/locales/en/sidebar.json";
 import myaccountEN from "../src/locales/en/myaccount.json";
 import termsconditionEN from "../src/locales/en/termscondition.json";
 import faqEN from "../src/locales/en/faq.json";
-
-
-
+import productdetailEN from "../src/locales/en/productdetail.json";
+import aboutproductEN from "../src/locales/en/aboutproduct.json";
+import expertadviceEN from "../src/locales/en/expertadvice.json";
+import productreviewsEN from "../src/locales/en/productreviews.json";
+import stickyaddtocartEN from "../src/locales/en/stickyaddtocart.json";
 
 
 
@@ -43,10 +45,14 @@ import sidebarFR from "../src/locales/fr/sidebar.json";
 import myaccountFR from "../src/locales/fr/myaccount.json";
 import termsconditionFR from "../src/locales/fr/termscondition.json";
 import faqFR from "../src/locales/fr/faq.json";
-
+import productdetailFR from "../src/locales/fr/productdetail.json";
+import aboutproductFR from "../src/locales/fr/aboutproduct.json";
+import expertadviceFR from "../src/locales/fr/expertadvice.json";
+import productreviewsFR from "../src/locales/fr/productreviews.json";
+import stickyaddtocartFR from "../src/locales/fr/stickyaddtocart.json";
 
 i18n
-    .use(LanguageDetector) // Ye add karein
+    .use(LanguageDetector)
     .use(initReactI18next)
     .init({
         resources: {
@@ -68,6 +74,11 @@ i18n
                 myaccount: myaccountEN,
                 termscondition: termsconditionEN,
                 faq: faqEN,
+                productdetail: productdetailEN,
+                aboutproduct: aboutproductEN,
+                expertadvice: expertadviceEN,
+                productreviews: productreviewsEN,
+                stickyaddtocart: stickyaddtocartEN,
             },
             fr: {
                 common: commonFR,
@@ -87,13 +98,18 @@ i18n
                 myaccount: myaccountFR,
                 termscondition: termsconditionFR,
                 faq: faqFR,
+                productdetail: productdetailFR,
+                aboutproduct: aboutproductFR,
+                expertadvice: expertadviceFR,
+                productreviews: productreviewsFR,
+                stickyaddtocart: stickyaddtocartFR,
             },
         },
         fallbackLng: "en",
-        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount "],
+        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart"],
         defaultNS: "common",
         interpolation: {
-            escapeValue: false, // React already escapes
+            escapeValue: false,
         },
         detection: {
             order: ['localStorage', 'navigator'],

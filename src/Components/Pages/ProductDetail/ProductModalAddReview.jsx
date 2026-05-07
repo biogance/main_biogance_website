@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { IoStarOutline } from "react-icons/io5";
 
 export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
+  const { t } = useTranslation("productreviews");
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -74,9 +76,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
             marginBottom: "28px",
           }}
         >
-          How is your first impression
-          <br />
-          of the product?
+          {t("howIsYourFirstImpression")}
         </h2>
 
         {/* Star Rating */}
@@ -125,14 +125,14 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
             marginBottom: "10px",
           }}
         >
-          Give Feedback
+          {t("giveFeedback")}
         </label>
 
         {/* Textarea */}
         <textarea
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
-          placeholder="Write your feedback"
+          placeholder={t("writeYourFeedback")}
           rows={4}
           style={{
             width: "100%",
@@ -180,7 +180,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
               e.target.style.background = "#1C1C1C";
           }}
         >
-          Submit
+          {t("submit")}
         </button>
 
         {/* Cancel */}
@@ -198,7 +198,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
             textUnderlineOffset: "3px",
           }}
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </div>

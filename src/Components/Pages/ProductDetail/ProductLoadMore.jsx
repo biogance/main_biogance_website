@@ -1,57 +1,58 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaPlus } from "react-icons/fa";
 import ProductModalAddReview from "./ProductModalAddReview";
 import { RxCross2 } from "react-icons/rx";
 
-const allReviews = [
+const getReviews = (t) => [
   {
     id: 1,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_1_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 4,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_1_text"),
   },
   {
     id: 2,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_2_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 4,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_2_text"),
   },
   {
     id: 3,
-    name: "Elia B",
-    role: "Verified Buyer",
+    name: t("review_3_name"),
+    role: t("verifiedBuyer"),
     date: "18/03/2026",
     rating: 3.5,
-    text: "Keep your pet clean, healthy, and happy with our gentle pet care shampoo, specially formulated to nourish the coat and protect sensitive skin. Enriched with natural ingredients, it helps remove dirt, reduce odor, and leave the fur soft, shiny, and refreshed.",
+    text: t("review_3_text"),
   },
   {
     id: 4,
-    name: "Sophie M",
-    role: "Verified Buyer",
+    name: t("review_4_name"),
+    role: t("verifiedBuyer"),
     date: "12/02/2026",
     rating: 5,
-    text: "Absolutely love this shampoo! My dog's coat has never looked better. The natural ingredients make a huge difference and the scent is very pleasant without being overwhelming.",
+    text: t("review_4_text"),
   },
   {
     id: 5,
-    name: "Marc D",
-    role: "Verified Buyer",
+    name: t("review_5_name"),
+    role: t("verifiedBuyer"),
     date: "05/01/2026",
     rating: 4,
-    text: "Great product, very gentle on my cat's sensitive skin. Will definitely buy again. Shipping was fast and packaging was intact.",
+    text: t("review_5_text"),
   },
   {
     id: 6,
-    name: "Layla K",
-    role: "Verified Buyer",
+    name: t("review_6_name"),
+    role: t("verifiedBuyer"),
     date: "28/12/2025",
     rating: 5,
-    text: "I've tried many pet shampoos but this one stands out. Coat is visibly shinier and softer after just two washes. Highly recommend!",
+    text: t("review_6_text"),
   },
 ];
 
@@ -75,8 +76,35 @@ const StarRow = ({ rating, size = 14 }) => (
 );
 
 export default function ProductLoadMore({ isOpen, onClose }) {
+  const { t } = useTranslation("productreviews");
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("reviews"); // "reviews" | "summary" — for mobile tabs
+  const [activeTab, setActiveTab] = useState("reviews");
+  const allReviews = getReviews(t);
+
+ useEffect(() => {
+  if (isOpen) {
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.dataset.scrollY = scrollY;
+  } else {
+    const scrollY = parseInt(document.body.dataset.scrollY || '0');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    delete document.body.dataset.scrollY;
+    window.scrollTo(0, scrollY);
+  }
+  return () => {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+  };
+}, [isOpen]);
 
   const handleReviewSubmit = ({ rating, feedback }) => {
     console.log("Review submitted:", { rating, feedback });
@@ -87,37 +115,28 @@ export default function ProductLoadMore({ isOpen, onClose }) {
   return (
     <>
       <style>{`
-        /* ── Responsive overrides for ProductLoadMore ── */
-
         .plm-shell {
           flex-direction: row;
           width: min(960px, 96vw);
           max-height: 90vh;
           overflow: hidden;
         }
-
         .plm-right {
           display: flex;
           width: 310px;
         }
-
         .plm-left-heading {
           padding: 28px 32px 18px;
         }
-
         .plm-left-scroll {
           padding: 0 32px 28px;
         }
-
         .plm-mobile-tabs {
           display: none;
         }
-
         .plm-summary-mobile {
           display: none;
         }
-
-        /* ── Medium screens (tablets ≤ 900px) ── */
         @media (max-width: 900px) {
           .plm-shell {
             flex-direction: column;
@@ -125,11 +144,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             max-height: 92vh;
             overflow: hidden;
           }
-
           .plm-right {
             display: none !important;
           }
-
           .plm-mobile-tabs {
             display: flex;
             border-bottom: 1px solid #EBEBEB;
@@ -138,7 +155,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             flex-shrink: 0;
             background: #fff;
           }
-
           .plm-tab-btn {
             flex: 1;
             padding: 14px 0;
@@ -151,20 +167,16 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             cursor: pointer;
             transition: color 0.15s, border-color 0.15s;
           }
-
           .plm-tab-btn.active {
             color: #1C1C1C;
             border-bottom: 2px solid #1C1C1C;
           }
-
           .plm-left-heading {
             padding: 20px 20px 14px;
           }
-
           .plm-left-scroll {
             padding: 0 20px 80px;
           }
-
           .plm-summary-mobile {
             display: flex;
             flex-direction: column;
@@ -173,7 +185,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             flex: 1;
             gap: 16px;
           }
-
           .plm-add-review-floating {
             position: absolute !important;
             bottom: 0;
@@ -186,13 +197,10 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             z-index: 5;
             display: flex !important;
           }
-
           .plm-add-review-sidebar {
             display: none !important;
           }
         }
-
-        /* ── Small screens (phones ≤ 540px) ── */
         @media (max-width: 540px) {
           .plm-shell {
             width: 100%;
@@ -200,49 +208,40 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             border-radius: 16px 16px 0 0;
             margin-bottom: 0;
           }
-
           .plm-backdrop {
             align-items: flex-end !important;
             padding: 0 !important;
           }
-
           .plm-left-heading {
             padding: 18px 16px 12px;
           }
-
           .plm-left-scroll {
             padding: 0 16px 80px;
           }
-
           .plm-mobile-tabs {
             padding: 0 16px;
           }
-
           .plm-summary-mobile {
             padding: 16px 16px 90px;
           }
-
           .plm-add-review-floating {
             padding: 12px 16px !important;
           }
-
           .plm-review-meta {
             min-width: 80px !important;
           }
-
           .plm-review-name {
             font-size: 13px !important;
           }
-
           .plm-review-text {
             font-size: 13px !important;
           }
         }
       `}</style>
 
-      {/* Backdrop */}
       <div
         className="plm-backdrop"
+        onClick={onClose}
         style={{
           position: "fixed",
           inset: 0,
@@ -254,9 +253,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
           padding: 16,
           overscrollBehavior: "contain",
           touchAction: "none",
+          pointerEvents: "auto",
         }}
       >
-        {/* Modal shell */}
         <div
           className="plm-shell"
           onClick={(e) => e.stopPropagation()}
@@ -266,9 +265,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             boxShadow: "0 20px 80px rgba(0,0,0,0.25)",
             display: "flex",
             position: "relative",
+            pointerEvents: "auto",
           }}
         >
-          {/* ── LEFT: reviews column ── */}
           <div
             style={{
               flex: "1 1 0",
@@ -278,7 +277,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               overflow: "hidden",
             }}
           >
-            {/* Sticky heading row */}
             <div className="plm-left-heading" style={{ flexShrink: 0 }}>
               <h2
                 style={{
@@ -288,27 +286,25 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   color: "#1C1C1C",
                 }}
               >
-                Rating &amp; Reviews
+                {t("ratingAndReviews")}
               </h2>
             </div>
 
-            {/* Mobile tabs — only visible on ≤900px */}
             <div className="plm-mobile-tabs">
               <button
                 className={`plm-tab-btn ${activeTab === "reviews" ? "active" : ""}`}
                 onClick={() => setActiveTab("reviews")}
               >
-                Reviews
+                {t("userReviews")}
               </button>
               <button
                 className={`plm-tab-btn ${activeTab === "summary" ? "active" : ""}`}
                 onClick={() => setActiveTab("summary")}
               >
-                Summary
+                {t("summary")}
               </button>
             </div>
 
-            {/* Reviews tab content */}
             <div
               className="plm-left-scroll"
               style={{
@@ -330,7 +326,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                     gap: 16,
                   }}
                 >
-                  {/* Meta */}
                   <div
                     className="plm-review-meta"
                     style={{ minWidth: 105, flexShrink: 0 }}
@@ -354,7 +349,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                     </div>
                   </div>
 
-                  {/* Stars + text */}
                   <div style={{ flex: 1 }}>
                     <div style={{ marginBottom: 7 }}>
                       <StarRow rating={review.rating} size={13} />
@@ -376,14 +370,12 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               ))}
             </div>
 
-            {/* Summary tab content — mobile only */}
             <div
               className="plm-summary-mobile"
               style={{
                 display: activeTab === "summary" ? "flex" : "none",
               }}
             >
-              {/* Product image */}
               <div
                 style={{
                   background: "#F0EEE9",
@@ -399,7 +391,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 />
               </div>
 
-              {/* Rating info */}
               <div
                 style={{
                   border: "1px solid #E8E8E8",
@@ -428,10 +419,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   <StarRow rating={4.8} size={17} />
                 </div>
                 <p style={{ fontSize: 14, color: "#888", margin: "0 0 14px" }}>
-                  320 verified reviews
+                  320 {t("verifiedReviews")}
                 </p>
 
-                {/* Breakdown bars */}
                 <div
                   style={{
                     display: "flex",
@@ -497,12 +487,11 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Floating Add Review button — mobile/tablet only */}
             <button
               className="plm-add-review-floating"
               onClick={() => setIsAddReviewOpen(true)}
               style={{
-                display: "none", // shown via CSS media query
+                display: "none",
                 width: "100%",
                 padding: "15px 0",
                 background: "#1C1C1C",
@@ -518,11 +507,10 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               }}
             >
               <FaPlus style={{ fontSize: 14 }} />
-              Add Review
+              {t("addReview")}
             </button>
           </div>
 
-          {/* ── RIGHT: product card column — large screens only ── */}
           <div
             className="plm-right"
             style={{
@@ -535,7 +523,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               background: "#fff",
             }}
           >
-            {/* Card: image + rating summary */}
             <div
               style={{
                 border: "1px solid #E8E8E8",
@@ -544,7 +531,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 background: "#fff",
               }}
             >
-              {/* Product image */}
               <div
                 style={{
                   background: "#F0EEE9",
@@ -562,7 +548,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 />
               </div>
 
-              {/* Rating info */}
               <div style={{ padding: "16px 18px 18px" }}>
                 <div
                   style={{
@@ -585,10 +570,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   <StarRow rating={4.8} size={17} />
                 </div>
                 <p style={{ fontSize: 14, color: "#888", margin: "0 0 14px" }}>
-                  320 verified review
+                  320 {t("verifiedReviews")}
                 </p>
 
-                {/* Breakdown bars */}
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 8 }}
                 >
@@ -650,7 +634,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Add Review button — sidebar (large screens) */}
             <button
               className="plm-add-review-sidebar"
               onClick={() => setIsAddReviewOpen(true)}
@@ -678,11 +661,10 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               }
             >
               <FaPlus style={{ fontSize: 14, lineHeight: 1 }} />
-              Add Review
+              {t("addReview")}
             </button>
           </div>
 
-          {/* Close × */}
           <button
             onClick={onClose}
             style={{
@@ -710,7 +692,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
         </div>
       </div>
 
-      {/* ProductModalAddReview on top */}
       <ProductModalAddReview
         isOpen={isAddReviewOpen}
         onClose={() => setIsAddReviewOpen(false)}
