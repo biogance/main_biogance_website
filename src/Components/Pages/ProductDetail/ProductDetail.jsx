@@ -473,12 +473,12 @@ export default function ProductDetail() {
               */}
               <h1
                 ref={titleRef}
-                className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4"
+                className="text-[22px] lg:text-[26px] font-semibold  text-[#1C1C1C] leading-snug mb-4" style={{lineHeight:"1.5"}}
               >
                 {displayName}
               </h1>
 
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-1 mb-5">
                 <StarRating rating={3.5} />
                 <span className="text-sm text-black">({t("reviews")})</span>
                 <button
@@ -492,8 +492,8 @@ export default function ProductDetail() {
               {displayDescription && (
                 <>
                   <div
-                    style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
-                    className="text-[16px] text-black leading-relaxed mb-5"
+                    style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
+                    className="text-[14px] text-black leading-relaxed mb-5"
                     dangerouslySetInnerHTML={{ __html: displayDescription }}
                   />
                   <button
@@ -586,7 +586,7 @@ export default function ProductDetail() {
               </div>
 
               {/* Shipping Info */}
-              <div className="border-t border-gray-100 pt-5">
+              <div className="pt-1">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#1C1C1C]">
@@ -596,13 +596,13 @@ export default function ProductDetail() {
                       {shippingSlides[currentShipping].note}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     {shippingSlides.map((_, idx) => (
                       <span
                         key={idx}
                         className={`rounded-full inline-block transition-all duration-700 ${idx === currentShipping
-                          ? "w-6 h-2 bg-gray-800"
-                          : "w-2 h-2 bg-white border border-black"
+                          ? "w-4 h-1.5 bg-gray-800"
+                          : "w-1.5 h-1.5 bg-white border border-black"
                           }`}
                       />
                     ))}
