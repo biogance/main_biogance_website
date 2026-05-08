@@ -715,18 +715,23 @@ export default function ProductDetail() {
                   {t("quantity") || "Quantity"}
                 </p>
                 <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-10 h-10 rounded-xl border border-[#E8E8E8] bg-white flex items-center justify-center cursor-pointer  hover:bg-gray-50 transition-all duration-200 text-[#1C1C1C] text-lg font-medium"
-                  >
-                    <FaMinus size={13} style={{ color: "#A8A8A8" }} />
-                  </button>
+                 <button
+  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+  disabled={quantity === 1}
+  className={`w-10 h-10 rounded-xl border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
+    quantity === 1
+      ? "cursor-not-allowed text-[#aaa]"
+      : "cursor-pointer hover:bg-[#e6e6e6] text-[#1C1C1C]"
+  }`}
+>
+  <FaMinus size={13} />
+</button>
                   <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
-                    {String(quantity).padStart(2, "0")}
+                    {String(quantity).padStart(2)}
                   </span>
                   <button
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="w-10 h-10 rounded-xl bg-black flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-all duration-200 text-white text-lg font-medium"
+                    className="w-10 h-10 rounded-xl bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
                   >
                     <FaPlus size={13} />
                   </button>
