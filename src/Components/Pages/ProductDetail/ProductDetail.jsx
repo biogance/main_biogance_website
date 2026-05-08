@@ -18,7 +18,7 @@ import ProductReviews from "./ProductReviews";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
-
+import { useTopLoader } from "@/Components/Pages/TopLoader";
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
@@ -31,16 +31,15 @@ const StarRating = ({ rating }) => (
 
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
-  const firstImage = firstProduct?.images?.[0];
-  const firstProductPrice = firstProduct?.price;
+  const allImages = firstProduct?.images?.map(img => `${MEDIA_URL}${img.media}`) || [""];
   return {
     id: product.id,
     name: product.name,
     french_name: product.french_name,
-    price: firstProductPrice || product.price,
+    price: firstProduct?.price || product.price,
     discount: "",
-    image: firstImage ? `${MEDIA_URL}${firstImage.media}` : "",
-    images: [firstImage ? `${MEDIA_URL}${firstImage.media}` : ""],
+    image: allImages[0],
+    images: allImages,
     liked: false,
   };
 };
@@ -55,6 +54,8 @@ export default function ProductDetail() {
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
   const productId = searchParams.get("id");
+  const { start } = useTopLoader();
+ 
 
   const [apiProduct, setApiProduct] = useState(null);
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
@@ -66,7 +67,9 @@ export default function ProductDetail() {
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
   const [showSticky, setShowSticky] = useState(false);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const footerRef = useRef(null);
+  const stickyCartRef = useRef(null);
   const [imageLoading, setImageLoading] = useState(true);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -166,8 +169,7 @@ export default function ProductDetail() {
     ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
   ];
 
-  // ─── Scroll handler — only handles sticky cart, NOT navbar transparency ──────
-  // Navbar transparency is now controlled by the IntersectionObserver below
+  // ─── Scroll handler — sticky cart visibility ────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
       if (cartBtnRef.current) {
@@ -178,6 +180,17 @@ export default function ProductDetail() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // ─── IntersectionObserver — footer visibility ────────────────────────────────
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsFooterVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, [apiProduct]);
 
   // ─── NEW: IntersectionObserver — watch title h1 against navbar ──────────────
   // When the title h1 enters the top 80px zone (navbar area), make navbar solid.
@@ -216,24 +229,18 @@ export default function ProductDetail() {
     return () => observer.disconnect();
   }, []);
 
-  // ─── Announcement bar ────────────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => setShowAnnouncement(true), 200);
-    return () => clearTimeout(timer);
-  }, []);
-
   // ─── Video auto-play when navigated to video slide ────────────────────────
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
     }
   }, [currentSlide, isVideo]);
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
     }
   };
 
@@ -256,6 +263,7 @@ export default function ProductDetail() {
   }, []);
 
   const handleProductCardClick = (productId) => {
+    start();
     router.push(`/product-detail?id=${productId}`);
   };
 
@@ -309,20 +317,8 @@ export default function ProductDetail() {
         }}
       />
 
-      {/* ── Announcement Bar ── */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${
-          showAnnouncement ? "h-[40px]" : "h-0"
-        }`}
-      >
-        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-          Enjoy complimentary standard delivery across France on all orders over €39.
-        </p>
-      </div>
-
       <Navbar
         transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
-        announcementVisible={showAnnouncement}
       />
 
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
@@ -356,9 +352,8 @@ export default function ProductDetail() {
           {/* State 3: Sliding track (images + video in order) */}
           {isLoaded && infiniteSlides.length > 0 && (
             <div
-              className={`absolute inset-0 overflow-hidden ${
-                imageLoading ? "opacity-0" : "first-fade-in"
-              }`}
+              className={`absolute inset-0 overflow-hidden ${imageLoading ? "opacity-0" : "first-fade-in"
+                }`}
             >
               <div
                 className="slides-track"
@@ -417,11 +412,10 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
-              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-                currentSlide === 0
-                  ? "opacity-0 pointer-events-none"
-                  : "opacity-100"
-              }`}
+              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide === 0
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
+                }`}
             >
               <MdChevronLeft className="w-6 h-6" />
             </button>
@@ -431,11 +425,10 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
-              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${
-                currentSlide >= slides.length - 1
-                  ? "opacity-0 pointer-events-none"
-                  : "opacity-100"
-              }`}
+              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide >= slides.length - 1
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
+                }`}
             >
               <MdChevronRight className="w-6 h-6" />
             </button>
@@ -448,11 +441,10 @@ export default function ProductDetail() {
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
-                  className={`rounded-full transition-all duration-700 ${
-                    currentSlide === idx
-                      ? "w-8 h-2 bg-gray-800"
-                      : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
-                  }`}
+                  className={`rounded-full transition-all duration-700 ${currentSlide === idx
+                    ? "w-8 h-2 bg-gray-800"
+                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                    }`}
                 />
               ))}
             </div>
@@ -504,14 +496,12 @@ export default function ProductDetail() {
                     className="text-[16px] text-black leading-relaxed mb-5"
                     dangerouslySetInnerHTML={{ __html: displayDescription }}
                   />
-
                   <button
                     onClick={() => setReadMore(!readMore)}
-                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${
-                      readMore
-                        ? "bg-white text-black border-black"
-                        : "bg-black text-white border-gray-300"
-                    }`}
+                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${readMore
+                      ? "bg-white text-black border-black"
+                      : "bg-black text-white border-gray-300"
+                      }`}
                   >
                     {readMore ? t("less") : t("readMore")}{" "}
                     {readMore ? (
@@ -535,11 +525,10 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                            selectedVolume === size
-                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                          }`}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedVolume === size
+                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                            }`}
                         >
                           {size}
                         </button>
@@ -561,11 +550,10 @@ export default function ProductDetail() {
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           title={color}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
-                            selectedColor === color
-                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                          }`}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedColor === color
+                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                            }`}
                         >
                           {color}
                         </button>
@@ -585,16 +573,14 @@ export default function ProductDetail() {
                 </button>
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
-                    isWishlisted
-                      ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
-                      : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-                  }`}
+                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${isWishlisted
+                    ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
+                    : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
+                    }`}
                 >
                   <FiHeart
-                    className={`w-5 h-5 ${
-                      isWishlisted ? "fill-black text-black" : ""
-                    }`}
+                    className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""
+                      }`}
                   />
                 </button>
               </div>
@@ -614,11 +600,10 @@ export default function ProductDetail() {
                     {shippingSlides.map((_, idx) => (
                       <span
                         key={idx}
-                        className={`rounded-full inline-block transition-all duration-700 ${
-                          idx === currentShipping
-                            ? "w-6 h-2 bg-gray-800"
-                            : "w-2 h-2 bg-white border border-black"
-                        }`}
+                        className={`rounded-full inline-block transition-all duration-700 ${idx === currentShipping
+                          ? "w-6 h-2 bg-gray-800"
+                          : "w-2 h-2 bg-white border border-black"
+                          }`}
                       />
                     ))}
                   </div>
@@ -643,11 +628,10 @@ export default function ProductDetail() {
 
       <AboutProduct apiProduct={apiProduct} />
 
-      {isLoaded && (
+      {isLoaded && showSticky && !isFooterVisible && (
         <StickyAddToCart
           price={displayPrice}
           productName={displayName}
-          visible={showSticky}
           selectedVolume={selectedVolume}
           onVolumeChange={handleVolumeSelect}
           volumes={uniqueSizes}
@@ -722,14 +706,29 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} />
+      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} apiProduct={apiProduct} />
 
       <ProductModalAddReview
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
       />
 
-      <Footer />
+      <div ref={footerRef}>
+        <Footer />
+      </div>
+
+      {isLoaded && showSticky && isFooterVisible && (
+        <div ref={stickyCartRef} className="w-full bg-white border-t border-[#E0E0E0]">
+          <StickyAddToCart
+            price={displayPrice}
+            productName={displayName}
+            selectedVolume={selectedVolume}
+            onVolumeChange={handleVolumeSelect}
+            volumes={uniqueSizes}
+            inline
+          />
+        </div>
+      )}
     </div>
   );
 }

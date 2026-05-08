@@ -7,15 +7,15 @@ export default function StickyAddToCart({
   selectedVolume,
   onVolumeChange,
   productName = "Biogance Universal 2-in-1 Shampoo",
-  visible = false,
   volumes = [],
+  inline = false,
 }) {
   const { t } = useTranslation("stickyaddtocart");
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0E0E0] transition-transform duration-300 ease-in-out ${
-        visible ? "translate-y-0" : "translate-y-full"
+      className={`bg-white border-t border-[#E0E0E0] ${
+        inline ? "w-full" : "fixed bottom-0 left-0 right-0 z-50"
       }`}
     >
       <div className="w-full px-4 lg:px-14 py-3 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 lg:gap-6">

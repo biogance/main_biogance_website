@@ -24,7 +24,13 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 
 export default function Navbar({ transparent = false, announcementVisible = false }) {
   const { t, i18n } = useTranslation('navbar');
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowAnnouncement(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -62,6 +68,15 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   return (
     <>
+      {/* Announcement Bar */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? 'h-[40px]' : 'h-0'}`}
+      >
+        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
+          Enjoy complimentary standard delivery across France on all orders over €39.
+        </p>
+      </div>
+
       {/* Backdrop overlay */}
       <div
         className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
@@ -73,7 +88,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
       <nav
         className={`z-50 h-16 fixed left-0 right-0 transition-all duration-700 ${
-          announcementVisible ? "top-[40px]" : "top-0"
+          showAnnouncement ? "top-[40px]" : "top-0"
         } ${
           transparent
             ? "bg-transparent border-b border-transparent"
