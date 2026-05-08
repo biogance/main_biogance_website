@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FiHeart } from "react-icons/fi";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaRegStar, FaPlus, FaMinus } from "react-icons/fa";
 import Navbar from "@/Components/Pages/Navbar";
 import { GoArrowDownRight, GoArrowUpRight } from "react-icons/go";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
@@ -55,7 +55,7 @@ export default function ProductDetail() {
   const language = i18n.language;
   const productId = searchParams.get("id");
   const { start } = useTopLoader();
- 
+ const descriptionRef = useRef(null);
 
   const [apiProduct, setApiProduct] = useState(null);
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
@@ -70,10 +70,15 @@ export default function ProductDetail() {
   const [isFooterVisible, setIsFooterVisible] = useState(false);
   const footerRef = useRef(null);
   const stickyCartRef = useRef(null);
+  const firstSectionRef = useRef(null);
   const [imageLoading, setImageLoading] = useState(true);
+  const [slideLoading, setSlideLoading] = useState(false);
+  const loadedSlides = useRef(new Set());
+  const currentSlideRef = useRef(0);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-
+  const [quantity, setQuantity] = useState(1);
+  
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
@@ -142,9 +147,16 @@ export default function ProductDetail() {
 
   // ─── Reset slide when product changes ───────────────────────────────────────
   useEffect(() => {
+    setNoTransition(true);
     setCurrentSlide(0);
+    currentSlideRef.current = 0;
     setImageLoading(true);
+    setSlideLoading(false);
+    loadedSlides.current = new Set();
     firstImageLoaded.current = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setNoTransition(false));
+    });
   }, [selectedProductIdx]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
@@ -172,7 +184,7 @@ export default function ProductDetail() {
     const handleScroll = () => {
       if (cartBtnRef.current) {
         const rect = cartBtnRef.current.getBoundingClientRect();
-        setShowSticky(rect.bottom < 0 || rect.top > window.innerHeight);
+        setShowSticky(rect.bottom < 0);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -234,8 +246,30 @@ export default function ProductDetail() {
     }
   };
 
+  const [noTransition, setNoTransition] = useState(false);
+
   const goToSlide = (idx) => {
-    setCurrentSlide(idx);
+    const total = slides.length;
+    if (total === 0) return;
+    let target = idx;
+
+    // circular: first → last or last → first, jump without animation
+    if (idx < 0 || idx >= total) {
+      target = (idx + total) % total;
+      setNoTransition(true);
+      setCurrentSlide(target);
+      currentSlideRef.current = target;
+      // re-enable transition after paint
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setNoTransition(false));
+      });
+    } else {
+      setNoTransition(false);
+      setCurrentSlide(target);
+      currentSlideRef.current = target;
+    }
+
+    if (!loadedSlides.current.has(target)) setSlideLoading(true);
   };
 
   // ─── Shipping slider ─────────────────────────────────────────────────────────
@@ -277,7 +311,7 @@ export default function ProductDetail() {
             background-size: 600px 100%;
             animation: shimmerMove 1.4s infinite linear;
           }
-          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes spin89345 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
           .slides-track {
             display: flex;
             width: 100%;
@@ -311,7 +345,7 @@ export default function ProductDetail() {
         transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
       />
 
-      <div className="flex flex-col lg:flex-row w-full min-h-screen">
+      <div ref={firstSectionRef} className="flex flex-col lg:flex-row w-full min-h-screen">
 
         {/* ── LEFT: Image Section ── */}
         <div
@@ -323,17 +357,17 @@ export default function ProductDetail() {
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner on grey */}
-          {isLoaded && imageLoading && !isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
+          {/* State 2: Black spinner */}
+          {isLoaded && (imageLoading || slideLoading) && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#E1E1E1]">
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 36,
+                  height: 36,
                   borderRadius: "50%",
-                  border: "4px solid rgba(0,0,0,0.12)",
-                  borderTopColor: "#111111",
-                  animation: "spin 0.8s linear infinite",
+                  border: "4px solid rgba(0, 0, 0, .1)",
+                  borderLeftColor: "transparent",
+                  animation: "spin89345 1s linear infinite",
                 }}
               />
             </div>
@@ -341,12 +375,9 @@ export default function ProductDetail() {
 
           {/* State 3: Sliding track (images + video in order) */}
           {isLoaded && infiniteSlides.length > 0 && (
-            <div
-              className={`absolute inset-0 overflow-hidden ${imageLoading ? "opacity-0" : "first-fade-in"
-                }`}
-            >
+            <div className="absolute inset-0 overflow-hidden">
               <div
-                className="slides-track"
+                className={noTransition ? "slides-track-no-transition" : "slides-track"}
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {infiniteSlides.map((slide, idx) => {
@@ -365,6 +396,10 @@ export default function ProductDetail() {
                           muted
                           playsInline
                           onEnded={handleVideoEnded}
+                          onCanPlay={() => {
+                            loadedSlides.current.add(idx);
+                            if (currentSlideRef.current === idx) setSlideLoading(false);
+                          }}
                         >
                           <source src={slide.url} type="video/mp4" />
                         </video>
@@ -373,16 +408,20 @@ export default function ProductDetail() {
                           src={slide.url}
                           alt={`Product ${idx + 1}`}
                           onLoad={() => {
+                            loadedSlides.current.add(idx);
                             if (!firstImageLoaded.current) {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
+                            if (currentSlideRef.current === idx) setSlideLoading(false);
                           }}
                           onError={() => {
+                            loadedSlides.current.add(idx);
                             if (!firstImageLoaded.current) {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
+                            if (currentSlideRef.current === idx) setSlideLoading(false);
                           }}
                           className={
                             useContain
@@ -402,10 +441,7 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
-              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide === 0
-                ? "opacity-0 pointer-events-none"
-                : "opacity-100"
-                }`}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100"
             >
               <MdChevronLeft className="w-6 h-6" />
             </button>
@@ -415,10 +451,7 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
-              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide >= slides.length - 1
-                ? "opacity-0 pointer-events-none"
-                : "opacity-100"
-                }`}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100"
             >
               <MdChevronRight className="w-6 h-6" />
             </button>
@@ -479,33 +512,57 @@ export default function ProductDetail() {
                 </button>
               </div>
 
-              {displayDescription && (
-                <div className="mb-5 relative">
-                  <div
-                    style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
-                    className="text-[14px] text-black leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: displayDescription }}
-                  />
-                  {!readMore && (
-                    <span className="absolute bottom-0 right-0 bg-white pl-4 text-sm">
-                      <button
-                        onClick={() => setReadMore(true)}
-                        className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors"
-                      >
-                        {t("readMore")}
-                      </button>
-                    </span>
-                  )}
-                  {readMore && (
-                    <button
-                      onClick={() => setReadMore(false)}
-                      className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
-                    >
-                      {t("less")}
-                    </button>
-                  )}
-                </div>
-              )}
+            {displayDescription && (() => {
+  const plainText = typeof window !== "undefined"
+    ? (() => { const d = document.createElement("div"); d.innerHTML = displayDescription; return d.innerText || ""; })()
+    : displayDescription.replace(/<[^>]*>/g, "");
+
+  const CHAR_LIMIT = 460; // yahan adjust karo apni 5 lines ke hisaab se
+  const isLong = plainText.length > CHAR_LIMIT;
+  const truncated = plainText.slice(0, CHAR_LIMIT);
+
+  return (
+    <div ref={descriptionRef} className="mb-5 text-[14px] text-black leading-relaxed">
+      {!readMore ? (
+        <span>
+          {isLong ? (
+            <>
+              {truncated}
+              {"... "}
+              <button
+                onClick={() => setReadMore(true)}
+                className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+              >
+                {t("readMore")}
+              </button>
+            </>
+          ) : (
+            <span dangerouslySetInnerHTML={{ __html: displayDescription }} />
+          )}
+        </span>
+      ) : (
+        <span>
+          <span dangerouslySetInnerHTML={{ __html: displayDescription }} />
+          {" "}
+          <button
+            onClick={() => {
+              setReadMore(false);
+              setTimeout(() => {
+                if (descriptionRef.current) {
+                  const top = descriptionRef.current.getBoundingClientRect().top + window.scrollY - 500;
+                  window.scrollTo({ top, behavior: "smooth" });
+                }
+              }, 50);
+            }}
+            className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+          >
+            {t("less")}
+          </button>
+        </span>
+      )}
+    </div>
+  );
+})()}
 
               {/* Volume Selector */}
               {(productType === "size" || productType === "size-color") &&
@@ -519,9 +576,9 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedVolume === size
-                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                          className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border transition-all duration-200 ${selectedVolume === size
+                            ? "bg-black border-gray-800 rounded-xl text-white  ring-1 ring-black"
+                            : "bg-white text-[#1C1C1C] rounded-xl border-[#E8E8E8] hover:bg-gray-50"
                             }`}
                         >
                           {size}
@@ -555,7 +612,31 @@ export default function ProductDetail() {
                     </div>
                   </div>
                 )}
+{/* Quantity Selector */}
+<div className="mb-6">
+  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
+    {t("quantity") || "Quantity"}
+  </p>
+  <div className="flex items-center gap-4">
+    <button
+      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+      className="w-10 h-10 rounded-xl border border-[#E8E8E8] bg-white flex items-center justify-center cursor-pointer  hover:bg-gray-50 transition-all duration-200 text-[#1C1C1C] text-lg font-medium"
+    >
+      <FaMinus size={13} style={{color:"#A8A8A8"}} />
 
+    </button>
+    <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
+      {String(quantity).padStart(2, "0")}
+    </span>
+    <button
+      onClick={() => setQuantity((q) => q + 1)}
+      className="w-10 h-10 rounded-xl bg-black flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-all duration-200 text-white text-lg font-medium"
+    >
+      <FaPlus size={13} />
+
+    </button>
+  </div>
+</div>
               {/* Add to Cart */}
               <div className="flex items-center gap-3 mb-8">
                 <button
@@ -592,14 +673,15 @@ export default function ProductDetail() {
                   </div>
                   <div className="flex items-center gap-1">
                     {shippingSlides.map((_, idx) => (
-                      <span
-                        key={idx}
-                        className={`rounded-full inline-block transition-all duration-700 ${idx === currentShipping
-                          ? "w-4 h-1.5 bg-gray-800"
-                          : "w-1.5 h-1.5 bg-white border border-black"
-                          }`}
-                      />
-                    ))}
+  <button
+    key={idx}
+    onClick={() => setCurrentShipping(idx)}
+    className={`rounded-full inline-block cursor-pointer transition-all duration-700 ${idx === currentShipping
+      ? "w-4 h-1.5 bg-gray-800"
+      : "w-1.5 h-1.5 bg-white border border-black hover:bg-gray-400"
+      }`}
+  />
+))}
                   </div>
                 </div>
               </div>
@@ -620,7 +702,9 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <AboutProduct apiProduct={apiProduct} />
+      <div>
+        <AboutProduct apiProduct={apiProduct} />
+      </div>
 
       {isLoaded && showSticky && !isFooterVisible && (
         <StickyAddToCart
