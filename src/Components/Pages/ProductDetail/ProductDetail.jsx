@@ -3,7 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FiHeart } from "react-icons/fi";
-import { FaStar, FaStarHalfAlt, FaRegStar, FaPlus, FaMinus } from "react-icons/fa";
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
 import Navbar from "@/Components/Pages/Navbar";
 import { GoArrowDownRight, GoArrowUpRight } from "react-icons/go";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
@@ -22,8 +28,10 @@ import { useTopLoader } from "@/Components/Pages/TopLoader";
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
-      if (rating >= star) return <FaStar key={star} className="text-black w-4 h-4" />;
-      else if (rating >= star - 0.5) return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
+      if (rating >= star)
+        return <FaStar key={star} className="text-black w-4 h-4" />;
+      else if (rating >= star - 0.5)
+        return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
       else return <FaRegStar key={star} className="text-black w-4 h-4" />;
     })}
   </div>
@@ -32,6 +40,7 @@ const StarRating = ({ rating }) => (
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
   const allImages = firstProduct?.images?.map(img => `${MEDIA_URL}${img.media}`) || [""];
+  const videoUrl = firstProduct?.video ? `${MEDIA_URL}${firstProduct.video.media}` : null;
   return {
     id: product.id,
     name: product.name,
@@ -40,6 +49,7 @@ const formatProductForCard = (product) => {
     discount: "",
     image: allImages[0],
     images: allImages,
+    videoUrl,
     liked: false,
   };
 };
@@ -55,7 +65,7 @@ export default function ProductDetail() {
   const language = i18n.language;
   const productId = searchParams.get("id");
   const { start } = useTopLoader();
- const descriptionRef = useRef(null);
+  const descriptionRef = useRef(null);
 
   const [apiProduct, setApiProduct] = useState(null);
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
@@ -78,7 +88,7 @@ export default function ProductDetail() {
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  
+
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
@@ -99,14 +109,22 @@ export default function ProductDetail() {
           setApiProduct(json.data);
           setSelectedProductIdx(0);
           const firstProduct = json.data.products?.[0];
-          if (firstProduct?.type === "size" || firstProduct?.type === "size-color") {
+          if (
+            firstProduct?.type === "size" ||
+            firstProduct?.type === "size-color"
+          ) {
             setSelectedVolume(firstProduct.size_name);
           }
-          if (firstProduct?.type === "color" || firstProduct?.type === "size-color") {
+          if (
+            firstProduct?.type === "color" ||
+            firstProduct?.type === "size-color"
+          ) {
             setSelectedColor(firstProduct.color_name);
           }
         } else {
-          toast.error(json.action_message || json.action || "Something went wrong.");
+          toast.error(
+            json.action_message || json.action || "Something went wrong.",
+          );
         }
       })
       .catch((err) => console.error("API Error:", err));
@@ -135,9 +153,23 @@ export default function ProductDetail() {
   const videoItem = selectedProduct?.video || null;
 
   const slides = [
-    ...(firstImage ? [{ type: "image", url: `${MEDIA_URL}${firstImage.media}`, isFirst: true }] : []),
-    ...(videoItem ? [{ type: "video", url: `${MEDIA_URL}${videoItem.media}` }] : []),
-    ...otherImages.map((img) => ({ type: "image", url: `${MEDIA_URL}${img.media}`, isFirst: false })),
+    ...(firstImage
+      ? [
+          {
+            type: "image",
+            url: `${MEDIA_URL}${firstImage.media}`,
+            isFirst: true,
+          },
+        ]
+      : []),
+    ...(videoItem
+      ? [{ type: "video", url: `${MEDIA_URL}${videoItem.media}` }]
+      : []),
+    ...otherImages.map((img) => ({
+      type: "image",
+      url: `${MEDIA_URL}${img.media}`,
+      isFirst: false,
+    })),
   ];
 
   const infiniteSlides = slides;
@@ -176,7 +208,9 @@ export default function ProductDetail() {
     ...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name)),
   ];
   const uniqueColors = [
-    ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
+    ...new Set(
+      apiProducts.filter((p) => p.color_name).map((p) => p.color_name),
+    ),
   ];
 
   // ─── Scroll handler — sticky cart visibility ────────────────────────────────
@@ -196,7 +230,7 @@ export default function ProductDetail() {
     if (!footerRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsFooterVisible(entry.isIntersecting),
-      { threshold: 0 }
+      { threshold: 0 },
     );
     observer.observe(footerRef.current);
     return () => observer.disconnect();
@@ -235,14 +269,14 @@ export default function ProductDetail() {
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => { });
+      videoRef.current.play().catch(() => {});
     }
   }, [currentSlide, isVideo]);
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => { });
+      videoRef.current.play().catch(() => {});
     }
   };
 
@@ -342,11 +376,15 @@ export default function ProductDetail() {
       />
 
       <Navbar
-        transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
+        transparent={
+          isLoadMoreOpen || isReviewModalOpen ? false : isTransparent
+        }
       />
 
-      <div ref={firstSectionRef} className="flex flex-col lg:flex-row w-full min-h-screen">
-
+      <div
+        ref={firstSectionRef}
+        className="flex flex-col lg:flex-row w-full min-h-screen"
+      >
         {/* ── LEFT: Image Section ── */}
         <div
           className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
@@ -377,7 +415,9 @@ export default function ProductDetail() {
           {isLoaded && infiniteSlides.length > 0 && (
             <div className="absolute inset-0 overflow-hidden">
               <div
-                className={noTransition ? "slides-track-no-transition" : "slides-track"}
+                className={
+                  noTransition ? "slides-track-no-transition" : "slides-track"
+                }
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {infiniteSlides.map((slide, idx) => {
@@ -386,7 +426,9 @@ export default function ProductDetail() {
                     <div
                       key={idx}
                       className="slide-item"
-                      style={useContain ? {} : { padding: 0, position: "relative" }}
+                      style={
+                        useContain ? {} : { padding: 0, position: "relative" }
+                      }
                     >
                       {slide.type === "video" ? (
                         <video
@@ -398,7 +440,8 @@ export default function ProductDetail() {
                           onEnded={handleVideoEnded}
                           onCanPlay={() => {
                             loadedSlides.current.add(idx);
-                            if (currentSlideRef.current === idx) setSlideLoading(false);
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
                           }}
                         >
                           <source src={slide.url} type="video/mp4" />
@@ -413,7 +456,8 @@ export default function ProductDetail() {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
-                            if (currentSlideRef.current === idx) setSlideLoading(false);
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
                           }}
                           onError={() => {
                             loadedSlides.current.add(idx);
@@ -421,7 +465,8 @@ export default function ProductDetail() {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
-                            if (currentSlideRef.current === idx) setSlideLoading(false);
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
                           }}
                           className={
                             useContain
@@ -441,7 +486,7 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
             >
               <MdChevronLeft className="w-6 h-6" />
             </button>
@@ -451,7 +496,7 @@ export default function ProductDetail() {
           {isLoaded && !imageLoading && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
             >
               <MdChevronRight className="w-6 h-6" />
             </button>
@@ -464,10 +509,11 @@ export default function ProductDetail() {
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
-                  className={`rounded-full transition-all duration-700 ${currentSlide === idx
-                    ? "w-8 h-2 bg-gray-800"
-                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
-                    }`}
+                  className={`rounded-full transition-all duration-700 ${
+                    currentSlide === idx
+                      ? "w-8 h-2 bg-gray-800"
+                      : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                  }`}
                 />
               ))}
             </div>
@@ -478,15 +524,43 @@ export default function ProductDetail() {
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
           {!isLoaded ? (
             <>
-              <ShimmerLoader className="h-8 w-3/4 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
               <div className="flex items-center gap-3 mb-5">
                 <ShimmerLoader className="h-5 w-24" />
                 <ShimmerLoader className="h-5 w-32" />
+                <ShimmerLoader className="h-5 w-32" />
               </div>
-              <ShimmerLoader className="h-20 w-full mb-5" />
-              <ShimmerLoader className="h-10 w-32 mb-7" />
-              <ShimmerLoader className="h-12 w-full mb-8" />
-              <ShimmerLoader className="h-32 w-full" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-22 mb-4" />
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-8 w-12 mb-3" />
+                <ShimmerLoader className="h-8 w-12 mb-7" />
+                <ShimmerLoader className="h-8 w-12 mb-7" />
+              </div>
+
+              <ShimmerLoader className="h-8 w-22 mb-4" />
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-8 w-8 mb-3" />
+                <ShimmerLoader className="h-8 w-8 mb-7" />
+                <ShimmerLoader className="h-8 w-8 mb-7" />
+              </div>
+
+              <ShimmerLoader className="h-8 w-22 mb-7" />
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-8 w-32 mb-7" />
+              </div>
+
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-12 w-19/20 mb-7" />
+                <ShimmerLoader className="h-12 w-12 mb-7" />
+              </div>
+
+              <ShimmerLoader className="h-5 w-full" />
             </>
           ) : (
             <>
@@ -496,7 +570,8 @@ export default function ProductDetail() {
               */}
               <h1
                 ref={titleRef}
-                className="text-[22px] lg:text-[26px] font-semibold  text-[#1C1C1C] leading-snug mb-4" style={{lineHeight:"1.5"}}
+                className="text-[22px] lg:text-[26px] font-semibold  text-[#1C1C1C] leading-snug mb-4"
+                style={{ lineHeight: "1.5" }}
               >
                 {displayName}
               </h1>
@@ -512,57 +587,77 @@ export default function ProductDetail() {
                 </button>
               </div>
 
-            {displayDescription && (() => {
-  const plainText = typeof window !== "undefined"
-    ? (() => { const d = document.createElement("div"); d.innerHTML = displayDescription; return d.innerText || ""; })()
-    : displayDescription.replace(/<[^>]*>/g, "");
+              {displayDescription &&
+                (() => {
+                  const plainText =
+                    typeof window !== "undefined"
+                      ? (() => {
+                          const d = document.createElement("div");
+                          d.innerHTML = displayDescription;
+                          return d.innerText || "";
+                        })()
+                      : displayDescription.replace(/<[^>]*>/g, "");
 
-  const CHAR_LIMIT = 460; // yahan adjust karo apni 5 lines ke hisaab se
-  const isLong = plainText.length > CHAR_LIMIT;
-  const truncated = plainText.slice(0, CHAR_LIMIT);
+                  const CHAR_LIMIT = 460; // yahan adjust karo apni 5 lines ke hisaab se
+                  const isLong = plainText.length > CHAR_LIMIT;
+                  const truncated = plainText.slice(0, CHAR_LIMIT);
 
-  return (
-    <div ref={descriptionRef} className="mb-5 text-[14px] text-black leading-relaxed">
-      {!readMore ? (
-        <span>
-          {isLong ? (
-            <>
-              {truncated}
-              {"... "}
-              <button
-                onClick={() => setReadMore(true)}
-                className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
-              >
-                {t("readMore")}
-              </button>
-            </>
-          ) : (
-            <span dangerouslySetInnerHTML={{ __html: displayDescription }} />
-          )}
-        </span>
-      ) : (
-        <span>
-          <span dangerouslySetInnerHTML={{ __html: displayDescription }} />
-          {" "}
-          <button
-            onClick={() => {
-              setReadMore(false);
-              setTimeout(() => {
-                if (descriptionRef.current) {
-                  const top = descriptionRef.current.getBoundingClientRect().top + window.scrollY - 500;
-                  window.scrollTo({ top, behavior: "smooth" });
-                }
-              }, 50);
-            }}
-            className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
-          >
-            {t("less")}
-          </button>
-        </span>
-      )}
-    </div>
-  );
-})()}
+                  return (
+                    <div
+                      ref={descriptionRef}
+                      className="mb-5 text-[14px] text-black leading-relaxed"
+                    >
+                      {!readMore ? (
+                        <span>
+                          {isLong ? (
+                            <>
+                              {truncated}
+                              {"... "}
+                              <button
+                                onClick={() => setReadMore(true)}
+                                className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+                              >
+                                {t("readMore")}
+                              </button>
+                            </>
+                          ) : (
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: displayDescription,
+                              }}
+                            />
+                          )}
+                        </span>
+                      ) : (
+                        <span>
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: displayDescription,
+                            }}
+                          />{" "}
+                          <button
+                            onClick={() => {
+                              setReadMore(false);
+                              setTimeout(() => {
+                                if (descriptionRef.current) {
+                                  const top =
+                                    descriptionRef.current.getBoundingClientRect()
+                                      .top +
+                                    window.scrollY -
+                                    500;
+                                  window.scrollTo({ top, behavior: "smooth" });
+                                }
+                              }, 50);
+                            }}
+                            className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+                          >
+                            {t("less")}
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
               {/* Volume Selector */}
               {(productType === "size" || productType === "size-color") &&
@@ -576,10 +671,11 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border transition-all duration-200 ${selectedVolume === size
-                            ? "bg-black border-gray-800 rounded-xl text-white  ring-1 ring-black"
-                            : "bg-white text-[#1C1C1C] rounded-xl border-[#E8E8E8] hover:bg-gray-50"
-                            }`}
+                          className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border ${
+                            selectedVolume === size
+                              ? "bg-black border-gray-800  text-white  ring-1 ring-black"
+                              : "bg-white text-[#1C1C1C] border-[#E8E8E8] hover:bg-gray-50"
+                          }`}
                         >
                           {size}
                         </button>
@@ -601,10 +697,11 @@ export default function ProductDetail() {
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           title={color}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedColor === color
-                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                            }`}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
+                            selectedColor === color
+                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                          }`}
                         >
                           {color}
                         </button>
@@ -612,31 +709,29 @@ export default function ProductDetail() {
                     </div>
                   </div>
                 )}
-{/* Quantity Selector */}
-<div className="mb-6">
-  <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
-    {t("quantity") || "Quantity"}
-  </p>
-  <div className="flex items-center gap-4">
-    <button
-      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-      className="w-10 h-10 rounded-xl border border-[#E8E8E8] bg-white flex items-center justify-center cursor-pointer  hover:bg-gray-50 transition-all duration-200 text-[#1C1C1C] text-lg font-medium"
-    >
-      <FaMinus size={13} style={{color:"#A8A8A8"}} />
-
-    </button>
-    <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
-      {String(quantity).padStart(2, "0")}
-    </span>
-    <button
-      onClick={() => setQuantity((q) => q + 1)}
-      className="w-10 h-10 rounded-xl bg-black flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-all duration-200 text-white text-lg font-medium"
-    >
-      <FaPlus size={13} />
-
-    </button>
-  </div>
-</div>
+              {/* Quantity Selector */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
+                  {t("quantity") || "Quantity"}
+                </p>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="w-10 h-10 rounded-xl border border-[#E8E8E8] bg-white flex items-center justify-center cursor-pointer  hover:bg-gray-50 transition-all duration-200 text-[#1C1C1C] text-lg font-medium"
+                  >
+                    <FaMinus size={13} style={{ color: "#A8A8A8" }} />
+                  </button>
+                  <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
+                    {String(quantity).padStart(2, "0")}
+                  </span>
+                  <button
+                    onClick={() => setQuantity((q) => q + 1)}
+                    className="w-10 h-10 rounded-xl bg-black flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-all duration-200 text-white text-lg font-medium"
+                  >
+                    <FaPlus size={13} />
+                  </button>
+                </div>
+              </div>
               {/* Add to Cart */}
               <div className="flex items-center gap-3 mb-8">
                 <button
@@ -648,14 +743,16 @@ export default function ProductDetail() {
                 </button>
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${isWishlisted
-                    ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
-                    : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-                    }`}
+                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                    isWishlisted
+                      ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
+                      : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
+                  }`}
                 >
                   <FiHeart
-                    className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""
-                      }`}
+                    className={`w-5 h-5 ${
+                      isWishlisted ? "fill-black text-black" : ""
+                    }`}
                   />
                 </button>
               </div>
@@ -673,15 +770,16 @@ export default function ProductDetail() {
                   </div>
                   <div className="flex items-center gap-1">
                     {shippingSlides.map((_, idx) => (
-  <button
-    key={idx}
-    onClick={() => setCurrentShipping(idx)}
-    className={`rounded-full inline-block cursor-pointer transition-all duration-700 ${idx === currentShipping
-      ? "w-4 h-1.5 bg-gray-800"
-      : "w-1.5 h-1.5 bg-white border border-black hover:bg-gray-400"
-      }`}
-  />
-))}
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentShipping(idx)}
+                        className={`rounded-full inline-block cursor-pointer transition-all duration-700 ${
+                          idx === currentShipping
+                            ? "w-4 h-1.5 bg-gray-800"
+                            : "w-1.5 h-1.5 bg-white border border-black hover:bg-gray-400"
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -695,7 +793,9 @@ export default function ProductDetail() {
         <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
           <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
           <p className="text-lg font-semibold text-[#1C1C1C]">
-            <span className="text-[#1A171B] font-normal">{t("madeInFrance")}</span>{" "}
+            <span className="text-[#1A171B] font-normal">
+              {t("madeInFrance")}
+            </span>{" "}
             - {t("ingredientsInfo")}
           </p>
           <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
@@ -706,15 +806,7 @@ export default function ProductDetail() {
         <AboutProduct apiProduct={apiProduct} />
       </div>
 
-      {isLoaded && showSticky && !isFooterVisible && (
-        <StickyAddToCart
-          price={displayPrice}
-          productName={displayName}
-          selectedVolume={selectedVolume}
-          onVolumeChange={handleVolumeSelect}
-          volumes={uniqueSizes}
-        />
-      )}
+
 
       <ProductExpertAdvice apiProduct={apiProduct} />
 
@@ -735,7 +827,7 @@ export default function ProductDetail() {
                 className="w-[350px] cursor-pointer"
                 onClick={() => handleProductCardClick(prod.id)}
               >
-                <LandingCards product={prod} showNav={true} />
+                <LandingCards product={prod} showNav={true} squareCard />
               </div>
             ))}
           </div>
@@ -777,36 +869,45 @@ export default function ProductDetail() {
                 className="w-[350px] cursor-pointer"
                 onClick={() => handleProductCardClick(prod.id)}
               >
-                <LandingCards product={prod} showNav={true} />
+                <LandingCards product={prod} showNav={true} squareCard />
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} apiProduct={apiProduct} />
+      <ProductReviews
+        isLoading={!isLoaded}
+        onLoadMoreOpen={setIsLoadMoreOpen}
+        apiProduct={apiProduct}
+      />
 
       <ProductModalAddReview
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
       />
 
-      <div ref={footerRef}>
-        <Footer />
-      </div>
+    
+<div className="h-[72px]" />
+<div className="relative z-10">
+  <Footer />
+</div>
 
-      {isLoaded && showSticky && isFooterVisible && (
-        <div ref={stickyCartRef} className="w-full bg-white border-t border-[#E0E0E0]">
-          <StickyAddToCart
-            price={displayPrice}
-            productName={displayName}
-            selectedVolume={selectedVolume}
-            onVolumeChange={handleVolumeSelect}
-            volumes={uniqueSizes}
-            inline
-          />
-        </div>
+      {isLoaded && showSticky && !isFooterVisible && (
+        <div className="h-[72px]" />
       )}
+
+      {isLoaded && showSticky && (
+        <StickyAddToCart
+          price={displayPrice}
+          productName={displayName}
+          selectedVolume={selectedVolume}
+          onVolumeChange={handleVolumeSelect}
+          volumes={uniqueSizes}
+          isFooterVisible={isFooterVisible}
+        />
+      )}
+
     </div>
   );
 }
