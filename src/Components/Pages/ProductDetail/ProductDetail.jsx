@@ -126,10 +126,8 @@ export default function ProductDetail() {
 
   const rawImages = selectedProduct?.images || [];
   const firstImage = rawImages.find((img) => img.type !== "video");
-  const videoItem = rawImages.find((img) => img.type === "video");
-  const otherImages = rawImages.filter(
-    (img) => img !== firstImage && img.type !== "video"
-  );
+  const otherImages = rawImages.filter((img) => img !== firstImage);
+  const videoItem = selectedProduct?.video || null;
 
   const slides = [
     ...(firstImage ? [{ type: "image", url: `${MEDIA_URL}${firstImage.media}`, isFirst: true }] : []),
@@ -192,28 +190,20 @@ export default function ProductDetail() {
     return () => observer.disconnect();
   }, [apiProduct]);
 
-  // ─── NEW: IntersectionObserver — watch title h1 against navbar ──────────────
-  // When the title h1 enters the top 80px zone (navbar area), make navbar solid.
-  // When title scrolls back down into view, make navbar transparent again.
+  // ─── Scroll handler — navbar transparency ──────────────────────────────────
   useEffect(() => {
-    if (!titleRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // jab title ka top edge navbar ke neeche ho → transparent
-        // jab title scroll karke navbar ko touch kare → solid white
-        setIsTransparent(entry.boundingClientRect.top > 80);
-      },
-      {
-        root: null,
-        rootMargin: "0px 0px 0px 0px",
-        threshold: [0, 1],
+    const check = () => {
+      if (!titleRef.current) {
+        setIsTransparent(window.scrollY < 10);
+        return;
       }
-    );
-
-    observer.observe(titleRef.current);
-    return () => observer.disconnect();
-  }, [apiProduct]); // re-run after product loads so titleRef.current is set
+      const rect = titleRef.current.getBoundingClientRect();
+      setIsTransparent(rect.top > 80);
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  });
 
   // ─── When any modal opens → force navbar non-transparent ────────────────────
   useEffect(() => {
@@ -490,27 +480,31 @@ export default function ProductDetail() {
               </div>
 
               {displayDescription && (
-                <>
+                <div className="mb-5 relative">
                   <div
                     style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
-                    className="text-[14px] text-black leading-relaxed mb-5"
+                    className="text-[14px] text-black leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: displayDescription }}
                   />
-                  <button
-                    onClick={() => setReadMore(!readMore)}
-                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${readMore
-                      ? "bg-white text-black border-black"
-                      : "bg-black text-white border-gray-300"
-                      }`}
-                  >
-                    {readMore ? t("less") : t("readMore")}{" "}
-                    {readMore ? (
-                      <GoArrowUpRight className="w-4 h-4" />
-                    ) : (
-                      <GoArrowDownRight className="w-4 h-4" />
-                    )}
-                  </button>
-                </>
+                  {!readMore && (
+                    <span className="absolute bottom-0 right-0 bg-white pl-4 text-sm">
+                      <button
+                        onClick={() => setReadMore(true)}
+                        className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors"
+                      >
+                        {t("readMore")}
+                      </button>
+                    </span>
+                  )}
+                  {readMore && (
+                    <button
+                      onClick={() => setReadMore(false)}
+                      className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
+                    >
+                      {t("less")}
+                    </button>
+                  )}
+                </div>
               )}
 
               {/* Volume Selector */}
