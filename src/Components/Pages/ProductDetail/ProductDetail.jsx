@@ -396,7 +396,7 @@ export default function ProductDetail() {
                           }}
                           className={
                             useContain
-                              ? "object-contain h-full w-auto max-w-full drop-shadow-xl"
+                              ? "object-contain p-20 h-full w-auto max-w-full drop-shadow-xl"
                               : "object-cover absolute inset-0 w-full h-full"
                           }
                         />
