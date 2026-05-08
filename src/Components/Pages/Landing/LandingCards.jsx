@@ -63,7 +63,7 @@ export const LandingCards = ({ product, showNav }) => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="bg-gray-50 rounded-2xl border border-gray-200  relative mb-3 aspect-[3/4] flex flex-col">
+      <div className="bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 aspect-[3/4] flex flex-col">
         {product.discount && (
           <div className="absolute top-3 left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
             {product.discount}
@@ -81,19 +81,19 @@ export const LandingCards = ({ product, showNav }) => {
           )}
         </button>
 
-        <div className="flex-1 flex items-center justify-center relative px-8 py-4">
+        <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden">
           {showNav && product.images.length > 1 && (
             <>
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
-                className={`absolute left-0 w-7 h-7  bg-transparent flex items-center justify-center z-20 transition-all 
+                className={`absolute left-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all 
                   ${currentImageIndex === 0
                     ? 'opacity-50 cursor-not-allowed'
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
-                <IoChevronBack className="w-6 h-6 text-gray-700" />
+                <IoChevronBack className={`w-6 h-6 ${currentImageIndex > 0 ? 'text-gray-800' : 'text-gray-800'}`} />
               </button>
 
               <button
@@ -105,7 +105,7 @@ export const LandingCards = ({ product, showNav }) => {
                     : 'opacity-70 hover:opacity-100 cursor-pointer'
                   }`}
               >
-                <IoChevronForward className="w-6 h-6 text-gray-700" />
+                <IoChevronForward className={`w-6 h-6 ${currentImageIndex > 0 ? 'text-gray-800' : 'text-gray-800'}`} />
               </button>
             </>
           )}
@@ -114,19 +114,25 @@ export const LandingCards = ({ product, showNav }) => {
             src={product.images[currentImageIndex] || product.image}
             alt={product.name}
             onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-            className="max-w-full max-h-full object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
+            className={`cursor-pointer hover:scale-105 transition-transform duration-300 ${
+              currentImageIndex === 0
+                ? 'max-w-full max-h-full object-contain'
+                : 'w-full h-full object-cover absolute inset-0'
+            }`}
           />
         </div>
 
-        {product.images.length > 1 && (
-          <div className="flex justify-center mb-2 gap-1 pb-1">
+        {product.images.length > 1 && currentImageIndex === 0 && (
+          <div className="flex justify-center gap-1 py-2">
             {product.images.map((_, idx) => (
-              <div
-                key={idx}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'
-                }`}
-              />
+              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'}`} />
+            ))}
+          </div>
+        )}
+        {product.images.length > 1 && currentImageIndex > 0 && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
+            {product.images.map((_, idx) => (
+              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'}`} />
             ))}
           </div>
         )}
