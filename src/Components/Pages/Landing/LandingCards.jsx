@@ -40,14 +40,26 @@ const LoadingCard = () => (
   </div>
 );
 
-export const LandingCards = ({ product, showNav }) => {
+export const LandingCards = ({ product, showNav, squareCard }) => {
   const { t, i18n } = useTranslation('home');
   const displayName = i18n.language === 'fr' && product.french_name ? product.french_name : product.name;
   const router = useRouter();
   const { start } = useTopLoader();
- 
+  const videoRef = useRef(null);
+
   const [isLiked, setIsLiked] = useState(product.liked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // slides: first image, then video (if any), then rest of images
+  const firstImage = product.images?.[0];
+  const restImages = product.images?.slice(1) || [];
+  const videoUrl = product.videoUrl || null;
+
+  const slides = [
+    ...(firstImage ? [{ type: 'image', url: firstImage }] : []),
+    ...(videoUrl ? [{ type: 'video', url: videoUrl }] : []),
+    ...restImages.map(url => ({ type: 'image', url })),
+  ];
 
   const handlePrevImage = (e) => {
     e.stopPropagation();
@@ -57,13 +69,40 @@ export const LandingCards = ({ product, showNav }) => {
 
   const handleNextImage = (e) => {
     e.stopPropagation();
-    if (currentImageIndex === product.images.length - 1) return;
+    if (currentImageIndex === slides.length - 1) return;
     setCurrentImageIndex((prev) => prev + 1);
   };
 
+  const handleMouseEnter = () => {
+    if (!videoUrl) return;
+    setCurrentImageIndex(1); // video is always at index 1
+  };
+
+  const handleMouseLeave = () => {
+    if (!videoUrl) return;
+    setCurrentImageIndex(0);
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (slides[currentImageIndex]?.type === 'video') {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [currentImageIndex]);
+
+  const currentSlide = slides[currentImageIndex];
+
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 aspect-[3/4] flex flex-col">
+      <div
+        className={`bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 ${squareCard ? 'aspect-[1/1]' : 'aspect-[3/4]'} flex flex-col`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         {product.discount && (
           <div className="absolute top-3 left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
             {product.discount}
@@ -82,56 +121,53 @@ export const LandingCards = ({ product, showNav }) => {
         </button>
 
         <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden">
-          {showNav && product.images.length > 1 && (
+          {showNav && slides.length > 1 && (
             <>
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
                 className={`absolute left-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all 
-                  ${currentImageIndex === 0
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'opacity-70 hover:opacity-100 cursor-pointer'
-                  }`}
+                  ${currentImageIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-70 hover:opacity-100 cursor-pointer'}`}
               >
-                <IoChevronBack className={`w-6 h-6 ${currentImageIndex > 0 ? 'text-gray-800' : 'text-gray-800'}`} />
+                <IoChevronBack className="w-6 h-6 text-gray-800" />
               </button>
-
               <button
                 onClick={handleNextImage}
-                disabled={currentImageIndex === product.images.length - 1}
+                disabled={currentImageIndex === slides.length - 1}
                 className={`absolute right-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all
-                  ${currentImageIndex === product.images.length - 1
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'opacity-70 hover:opacity-100 cursor-pointer'
-                  }`}
+                  ${currentImageIndex === slides.length - 1 ? 'opacity-50 cursor-not-allowed' : 'opacity-70 hover:opacity-100 cursor-pointer'}`}
               >
-                <IoChevronForward className={`w-6 h-6 ${currentImageIndex > 0 ? 'text-gray-800' : 'text-gray-800'}`} />
+                <IoChevronForward className="w-6 h-6 text-gray-800" />
               </button>
             </>
           )}
 
-          <img
-            src={product.images[currentImageIndex] || product.image}
-            alt={product.name}
-            onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-            className={`cursor-pointer hover:scale-105 transition-transform duration-300 ${
-              currentImageIndex === 0
-                ? 'max-w-full max-h-full object-contain'
-                : 'w-full h-full object-cover absolute inset-0'
-            }`}
-          />
+          {currentSlide?.type === 'video' ? (
+            <video
+              ref={videoRef}
+              src={currentSlide.url}
+              className="w-full h-full object-cover absolute inset-0"
+              muted
+              playsInline
+              loop
+            />
+          ) : (
+            <img
+              src={currentSlide?.url || product.image}
+              alt={product.name}
+              onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
+              className={`cursor-pointer hover:scale-105 transition-transform duration-300 ${
+                currentImageIndex === 0
+                  ? 'max-w-full max-h-full object-contain'
+                  : 'w-full h-full object-cover absolute inset-0'
+              }`}
+            />
+          )}
         </div>
 
-        {product.images.length > 1 && currentImageIndex === 0 && (
-          <div className="flex justify-center gap-1 py-2">
-            {product.images.map((_, idx) => (
-              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'}`} />
-            ))}
-          </div>
-        )}
-        {product.images.length > 1 && currentImageIndex > 0 && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
-            {product.images.map((_, idx) => (
+        {slides.length > 1 && (
+          <div className={`${currentImageIndex === 0 ? 'flex justify-center gap-1 py-2' : 'absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10'}`}>
+            {slides.map((_, idx) => (
               <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'}`} />
             ))}
           </div>

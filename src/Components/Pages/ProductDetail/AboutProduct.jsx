@@ -130,39 +130,57 @@ export default function AboutProduct({ apiProduct }) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col">
-              {accordionData.map((item, idx) => (
-                <div key={idx} className="border-t border-[#E0E0E0] last:border-b">
-                  <button
-                    onClick={() => toggle(idx)}
-                    className="w-full flex items-center justify-between py-4 text-left cursor-pointer"
-                  >
-                    <span className="text-[15px] font-medium text-[#1C1C1C]">{item.title}</span>
-                    <span className="shrink-0 ml-4 text-[#1C1C1C]">
-                      {openIndex === idx ? <HiMinus className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
-                    </span>
-                  </button>
+           <div className="flex flex-col">
+  {accordionData.map((item, idx) => (
+    <div key={idx} className="border-t border-[#E0E0E0] last:border-b">
+      <button
+        onClick={() => toggle(idx)}
+        className="w-full flex items-center justify-between py-4 text-left cursor-pointer"
+      >
+        <span className="text-[15px] font-medium text-[#1C1C1C]">{item.title}</span>
+        <span className="shrink-0 ml-4 text-[#1C1C1C]">
+          {openIndex === idx ? <HiMinus className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
+        </span>
+      </button>
 
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      openIndex === idx ? "max-h-96 pb-5" : "max-h-0"
-                    }`}
-                  >
-                    {item.isList ? (
-                      <ul className="flex flex-col gap-1">
-                        {item.content.map((line, i) => (
-                          <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[14px] text-[#555555] leading-relaxed whitespace-pre-line">
-                        {item.content}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Outer grid wrapper — controls height animation */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: openIndex === idx ? "1fr" : "0fr",
+          transition: "grid-template-rows 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
+        }}
+      >
+        {/* Inner div — clips overflow */}
+        <div style={{ overflow: "hidden" }}>
+          {/* Content wrapper — opacity + translateY animation */}
+          <div
+            style={{
+              paddingBottom: openIndex === idx ? "20px" : "0px",
+              opacity: openIndex === idx ? 1 : 0,
+              transform: openIndex === idx ? "translateY(0)" : "translateY(-8px)",
+              transition: openIndex === idx
+                ? "opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s, padding 0.5s cubic-bezier(0.77, 0, 0.175, 1)"
+                : "opacity 0.2s ease, transform 0.2s ease, padding 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
+            }}
+          >
+            {item.isList ? (
+              <ul className="flex flex-col gap-1">
+                {item.content.map((line, i) => (
+                  <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[14px] text-[#555555] leading-relaxed whitespace-pre-line">
+                {item.content}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
           )}
         </div>
 
