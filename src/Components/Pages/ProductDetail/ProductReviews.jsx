@@ -5,6 +5,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
 import ProductModalAddReview from "./ProductModalAddReview";
 import ProductLoadMore from "./ProductLoadMore";
+import { MEDIA_URL } from "@/Components/API/API";
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
@@ -75,7 +76,7 @@ const StarRow = ({ rating }) => (
   </div>
 );
 
-export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
+export default function ProductReviews({ isLoading, onLoadMoreOpen, apiProduct }) {
   const { t } = useTranslation("productreviews");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -238,8 +239,8 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
           {!isLoading && (
             <>
               <img
-                src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"
-                alt="Biogance 2in1 Shampoo"
+                src={apiProduct?.review_image ? `${MEDIA_URL}${apiProduct.review_image}` : "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"}
+                alt="Biogance Product Review"
                 onLoad={handleImageLoad}
                 onError={handleImageLoad}
                 className={`w-full h-full object-cover ${

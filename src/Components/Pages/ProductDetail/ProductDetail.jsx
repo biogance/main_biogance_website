@@ -18,7 +18,7 @@ import ProductReviews from "./ProductReviews";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
-
+import { useTopLoader } from "@/Components/Pages/TopLoader";
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
@@ -31,16 +31,15 @@ const StarRating = ({ rating }) => (
 
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
-  const firstImage = firstProduct?.images?.[0];
-  const firstProductPrice = firstProduct?.price;
+  const allImages = firstProduct?.images?.map(img => `${MEDIA_URL}${img.media}`) || [""];
   return {
     id: product.id,
     name: product.name,
     french_name: product.french_name,
-    price: firstProductPrice || product.price,
+    price: firstProduct?.price || product.price,
     discount: "",
-    image: firstImage ? `${MEDIA_URL}${firstImage.media}` : "",
-    images: [firstImage ? `${MEDIA_URL}${firstImage.media}` : ""],
+    image: allImages[0],
+    images: allImages,
     liked: false,
   };
 };
@@ -55,6 +54,8 @@ export default function ProductDetail() {
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
   const productId = searchParams.get("id");
+  const { start } = useTopLoader();
+ 
 
   const [apiProduct, setApiProduct] = useState(null);
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
@@ -66,7 +67,9 @@ export default function ProductDetail() {
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
   const [showSticky, setShowSticky] = useState(false);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const footerRef = useRef(null);
+  const stickyCartRef = useRef(null);
   const [imageLoading, setImageLoading] = useState(true);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -166,8 +169,7 @@ export default function ProductDetail() {
     ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
   ];
 
-  // ─── Scroll handler — only handles sticky cart, NOT navbar transparency ──────
-  // Navbar transparency is now controlled by the IntersectionObserver below
+  // ─── Scroll handler — sticky cart visibility ────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
       if (cartBtnRef.current) {
@@ -178,6 +180,17 @@ export default function ProductDetail() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // ─── IntersectionObserver — footer visibility ────────────────────────────────
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsFooterVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, [apiProduct]);
 
   // ─── NEW: IntersectionObserver — watch title h1 against navbar ──────────────
   // When the title h1 enters the top 80px zone (navbar area), make navbar solid.
@@ -216,12 +229,6 @@ export default function ProductDetail() {
     return () => observer.disconnect();
   }, []);
 
-  // ─── Announcement bar ────────────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => setShowAnnouncement(true), 200);
-    return () => clearTimeout(timer);
-  }, []);
-
   // ─── Video auto-play when navigated to video slide ────────────────────────
   useEffect(() => {
     if (isVideo && videoRef.current) {
@@ -256,6 +263,7 @@ export default function ProductDetail() {
   }, []);
 
   const handleProductCardClick = (productId) => {
+    start();
     router.push(`/product-detail?id=${productId}`);
   };
 
@@ -309,19 +317,8 @@ export default function ProductDetail() {
         }}
       />
 
-      {/* ── Announcement Bar ── */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? "h-[40px]" : "h-0"
-          }`}
-      >
-        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-          Enjoy complimentary standard delivery across France on all orders over €39.
-        </p>
-      </div>
-
       <Navbar
         transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
-        announcementVisible={showAnnouncement}
       />
 
       <div className="flex flex-col lg:flex-row w-full min-h-screen">
@@ -631,11 +628,10 @@ export default function ProductDetail() {
 
       <AboutProduct apiProduct={apiProduct} />
 
-      {isLoaded && (
+      {isLoaded && showSticky && !isFooterVisible && (
         <StickyAddToCart
           price={displayPrice}
           productName={displayName}
-          visible={showSticky}
           selectedVolume={selectedVolume}
           onVolumeChange={handleVolumeSelect}
           volumes={uniqueSizes}
@@ -710,14 +706,29 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} />
+      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} apiProduct={apiProduct} />
 
       <ProductModalAddReview
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
       />
 
-      <Footer />
+      <div ref={footerRef}>
+        <Footer />
+      </div>
+
+      {isLoaded && showSticky && isFooterVisible && (
+        <div ref={stickyCartRef} className="w-full bg-white border-t border-[#E0E0E0]">
+          <StickyAddToCart
+            price={displayPrice}
+            productName={displayName}
+            selectedVolume={selectedVolume}
+            onVolumeChange={handleVolumeSelect}
+            volumes={uniqueSizes}
+            inline
+          />
+        </div>
+      )}
     </div>
   );
 }

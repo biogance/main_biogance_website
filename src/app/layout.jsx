@@ -1,9 +1,8 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "../redux/provider";
-import I18nProvider from "../Components/I18nProvider"; // Ye component banaenge
-
-const inter = Inter({ subsets: ["latin"] });
+import I18nProvider from "../Components/I18nProvider";
+import { RouteTopLoader } from "../Components/Pages/TopLoader";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Biogance - Biogance",
@@ -45,10 +44,14 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/FF.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={inter.className} suppressHydrationWarning>
+      <body style={{ fontFamily: "'Inter', sans-serif" }} suppressHydrationWarning>
         <ReduxProvider>
           <I18nProvider>
+            <Suspense fallback={null}><RouteTopLoader /></Suspense>
             {children}
           </I18nProvider>
         </ReduxProvider>
