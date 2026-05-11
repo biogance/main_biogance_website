@@ -174,7 +174,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
       </section>
 
       {isLoaded && isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
               <h3 className="text-[20px] font-bold text-[#1C1C1C]"> {t("rating")}</h3>
