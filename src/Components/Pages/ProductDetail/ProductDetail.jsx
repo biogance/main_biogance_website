@@ -481,7 +481,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {isLoaded && !imageLoading && !isVideo && (
+          {isLoaded && !imageLoading && slides.length > 1 && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
@@ -490,7 +490,7 @@ export default function ProductDetail() {
             </button>
           )}
 
-          {isLoaded && !imageLoading && !isVideo && (
+          {isLoaded && !imageLoading && slides.length > 1 && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"

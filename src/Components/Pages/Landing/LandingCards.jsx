@@ -120,7 +120,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
           )}
         </button>
 
-        <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden rounded-2xl">
           {showNav && slides.length > 1 && currentSlide?.type !== 'video' && (
             <>
               <button
@@ -146,10 +146,11 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
             <video
               ref={videoRef}
               src={currentSlide.url}
-              className="w-full h-full object-cover absolute inset-0"
+              className="w-full h-full object-cover absolute inset-0 cursor-pointer"
               muted
               playsInline
               loop
+              onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
             />
           ) : (
             <img
@@ -219,6 +220,7 @@ export default function PopularProducts({
     discount: item.discount || (item.products?.[0]?.off) || '',
     image: item.image || (item.products?.[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : '/product1.svg'),
     images: item.images || (item.products?.[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['/product1.svg']),
+    videoUrl: item.products?.[0]?.video?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].video.media}` : null,
     liked: item.liked ?? item.favorites_exists
   }));
 
