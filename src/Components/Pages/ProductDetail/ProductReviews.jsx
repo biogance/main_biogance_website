@@ -76,7 +76,7 @@ const StarRow = ({ rating }) => (
   </div>
 );
 
-export default function ProductReviews({ isLoading, onLoadMoreOpen, apiProduct }) {
+export default function ProductReviews({ isLoading, apiProduct }) {
   const { t } = useTranslation("productreviews");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,10 +84,6 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen, apiProduct }
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
   const allReviews = getReviews(t);
-
-  useEffect(() => {
-    onLoadMoreOpen?.(isLoadMoreOpen);
-  }, [isLoadMoreOpen, onLoadMoreOpen]);
 
   const handleImageLoad = () => {
     if (!imageLoaded.current) {
@@ -212,16 +208,21 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen, apiProduct }
         </div>
 
         {/* RIGHT: Product Image */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-[#F0EEE9] relative items-center justify-center min-h-[420px] overflow-hidden">
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-[#E1E1E1] relative items-center justify-center min-h-[420px] overflow-hidden">
 
           {/* State 1: Shimmer */}
           {isLoading && (
             <div className="shimmer-bg-reviews absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Gray bg + Black spinner */}
-          {!isLoading && imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-200">
+          {/* State 2: No image from API - show grey background */}
+          {!isLoading && !apiProduct?.review_image && (
+            <div className="w-full h-full bg-[#E1E1E1]" />
+          )}
+
+          {/* State 3: Gray bg + Black spinner */}
+          {!isLoading && apiProduct?.review_image && imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#E1E1E1]">
               <div
                 style={{
                   width: 44,
@@ -235,11 +236,11 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen, apiProduct }
             </div>
           )}
 
-          {/* State 3: Image fade in */}
-          {!isLoading && (
+          {/* State 4: Image fade in */}
+          {!isLoading && apiProduct?.review_image && (
             <>
               <img
-                src={apiProduct?.review_image ? `${MEDIA_URL}${apiProduct.review_image}` : "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"}
+                src={`${MEDIA_URL}${apiProduct.review_image}`}
                 alt="Biogance Product Review"
                 onLoad={handleImageLoad}
                 onError={handleImageLoad}

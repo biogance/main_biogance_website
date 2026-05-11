@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "../../../../redux/features/authSlice";
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../../API/API';
 
 export default function LogoutModal({
   isOpen,
@@ -14,6 +16,7 @@ export default function LogoutModal({
   const { t } = useTranslation("myaccount");
   const dispatch = useDispatch();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
 
    useEffect(() => {
@@ -41,11 +44,37 @@ export default function LogoutModal({
     }, [isOpen]);
   if (!isOpen) return null;
   
-    const handleLogout = () => {
-      dispatch(logout());
-      router.push('/');
-      onClose();
-    };
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || '{}');
+      const token = loginData?.data?.token || loginData?.token || '';
+      const res = await fetch(`${BASE_URL}/user/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ device_id: 'web123' }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
+        toast.error(msg);
+      } else {
+        const rememberMe = localStorage.getItem('rememberMe');
+        localStorage.clear();
+        if (rememberMe) localStorage.setItem('rememberMe', rememberMe);
+        dispatch(logout());
+        router.push('/');
+        onClose();
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div
@@ -76,16 +105,16 @@ export default function LogoutModal({
             <button
               type="button"
               onClick={handleLogout}
-                
+              disabled={isLoading}
               className={`
                 px-8 py-3.5 rounded-xl font-medium text-white
                 bg-[#D00416] hover:bg-red-700 active:bg-red-800
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2
-                active:scale-[0.98] shadow-sm
+                active:scale-[0.98] shadow-sm disabled:opacity-70 disabled:cursor-not-allowed
               `}
             >
-              {t('logoutModal.confirmButton')}
+              {isLoading ? 'Logging Out...' : t('logoutModal.confirmButton')}
             </button>
              <button
               type="button"

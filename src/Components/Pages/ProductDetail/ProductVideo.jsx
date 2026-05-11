@@ -6,8 +6,6 @@ const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
 );
 
-const HARDCODED_VIDEO = "https://www.youtube.com/watch?v=23GHPclU39E";
-
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return null;
   
@@ -32,8 +30,10 @@ export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) 
   const [iframeLoading, setIframeLoading] = useState(true);
   const iframeLoaded = useRef(false);
 
-  const finalVideoLink = (language === "fr" && frenchVideoLink) ? frenchVideoLink : (videoLink || HARDCODED_VIDEO);
+  const finalVideoLink = (language === "fr" && frenchVideoLink) ? frenchVideoLink : videoLink;
   const embedUrl = getYouTubeEmbedUrl(finalVideoLink);
+
+  if (!embedUrl) return null;
 
   const handleIframeLoad = () => {
     if (!iframeLoaded.current) {

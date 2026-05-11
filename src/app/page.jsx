@@ -1,16 +1,17 @@
 'use client'
-import BioganceAmbassadorForm from "@/Components/Pages/Pro/Ambassador";
-import Commitments from "@/Components/Pages/OurCommitments/Commitments";
-import { DistributorForm } from "@/Components/Pages/Pro/Distributorpro";
-import Navbar from "@/Components/Pages/Navbar";
-import { Pro } from "@/Components/Pages/Pro/Pro";
-import { ResellerForm } from "@/Components/Pages/Pro/ResellerPro";
-import Image from "next/image";
-import ThankYouModal from "@/Components/Pages/Pro/ThankyouModal";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import HeroSection from "@/Components/Pages/Landing/MainVideo";
-import SignUp from "@/Components/Pages/Onboarding/SignUp";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (localStorage.getItem('LoginData')) {
+      router.replace('/my-account');
+    }
+  }, []);
+
   return (
     <div>
      <HeroSection/>

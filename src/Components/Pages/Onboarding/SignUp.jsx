@@ -4,9 +4,12 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
 import { PhoneInput } from 'react-international-phone';
+import { parsePhoneNumber } from 'libphonenumber-js';
 import 'react-international-phone/style.css';
 import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
+import { BASE_URL } from '../../API/API';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 
 export default function SignupModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
@@ -29,6 +32,7 @@ export default function SignupModal({ isOpen, onClose }) {
     phoneNumber: false,
     password: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateFullName = (name) => {
     if (!name.trim()) {
@@ -62,14 +66,8 @@ export default function SignupModal({ isOpen, onClose }) {
     if (!password) {
       return 'Please enter a password.';
     }
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters.';
-    }
-    if (!/\d/.test(password)) {
-      return 'Password must include at least 1 number.';
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return 'Password must include at least 1 special character.';
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters.';
     }
     return '';
   };
@@ -143,7 +141,7 @@ export default function SignupModal({ isOpen, onClose }) {
     }, [isOpen]);
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = {
       fullName: validateFullName(formData.fullName),
       email: validateEmail(formData.email),
@@ -160,11 +158,48 @@ export default function SignupModal({ isOpen, onClose }) {
     });
     
     const hasErrors = Object.values(newErrors).some(error => error !== '');
-    
-    if (!hasErrors) {
-      console.log('Form submitted successfully:', formData);
-    } else {
-      console.log('Form has errors, cannot submit');
+    if (hasErrors) return;
+
+    let country_code = '';
+    let phone_number = '';
+    try {
+      const parsed = parsePhoneNumber(formData.phoneNumber);
+      country_code = `+${parsed.countryCallingCode}`;
+      phone_number = parsed.nationalNumber;
+    } catch {
+      country_code = '';
+      phone_number = formData.phoneNumber;
+    }
+
+    const payload = {
+      name: formData.fullName,
+      email: formData.email,
+      country_code,
+      phone: phone_number,
+      phone_number: formData.phoneNumber,
+      password: formData.password,
+      device: 'web',
+      device_id: 'web123',
+      fcm_token: null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        toast.error(msg);
+      }
+    } catch (err) {
+      console.error('Register error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -217,7 +252,7 @@ export default function SignupModal({ isOpen, onClose }) {
   return (
     <>
       <style>{phoneInputStyles}</style>
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70">
         <div className="relative bg-white rounded-3xl  w-full max-w-lg p-6 overflow-y-auto ">
           {/* Close Button */}
           <button
@@ -347,10 +382,11 @@ export default function SignupModal({ isOpen, onClose }) {
             {/* Submit Button */}
             <button
               type="button"
-              onClick={onClose}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-1 font-medium cursor-pointer"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-1 font-medium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {t('signup.buttons.createAccount')}
+              {isLoading ? 'Creating...' : t('signup.buttons.createAccount')}
             </button>
 
             {/* Terms */}

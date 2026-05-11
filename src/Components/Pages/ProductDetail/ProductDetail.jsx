@@ -19,12 +19,13 @@ import StickyAddToCart from "./StickyAddToCart";
 import Footer from "../Footer";
 import { LandingCards } from "@/Components/Pages/Landing/LandingCards";
 import ProductVideo from "./ProductVideo";
-import ProductModalAddReview from "./ProductModalAddReview";
 import ProductReviews from "./ProductReviews";
+import ProductLoadMore from "./ProductLoadMore";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
 import { useTopLoader } from "@/Components/Pages/TopLoader";
+
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
@@ -86,13 +87,11 @@ export default function ProductDetail() {
   const loadedSlides = useRef(new Set());
   const currentSlideRef = useRef(0);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
-  // ─── NEW: ref for the product title h1 ──────────────────────────────────────
   const titleRef = useRef(null);
 
   // ─── Fetch product detail ───────────────────────────────────────────────────
@@ -142,7 +141,11 @@ export default function ProductDetail() {
       ? apiProduct?.french_description || apiProduct?.description
       : apiProduct?.description || "";
   const productType = apiProducts[0]?.type || "no-size-color";
-  const togetherProducts = apiProduct?.together || [];
+
+ 
+  const together1Products = apiProduct?.together1 || [];
+  const together2Products = apiProduct?.together2 || [];
+
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
 
   const isTransparentProduct = selectedProduct?.is_transparent === 1;
@@ -287,13 +290,11 @@ export default function ProductDetail() {
     if (total === 0) return;
     let target = idx;
 
-    // circular: first → last or last → first, jump without animation
     if (idx < 0 || idx >= total) {
       target = (idx + total) % total;
       setNoTransition(true);
       setCurrentSlide(target);
       currentSlideRef.current = target;
-      // re-enable transition after paint
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setNoTransition(false));
       });
@@ -325,9 +326,10 @@ export default function ProductDetail() {
     router.push(`/product-detail?id=${productId}`);
   };
 
-  const formattedTogetherProducts = togetherProducts
-    .slice(0, 3)
-    .map(formatProductForCard);
+  
+  const formattedTogether1 = together1Products.slice(0, 3).map(formatProductForCard);
+  const formattedTogether2 = together2Products.slice(0, 3).map(formatProductForCard);
+
   const isLoaded = apiProduct !== null;
 
   return (
@@ -377,7 +379,7 @@ export default function ProductDetail() {
 
       <Navbar
         transparent={
-          isLoadMoreOpen || isReviewModalOpen ? false : isTransparent
+          isTransparent
         }
       />
 
@@ -390,12 +392,10 @@ export default function ProductDetail() {
           className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
           style={{ background: "#E1E1E1" }}
         >
-          {/* State 1: Shimmer */}
           {!isLoaded && (
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner */}
           {isLoaded && (imageLoading || slideLoading) && (
             <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#E1E1E1]">
               <div
@@ -411,7 +411,6 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* State 3: Sliding track (images + video in order) */}
           {isLoaded && infiniteSlides.length > 0 && (
             <div className="absolute inset-0 overflow-hidden">
               <div
@@ -482,8 +481,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Left Arrow */}
-          {isLoaded && !imageLoading && (
+          {isLoaded && !imageLoading && !isVideo && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
@@ -492,8 +490,7 @@ export default function ProductDetail() {
             </button>
           )}
 
-          {/* Right Arrow */}
-          {isLoaded && !imageLoading && (
+          {isLoaded && !imageLoading && !isVideo && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
@@ -502,7 +499,6 @@ export default function ProductDetail() {
             </button>
           )}
 
-          {/* Dot Indicators */}
           {isLoaded && !imageLoading && slides.length > 1 && (
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
               {slides.map((_, idx) => (
@@ -542,35 +538,27 @@ export default function ProductDetail() {
                 <ShimmerLoader className="h-8 w-12 mb-7" />
                 <ShimmerLoader className="h-8 w-12 mb-7" />
               </div>
-
               <ShimmerLoader className="h-8 w-22 mb-4" />
               <div style={{ display: "flex", gap: "20px" }}>
                 <ShimmerLoader className="h-8 w-8 mb-3" />
                 <ShimmerLoader className="h-8 w-8 mb-7" />
                 <ShimmerLoader className="h-8 w-8 mb-7" />
               </div>
-
               <ShimmerLoader className="h-8 w-22 mb-7" />
               <div style={{ display: "flex", gap: "20px" }}>
                 <ShimmerLoader className="h-8 w-32 mb-7" />
               </div>
-
               <div style={{ display: "flex", gap: "20px" }}>
                 <ShimmerLoader className="h-12 w-19/20 mb-7" />
                 <ShimmerLoader className="h-12 w-12 mb-7" />
               </div>
-
               <ShimmerLoader className="h-5 w-full" />
             </>
           ) : (
             <>
-              {/*
-                ─── CHANGED: added ref={titleRef} so IntersectionObserver
-                    can watch when this title reaches the navbar ───────────────
-              */}
               <h1
                 ref={titleRef}
-                className="text-[22px] lg:text-[26px] font-semibold  text-[#1C1C1C] leading-snug mb-4"
+                className="text-[22px] lg:text-[26px] font-semibold text-[#1C1C1C] leading-snug mb-4"
                 style={{ lineHeight: "1.5" }}
               >
                 {displayName}
@@ -578,9 +566,14 @@ export default function ProductDetail() {
 
               <div className="flex items-center gap-1 mb-5">
                 <StarRating rating={3.5} />
-                <span className="text-sm text-black">({t("reviews")})</span>
                 <button
-                  onClick={() => setIsReviewModalOpen(true)}
+                  onClick={() => setIsLoadMoreOpen(true)}
+                  className="text-sm text-black cursor-pointer hover:underline"
+                >
+                  ({t("reviews")})
+                </button>
+                <button
+                  onClick={() => setIsLoadMoreOpen(true)}
                   className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
                 >
                   {t("addReview")}
@@ -598,7 +591,7 @@ export default function ProductDetail() {
                         })()
                       : displayDescription.replace(/<[^>]*>/g, "");
 
-                  const CHAR_LIMIT = 460; // yahan adjust karo apni 5 lines ke hisaab se
+                  const CHAR_LIMIT = 460;
                   const isLong = plainText.length > CHAR_LIMIT;
                   const truncated = plainText.slice(0, CHAR_LIMIT);
 
@@ -673,7 +666,7 @@ export default function ProductDetail() {
                           onClick={() => handleVolumeSelect(size)}
                           className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border ${
                             selectedVolume === size
-                              ? "bg-black border-gray-800  text-white  ring-1 ring-black"
+                              ? "bg-black border-gray-800 text-white ring-1 ring-black"
                               : "bg-white text-[#1C1C1C] border-[#E8E8E8] hover:bg-gray-50"
                           }`}
                         >
@@ -709,57 +702,57 @@ export default function ProductDetail() {
                     </div>
                   </div>
                 )}
-              {/* Quantity Selector */}
-              <div className="mb-6">
-                <p className="text-sm font-semibold text-[#1C1C1C] mb-3">
-                  {t("quantity") || "Quantity"}
-                </p>
-                <div className="flex items-center gap-4">
-                 <button
-  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-  disabled={quantity === 1}
-  className={`w-10 h-10 rounded-xl border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
-    quantity === 1
-      ? "cursor-not-allowed text-[#aaa]"
-      : "cursor-pointer hover:bg-[#e6e6e6] text-[#1C1C1C]"
-  }`}
->
-  <FaMinus size={13} />
-</button>
-                  <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
-                    {String(quantity).padStart(2)}
-                  </span>
+
+              {/* Quantity, Add to Cart & Wishlist in one line */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3">
+                  <p className="text-md font-semibold text-[#1C1C1C] whitespace-nowrap">
+                    {t("quantity")}
+                  </p>
+                  <div className="flex items-center gap-2 border border-[#E8E8E8] rounded-md">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity === 1}
+                      className={`w-10 h-10 rounded-md border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
+                        quantity === 1
+                          ? "cursor-not-allowed text-[#aaa]"
+                          : "cursor-pointer hover:bg-[#e6e6e6] text-[#1C1C1C]"
+                      }`}
+                    >
+                      <FaMinus size={13} />
+                    </button>
+                    <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
+                      {String(quantity).padStart(2)}
+                    </span>
+                    <button
+                      onClick={() => setQuantity((q) => q + 1)}
+                      className="w-10 h-10 rounded-md bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
+                    >
+                      <FaPlus size={13} />
+                    </button>
+                  </div>
                   <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="w-10 h-10 rounded-xl bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
+                    ref={cartBtnRef}
+                    id="add-to-cart-btn"
+                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
                   >
-                    <FaPlus size={13} />
+                    {t("addToCart")} – €{displayPrice}
+                  </button>
+                  <button
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                      isWishlisted
+                        ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
+                        : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
+                    }`}
+                  >
+                    <FiHeart
+                      className={`w-5 h-5 ${
+                        isWishlisted ? "fill-black text-black" : ""
+                      }`}
+                    />
                   </button>
                 </div>
-              </div>
-              {/* Add to Cart */}
-              <div className="flex items-center gap-3 mb-8">
-                <button
-                  ref={cartBtnRef}
-                  id="add-to-cart-btn"
-                  className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  {t("addToCart")} – €{displayPrice}
-                </button>
-                <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
-                    isWishlisted
-                      ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
-                      : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-                  }`}
-                >
-                  <FiHeart
-                    className={`w-5 h-5 ${
-                      isWishlisted ? "fill-black text-black" : ""
-                    }`}
-                  />
-                </button>
               </div>
 
               {/* Shipping Info */}
@@ -811,12 +804,10 @@ export default function ProductDetail() {
         <AboutProduct apiProduct={apiProduct} />
       </div>
 
-
-
       <ProductExpertAdvice apiProduct={apiProduct} />
 
-      {/* ── Together Products ── */}
-      {isLoaded && formattedTogetherProducts.length > 0 && (
+      {/* ── Together1 Products — Complete Grooming Routine ── */}
+      {isLoaded && formattedTogether1.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
@@ -826,13 +817,13 @@ export default function ProductDetail() {
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
-            {formattedTogetherProducts.map((prod) => (
+            {formattedTogether1.map((prod) => (
               <div
                 key={prod.id}
                 className="w-[350px] cursor-pointer"
                 onClick={() => handleProductCardClick(prod.id)}
               >
-                <LandingCards product={prod} showNav={true} squareCard />
+                <LandingCards product={prod} showNav={true} />
               </div>
             ))}
           </div>
@@ -840,25 +831,27 @@ export default function ProductDetail() {
       )}
 
       {/* ── Video Section ── */}
-      <div className="py-4 lg:py-12 px-6 lg:px-14">
-        <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
-          <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-          <p className="text-lg font-semibold text-[#1C1C1C]">
-            {t("watchBenefitsLive")}
-          </p>
-          <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+      {isLoaded && (apiProduct?.video_link || apiProduct?.french_video_link) && (
+        <div className="py-4 lg:py-12 px-6 lg:px-14">
+          <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
+            <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+            <p className="text-lg font-semibold text-[#1C1C1C]">
+              {t("watchBenefitsLive")}
+            </p>
+            <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+          </div>
+          <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+            <ProductVideo
+              videoLink={apiProduct?.video_link}
+              frenchVideoLink={apiProduct?.french_video_link}
+              isLoading={false}
+            />
+          </div>
         </div>
-        <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-          <ProductVideo
-            videoLink={apiProduct?.video_link}
-            frenchVideoLink={apiProduct?.french_video_link}
-            isLoading={!isLoaded}
-          />
-        </div>
-      </div>
+      )}
 
-      {/* ── More Products ── */}
-      {isLoaded && formattedTogetherProducts.length > 0 && (
+      {/* ── Together2 Products — More Products Explore ── */}
+      {isLoaded && formattedTogether2.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
@@ -868,13 +861,13 @@ export default function ProductDetail() {
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
-            {formattedTogetherProducts.map((prod) => (
+            {formattedTogether2.map((prod) => (
               <div
                 key={prod.id}
                 className="w-[350px] cursor-pointer"
                 onClick={() => handleProductCardClick(prod.id)}
               >
-                <LandingCards product={prod} showNav={true} squareCard />
+                <LandingCards product={prod} showNav={true} />
               </div>
             ))}
           </div>
@@ -883,20 +876,18 @@ export default function ProductDetail() {
 
       <ProductReviews
         isLoading={!isLoaded}
-        onLoadMoreOpen={setIsLoadMoreOpen}
         apiProduct={apiProduct}
       />
 
-      <ProductModalAddReview
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
+      <ProductLoadMore
+        isOpen={isLoadMoreOpen}
+        onClose={() => setIsLoadMoreOpen(false)}
       />
 
-    
-<div className="h-[72px]" />
-<div className="relative z-10">
-  <Footer />
-</div>
+      <div className="h-[72px]" />
+      <div className="relative z-10">
+        <Footer />
+      </div>
 
       {isLoaded && showSticky && !isFooterVisible && (
         <div className="h-[72px]" />
@@ -912,7 +903,6 @@ export default function ProductDetail() {
           isFooterVisible={isFooterVisible}
         />
       )}
-
     </div>
   );
 }
