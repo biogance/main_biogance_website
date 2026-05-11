@@ -10,7 +10,7 @@ import { useTopLoader } from '../TopLoader';
 const LoadingCard = () => (
   <div className="w-full">
     <div
-      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[1/1]"
+      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[3/4]"
       style={{
         backgroundColor: '#f9fafb',
         background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
@@ -99,7 +99,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   return (
     <div className="w-full h-full flex flex-col">
       <div
-        className={`bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 aspect-[1/1] flex flex-col`}
+       className={`bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 ${squareCard ? 'aspect-[3/4]' : 'aspect-[3/4]'} flex flex-col`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
