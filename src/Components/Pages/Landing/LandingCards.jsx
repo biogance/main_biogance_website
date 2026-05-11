@@ -10,7 +10,7 @@ import { useTopLoader } from '../TopLoader';
 const LoadingCard = () => (
   <div className="w-full">
     <div
-      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[3/4]"
+      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[5/6]"
       style={{
         backgroundColor: '#f9fafb',
         background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
@@ -99,7 +99,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   return (
     <div className="w-full h-full flex flex-col">
       <div
-       className={`bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 ${squareCard ? 'aspect-[3/4]' : 'aspect-[3/4]'} flex flex-col`}
+       className={`bg-gray-50 rounded-2xl border border-gray-200 relative mb-3 aspect-[5/6] flex flex-col`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -121,7 +121,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
         </button>
 
         <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden">
-          {showNav && slides.length > 1 && (
+          {showNav && slides.length > 1 && currentSlide?.type !== 'video' && (
             <>
               <button
                 onClick={handlePrevImage}
@@ -156,7 +156,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
               src={currentSlide?.url || product.image}
               alt={product.name}
               onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-              className={`cursor-pointer hover:scale-105 transition-transform duration-300 ${
+              className={`cursor-pointer ${
                 currentImageIndex === 0
                   ? 'max-w-full max-h-full object-contain'
                   : 'w-full h-full object-cover absolute inset-0'

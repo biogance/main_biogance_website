@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import VerificationCodeModal from './OtpSecren';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
 
-export default function Forgotpassword({ isOpen, onClose }) {
+export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   const { t } = useTranslation('onboarding');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [touched, setTouched] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email) => {
     if (!email.trim()) {
@@ -60,19 +63,33 @@ export default function Forgotpassword({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();           // ← Prevents page refresh
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     const validationError = validateEmail(email);
     setError(validationError);
     setTouched(true);
 
-    if (!validationError) {
-      console.log('Reset link sent to:', email);
-      // Here you would normally call your API to send reset email/OTP
-      // e.g. await sendResetEmail(email);
-      
-      setIsOtpModalOpen(true);
+    if (validationError) return;
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/forgot/password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        toast.error(msg);
+      } else {
+        setIsOtpModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Forgot password error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -127,10 +144,11 @@ export default function Forgotpassword({ isOpen, onClose }) {
 
           {/* Submit Button */}
           <button
-            type="submit"           // ← Changed to submit → Enter key now works
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {t('forgotPassword.buttons.sendResetLink')}
+            {isLoading ? 'Sending...' : t('forgotPassword.buttons.sendResetLink')}
           </button>
         </form>
       </div>
@@ -139,6 +157,8 @@ export default function Forgotpassword({ isOpen, onClose }) {
       <VerificationCodeModal
         isOpen={isOtpModalOpen}
         onClose={() => setIsOtpModalOpen(false)}
+        email={email}
+        onAllClose={onAllClose}
       />
     </div>
   );

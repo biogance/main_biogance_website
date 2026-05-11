@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { HiPlus, HiMinus } from "react-icons/hi";
 import { MEDIA_URL } from "@/Components/API/API";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=900&q=80";
-
 const isVideoUrl = (url) => /\.(mp4|webm|ogg|mov)$/i.test(url);
 
 const ShimmerLoader = ({ className = "" }) => (
@@ -24,9 +22,9 @@ export default function AboutProduct({ apiProduct }) {
 
   const aboutMedia = apiProduct?.about_product_media
     ? `${MEDIA_URL}${apiProduct.about_product_media}`
-    : FALLBACK_IMAGE;
+    : null;
 
-  const isVideo = isVideoUrl(aboutMedia);
+  const isVideo = aboutMedia && isVideoUrl(aboutMedia);
 
   useEffect(() => {
     if (isVideo && videoRef.current) {
@@ -194,8 +192,13 @@ export default function AboutProduct({ apiProduct }) {
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner — API aa gaya, image/video load ho rahi hai */}
-          {isLoaded && imageLoading && !isVideo && (
+          {/* State 2: No media from API — show grey background */}
+          {isLoaded && !aboutMedia && (
+            <div className="w-full h-full bg-[#E1E1E1]" />
+          )}
+
+          {/* State 3: Black spinner — API aa gaya, image/video load ho rahi hai */}
+          {isLoaded && aboutMedia && imageLoading && !isVideo && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div
                 style={{
@@ -210,8 +213,8 @@ export default function AboutProduct({ apiProduct }) {
             </div>
           )}
 
-          {/* State 3: Video autoplay loop */}
-          {isLoaded && isVideo && (
+          {/* State 4: Video autoplay loop */}
+          {isLoaded && aboutMedia && isVideo && (
             <video
               ref={videoRef}
               key={aboutMedia}
@@ -230,8 +233,8 @@ export default function AboutProduct({ apiProduct }) {
             </video>
           )}
 
-          {/* State 3: Image fade in */}
-          {isLoaded && !isVideo && (
+          {/* State 5: Image fade in */}
+          {isLoaded && aboutMedia && !isVideo && (
             <img
               src={aboutMedia}
               alt="About this product"

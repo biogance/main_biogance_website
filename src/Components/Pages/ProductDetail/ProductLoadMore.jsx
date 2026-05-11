@@ -79,8 +79,6 @@ export default function ProductLoadMore({ isOpen, onClose }) {
   const { t } = useTranslation("productreviews");
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("reviews");
-  const [sidebarImgLoaded, setSidebarImgLoaded] = useState(false);
-  const [mobileImgLoaded, setMobileImgLoaded] = useState(false);
   const allReviews = getReviews(t);
 
   useEffect(() => {
@@ -108,11 +106,10 @@ export default function ProductLoadMore({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  // Reset image loaded states when modal closes/opens
+  // Reset when modal closes/opens
   useEffect(() => {
     if (!isOpen) {
-      setSidebarImgLoaded(false);
-      setMobileImgLoaded(false);
+      // Reset any necessary states here
     }
   }, [isOpen]);
 
@@ -405,7 +402,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               {/* Mobile image with loader */}
               <div
                 style={{
-                  background: "#F0EEE9",
+                  background: "#E1E1E1",
                   borderRadius: 12,
                   height: 220,
                   overflow: "hidden",
@@ -415,34 +412,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   justifyContent: "center",
                 }}
               >
-                {!mobileImgLoaded && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#F0EEE9",
-                      zIndex: 2,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <div className="plm-img-loader" />
-                  </div>
-                )}
-                <img
-                  src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80"
-                  alt="Product"
-                  onLoad={() => setMobileImgLoaded(true)}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    opacity: mobileImgLoaded ? 1 : 0,
-                    transition: "opacity 0.3s ease",
-                  }}
-                />
+                {/* Just show grey background - no image */}
               </div>
 
               {/* Rating breakdown */}
@@ -591,7 +561,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               {/* Sidebar image with loader */}
               <div
                 style={{
-                  background: "#F0EEE9",
+                  background: "#E1E1E1",
                   height: 260,
                   display: "flex",
                   alignItems: "center",
@@ -600,33 +570,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   position: "relative",
                 }}
               >
-                {!sidebarImgLoaded && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#F0EEE9",
-                      zIndex: 2,
-                    }}
-                  >
-                    <div className="plm-img-loader" />
-                  </div>
-                )}
-                <img
-                  src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80"
-                  alt="Product"
-                  onLoad={() => setSidebarImgLoaded(true)}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    opacity: sidebarImgLoaded ? 1 : 0,
-                    transition: "opacity 0.3s ease",
-                  }}
-                />
+                {/* Just show grey background - no image */}
               </div>
 
               <div style={{ padding: "16px 18px 18px" }}>

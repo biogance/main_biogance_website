@@ -6,6 +6,7 @@ import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
 import LoginModal from './Onboarding/Login';
 import { useTranslation } from 'react-i18next';
+import { FaPlus } from 'react-icons/fa';
 
 const logoImage = '/logo.svg';
 
@@ -72,9 +73,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <div
         className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? 'h-[40px]' : 'h-0'}`}
       >
-        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-          Enjoy complimentary standard delivery across France on all orders over €39.
-        </p>
+       <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
+  Enjoy complimentary standard delivery across France on all orders over €39.{" "}
+  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+</p>
       </div>
 
       {/* Backdrop overlay */}

@@ -3,6 +3,7 @@ import { ReduxProvider } from "../redux/provider";
 import I18nProvider from "../Components/I18nProvider";
 import { RouteTopLoader } from "../Components/Pages/TopLoader";
 import { Suspense } from "react";
+import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
   title: "Biogance - Biogance",
@@ -52,6 +53,7 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           <I18nProvider>
             <Suspense fallback={null}><RouteTopLoader /></Suspense>
+            <Toaster position="top-right" />
             {children}
           </I18nProvider>
         </ReduxProvider>
