@@ -79,32 +79,42 @@ export default function ProductLoadMore({ isOpen, onClose }) {
   const { t } = useTranslation("productreviews");
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("reviews");
+  const [sidebarImgLoaded, setSidebarImgLoaded] = useState(false);
+  const [mobileImgLoaded, setMobileImgLoaded] = useState(false);
   const allReviews = getReviews(t);
 
- useEffect(() => {
-  if (isOpen) {
-    const scrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.dataset.scrollY = scrollY;
-  } else {
-    const scrollY = parseInt(document.body.dataset.scrollY || '0');
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    delete document.body.dataset.scrollY;
-    window.scrollTo(0, scrollY);
-  }
-  return () => {
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-  };
-}, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.dataset.scrollY = scrollY;
+    } else {
+      const scrollY = parseInt(document.body.dataset.scrollY || "0");
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      delete document.body.dataset.scrollY;
+      window.scrollTo(0, scrollY);
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+    };
+  }, [isOpen]);
+
+  // Reset image loaded states when modal closes/opens
+  useEffect(() => {
+    if (!isOpen) {
+      setSidebarImgLoaded(false);
+      setMobileImgLoaded(false);
+    }
+  }, [isOpen]);
 
   const handleReviewSubmit = ({ rating, feedback }) => {
     console.log("Review submitted:", { rating, feedback });
@@ -136,6 +146,18 @@ export default function ProductLoadMore({ isOpen, onClose }) {
         }
         .plm-summary-mobile {
           display: none;
+        }
+        .plm-img-loader {
+          border: 4px solid rgba(0, 0, 0, 0.1);
+          border-left-color: transparent;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          animation: spin89345 1s linear infinite;
+        }
+        @keyframes spin89345 {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
         @media (max-width: 900px) {
           .plm-shell {
@@ -245,7 +267,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 60,
+          zIndex: 80,
           background: "rgba(0,0,0,0.52)",
           display: "flex",
           alignItems: "center",
@@ -268,6 +290,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             pointerEvents: "auto",
           }}
         >
+          {/* ── LEFT PANEL ── */}
           <div
             style={{
               flex: "1 1 0",
@@ -290,6 +313,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </h2>
             </div>
 
+            {/* Mobile tabs */}
             <div className="plm-mobile-tabs">
               <button
                 className={`plm-tab-btn ${activeTab === "reviews" ? "active" : ""}`}
@@ -305,6 +329,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </button>
             </div>
 
+            {/* Reviews list */}
             <div
               className="plm-left-scroll"
               style={{
@@ -370,27 +395,57 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               ))}
             </div>
 
+            {/* Mobile summary tab */}
             <div
               className="plm-summary-mobile"
               style={{
                 display: activeTab === "summary" ? "flex" : "none",
               }}
             >
+              {/* Mobile image with loader */}
               <div
                 style={{
                   background: "#F0EEE9",
                   borderRadius: 12,
                   height: 220,
                   overflow: "hidden",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
+                {!mobileImgLoaded && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#F0EEE9",
+                      zIndex: 2,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <div className="plm-img-loader" />
+                  </div>
+                )}
                 <img
                   src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80"
                   alt="Product"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onLoad={() => setMobileImgLoaded(true)}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    opacity: mobileImgLoaded ? 1 : 0,
+                    transition: "opacity 0.3s ease",
+                  }}
                 />
               </div>
 
+              {/* Rating breakdown */}
               <div
                 style={{
                   border: "1px solid #E8E8E8",
@@ -487,6 +542,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </div>
             </div>
 
+            {/* Floating Add Review button (mobile) */}
             <button
               className="plm-add-review-floating"
               onClick={() => setIsAddReviewOpen(true)}
@@ -511,6 +567,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             </button>
           </div>
 
+          {/* ── RIGHT SIDEBAR ── */}
           <div
             className="plm-right"
             style={{
@@ -531,6 +588,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 background: "#fff",
               }}
             >
+              {/* Sidebar image with loader */}
               <div
                 style={{
                   background: "#F0EEE9",
@@ -539,12 +597,35 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
+                  position: "relative",
                 }}
               >
+                {!sidebarImgLoaded && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#F0EEE9",
+                      zIndex: 2,
+                    }}
+                  >
+                    <div className="plm-img-loader" />
+                  </div>
+                )}
                 <img
                   src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80"
                   alt="Product"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onLoad={() => setSidebarImgLoaded(true)}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    opacity: sidebarImgLoaded ? 1 : 0,
+                    transition: "opacity 0.3s ease",
+                  }}
                 />
               </div>
 
@@ -634,6 +715,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               </div>
             </div>
 
+            {/* Sidebar Add Review button */}
             <button
               className="plm-add-review-sidebar"
               onClick={() => setIsAddReviewOpen(true)}
@@ -656,15 +738,14 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 flexShrink: 0,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "#1C1C1C")
-              }
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#1C1C1C")}
             >
               <FaPlus style={{ fontSize: 14, lineHeight: 1 }} />
               {t("addReview")}
             </button>
           </div>
 
+          {/* Close button */}
           <button
             onClick={onClose}
             style={{
