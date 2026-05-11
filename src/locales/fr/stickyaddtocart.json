@@ -1,4 +1,5 @@
 {
   "quantity": "Quantité:",
-  "addToCart": "Ajouter au panier"
+  "addToCart": "Ajouter au panier",
+   "productVolume": "Volume du produit:"
 }
