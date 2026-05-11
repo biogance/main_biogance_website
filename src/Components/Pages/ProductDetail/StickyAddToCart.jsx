@@ -22,12 +22,12 @@ export default function StickyAddToCart({
         </p>
 
         {/* Volume Selector + Button row on small/medium */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full lg:contents gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between w-full lg:contents gap-2 sm:gap-4">
           {/* Volume Selector */}
           {volumes.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-start gap-2 flex-wrap">
               <span className="text-[13px] text-[#888] font-medium shrink-0">
-                {t("quantity")}
+                 {t("productVolume")}
               </span>
               {volumes.map((vol, idx) => (
                 <React.Fragment key={vol}>
