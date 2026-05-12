@@ -63,14 +63,12 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
 
   const handlePrevImage = (e) => {
     e.stopPropagation();
-    if (currentImageIndex === 0) return;
-    setCurrentImageIndex((prev) => prev - 1);
+    setCurrentImageIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   const handleNextImage = (e) => {
     e.stopPropagation();
-    if (currentImageIndex === slides.length - 1) return;
-    setCurrentImageIndex((prev) => prev + 1);
+    setCurrentImageIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
   const handleMouseEnter = () => {
@@ -125,17 +123,13 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
             <>
               <button
                 onClick={handlePrevImage}
-                disabled={currentImageIndex === 0}
-                className={`absolute left-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all 
-                  ${currentImageIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-70 hover:opacity-100 cursor-pointer'}`}
+                className="absolute left-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
               >
                 <IoChevronBack className="w-6 h-6 text-gray-800" />
               </button>
               <button
                 onClick={handleNextImage}
-                disabled={currentImageIndex === slides.length - 1}
-                className={`absolute right-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all
-                  ${currentImageIndex === slides.length - 1 ? 'opacity-50 cursor-not-allowed' : 'opacity-70 hover:opacity-100 cursor-pointer'}`}
+                className="absolute right-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
               >
                 <IoChevronForward className="w-6 h-6 text-gray-800" />
               </button>

@@ -464,7 +464,7 @@ export default function BioganceAmbassadorForm() {
             <div className="fixed top-0 left-0 right-0 z-50">
                 <Navbar />
             </div>
-            <div className=" bg-white p-12 mt-10">
+            <div className=" bg-white p-12 mt-20">
 
                 <div className="max-w-5xl mx-auto">
                     {/* Header */}

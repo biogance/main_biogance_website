@@ -4,6 +4,7 @@ import I18nProvider from "../Components/I18nProvider";
 import { RouteTopLoader } from "../Components/Pages/TopLoader";
 import { Suspense } from "react";
 import { Toaster } from 'react-hot-toast';
+import PageLoader from "../Components/PageLoader";
 
 export const metadata = {
   title: "Biogance - Biogance",
@@ -52,6 +53,7 @@ export default function RootLayout({ children }) {
       <body style={{ fontFamily: "'Inter', sans-serif" }} suppressHydrationWarning>
         <ReduxProvider>
           <I18nProvider>
+            <PageLoader />
             <Suspense fallback={null}><RouteTopLoader /></Suspense>
             <Toaster position="top-right" />
             {children}
