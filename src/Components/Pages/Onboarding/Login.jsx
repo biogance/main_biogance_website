@@ -7,6 +7,7 @@ import SignupModal from './SignUp';
 import Forgotpassword from './ForgetPassword';
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../../API/API';
+import { getDeviceId } from '../../../utils/deviceId';
 
 export default function LoginModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
@@ -130,7 +131,7 @@ export default function LoginModal({ isOpen, onClose }) {
           email: formData.email,
           password: formData.password,
           device: 'web',
-          device_id: 'web123',
+          device_id: getDeviceId(),
           fcm_token: null,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),

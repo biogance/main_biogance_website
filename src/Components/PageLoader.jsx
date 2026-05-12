@@ -72,11 +72,11 @@ export default function PageLoader() {
 
       <style>{`
         .logo-pulse {
-          animation: logoPulse 1.4s ease-in-out infinite;
+          animation: logoPulse 2s ease-in-out infinite;
         }
         @keyframes logoPulse {
           0%   { opacity: 1;   transform: scale(1); }
-          50%  { opacity: 0.3; transform: scale(0.92); }
+          50%  { opacity: 0.5; transform: scale(1); }
           100% { opacity: 1;   transform: scale(1); }
         }
       `}</style>

@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { BiChevronRight } from "react-icons/bi";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { MEDIA_URL } from "@/Components/API/API";
+import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { getDeviceId } from '../../../utils/deviceId';
 
 
 const FALLBACK_IMAGES = [
@@ -33,7 +36,7 @@ const ShimmerCard = () => (
   </div>
 );
 
-export default function LandingExpertAdvice({ data }) {
+export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
   const scrollContainerRef = useRef(null);
@@ -41,10 +44,60 @@ export default function LandingExpertAdvice({ data }) {
   const apiAdvice = data?.expert_advice || [];
   const isLoading = !data;
 
-  const [favorites, setFavorites] = useState({});
+  const [favorites, setFavorites] = useState(() =>
+    Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
+  );
+  const [loadingFav, setLoadingFav] = useState({});
   const [expanded, setExpanded] = useState({});
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const toggleFavorite = (id) => setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      window.addEventListener('resize', checkScrollPosition);
+      setTimeout(checkScrollPosition, 100);
+      return () => {
+        container.removeEventListener('scroll', checkScrollPosition);
+        window.removeEventListener('resize', checkScrollPosition);
+      };
+    }
+  }, [isLoading]);
+
+  const toggleFavorite = async (id) => {
+    if (loadingFav[id]) return;
+    setLoadingFav((prev) => ({ ...prev, [id]: true }));
+    try {
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const payload = {};
+      if (loginData?.data?.token) {
+        payload.token = loginData.data.token;
+      } else {
+        payload.device_id = getDeviceId();
+      }
+      const res = await axios.post(`${BASE_URL}/user/add/favorite/blog/${id}`, payload);
+      if (res.data.status === false) {
+        const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
+        toast.error(msg);
+      } else {
+        setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setLoadingFav((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
   const toggleExpanded = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const scroll = (direction) => {
@@ -68,28 +121,46 @@ export default function LandingExpertAdvice({ data }) {
   return (
     <section className="bg-white py-8 md:py-12 lg:py-16 px-4 md:px-6">
       <div className="max-w-10xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-start justify-between mb-8 md:mb-12 gap-6 md:gap-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-gray-900">
-              {t('expertAdvice.heading')}
-            </h2>
-            <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 max-w-2xl">
-              {t('expertAdvice.description')}
-            </p>
-            <a href="#" className="text-xs md:text-sm font-semibold text-black hover:underline inline-flex items-center gap-1">
-              {t('expertAdvice.discoverMore')}
-              <BiChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-            </a>
+        {!hideHeader && (
+          <div className="flex flex-col lg:flex-row items-start justify-between mb-8 md:mb-12 gap-6 md:gap-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-gray-900">
+                {t('expertAdvice.heading')}
+              </h2>
+              <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 max-w-2xl">
+                {t('expertAdvice.description')}
+              </p>
+              <a href="#" className="text-xs md:text-sm font-semibold text-black hover:underline inline-flex items-center gap-1">
+                {t('expertAdvice.discoverMore')}
+                <BiChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </a>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => scroll('prev')}
+                disabled={!canScrollLeft}
+                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollLeft
+                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={() => scroll('next')}
+                disabled={!canScrollRight}
+                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollRight
+                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => scroll('prev')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-            </button>
-            <button onClick={() => scroll('next')} className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-            </button>
-          </div>
-        </div>
+        )}
 
         <div className="relative overflow-hidden">
           <style>{`.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}</style>
@@ -101,7 +172,7 @@ export default function LandingExpertAdvice({ data }) {
                     const apiImagePath = article.images?.[0]?.media;
                     const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
                     const tags = (article.tags || []).slice(0, 3).map((tag) => tag.name);
-                    const isFav = favorites[article.id] || false;
+                    const isFav = favorites[article.id] ?? article.favorites_exists ?? false;
                     const isExp = expanded[article.id] || false;
 
                     const displayName = isFrench && article.french_name ? article.french_name : article.name;
@@ -116,8 +187,14 @@ export default function LandingExpertAdvice({ data }) {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
                           />
-                          <button onClick={() => toggleFavorite(article.id)} className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            {isFav ? <FaHeart className="w-4 h-4 md:w-5 md:h-5 text-black" /> : <FaRegHeart className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />}
+                          <button
+                            onClick={() => toggleFavorite(article.id)}
+                            className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                          >
+                            {isFav
+                              ? <FaHeart className="w-4 h-4 md:w-5 md:h-5 text-black" />
+                              : <FaRegHeart className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+                            }
                           </button>
                         </div>
 
