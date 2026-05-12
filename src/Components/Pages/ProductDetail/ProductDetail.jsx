@@ -26,6 +26,7 @@ import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
 import { useTopLoader } from "@/Components/Pages/TopLoader";
 
+
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
@@ -40,8 +41,12 @@ const StarRating = ({ rating }) => (
 
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
-  const allImages = firstProduct?.images?.map(img => `${MEDIA_URL}${img.media}`) || [""];
-  const videoUrl = firstProduct?.video ? `${MEDIA_URL}${firstProduct.video.media}` : null;
+  const allImages = firstProduct?.images?.map(
+    (img) => `${MEDIA_URL}${img.media}`,
+  ) || [""];
+  const videoUrl = firstProduct?.video
+    ? `${MEDIA_URL}${firstProduct.video.media}`
+    : null;
   return {
     id: product.id,
     name: product.name,
@@ -142,7 +147,6 @@ export default function ProductDetail() {
       : apiProduct?.description || "";
   const productType = apiProducts[0]?.type || "no-size-color";
 
- 
   const together1Products = apiProduct?.together1 || [];
   const together2Products = apiProduct?.together2 || [];
 
@@ -326,9 +330,12 @@ export default function ProductDetail() {
     router.push(`/product-detail?id=${productId}`);
   };
 
-  
-  const formattedTogether1 = together1Products.slice(0, 3).map(formatProductForCard);
-  const formattedTogether2 = together2Products.slice(0, 3).map(formatProductForCard);
+  const formattedTogether1 = together1Products
+    .slice(0, 3)
+    .map(formatProductForCard);
+  const formattedTogether2 = together2Products
+    .slice(0, 3)
+    .map(formatProductForCard);
 
   const isLoaded = apiProduct !== null;
 
@@ -377,11 +384,7 @@ export default function ProductDetail() {
         }}
       />
 
-      <Navbar
-        transparent={
-          isTransparent
-        }
-      />
+      <Navbar transparent={isTransparent} />
 
       <div
         ref={firstSectionRef}
@@ -544,11 +547,9 @@ export default function ProductDetail() {
                 <ShimmerLoader className="h-8 w-8 mb-7" />
                 <ShimmerLoader className="h-8 w-8 mb-7" />
               </div>
-              <ShimmerLoader className="h-8 w-22 mb-7" />
+             
               <div style={{ display: "flex", gap: "20px" }}>
-                <ShimmerLoader className="h-8 w-32 mb-7" />
-              </div>
-              <div style={{ display: "flex", gap: "20px" }}>
+                 <ShimmerLoader className="h-12 w-42 mb-7" />
                 <ShimmerLoader className="h-12 w-19/20 mb-7" />
                 <ShimmerLoader className="h-12 w-12 mb-7" />
               </div>
@@ -831,24 +832,18 @@ export default function ProductDetail() {
       )}
 
       {/* ── Video Section ── */}
-      {isLoaded && (apiProduct?.video_link || apiProduct?.french_video_link) && (
-        <div className="py-4 lg:py-12 px-6 lg:px-14">
-          <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
-            <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-            <p className="text-lg font-semibold text-[#1C1C1C]">
-              {t("watchBenefitsLive")}
-            </p>
-            <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
-          </div>
+      {isLoaded &&
+        (apiProduct?.video_link || apiProduct?.french_video_link) && (
+          <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-            <ProductVideo
-              videoLink={apiProduct?.video_link}
-              frenchVideoLink={apiProduct?.french_video_link}
-              isLoading={false}
-            />
+              <ProductVideo
+                videoLink={apiProduct?.video_link}
+                frenchVideoLink={apiProduct?.french_video_link}
+                isLoading={false}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* ── Together2 Products — More Products Explore ── */}
       {isLoaded && formattedTogether2.length > 0 && (
@@ -874,10 +869,7 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <ProductReviews
-        isLoading={!isLoaded}
-        apiProduct={apiProduct}
-      />
+      <ProductReviews isLoading={!isLoaded} apiProduct={apiProduct} />
 
       <ProductLoadMore
         isOpen={isLoadMoreOpen}
@@ -901,6 +893,8 @@ export default function ProductDetail() {
           onVolumeChange={handleVolumeSelect}
           volumes={uniqueSizes}
           isFooterVisible={isFooterVisible}
+          quantity={quantity}
+          onQuantityChange={setQuantity}
         />
       )}
     </div>

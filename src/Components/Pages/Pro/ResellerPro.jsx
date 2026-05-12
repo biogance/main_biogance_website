@@ -324,7 +324,7 @@ export function ResellerForm() {
              <div className="fixed top-0 left-0 right-0 z-50">
                     <Navbar />
                   </div>
-            <div className="max-w-4xl mx-auto px-6 py-16 mt-10">
+            <div className="max-w-4xl mx-auto px-6 py-16 mt-15">
                 {/* Form Header */}
                 <div className="mb-8">
                     <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
@@ -479,7 +479,7 @@ export function ResellerForm() {
                                     </div>
 
                                     {isOpen && (
-                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
+                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-1 max-h-80 overflow-hidden">
                                             <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
                                                 <input
                                                     type="text"

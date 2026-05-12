@@ -62,7 +62,7 @@ const getReviews = (t) => [
   },
 ];
 
-const INITIAL_VISIBLE = 3;
+const INITIAL_VISIBLE = 5;
 
 const StarRow = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -101,8 +101,9 @@ export default function ProductReviews({ isLoading, apiProduct }) {
 
   return (
     <div className="w-full bg-white">
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes shimmerMove {
             0%   { background-position: -600px 0; }
             100% { background-position:  600px 0; }
@@ -118,8 +119,9 @@ export default function ProductReviews({ isLoading, apiProduct }) {
             to   { opacity: 1; }
           }
           .reviews-fade-in { animation: reviewsFadeIn 0.4s ease forwards; }
-        `
-      }} />
+        `,
+        }}
+      />
 
       {/* Top Quote Banner */}
       {!isLoading && (
@@ -133,13 +135,14 @@ export default function ProductReviews({ isLoading, apiProduct }) {
       )}
 
       {/* Main Content: Two Columns */}
-      <div className="w-full flex flex-col lg:flex-row min-h-[520px]">
-
+      <div className="w-full flex flex-col lg:flex-row items-start">
         {/* LEFT: Reviews List */}
         <div className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-14 py-10 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">{t("userReviews")}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">
+              {t("userReviews")}
+            </h2>
             {!isLoading && (
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -153,7 +156,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
           {/* Review Items */}
           {isLoading ? (
             <div className="flex flex-col gap-6">
-              {[1, 2, 3].map((idx) => (
+              {[1, 2, 3, 4, 5].map((idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-2">
                     <ShimmerLoader className="h-4 w-16" />
@@ -208,8 +211,15 @@ export default function ProductReviews({ isLoading, apiProduct }) {
         </div>
 
         {/* RIGHT: Product Image */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-[#E1E1E1] relative items-center justify-center min-h-[420px] overflow-hidden">
-
+        <div
+          className="hidden lg:flex w-full lg:w-1/2 lg:sticky overflow-hidden items-center justify-center"
+          style={{
+            background: "#E1E1E1",
+            top: "104px",
+            height: "calc(100vh - 176px)",
+            alignSelf: "flex-start",
+          }}
+        >
           {/* State 1: Shimmer */}
           {isLoading && (
             <div className="shimmer-bg-reviews absolute inset-0 w-full h-full" />

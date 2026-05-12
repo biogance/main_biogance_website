@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
+
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
@@ -25,7 +27,7 @@ const getYouTubeEmbedUrl = (url) => {
 };
 
 export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
   const [iframeLoading, setIframeLoading] = useState(true);
   const iframeLoaded = useRef(false);
@@ -43,10 +45,16 @@ export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) 
   };
 
   return (
-    <div
-      className="relative w-full overflow-hidden bg-black"
-      style={{ aspectRatio: "16/9" }}
-    >
+    <>
+      <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
+        <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
+        <p className="text-lg font-semibold text-[#1C1C1C]">{t("watchBenefitsLive")}</p>
+        <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
+      </div>
+      <div
+        className="relative w-full overflow-hidden bg-black"
+        style={{ aspectRatio: "16/9" }}
+      >
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes shimmerMove {
@@ -101,6 +109,7 @@ export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) 
           title="Product Video"
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
