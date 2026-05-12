@@ -4,6 +4,10 @@ import { IoChevronBack, IoChevronForward, IoClose } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useTopLoader } from '../TopLoader';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
+import { getDeviceId } from '../../../utils/deviceId';
  
 
 // Loading Card Component
@@ -48,7 +52,36 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   const videoRef = useRef(null);
 
   const [isLiked, setIsLiked] = useState(product.liked || false);
+  const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [mediaLoading, setMediaLoading] = useState(false);
+
+  const handleFavorite = async (e) => {
+    e.stopPropagation();
+    if (loadingFav) return;
+    setLoadingFav(true);
+    try {
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const payload = {};
+      if (loginData?.data?.token) {
+        payload.token = loginData.data.token;
+      } else {
+        payload.device_id = getDeviceId();
+      }
+      const res = await axios.post(`${BASE_URL}/user/add/favorite/bundle/${product.id}`, payload);
+      if (res.data.status === false) {
+        const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
+        toast.error(msg);
+      } else {
+      
+        setIsLiked(prev => !prev);
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setLoadingFav(false);
+    }
+  };
 
   // slides: first image, then video (if any), then rest of images
   const firstImage = product.images?.[0];
@@ -82,13 +115,15 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   };
 
   useEffect(() => {
-    if (videoRef.current) {
-      if (slides[currentImageIndex]?.type === 'video') {
+    if (slides[currentImageIndex]?.type === 'video') {
+      setMediaLoading(true);
+      if (videoRef.current) {
         videoRef.current.currentTime = 0;
         videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
       }
+    } else {
+      setMediaLoading(false);
+      if (videoRef.current) videoRef.current.pause();
     }
   }, [currentImageIndex]);
 
@@ -108,7 +143,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
         )}
 
         <button
-          onClick={() => setIsLiked(!isLiked)}
+          onClick={handleFavorite}
           className="absolute top-3 right-3 cursor-pointer w-8 h-8 bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
         >
           {isLiked ? (
@@ -136,6 +171,19 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
             </>
           )}
 
+          {mediaLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-50">
+              <div style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                border: '3px solid rgba(0,0,0,.1)',
+                borderLeftColor: 'transparent',
+                animation: 'spin89345 1s linear infinite',
+              }} />
+            </div>
+          )}
+
           {currentSlide?.type === 'video' ? (
             <video
               ref={videoRef}
@@ -144,12 +192,15 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
               muted
               playsInline
               loop
+              onCanPlay={() => setMediaLoading(false)}
               onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
             />
           ) : (
             <img
               src={currentSlide?.url || product.image}
               alt={product.name}
+              onLoad={() => setMediaLoading(false)}
+              onError={() => setMediaLoading(false)}
               onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
               className={`cursor-pointer ${
                 currentImageIndex === 0
@@ -193,6 +244,7 @@ export default function PopularProducts({
   isFavourite = false, 
   isHorizontal = false,
   isBestSeller = false,
+  onTabChange,
   data
 }) {
   const { t } = useTranslation('home');
@@ -290,6 +342,7 @@ export default function PopularProducts({
           0% { background-position: -200px 0; } 
           100% { background-position: 200px 0; } 
         }
+        @keyframes spin89345 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hide-scrollbar { 
           -ms-overflow-style: none; 
           scrollbar-width: none; 
@@ -309,7 +362,6 @@ export default function PopularProducts({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
                 {t('products.wishlistTitle')}
- 
               </h1>
               <button className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-black transition-colors self-start cursor-pointer">
                 <IoClose className="w-5 h-5" />
@@ -319,26 +371,24 @@ export default function PopularProducts({
 
             <div className="flex gap-4 border-b border-gray-200">
               <button
-                onClick={() => setActiveTab('favorite')}
+                onClick={() => { setActiveTab('favorite'); onTabChange?.('favorite'); }}
                 className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
                   activeTab === 'favorite'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'
                 }`}
               >
-                 {t('products.favoriteProducts')}
- 
+                {t('products.favoriteProducts')}
               </button>
               <button
-                onClick={() => setActiveTab('advice')}
+                onClick={() => { setActiveTab('advice'); onTabChange?.('advice'); }}
                 className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
                   activeTab === 'advice'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-50'
                 }`}
               >
-                 {t('products.favoriteAdvices')}
- 
+                {t('products.favoriteAdvices')}
               </button>
             </div>
           </div>
@@ -379,7 +429,7 @@ export default function PopularProducts({
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   canScrollLeft
                     ? 'bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200'
-                    : 'bg-white border border-gray-300 text-gray-300   cursor-not-allowed'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
                 }`}
               >
                 <IoChevronBack className="w-5 h-5" />
@@ -390,10 +440,10 @@ export default function PopularProducts({
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   canScrollRight
                     ? 'bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200'
-                    : 'bg-white border border-gray-300 text-gray-300  cursor-not-allowed'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
                 }`}
               >
-                <IoChevronForward className="w-5 h-5 " />
+                <IoChevronForward className="w-5 h-5" />
               </button>
             </div>
           </div>

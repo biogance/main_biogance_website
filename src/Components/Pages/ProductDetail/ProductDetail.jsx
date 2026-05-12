@@ -56,7 +56,7 @@ const formatProductForCard = (product) => {
     image: allImages[0],
     images: allImages,
     videoUrl,
-    liked: false,
+    liked: false, 
   };
 };
 

@@ -63,8 +63,10 @@ export default function LogoutModal({
         toast.error(msg);
       } else {
         const rememberMe = localStorage.getItem('rememberMe');
+        const deviceId = localStorage.getItem('device_id');
         localStorage.clear();
         if (rememberMe) localStorage.setItem('rememberMe', rememberMe);
+        if (deviceId) localStorage.setItem('device_id', deviceId);
         dispatch(logout());
         router.push('/');
         onClose();
