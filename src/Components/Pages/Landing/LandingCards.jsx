@@ -481,7 +481,7 @@ export default function PopularProducts({
                     : "flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)]"
                 }
               >
-                <LandingCards product={product} showNav={!isFavourite} />
+                <LandingCards product={product} showNav={true} />
               </div>
             ))}
         </div>

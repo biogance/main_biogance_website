@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ThankYouModal from './ThankyouModal';
 import { useTranslation } from 'react-i18next';
+import toast, { Toaster } from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
 
 export function DistributorForm() {
     const { t } = useTranslation('pro');
@@ -222,13 +224,13 @@ export function DistributorForm() {
 
     const [errors, setErrors] = useState({});
 
-    const handleSubmit = (e) => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Clear previous errors
         setErrors({});
 
-        // Validate required fields
         const newErrors = {};
 
         if (!formData.companyName || formData.companyName.trim() === '') {
@@ -242,7 +244,6 @@ export function DistributorForm() {
         if (!formData.businessEmail || formData.businessEmail.trim() === '') {
             newErrors.businessEmail = 'Business email is required';
         } else {
-            // Email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.businessEmail)) {
                 newErrors.businessEmail = 'Please enter a valid email address';
@@ -253,35 +254,71 @@ export function DistributorForm() {
             newErrors.registrationNumber = 'Registration number is required';
         }
 
-        // Check if there are any errors
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        // Sab kuch sahi hai, modal show karo
-        console.log('Form submitted:', formData);
-        setShowModal(true);
-        setFormData({
-            companyName: '',
-            firstName: '',
-            businessEmail: '',
-            countryCode: '+33',
-            businessPhone: '',
-            registrationNumber: '',
-            website: '',
-            jobTitle: '',
-            salesReps: '',
-            address: '',
-            country: '',
-            city: '',
-            street: '',
-            zipCode: '',
-            brand: '',
-            geographicCoverage: '',
-            message: ''
-        });
+        try {
+            setIsLoading(true);
+            const res = await fetch(`${BASE_URL}/app/distributor`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.businessEmail,
+                    country_code: formData.countryCode,
+                    phone: `${formData.countryCode}${formData.businessPhone}`,
+                    phone_number: formData.businessPhone,
+                    register_number: formData.registrationNumber,
+                    website: formData.website,
+                    job_title: formData.jobTitle,
+                    no_of_sales: formData.salesReps,
+                    address: formData.address,
+                    country: formData.country,
+                    city: formData.city,
+                    street: formData.street,
+                    zipcode: formData.zipCode,
+                    brand: formData.brand,
+                    coverage: formData.geographicCoverage,
+                    message: formData.message,
+                    company_name: formData.companyName,
+                    first_name: formData.firstName,
+                    name: formData.firstName,
+                }),
+            });
+            const data = await res.json();
+            if (data.status === false || data.status === 'false' || !res.ok) {
+                const msg = data.errors?.length > 0 ? data.errors[0].message : (data.action || data.title || 'Something went wrong.');
+                toast.error(msg);
+            } else {
+                setShowModal(true);
+                setFormData({
+                    companyName: '',
+                    firstName: '',
+                    businessEmail: '',
+                    countryCode: '+33',
+                    businessPhone: '',
+                    registrationNumber: '',
+                    website: '',
+                    jobTitle: '',
+                    salesReps: '',
+                    address: '',
+                    country: '',
+                    city: '',
+                    street: '',
+                    zipCode: '',
+                    brand: '',
+                    geographicCoverage: '',
+                    message: ''
+                });
+            }
+        } catch (err) {
+            console.error('Distributor form error:', err);
+            toast.error('Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
     const handleCancel = () => {
         setFormData({
@@ -308,6 +345,7 @@ export function DistributorForm() {
 
     return (
         <>
+           <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
            <div className="fixed top-0 left-0 right-0 z-50">
                                <Navbar />
                              </div>
@@ -674,11 +712,11 @@ export function DistributorForm() {
                         </button> */}
                         <button
                             type="submit"
-                            onClick={handleSubmit}
-                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer "
-                            style={{ fontSize: '14px', fontWeight: 600  }}
+                            disabled={isLoading}
+                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            style={{ fontSize: '14px', fontWeight: 600 }}
                         >
-                            {t('distributorForm.buttons.submit')}
+                            {isLoading ? 'Submitting...' : t('distributorForm.buttons.submit')}
                         </button>
                     </div>
                 </form>

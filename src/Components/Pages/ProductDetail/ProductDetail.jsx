@@ -21,6 +21,7 @@ import { LandingCards } from "@/Components/Pages/Landing/LandingCards";
 import ProductVideo from "./ProductVideo";
 import ProductReviews from "./ProductReviews";
 import ProductLoadMore from "./ProductLoadMore";
+import ProductModalAddReview from "./ProductModalAddReview";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
@@ -92,6 +93,7 @@ export default function ProductDetail() {
   const loadedSlides = useRef(new Set());
   const currentSlideRef = useRef(0);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   const firstImageLoaded = useRef(false);
@@ -574,7 +576,7 @@ export default function ProductDetail() {
                   ({t("reviews")})
                 </button>
                 <button
-                  onClick={() => setIsLoadMoreOpen(true)}
+                  onClick={() => setIsReviewModalOpen(true)}
                   className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
                 >
                   {t("addReview")}
@@ -859,7 +861,7 @@ export default function ProductDetail() {
             {formattedTogether2.map((prod) => (
               <div
                 key={prod.id}
-                className="w-[350px] cursor-pointer"
+                className="w-[350px] cursor-pointer"  
                 onClick={() => handleProductCardClick(prod.id)}
               >
                 <LandingCards product={prod} showNav={true} />
@@ -874,6 +876,12 @@ export default function ProductDetail() {
       <ProductLoadMore
         isOpen={isLoadMoreOpen}
         onClose={() => setIsLoadMoreOpen(false)}
+      />
+
+      <ProductModalAddReview
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onSubmit={({ rating, feedback }) => console.log("Review submitted:", { rating, feedback })}
       />
 
       <div className="h-[72px]" />
