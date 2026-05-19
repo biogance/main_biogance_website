@@ -55,6 +55,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mediaLoading, setMediaLoading] = useState(false);
+  const [noTransition, setNoTransition] = useState(false);
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
@@ -94,14 +95,28 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
     ...restImages.map(url => ({ type: 'image', url })),
   ];
 
+  const goToSlide = (idx) => {
+    const total = slides.length;
+    if (total === 0) return;
+    if (idx < 0 || idx >= total) {
+      const target = (idx + total) % total;
+      setNoTransition(true);
+      setCurrentImageIndex(target);
+      requestAnimationFrame(() => requestAnimationFrame(() => setNoTransition(false)));
+    } else {
+      setNoTransition(false);
+      setCurrentImageIndex(idx);
+    }
+  };
+
   const handlePrevImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    goToSlide(currentImageIndex - 1);
   };
 
   const handleNextImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+    goToSlide(currentImageIndex + 1);
   };
 
   const handleMouseEnter = () => {
@@ -117,17 +132,17 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   useEffect(() => {
     if (slides[currentImageIndex]?.type === 'video') {
       setMediaLoading(true);
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(() => {});
-      }
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 50);
     } else {
       setMediaLoading(false);
       if (videoRef.current) videoRef.current.pause();
     }
   }, [currentImageIndex]);
-
-  const currentSlide = slides[currentImageIndex];
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -153,18 +168,18 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
           )}
         </button>
 
-        <div className="flex-1 flex items-center justify-center relative px-8 py-4 overflow-hidden rounded-2xl">
-          {showNav && slides.length > 1 && currentSlide?.type !== 'video' && (
+        <div className="flex-1 relative overflow-hidden rounded-2xl">
+          {showNav && slides.length > 1 && (
             <>
               <button
                 onClick={handlePrevImage}
-                className="absolute left-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
               >
                 <IoChevronBack className="w-6 h-6 text-gray-800" />
               </button>
               <button
                 onClick={handleNextImage}
-                className="absolute right-0 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
               >
                 <IoChevronForward className="w-6 h-6 text-gray-800" />
               </button>
@@ -184,40 +199,62 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
             </div>
           )}
 
-          {currentSlide?.type === 'video' ? (
-            <video
-              ref={videoRef}
-              src={currentSlide.url}
-              className="w-full h-full object-cover absolute inset-0 cursor-pointer"
-              muted
-              playsInline
-              loop
-              onCanPlay={() => setMediaLoading(false)}
-              onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-            />
-          ) : (
-            <img
-              src={currentSlide?.url || product.image}
-              alt={product.name}
-              onLoad={() => setMediaLoading(false)}
-              onError={() => setMediaLoading(false)}
-              onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-              className={`cursor-pointer ${
-                currentImageIndex === 0
-                  ? 'max-w-full max-h-full object-contain'
-                  : 'w-full h-full object-cover absolute inset-0'
-              }`}
-            />
-          )}
-        </div>
-
-        {slides.length > 1 && (
-          <div className={`${currentImageIndex === 0 ? 'flex justify-center gap-1 py-2' : 'absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10'}`}>
-            {slides.map((_, idx) => (
-              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-black' : 'bg-gray-300'}`} />
+          <div
+            style={{
+              display: 'flex',
+              width: '100%',
+              height: '100%',
+              transform: `translateX(-${currentImageIndex * 100}%)`,
+              transition: noTransition ? 'none' : 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            {slides.map((slide, idx) => (
+              <div
+                key={idx}
+                style={{ minWidth: '100%', height: '100%' }}
+              >
+                {slide.type === 'video' ? (
+                  <video
+                    ref={idx === currentImageIndex ? videoRef : null}
+                    src={slide.url}
+                    className="w-full h-full object-cover cursor-pointer"
+                    muted
+                    playsInline
+                    loop
+                    onCanPlay={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
+                    onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
+                  />
+                ) : (
+                  <img
+                    src={slide.url || product.image}
+                    alt={product.name}
+                    onLoad={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
+                    onError={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
+                    onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
+                    className="w-full h-full object-cover cursor-pointer"
+                  />
+                )}
+              </div>
             ))}
           </div>
-        )}
+
+          {slides.length > 1 && slides[currentImageIndex]?.type !== 'video' && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
+              {slides.map((_, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    width: idx === currentImageIndex ? '16px' : '6px',
+                    height: '6px',
+                    borderRadius: '9999px',
+                    backgroundColor: idx === currentImageIndex ? '#000' : 'rgba(255,255,255,0.8)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex-shrink-0">
@@ -264,8 +301,8 @@ export default function PopularProducts({
     french_name: item.french_name || '',
     price: item.price || (item.products?.[0]?.price) || '0',
     discount: item.discount || (item.products?.[0]?.off) || '',
-    image: item.image || (item.products?.[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : '/product1.svg'),
-    images: item.images || (item.products?.[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['/product1.svg']),
+    image: item.image || (item.products?.[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : ''),
+    images: item.images || (item.products?.[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['']),
     videoUrl: item.products?.[0]?.video?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].video.media}` : null,
     liked: item.liked ?? item.favorites_exists
   }));
