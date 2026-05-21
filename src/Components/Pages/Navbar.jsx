@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
@@ -7,6 +7,9 @@ import OurProducts from './Products/OurProducts';
 import LoginModal from './Onboarding/Login';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
+
+import { getDeviceId } from '../../utils/deviceId';
+import { BASE_URL } from '../API/API';
 
 const logoImage = '/logo.svg';
 
@@ -27,6 +30,22 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const { t, i18n } = useTranslation('navbar');
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [homeCategories, setHomeCategories] = useState([]);
+
+  useEffect(() => {
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    const payload = loginData?.data?.token
+      ? { token: loginData.data.token }
+      : { device_id: getDeviceId() };
+    fetch(`${BASE_URL}/web/home`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => { if (data.status) setHomeCategories(data.data.categories || []); })
+      .catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
@@ -336,6 +355,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
+        categories={homeCategories}
       />
 
       <OurProducts
