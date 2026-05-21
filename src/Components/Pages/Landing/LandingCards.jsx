@@ -169,7 +169,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
         </button>
 
         <div className="flex-1 relative overflow-hidden rounded-2xl">
-          {showNav && slides.length > 1 && (
+          {showNav && slides.length > 1 && slides[currentImageIndex]?.type !== 'video' && (
             <>
               <button
                 onClick={handlePrevImage}
