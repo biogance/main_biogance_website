@@ -44,7 +44,7 @@ const LoadingCard = () => (
   </div>
 );
 
-export const LandingCards = ({ product, showNav, squareCard }) => {
+export const LandingCards = ({ product, showNav, squareCard, index }) => {
   const { t, i18n } = useTranslation('home');
   const displayName = i18n.language === 'fr' && product.french_name ? product.french_name : product.name;
   const router = useRouter();
@@ -56,6 +56,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [noTransition, setNoTransition] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
@@ -84,14 +85,13 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
     }
   };
 
-  // slides: first image, then video (if any), then rest of images
+  // slides: only images (video will be shown as overlay on hover)
   const firstImage = product.images?.[0];
   const restImages = product.images?.slice(1) || [];
   const videoUrl = product.videoUrl || null;
 
   const slides = [
     ...(firstImage ? [{ type: 'image', url: firstImage }] : []),
-    ...(videoUrl ? [{ type: 'video', url: videoUrl }] : []),
     ...restImages.map(url => ({ type: 'image', url })),
   ];
 
@@ -121,16 +121,16 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
 
   const handleMouseEnter = () => {
     if (!videoUrl) return;
-    setCurrentImageIndex(1); // video is always at index 1
+    setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
     if (!videoUrl) return;
-    setCurrentImageIndex(0);
+    setIsHovered(false);
   };
 
   useEffect(() => {
-    if (slides[currentImageIndex]?.type === 'video') {
+    if (isHovered && videoUrl) {
       setMediaLoading(true);
       setTimeout(() => {
         if (videoRef.current) {
@@ -142,7 +142,7 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
       setMediaLoading(false);
       if (videoRef.current) videoRef.current.pause();
     }
-  }, [currentImageIndex]);
+  }, [isHovered, videoUrl]);
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -151,13 +151,34 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {product.discount && (
+        {/* Product Discount - API Version (Commented Out) */}
+        {/* {product.discount && (
           <div className="absolute top-3 left-3 bg-green-50 text-black border border-green-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
             {product.discount}
           </div>
+        )} */}
+
+        {/* Hardcoded Test Discounts */}
+        {index === 0 && !(isHovered && videoUrl) && (
+          <div className="absolute top-3 left-3 bg-emerald-700 text-white text-xs font-semibold  px-2 py-1 rounded-md z-10">
+            New
+          </div>
         )}
 
-        <button
+        {index === 1 && !(isHovered && videoUrl) && (
+          <div className="absolute top-3 left-3 bg-black text-white text-xs font-semibold px-2 py-1 rounded-md z-10">
+            Best
+          </div>
+        )}
+
+        {index === 2 && !(isHovered && videoUrl) && (
+          <div className="absolute top-3 left-3 bg-rose-700 text-white text-xs font-semibold px-2 py-1 rounded-md z-10">
+            -20%
+          </div>
+        )}
+
+        {/* Heart Icon - Commented Out */}
+        {/* <button
           onClick={handleFavorite}
           className="absolute top-3 right-3 cursor-pointer w-8 h-8 bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
         >
@@ -166,10 +187,17 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
           ) : (
             <FaRegHeart className="w-4 h-4 text-gray-700" />
           )}
-        </button>
+        </button> */}
+
+        {/* Exclusive Pro Badge */}
+        {!(isHovered && videoUrl) && (
+          <div className="absolute top-3 right-3 bg-white text-black border border-gray-200 text-xs font-semibold px-2 py-1 rounded-md z-10">
+            Exclusive Pro
+          </div>
+        )}
 
         <div className="flex-1 relative overflow-hidden rounded-2xl">
-          {showNav && slides.length > 1 && slides[currentImageIndex]?.type !== 'video' && (
+            {showNav && slides.length > 1 && !(isHovered && videoUrl) && (
             <>
               <button
                 onClick={handlePrevImage}
@@ -213,32 +241,33 @@ export const LandingCards = ({ product, showNav, squareCard }) => {
                 key={idx}
                 style={{ minWidth: '100%', height: '100%' }}
               >
-                {slide.type === 'video' ? (
-                  <video
-                    ref={idx === currentImageIndex ? videoRef : null}
-                    src={slide.url}
-                    className="w-full h-full object-cover cursor-pointer"
-                    muted
-                    playsInline
-                    loop
-                    onCanPlay={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
-                    onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-                  />
-                ) : (
-                  <img
-                    src={slide.url || product.image}
-                    alt={product.name}
-                    onLoad={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
-                    onError={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
-                    onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
-                    className="w-full h-full object-cover cursor-pointer"
-                  />
-                )}
+                <img
+                  src={slide.url || product.image}
+                  alt={product.name}
+                  onLoad={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
+                  onError={() => { if (idx === currentImageIndex) setMediaLoading(false); }}
+                  onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
+                  className="w-full h-full object-cover cursor-pointer"
+                />
               </div>
             ))}
           </div>
 
-          {slides.length > 1 && slides[currentImageIndex]?.type !== 'video' && (
+          {/* Video overlay - shows on hover without sliding */}
+          {isHovered && videoUrl && (
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="absolute inset-0 w-full h-full object-cover cursor-pointer rounded-2xl z-5"
+              muted
+              playsInline
+              loop
+              onCanPlay={() => setMediaLoading(false)}
+              onClick={() => { start(); router.push(`/product-detail?id=${product.id}`); }}
+            />
+          )}
+
+          {slides.length > 1 && !(isHovered && videoUrl) && (
             <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
               {slides.map((_, idx) => (
                 <div
@@ -509,8 +538,8 @@ export default function PopularProducts({
                 <LoadingCard />
               </div>
             ))
-            : products.map((product) => (
-              <div 
+            : products.map((product, index) => (
+                <div 
                 key={product.id} 
                 className={
                   isFavourite || isWishlist
@@ -518,9 +547,10 @@ export default function PopularProducts({
                     : "flex-shrink-0 w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)]"
                 }
               >
-                <LandingCards product={product} showNav={true} />
+                <LandingCards product={product} showNav={true} index={index} />
               </div>
-            ))}
+            ))
+          }
         </div>
       </div>
     </div>
