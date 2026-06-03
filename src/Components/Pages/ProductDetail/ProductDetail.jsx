@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FiHeart } from "react-icons/fi";
 import {
@@ -52,6 +52,8 @@ const formatProductForCard = (product) => {
     id: product.id,
     name: product.name,
     french_name: product.french_name,
+    english_seo_keyword: product.english_seo_keyword || product.english_seo_keyboard || '',
+    french_seo_keyword: product.french_seo_keyword || '',
     price: firstProduct?.price || product.price,
     discount: "",
     image: allImages[0],
@@ -70,7 +72,8 @@ export default function ProductDetail() {
   const router = useRouter();
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
-  const productId = searchParams.get("id");
+  const params = useParams();
+  const productId = searchParams.get("id") || params?.slug;
   const { start } = useTopLoader();
   const descriptionRef = useRef(null);
 
@@ -125,7 +128,7 @@ export default function ProductDetail() {
     fetch(`${BASE_URL}/product/detail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ device_id: "Abc", id: productId }),
+      body: JSON.stringify({ device_id: "Abc", seo_keyword: productId }),
     })
       .then((res) => res.json())
       .then((json) => {
@@ -353,10 +356,11 @@ export default function ProductDetail() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleProductCardClick = (productId) => {
+  const handleProductCardClick = (prod) => {
     start();
     window.scrollTo({ top: 0, behavior: "smooth" });
-    router.push(`/product-detail?id=${productId}`);
+    const slug = i18n.language === 'fr' ? prod.french_seo_keyword : prod.english_seo_keyword;
+    router.push(`/product/${slug || prod.id}`);
   };
 
   const formattedTogether1 = together1Products
@@ -422,7 +426,7 @@ export default function ProductDetail() {
         {/* ── LEFT: Image Section ── */}
         <div
           className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
-          style={{ background: "#E1E1E1" }}
+          style={{ background: "#f3f3f3" }}
         >
           {!isLoaded && (
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
@@ -853,7 +857,7 @@ export default function ProductDetail() {
               <div
                 key={prod.id}
                 className="w-[350px] cursor-pointer"
-                onClick={() => handleProductCardClick(prod.id)}
+                onClick={() => handleProductCardClick(prod)}
               >
                 <LandingCards product={prod} showNav={true} />
               </div>
@@ -891,7 +895,7 @@ export default function ProductDetail() {
               <div
                 key={prod.id}
                 className="w-[350px] cursor-pointer"  
-                onClick={() => handleProductCardClick(prod.id)}
+                onClick={() => handleProductCardClick(prod)}
               >
                 <LandingCards product={prod} showNav={true} />
               </div>

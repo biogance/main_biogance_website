@@ -108,7 +108,7 @@ const LoadingProductItem = () => (
   </div>
 );
 
-const SearchTags = ({ items, label }) => (
+const SearchTags = ({ items, label, onSelect }) => (
   <div className="mb-8 max-w-4xl mx-auto">
     <h3 className="text-sm font-medium text-gray-800 mb-4">{label}</h3>
     <div className="flex flex-wrap gap-2">
@@ -119,6 +119,8 @@ const SearchTags = ({ items, label }) => (
         return (
           <button
             key={index}
+            type="button"
+            onClick={() => onSelect?.(item)}
             title={item}
             className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
           >
@@ -149,10 +151,11 @@ const ProductItem = ({ product, onNavigate }) => {
   const firstImage = product.products?.[0]?.images?.[0];
   const imageUrl = firstImage ? `${MEDIA_URL}${firstImage.media}` : null;
   const displayName = i18n.language === 'fr' ? product.french_name || product.name : product.name;
+  const slug = i18n.language === 'fr' ? product.french_seo_keyword : (product.english_seo_keyword || product.english_seo_keyboard);
 
   return (
     <div
-      onClick={() => onNavigate(product.id)}
+      onClick={() => onNavigate(slug || product.id)}
       className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors cursor-pointer">
       <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
         {imageUrl ? (
@@ -198,9 +201,14 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
   const [searchTags, setSearchTags] = useState([]);
   const [searchTagsLabel, setSearchTagsLabel] = useState('');
 
-  const handleNavigate = (productId) => {
+  const handleNavigate = (slug) => {
     onClose();
-    router.push(`/product-detail?id=${productId}`);
+    router.push(`/product/${slug}`);
+  };
+
+  const handleTagSearch = (term) => {
+    onClose();
+    router.push(`/shop?source=search&q=${encodeURIComponent(term)}`);
   };
 
   useEffect(() => {
@@ -268,11 +276,15 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
         {/* Content */}
         <div className="p-8">
           {/* Search Bar */}
-          <SearchBar key={isOpen ? 'open' : 'closed'} categories={categories} />
+          <SearchBar
+            key={isOpen ? 'open' : 'closed'}
+            categories={categories}
+            onSearchComplete={onClose}
+          />
 
           {/* Recent or Trending Searches */}
           {searchTags.length > 0 && (
-            <SearchTags items={searchTags} label={searchTagsLabel} />
+            <SearchTags items={searchTags} label={searchTagsLabel} onSelect={handleTagSearch} />
           )}
 
           {/* Products Grid */}
