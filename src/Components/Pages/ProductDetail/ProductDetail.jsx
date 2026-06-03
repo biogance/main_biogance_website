@@ -95,6 +95,7 @@ export default function ProductDetail() {
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [isFetchingProduct, setIsFetchingProduct] = useState(true);
 
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
@@ -104,6 +105,23 @@ export default function ProductDetail() {
   // ─── Fetch product detail ───────────────────────────────────────────────────
   useEffect(() => {
     if (!productId) return;
+
+    setIsFetchingProduct(true);
+    setApiProduct(null);
+    setSelectedProductIdx(0);
+    setSelectedVolume(null);
+    setSelectedColor(null);
+    setCurrentSlide(0);
+    setImageLoading(true);
+    setSlideLoading(false);
+    setReadMore(false);
+    setCurrentShipping(0);
+    setShowSticky(false);
+    setIsFooterVisible(false);
+    loadedSlides.current = new Set();
+    firstImageLoaded.current = false;
+    currentSlideRef.current = 0;
+
     fetch(`${BASE_URL}/product/detail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -113,6 +131,7 @@ export default function ProductDetail() {
       .then((json) => {
         if (json.status) {
           setApiProduct(json.data);
+          setIsFetchingProduct(false);
           setSelectedProductIdx(0);
           const firstProduct = json.data.products?.[0];
           if (
@@ -128,12 +147,16 @@ export default function ProductDetail() {
             setSelectedColor(firstProduct.color_name);
           }
         } else {
+          setIsFetchingProduct(false);
           toast.error(
             json.action_message || json.action || "Something went wrong.",
           );
         }
       })
-      .catch((err) => console.error("API Error:", err));
+      .catch((err) => {
+        setIsFetchingProduct(false);
+        console.error("API Error:", err);
+      });
   }, [productId]);
 
   // ─── Derived values ─────────────────────────────────────────────────────────
@@ -225,10 +248,13 @@ export default function ProductDetail() {
   // ─── Scroll handler — sticky cart visibility ────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
-      if (cartBtnRef.current) {
-        const rect = cartBtnRef.current.getBoundingClientRect();
-        setShowSticky(rect.bottom < 0);
-      }
+      if (!cartBtnRef.current) return;
+
+      const rect = cartBtnRef.current.getBoundingClientRect();
+      const isButtonOutOfView =
+        rect.bottom < 0 || rect.top > window.innerHeight;
+
+      setShowSticky(isButtonOutOfView && window.scrollY > 80);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -329,6 +355,7 @@ export default function ProductDetail() {
 
   const handleProductCardClick = (productId) => {
     start();
+    window.scrollTo({ top: 0, behavior: "smooth" });
     router.push(`/product-detail?id=${productId}`);
   };
 
@@ -339,7 +366,7 @@ export default function ProductDetail() {
     .slice(0, 3)
     .map(formatProductForCard);
 
-  const isLoaded = apiProduct !== null;
+  const isLoaded = !isFetchingProduct && apiProduct !== null;
 
   return (
     <div className="w-full bg-white">
@@ -425,7 +452,9 @@ export default function ProductDetail() {
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {infiniteSlides.map((slide, idx) => {
-                  const useContain = slide.isFirst && isTransparentProduct;
+                  const useContain =
+                    (slide.isFirst && isTransparentProduct) ||
+                    idx === infiniteSlides.length - 1;
                   return (
                     <div
                       key={idx}
@@ -513,7 +542,7 @@ export default function ProductDetail() {
                   className={`rounded-full transition-all duration-700 ${
                     currentSlide === idx
                       ? "w-8 h-2 bg-gray-800"
-                      : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                      : "w-2 h-2 bg-gray-400 hover:bg-gray-400"
                   }`}
                 />
               ))}

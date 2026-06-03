@@ -58,6 +58,8 @@ export default function LandingReview({ data }) {
   const scrollContainerRef = useRef(null);
 
   const apiReviews = data?.reviews || [];
+  const hasCache = typeof window !== 'undefined' && !!localStorage.getItem('homePageData');
+  const showShimmer = apiReviews.length === 0 && !hasCache;
 
   const readMore = t('reviews.readMore');
   const showLess = t('reviews.showLess');
@@ -99,8 +101,7 @@ export default function LandingReview({ data }) {
                       googleAlt={googleAlt}
                     />
                   ))
-                : // Skeleton placeholders while loading
-                  Array.from({ length: 3 }).map((_, i) => (
+                : showShimmer && Array.from({ length: 3 }).map((_, i) => (
                     <div
                       key={i}
                       className="bg-white rounded-xl p-4 md:p-6 border border-gray-200 flex-shrink-0 w-[85vw] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] space-y-3"

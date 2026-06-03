@@ -42,7 +42,8 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const scrollContainerRef = useRef(null);
 
   const apiAdvice = data?.expert_advice || [];
-  const isLoading = !data;
+  const hasCache = typeof window !== 'undefined' && !!localStorage.getItem('homePageData');
+  const isLoading = !data && !hasCache;
 
   const [favorites, setFavorites] = useState(() =>
     Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
