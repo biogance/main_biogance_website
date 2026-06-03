@@ -43,16 +43,29 @@ export default function PageLoader() {
       }
     } else {
       const isValid = VALID_ROUTES.some(
-        (r) => pathname === r || pathname.startsWith(r + "/")
+        (r) => pathname === r || pathname.startsWith(r + "/"),
       );
       if (!isValid) {
         router.replace("/");
       }
     }
 
-    const timer = setTimeout(() => setVisible(false), 1800);
+    const hideLoader = () => setVisible(false);
+
+    if (pathname === "/") {
+      window.addEventListener("biogance-home-ready", hideLoader, {
+        once: true,
+      });
+      const fallbackTimer = setTimeout(hideLoader, 6000);
+      return () => {
+        window.removeEventListener("biogance-home-ready", hideLoader);
+        clearTimeout(fallbackTimer);
+      };
+    }
+
+    const timer = setTimeout(hideLoader, 1800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [pathname, router]);
 
   if (!visible) return null;
 
@@ -68,7 +81,12 @@ export default function PageLoader() {
         justifyContent: "center",
       }}
     >
-      <img src="/logo.svg" alt="Biogance" className="logo-pulse" style={{ height: "48px" }} />
+      <img
+        src="/logo.svg"
+        alt="Biogance"
+        className="logo-pulse"
+        style={{ height: "48px" }}
+      />
 
       <style>{`
         .logo-pulse {
