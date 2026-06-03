@@ -41,9 +41,26 @@ const heroSlides = [
   },
 ];
 
+const VIDEO_CACHE = "biogance-videos-v1";
+
+const preloadHeroVideos = () => {
+  if (typeof window === "undefined" || !('caches' in window)) return;
+  heroSlides
+    .filter((s) => s.type === "video")
+    .forEach(async ({ url }) => {
+      try {
+        const cache = await caches.open(VIDEO_CACHE);
+        const existing = await cache.match(url);
+        if (!existing) await cache.add(url);
+      } catch (_) {}
+    });
+};
+
 export default function HeroSection() {
   const { t } = useTranslation('home');
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => { preloadHeroVideos(); }, []);
   const [apiData, setApiData] = useState(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('homePageData');

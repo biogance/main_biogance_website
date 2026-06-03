@@ -8,9 +8,11 @@ import toast, { Toaster } from "react-hot-toast";
 import { getDeviceId } from "../../../utils/deviceId";
 import { BiLoaderAlt } from "react-icons/bi";
 import { TbLoader3 } from "react-icons/tb";
+import { useRouter } from "next/navigation";
 
-const SearchBar = ({ categories: categoriesProp = [] }) => {
+const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
   const { t, i18n } = useTranslation("searchmodal");
+  const router = useRouter();
   const language = i18n.language;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -68,6 +70,14 @@ const SearchBar = ({ categories: categoriesProp = [] }) => {
 
     setShowSuggestions(false);
     setIsSearching(true);
+
+    const params = new URLSearchParams({
+      source: "search",
+      q: searchKeyword.trim(),
+    });
+
+    router.push(`/shop?${params.toString()}`);
+    onSearchComplete?.();
 
     const loginData = localStorage.getItem("LoginData");
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
