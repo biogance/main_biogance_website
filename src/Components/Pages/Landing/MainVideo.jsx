@@ -1,80 +1,86 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
-import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
-import Navbar from '../Navbar';
-import LandingCards from './LandingCards';
-import { LandingFeatures } from './LandingFeatures';
-import { LandingProductFinder } from './LandingProductFinder';
-import LandingExpertAdvice from './LandingExpertAdvice';
-import LandingReview from './LandingReview';
-import LandingBanner from './LandingBanner';
-import Footer from '../Footer';
-import LandingCategories from './LandingCategories';
-import { useTranslation } from 'react-i18next';
-import { BASE_URL, MEDIA_URL } from '../../API/API';
-import { getDeviceId } from '../../../utils/deviceId';
+import React, { useState, useEffect } from "react";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import Navbar from "../Navbar";
+import LandingCards from "./LandingCards";
+import { LandingFeatures } from "./LandingFeatures";
+import { LandingProductFinder } from "./LandingProductFinder";
+import LandingExpertAdvice from "./LandingExpertAdvice";
+import LandingReview from "./LandingReview";
+import LandingBanner from "./LandingBanner";
+import Footer from "../Footer";
+import LandingCategories from "./LandingCategories";
+import { useTranslation } from "react-i18next";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getDeviceId } from "../../../utils/deviceId";
 
 const heroSlides = [
   {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1920&q=80',
+    type: "image",
+    url: "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1920&q=80",
   },
   {
-    type: 'video',
-    url: '/LandingVideo.mp4',
+    type: "video",
+    url: "/LandingVideo.mp4",
   },
   {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1920&q=80',
+    type: "image",
+    url: "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1920&q=80",
   },
   {
-    type: 'video',
-    url: '/LandingVideo.mp4',
+    type: "video",
+    url: "/LandingVideo.mp4",
   },
   {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1920&q=80',
+    type: "image",
+    url: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1920&q=80",
   },
 ];
 
 export default function HeroSection() {
-  const { t } = useTranslation('home');
+  const { t } = useTranslation("home");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [apiData, setApiData] = useState(null);
-  
+
   const slides = heroSlides;
   const hasMultipleSlides = slides.length > 1;
 
   useEffect(() => {
-    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
     const payload = {};
     if (loginData?.data?.token) {
       payload.token = loginData.data.token;
     } else {
       payload.device_id = getDeviceId();
     }
-    axios.post(`${BASE_URL}/web/home`, payload)
-      .then(res => {
+
+    axios
+      .post(`${BASE_URL}/web/home`, payload)
+      .then((res) => {
         if (res.data.status === false) {
           toast.error(res.data.action);
+          setApiData(null);
         } else {
           setApiData(res.data.data);
         }
       })
-      .catch(err => console.error('API Error:', err));
+      .catch((err) => {
+        console.error("API Error:", err);
+        setApiData(null);
+      });
   }, []);
 
   const heroContent = {
-    tagline: t('hero.tagline'),
-    heading: t('hero.heading'),
-    description: t('hero.description'),
+    tagline: t("hero.tagline"),
+    heading: t("hero.heading"),
+    description: t("hero.description"),
   };
 
   const currentSlideData = slides[currentSlide];
-  const isCurrentVideo = currentSlideData.type === 'video';
+  const isCurrentVideo = currentSlideData.type === "video";
 
   // Auto-scroll functionality
   React.useEffect(() => {
@@ -123,8 +129,8 @@ export default function HeroSection() {
               autoPlay
               loop
               playsInline
-              onError={(e) => console.error('Video error:', e)}
-              onLoadedData={() => console.log('Video loaded successfully')}
+              onError={(e) => console.error("Video error:", e)}
+              onLoadedData={() => console.log("Video loaded successfully")}
             >
               <source src={currentSlideData.url} type="video/mp4" />
               Your browser does not support the video tag.
@@ -133,11 +139,11 @@ export default function HeroSection() {
             <div
               className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-all duration-700"
               style={{
-                backgroundImage: `url(${currentImageUrl})`
+                backgroundImage: `url(${currentImageUrl})`,
               }}
             ></div>
           )}
-          
+
           {/* Dark Overlay */}
           <div className="absolute inset-0 bg-black/40"></div>
 
@@ -163,10 +169,10 @@ export default function HeroSection() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <button className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
-                    {t('hero.shopNow')}
+                    {t("hero.shopNow")}
                   </button>
                   <button className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
-                    {t('hero.discover')}
+                    {t("hero.discover")}
                   </button>
                 </div>
               </div>
@@ -179,19 +185,25 @@ export default function HeroSection() {
               {/* Desktop Navigation */}
               <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
                 <div className="flex items-center gap-3 lg:gap-4">
-                  <button 
+                  <button
                     onClick={goToPrevious}
-                    aria-label="Previous slide" 
+                    aria-label="Previous slide"
                     className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
                   >
-                    <MdKeyboardArrowLeft size={24} className="lg:w-[30px] lg:h-[30px]" />
+                    <MdKeyboardArrowLeft
+                      size={24}
+                      className="lg:w-[30px] lg:h-[30px]"
+                    />
                   </button>
-                  <button 
+                  <button
                     onClick={goToNext}
-                    aria-label="Next slide" 
+                    aria-label="Next slide"
                     className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
                   >
-                    <MdKeyboardArrowRight size={24} className="lg:w-[30px] lg:h-[30px]" />
+                    <MdKeyboardArrowRight
+                      size={24}
+                      className="lg:w-[30px] lg:h-[30px]"
+                    />
                   </button>
                 </div>
 
@@ -202,8 +214,8 @@ export default function HeroSection() {
                       onClick={() => goToSlide(index)}
                       className={`cursor-pointer rounded-full transition-all duration-300 ${
                         index === currentSlide
-                          ? 'w-8 lg:w-10 h-2 bg-white'
-                          : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                          ? "w-8 lg:w-10 h-2 bg-white"
+                          : "w-2 h-2 bg-white/50 hover:bg-white/70"
                       }`}
                     ></div>
                   ))}
@@ -214,16 +226,16 @@ export default function HeroSection() {
               <div className="md:hidden absolute bottom-6 right-6 z-20">
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <button 
+                    <button
                       onClick={goToPrevious}
-                      aria-label="Previous slide" 
+                      aria-label="Previous slide"
                       className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
                     >
                       <MdKeyboardArrowLeft size={24} />
                     </button>
-                    <button 
+                    <button
                       onClick={goToNext}
-                      aria-label="Next slide" 
+                      aria-label="Next slide"
                       className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
                     >
                       <MdKeyboardArrowRight size={24} />
@@ -237,8 +249,8 @@ export default function HeroSection() {
                         onClick={() => goToSlide(index)}
                         className={`cursor-pointer rounded-full transition-all duration-300 ${
                           index === currentSlide
-                            ? 'w-8 h-2 bg-white'
-                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                            ? "w-8 h-2 bg-white"
+                            : "w-2 h-2 bg-white/50 hover:bg-white/70"
                         }`}
                       ></div>
                     ))}
@@ -251,14 +263,22 @@ export default function HeroSection() {
       </main>
 
       {/* Sections */}
-      <LandingCategories data={apiData} />
-      <LandingCards data={apiData} />
-      <LandingFeatures data={apiData} />
-      <LandingProductFinder data={apiData} />
-      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} />
-      <LandingExpertAdvice data={apiData} />
-      <LandingReview data={apiData} />
-      <LandingBanner data={apiData} />
+      {apiData && (
+        <>
+          <LandingCategories data={apiData} />
+          <LandingCards data={apiData} />
+          <LandingFeatures data={apiData} />
+          <LandingProductFinder data={apiData} />
+          <LandingCards
+            title="Best Selling"
+            isBestSeller={true}
+            data={apiData}
+          />
+          <LandingExpertAdvice data={apiData} />
+          <LandingReview data={apiData} />
+          <LandingBanner data={apiData} />
+        </>
+      )}
       <Footer />
     </>
   );
