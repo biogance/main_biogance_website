@@ -476,15 +476,18 @@ export default function FilterProducts() {
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isFetchingRef.current && page < lastPage) {
-          setPage(prev => prev + 1);
+        if (entry.isIntersecting && !isFetchingRef.current) {
+          setPage(prev => {
+            if (prev < lastPage) return prev + 1;
+            return prev;
+          });
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [page, lastPage]);
+  }, [lastPage]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -557,26 +560,29 @@ export default function FilterProducts() {
   }, [query, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds]);
 
   const prevFiltersRef = useRef(filtersSerialized);
-  const initialSearchDoneRef = useRef(false);
+  const prevPageRef = useRef(page);
 
   useEffect(() => {
     if (!apiData) return;
 
     // Detect if filters changed, reset page to 1
     let targetPage = page;
-    if (prevFiltersRef.current !== filtersSerialized) {
+    const filtersChanged = prevFiltersRef.current !== filtersSerialized;
+    const pageChanged = prevPageRef.current !== page;
+
+    if (filtersChanged) {
       prevFiltersRef.current = filtersSerialized;
       targetPage = 1;
       setPage(1);
       setHasSearched(false);
       searchedProductsRef.current = [];
       setSearchedProducts([]);
-    } else if (initialSearchDoneRef.current) {
-      // apiData refreshed but filters didn't change — don't re-fire
+    } else if (!pageChanged) {
+      // apiData refreshed but nothing changed — don't re-fire
       return;
     }
 
-    initialSearchDoneRef.current = true;
+    prevPageRef.current = targetPage;
 
     if (targetPage === 1) {
       setIsSearching(true);
