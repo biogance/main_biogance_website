@@ -97,10 +97,10 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
     // Set default volume/color from first product
     const firstP = apiProducts[0];
     if (firstP?.type === "size" || firstP?.type === "size-color") {
-      setSelectedVolume(firstP.size || null);
+      setSelectedVolume(firstP.size_name || null);
     }
     if (firstP?.type === "color" || firstP?.type === "size-color") {
-      setSelectedColor(firstP.color || null);
+      setSelectedColor(firstP.color_name || null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, rawBundleData?.id]);
@@ -126,8 +126,8 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
   const displayPrice = selectedProduct?.price || rawBundleData?.price || "0";
   const productType = apiProducts[0]?.type || "no-size-color";
 
-  const uniqueSizes = [...new Set(apiProducts.filter((p) => p.size).map((p) => p.size))];
-  const uniqueColors = [...new Set(apiProducts.filter((p) => p.color).map((p) => p.color))];
+  const uniqueSizes = [...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name))];
+  const uniqueColors = [...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name))];
 
   const slides = buildSlides(selectedProduct);
   const isLoaded = hasFullData;
@@ -175,13 +175,13 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
   // ─── Handlers ────────────────────────────────────────────────────────────────
   const handleVolumeSelect = (sizeName) => {
     setSelectedVolume(sizeName);
-    const idx = apiProducts.findIndex((p) => p.size === sizeName);
+    const idx = apiProducts.findIndex((p) => p.size_name === sizeName);
     if (idx !== -1) setSelectedProductIdx(idx);
   };
 
   const handleColorSelect = (colorName) => {
     setSelectedColor(colorName);
-    const idx = apiProducts.findIndex((p) => p.color === colorName);
+    const idx = apiProducts.findIndex((p) => p.color_name === colorName);
     if (idx !== -1) setSelectedProductIdx(idx);
   };
 
@@ -247,7 +247,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
           style={{
             position: "relative", backgroundColor: "#fff", borderRadius: "16px",
             overflow: "hidden", width: "100%", maxWidth: "900px",
-            height: "50vh", maxHeight: "90vh",
+            height: "60vh", maxHeight: "90vh",
             display: "flex", flexDirection: "row",
             animation: "quickViewFadeIn 0.3s ease",
             boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
@@ -442,11 +442,33 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                   <div style={{ marginBottom: "18px" }}>
                     <p style={{ fontSize: "13px", fontWeight: 600, color: "#1C1C1C", marginBottom: "10px" }}>{t("productVolume")}</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                      {uniqueSizes.map((size) => (
-                        <button key={size} onClick={() => handleVolumeSelect(size)} style={{ padding: "8px 20px", borderRadius: "10px", fontSize: "13px", fontWeight: 500, cursor: "pointer", border: selectedVolume === size ? "1.5px solid #1C1C1C" : "1.5px solid #E8E8E8", backgroundColor: selectedVolume === size ? "#1C1C1C" : "#fff", color: selectedVolume === size ? "#fff" : "#1C1C1C", transition: "all 0.2s", outline: selectedVolume === size ? "1px solid #1C1C1C" : "none", outlineOffset: "1px" }}>
-                          {size}
-                        </button>
-                      ))}
+                     {uniqueSizes.map((size) => (
+  <button
+    key={size}
+    onClick={() => handleVolumeSelect(size)}
+    style={{
+      padding: "7px 18px",
+      borderRadius: "8px",
+      fontSize: "13px",
+      fontWeight: 500,
+      cursor: "pointer",
+      border: selectedVolume === size
+        ? "1.5px solid #1C1C1C"
+        : "1.5px solid #E8E8E8",
+      backgroundColor: selectedVolume === size ? "#1C1C1C" : "#fff",
+      color: selectedVolume === size ? "#fff" : "#1C1C1C",
+      transition: "all 0.2s",
+      outline: "none",        // ← yeh hata do
+      boxShadow: "none",      // ← koi shadow nahi
+      lineHeight: "1.2",      // ← tight line height
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    {size}
+  </button>
+))}
                     </div>
                   </div>
                 )}
