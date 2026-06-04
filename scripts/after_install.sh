@@ -11,4 +11,4 @@ sudo rm -rf .next
 #Install_node_modules_&_Make_React_Build
 sudo pnpm install --force
 sudo npm run build
-pm2 restart "biogance web" --update-env
+pm2 reload "biogance web" --update-env

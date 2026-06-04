@@ -42,24 +42,35 @@ const StarRating = ({ rating }) => (
 
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
-  const allImages = firstProduct?.images?.map(
-    (img) => `${MEDIA_URL}${img.media}`,
-  ) || [""];
-  const videoUrl = firstProduct?.video
+  // images array — filter out video type entries
+  const allImages = firstProduct?.images
+    ?.filter((img) => img.type !== "video")
+    .map((img) => `${MEDIA_URL}${img.media}`) || [""];
+  const videoUrl = firstProduct?.video?.media
     ? `${MEDIA_URL}${firstProduct.video.media}`
     : null;
+  // together1/together2 items use english_seo_keyboard (typo in API)
+  const englishSlug =
+    product.english_seo_keyword ||
+    product.english_seo_keyboard ||
+    "";
+  const frenchSlug =
+    product.french_seo_keyword ||
+    product.french_seo_keyboard ||
+    "";
   return {
     id: product.id,
     name: product.name,
-    french_name: product.french_name,
-    english_seo_keyword: product.english_seo_keyword || product.english_seo_keyboard || '',
-    french_seo_keyword: product.french_seo_keyword || '',
-    price: firstProduct?.price || product.price,
-    discount: "",
-    image: allImages[0],
-    images: allImages,
+    french_name: product.french_name || product.name,
+    english_seo_keyword: englishSlug,
+    french_seo_keyword: frenchSlug,
+    price: firstProduct?.price || product.price || "0",
+    discount: firstProduct?.off || "",
+    image: allImages[0] || "",
+    images: allImages.length > 0 ? allImages : [""],
     videoUrl,
-    liked: false, 
+    liked: product.favorites_exists || false,
+    productsCount: product.products?.length || 1,
   };
 };
 
@@ -854,11 +865,7 @@ export default function ProductDetail() {
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
             {formattedTogether1.map((prod) => (
-              <div
-                key={prod.id}
-                className="w-[350px] cursor-pointer"
-                onClick={() => handleProductCardClick(prod)}
-              >
+              <div key={prod.id} className="w-[350px]">
                 <LandingCards product={prod} showNav={true} />
               </div>
             ))}
@@ -892,11 +899,7 @@ export default function ProductDetail() {
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
             {formattedTogether2.map((prod) => (
-              <div
-                key={prod.id}
-                className="w-[350px] cursor-pointer"  
-                onClick={() => handleProductCardClick(prod)}
-              >
+              <div key={prod.id} className="w-[350px]">
                 <LandingCards product={prod} showNav={true} />
               </div>
             ))}
