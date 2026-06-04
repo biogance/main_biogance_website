@@ -1,11 +1,15 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
 import LoginModal from './Onboarding/Login';
 import { useTranslation } from 'react-i18next';
+import { FaPlus } from 'react-icons/fa';
+
+import { getDeviceId } from '../../utils/deviceId';
+import { BASE_URL } from '../API/API';
 
 const logoImage = '/logo.svg';
 
@@ -24,7 +28,29 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 
 export default function Navbar({ transparent = false, announcementVisible = false }) {
   const { t, i18n } = useTranslation('navbar');
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [homeCategories, setHomeCategories] = useState([]);
+
+  useEffect(() => {
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    const payload = loginData?.data?.token
+      ? { token: loginData.data.token }
+      : { device_id: getDeviceId() };
+    fetch(`${BASE_URL}/web/home`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => { if (data.status) setHomeCategories(data.data.categories || []); })
+      .catch(() => {});
+  }, []);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowAnnouncement(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -62,6 +88,16 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   return (
     <>
+      {/* Announcement Bar */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? 'h-[40px]' : 'h-0'}`}
+      >
+       <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
+  Enjoy complimentary standard delivery across France on all orders over €39.{" "}
+  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+</p>
+      </div>
+
       {/* Backdrop overlay */}
       <div
         className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
@@ -73,7 +109,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
       <nav
         className={`z-50 h-16 fixed left-0 right-0 transition-all duration-700 ${
-          announcementVisible ? "top-[40px]" : "top-0"
+          showAnnouncement ? "top-[40px]" : "top-0"
         } ${
           transparent
             ? "bg-transparent border-b border-transparent"
@@ -319,6 +355,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
+        categories={homeCategories}
       />
 
       <OurProducts

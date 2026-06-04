@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import SignupModal from './SignUp';
 import Forgotpassword from './ForgetPassword';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
+import { getDeviceId } from '../../../utils/deviceId';
 
 export default function LoginModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
@@ -25,6 +28,16 @@ export default function LoginModal({ isOpen, onClose }) {
     email: false,
     password: false
   });
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('rememberMe');
+    if (saved) {
+      const { email, password } = JSON.parse(saved);
+      setFormData({ email, password });
+      setRememberMe(true);
+    }
+  }, []);
 
   const validateEmail = (email) => {
     if (!email.trim()) {
@@ -41,8 +54,8 @@ export default function LoginModal({ isOpen, onClose }) {
     if (!password) {
       return t('login.errors.passwordRequired');
     }
-    if (password.length < 8) {
-      return t('login.errors.passwordMinLength');
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters.';
     }
     return '';
   };
@@ -95,7 +108,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -104,20 +117,43 @@ export default function LoginModal({ isOpen, onClose }) {
     };
 
     setErrors(newErrors);
-    setTouched({
-      email: true,
-      password: true
-    });
+    setTouched({ email: true, password: true });
 
     const hasErrors = Object.values(newErrors).some(error => error !== '');
+    if (hasErrors) return;
 
-    if (!hasErrors) {
-      console.log('Form submitted:', formData);
-      // Here you would normally call your login API
-      // await loginApi(formData);
-      
-      router.push('/my-account');
-      onClose();
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          device: 'web',
+          device_id: getDeviceId(),
+          fcm_token: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
+        toast.error(msg);
+      } else {
+        localStorage.setItem('LoginData', JSON.stringify(data));
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', JSON.stringify({ email: formData.email, password: formData.password }));
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
+        router.push('/my-account');
+        onClose();
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,7 +179,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70">
         <div className="relative bg-white rounded-3xl w-full max-w-lg p-8 overflow-y-auto">
           {/* Close Button */}
           <button
@@ -246,9 +282,10 @@ export default function LoginModal({ isOpen, onClose }) {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6 cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-6 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {t('login.buttons.login')}
+              {isLoading ? 'Logging in...' : t('login.buttons.login')}
             </button>
           </form>
 
@@ -311,7 +348,7 @@ export default function LoginModal({ isOpen, onClose }) {
         </div>
 
         <SignupModal isOpen={showSignup} onClose={handleSignupClose} />
-        <Forgotpassword isOpen={showForgotPassword} onClose={handleForgotPasswordClose} />
+        <Forgotpassword isOpen={showForgotPassword} onClose={handleForgotPasswordClose} onAllClose={() => setShowForgotPassword(false)} />
       </div>
     </>
   );

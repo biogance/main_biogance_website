@@ -5,6 +5,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
 import ProductModalAddReview from "./ProductModalAddReview";
 import ProductLoadMore from "./ProductLoadMore";
+import { MEDIA_URL } from "@/Components/API/API";
 
 const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
@@ -61,7 +62,7 @@ const getReviews = (t) => [
   },
 ];
 
-const INITIAL_VISIBLE = 3;
+const INITIAL_VISIBLE = 5;
 
 const StarRow = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -75,7 +76,7 @@ const StarRow = ({ rating }) => (
   </div>
 );
 
-export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
+export default function ProductReviews({ isLoading, apiProduct }) {
   const { t } = useTranslation("productreviews");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,10 +84,6 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
   const [imageLoading, setImageLoading] = useState(true);
   const imageLoaded = useRef(false);
   const allReviews = getReviews(t);
-
-  useEffect(() => {
-    onLoadMoreOpen?.(isLoadMoreOpen);
-  }, [isLoadMoreOpen, onLoadMoreOpen]);
 
   const handleImageLoad = () => {
     if (!imageLoaded.current) {
@@ -104,8 +101,9 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
 
   return (
     <div className="w-full bg-white">
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes shimmerMove {
             0%   { background-position: -600px 0; }
             100% { background-position:  600px 0; }
@@ -121,8 +119,9 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
             to   { opacity: 1; }
           }
           .reviews-fade-in { animation: reviewsFadeIn 0.4s ease forwards; }
-        `
-      }} />
+        `,
+        }}
+      />
 
       {/* Top Quote Banner */}
       {!isLoading && (
@@ -136,13 +135,14 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
       )}
 
       {/* Main Content: Two Columns */}
-      <div className="w-full flex flex-col lg:flex-row min-h-[520px]">
-
+      <div className="w-full flex flex-col lg:flex-row items-start">
         {/* LEFT: Reviews List */}
         <div className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-14 py-10 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">{t("userReviews")}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">
+              {t("userReviews")}
+            </h2>
             {!isLoading && (
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -156,7 +156,7 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
           {/* Review Items */}
           {isLoading ? (
             <div className="flex flex-col gap-6">
-              {[1, 2, 3].map((idx) => (
+              {[1, 2, 3, 4, 5].map((idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="min-w-[90px] sm:min-w-[100px] flex flex-col gap-2">
                     <ShimmerLoader className="h-4 w-16" />
@@ -211,16 +211,28 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
         </div>
 
         {/* RIGHT: Product Image */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-[#F0EEE9] relative items-center justify-center min-h-[420px] overflow-hidden">
-
+        <div
+          className="hidden lg:flex w-full lg:w-1/2 lg:sticky overflow-hidden items-center justify-center"
+          style={{
+            background: "#E1E1E1",
+            top: "104px",
+            height: "calc(100vh - 176px)",
+            alignSelf: "flex-start",
+          }}
+        >
           {/* State 1: Shimmer */}
           {isLoading && (
             <div className="shimmer-bg-reviews absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Gray bg + Black spinner */}
-          {!isLoading && imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-200">
+          {/* State 2: No image from API - show grey background */}
+          {!isLoading && !apiProduct?.review_image && (
+            <div className="w-full h-full bg-[#E1E1E1]" />
+          )}
+
+          {/* State 3: Gray bg + Black spinner */}
+          {!isLoading && apiProduct?.review_image && imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#E1E1E1]">
               <div
                 style={{
                   width: 44,
@@ -234,12 +246,12 @@ export default function ProductReviews({ isLoading, onLoadMoreOpen }) {
             </div>
           )}
 
-          {/* State 3: Image fade in */}
-          {!isLoading && (
+          {/* State 4: Image fade in */}
+          {!isLoading && apiProduct?.review_image && (
             <>
               <img
-                src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&q=80"
-                alt="Biogance 2in1 Shampoo"
+                src={`${MEDIA_URL}${apiProduct.review_image}`}
+                alt="Biogance Product Review"
                 onLoad={handleImageLoad}
                 onError={handleImageLoad}
                 className={`w-full h-full object-cover ${

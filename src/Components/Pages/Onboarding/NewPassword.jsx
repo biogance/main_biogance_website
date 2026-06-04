@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { AiOutlineClose, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
 
-export default function CreateNewPasswordModal({ isOpen, onClose }) {
+export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllClose }) {
   const { t } = useTranslation('onboarding');
   const [formData, setFormData] = useState({
     password: '',
@@ -20,24 +22,17 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
     password: false,
     confirmPassword: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const validatePassword = (password) => {
-    if (!password) {
-      return t('newPassword.errors.passwordRequired');
-    }
-    if (password.length < 8 || !/\d/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return t('newPassword.errors.passwordInvalid');
-    }
+    if (!password) return t('newPassword.errors.passwordRequired');
+    if (password.length < 6) return 'Password must be at least 6 characters.';
     return '';
   };
 
   const validateConfirmPassword = (confirmPassword, password) => {
-    if (!confirmPassword) {
-      return t('newPassword.errors.confirmRequired');
-    }
-    if (confirmPassword !== password) {
-      return t('newPassword.errors.passwordMismatch');
-    }
+    if (!confirmPassword) return t('newPassword.errors.confirmRequired');
+    if (confirmPassword !== password) return 'Passwords do not match.';
     return '';
   };
 
@@ -94,7 +89,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -103,15 +98,29 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
     };
     
     setErrors(newErrors);
-    setTouched({
-      password: true,
-      confirmPassword: true
-    });
+    setTouched({ password: true, confirmPassword: true });
     
     const hasErrors = Object.values(newErrors).some(error => error !== '');
-    
-    if (!hasErrors) {
-      console.log('Save Password clicked:', formData);
+    if (hasErrors) return;
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/new/password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: formData.password }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
+        toast.error(msg);
+      } else {
+        onAllClose?.();
+      }
+    } catch (err) {
+      console.error('New password error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,9 +224,10 @@ export default function CreateNewPasswordModal({ isOpen, onClose }) {
 
           <button
             type="submit"
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer"
+            disabled={isLoading}
+            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {t('newPassword.submitButton')}
+            {isLoading ? 'Saving...' : t('newPassword.submitButton')}
           </button>
         </form>
       </div>

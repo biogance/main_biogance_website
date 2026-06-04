@@ -42,7 +42,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center"
+      className="fixed inset-0 z-[80] flex items-center justify-center"
       style={{
         background: "rgba(0,0,0,0.38)",
         transition: "background 0.25s",

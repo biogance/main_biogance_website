@@ -5,6 +5,10 @@ import { IoClose, IoSearch } from 'react-icons/io5';
 import styled, { keyframes } from 'styled-components';
 import SearchBar from './SearchBar';
 import { useTranslation } from 'react-i18next';
+import { BASE_URL, MEDIA_URL } from '../../API/API';
+import { getDeviceId } from '../../../utils/deviceId';
+import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
   return (
@@ -104,116 +108,74 @@ const LoadingProductItem = () => (
   </div>
 );
 
-// Sample Data
-const popularProducts = [
-  {
-    id: 1,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    originalPrice: '€15.00',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 2,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 3,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-];
+const SearchTags = ({ items, label, onSelect }) => (
+  <div className="mb-8 max-w-4xl mx-auto">
+    <h3 className="text-sm font-medium text-gray-800 mb-4">{label}</h3>
+    <div className="flex flex-wrap gap-2">
+      {items.map((item, index) => {
+        const words = item.trim().split(/\s+/);
+        const displayText = words.length > 2 ? words.slice(0, 2).join(' ') + '...' : item;
 
-const bestSellingProducts = [
-  {
-    id: 4,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 5,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 6,
-    name: 'Refreshing mist for dogs and cats - FreshMist',
-    size: '250ml',
-    originalPrice: '€15.00',
-    price: '€12.60',
-    image:
-      'https://images.unsplash.com/photo-1608571899793-a1c0c27a7555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzcHJheSUyMGJvdHRsZSUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0OTEzNzIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-];
-
-
-const RecentSearches = ({ searches }) => {
-  const { t } = useTranslation('searchmodal');
-  
-  return (
-    <div className="mb-8 max-w-4xl mx-auto">
-      <h3 className="text-sm font-medium text-gray-800 mb-4">{t('recentSearch')}</h3>
-      <div className="flex flex-wrap gap-2">
-        {searches.map((search, index) => (
+        return (
           <button
             key={index}
+            type="button"
+            onClick={() => onSelect?.(item)}
+            title={item}
             className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
           >
-            {search}
+            {displayText}
           </button>
-        ))}
+        );
+      })}
+
+      {/* {items.map((item, index) => {
+  const displayText = item.length > 20 ? item.slice(0, 20) + '...' : item;
+
+  return (
+    <button
+      key={index}
+      title={item}
+      className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
+    >
+      {displayText}
+    </button>
+  );
+})} */}
+    </div>
+  </div>
+);
+
+const ProductItem = ({ product, onNavigate }) => {
+  const { i18n } = useTranslation('searchmodal');
+  const firstImage = product.products?.[0]?.images?.[0];
+  const imageUrl = firstImage ? `${MEDIA_URL}${firstImage.media}` : null;
+  const displayName = i18n.language === 'fr' ? product.french_name || product.name : product.name;
+  const slug = i18n.language === 'fr' ? product.french_seo_keyword : (product.english_seo_keyword || product.english_seo_keyboard);
+
+  return (
+    <div
+      onClick={() => onNavigate(slug || product.id)}
+      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors cursor-pointer">
+      <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+        {imageUrl ? (
+          <ImageWithFallback
+            src={imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 rounded-lg" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        <h4 className="text-sm font-normal text-gray-800 mb-2">{displayName}</h4>
       </div>
     </div>
   );
 };
 
-const ProductItem = ({ product }) => (
-  <div
-    key={product.id}
-    className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors cursor-pointer"
-  >
-    <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-      <ImageWithFallback
-        src={product.image}
-        alt={product.name}
-        className="w-full h-full object-cover"
-      />
-    </div>
-    <div className="flex-1 min-w-0 flex flex-col justify-center">
-      <h4 className="text-sm font-normal text-gray-800 mb-2">{product.name}</h4>
-      <span className="inline-block text-xs bg-[#f1f1f1] border border-gray-300 px-2 py-1 rounded-full text-gray-700 w-fit mb-2">
-        {product.size}
-      </span>
-      <div className="flex items-center gap-2">
-        {product.originalPrice && (
-          <span className="text-sm text-gray-400 line-through">
-            {product.originalPrice}
-          </span>
-        )}
-        <span className="text-base font-semibold text-gray-900">
-          {product.price}
-        </span>
-      </div>
-    </div>
-  </div>
-);
-
-const ProductList = ({ title, products, isLoading }) => (
+const ProductList = ({ title, products, isLoading, onNavigate }) => (
   <div>
     <h3 className="text-lg font-semibold mb-6 text-gray-900">{title}</h3>
     <div className="space-y-5">
@@ -223,30 +185,64 @@ const ProductList = ({ title, products, isLoading }) => (
         ))
       ) : (
         products.map((product) => (
-          <ProductItem key={product.id} product={product} />
+          <ProductItem key={product.id} product={product} onNavigate={onNavigate} />
         ))
       )}
     </div>
   </div>
 );
 
-export const SearchModal = ({ isOpen, onClose }) => {
+export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
   const { t } = useTranslation('searchmodal');
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [popularProducts, setPopularProducts] = useState([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState([]);
+  const [searchTags, setSearchTags] = useState([]);
+  const [searchTagsLabel, setSearchTagsLabel] = useState('');
 
-  // Get searches from translations
-  const recentSearches = t('searches', { returnObjects: true, defaultValue: [] });
-  const searchesArray = Array.isArray(recentSearches) ? recentSearches : [];
+  const handleNavigate = (slug) => {
+    onClose();
+    router.push(`/product/${slug}`);
+  };
+
+  const handleTagSearch = (term) => {
+    onClose();
+    router.push(`/shop?source=search&q=${encodeURIComponent(term)}`);
+  };
 
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 3000);
 
-      return () => clearTimeout(timer);
+      const loginData = localStorage.getItem('LoginData');
+      const token = loginData ? JSON.parse(loginData)?.data?.token : null;
+      const body = token ? { token } : { device_id: getDeviceId() };
+
+      fetch(`${BASE_URL}/web/search/main`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status && data.data) {
+            setPopularProducts(data.data.popular || []);
+            setBestSellingProducts(data.data.best_seller || []);
+            const recent = data.data.recent || [];
+            if (recent.length > 0) {
+              setSearchTags(recent);
+              setSearchTagsLabel(t('recentSearch'));
+            } else {
+              setSearchTags(data.data.trending || []);
+              setSearchTagsLabel(t('trendingSearch', { defaultValue: 'Trending Searches' }));
+            }
+          } else {
+            toast.error(data.action_message || data.action || 'Something went wrong.');
+          }
+        })
+        .catch(() => toast.error('Something went wrong.'))
+        .finally(() => setIsLoading(false));
     }
   }, [isOpen]);
 
@@ -256,6 +252,7 @@ export const SearchModal = ({ isOpen, onClose }) => {
         isOpen ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <style>
         {`
           .hide-scrollbar {
@@ -279,25 +276,30 @@ export const SearchModal = ({ isOpen, onClose }) => {
         {/* Content */}
         <div className="p-8">
           {/* Search Bar */}
-          <SearchBar />
+          <SearchBar
+            key={isOpen ? 'open' : 'closed'}
+            categories={categories}
+            onSearchComplete={onClose}
+          />
 
-          {/* Recent Searches */}
-          <RecentSearches searches={searchesArray} />
+          {/* Recent or Trending Searches */}
+          {searchTags.length > 0 && (
+            <SearchTags items={searchTags} label={searchTagsLabel} onSelect={handleTagSearch} />
+          )}
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Popular Products */}
-            <ProductList 
+            <ProductList
               title={t('popularProducts')}
               products={popularProducts}
               isLoading={isLoading}
+              onNavigate={handleNavigate}
             />
-
-            {/* Best Selling */}
-            <ProductList 
+            <ProductList
               title={t('bestSelling')}
               products={bestSellingProducts}
               isLoading={isLoading}
+              onNavigate={handleNavigate}
             />
           </div>
         </div>

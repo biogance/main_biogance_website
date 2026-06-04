@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -15,6 +16,7 @@ import Footer from '../Footer';
 import LandingCategories from './LandingCategories';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
+import { getDeviceId } from '../../../utils/deviceId';
 
 const heroSlides = [
   {
@@ -39,27 +41,62 @@ const heroSlides = [
   },
 ];
 
+const VIDEO_CACHE = "biogance-videos-v1";
+
+const preloadHeroVideos = () => {
+  if (typeof window === "undefined" || !('caches' in window)) return;
+  heroSlides
+    .filter((s) => s.type === "video")
+    .forEach(async ({ url }) => {
+      try {
+        const cache = await caches.open(VIDEO_CACHE);
+        const existing = await cache.match(url);
+        if (!existing) await cache.add(url);
+      } catch (_) {}
+    });
+};
+
 export default function HeroSection() {
   const { t } = useTranslation('home');
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [apiData, setApiData] = useState(null);
+
+  useEffect(() => { preloadHeroVideos(); }, []);
+  const [apiData, setApiData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('homePageData');
+      return cached ? JSON.parse(cached) : null;
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('homePageData');
+    }
+    return true;
+  });
   
   const slides = heroSlides;
   const hasMultipleSlides = slides.length > 1;
 
   useEffect(() => {
-    axios.post(`${BASE_URL}/web/home`)
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    const payload = {};
+    if (loginData?.data?.token) {
+      payload.token = loginData.data.token;
+    } else {
+      payload.device_id = getDeviceId();
+    }
+    axios.post(`${BASE_URL}/web/home`, payload)
       .then(res => {
-        console.log('=== API Response Start ===');
-        console.log(JSON.stringify(res.data, null, 2));
-        console.log('=== API Response End ===');
         if (res.data.status === false) {
           toast.error(res.data.action);
         } else {
+          localStorage.setItem('homePageData', JSON.stringify(res.data.data));
           setApiData(res.data.data);
         }
       })
-      .catch(err => console.error('API Error:', err));
+      .catch(err => console.error('API Error:', err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const heroContent = {

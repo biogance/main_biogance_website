@@ -4,13 +4,16 @@ import { useState, useRef } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import CreateNewPasswordModal from './NewPassword';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
 
-export default function VerificationCodeModal({ isOpen, onClose }) {
+export default function VerificationCodeModal({ isOpen, onClose, email, onAllClose }) {
   const { t } = useTranslation('onboarding');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isExpired, setIsExpired] = useState(false);
   const [isNewPasswordOpen, setIsNewPasswordOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
 
   if (!isOpen) return null;
@@ -42,15 +45,30 @@ export default function VerificationCodeModal({ isOpen, onClose }) {
     }
   };
 
-  const handleResendOTP = () => {
-    console.log('Resend OTP clicked');
+  const handleResendOTP = async () => {
     setOtp(['', '', '', '', '', '']);
     setError('');
-    setIsExpired(false);
     inputRefs.current[0]?.focus();
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/forgot/password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        toast.error(msg);
+      }
+    } catch (err) {
+      console.error('Resend OTP error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const otpString = otp.join('');
@@ -59,21 +77,27 @@ export default function VerificationCodeModal({ isOpen, onClose }) {
       setError(t('verificationCode.errors.incomplete'));
       return;
     }
-    
-    const correctOTP = '123456';
-    if (otpString !== correctOTP) {
-      setError(t('verificationCode.errors.incorrect'));
-      return;
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/otp/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: otpString }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        toast.error(msg);
+      } else {
+        setError('');
+        setIsNewPasswordOpen(true);
+      }
+    } catch (err) {
+      console.error('OTP verify error:', err);
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (isExpired) {
-      setError(t('verificationCode.errors.expired'));
-      return;
-    }
-    
-    console.log('OTP submitted successfully:', otpString);
-    setError('');
-    setIsNewPasswordOpen(true);
   };
 
   const handleClose = () => {
@@ -132,18 +156,20 @@ export default function VerificationCodeModal({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={handleResendOTP}
-                className="text-black font-semibold underline hover:text-gray-700 transition-colors cursor-pointer"
+                disabled={isLoading}
+                className="text-black font-semibold underline hover:text-gray-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('verificationCode.resendOTP')}
+                {isLoading ? 'Resending...' : t('verificationCode.resendOTP')}
               </button>
               .
             </p>
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {t('verificationCode.submitButton')}
+              {isLoading ? 'Creating...' : t('verificationCode.submitButton')}
             </button>
           </form>
         </div>
@@ -151,7 +177,9 @@ export default function VerificationCodeModal({ isOpen, onClose }) {
 
       <CreateNewPasswordModal 
         isOpen={isNewPasswordOpen} 
-        onClose={() => setIsNewPasswordOpen(false)} 
+        onClose={() => setIsNewPasswordOpen(false)}
+        email={email}
+        onAllClose={onAllClose}
       />
     </>
   );

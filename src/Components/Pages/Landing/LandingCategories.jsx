@@ -63,12 +63,22 @@ const LoadingCard = () => (
 export default function LandingCategories({ data }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
-  const [loadingState, setLoadingState] = useState('shimmer');
+  const [loadingState, setLoadingState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('homePageData') ? 'loaded' : 'shimmer';
+    }
+    return 'shimmer';
+  });
 
   const categories = data?.categories || [];
 
   useEffect(() => {
     if (categories.length > 0) {
+      setLoadingState('loaded');
+      return;
+    }
+    const hasCache = typeof window !== 'undefined' && localStorage.getItem('homePageData');
+    if (hasCache) {
       setLoadingState('loaded');
       return;
     }

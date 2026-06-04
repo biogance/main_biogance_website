@@ -174,10 +174,12 @@ export default function ProductExpertAdvice({ apiProduct }) {
       </section>
 
       {isLoaded && isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+
+            {/* ✅ Sirf yeh header fixed rahega - shrink-0 */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-              <h3 className="text-[20px] font-bold text-[#1C1C1C]"> {t("rating")}</h3>
+              <h3 className="text-[20px] font-bold text-[#1C1C1C]">{t("rating")}</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-[#888] cursor-pointer hover:text-[#1C1C1C] transition-colors"
@@ -186,35 +188,39 @@ export default function ProductExpertAdvice({ apiProduct }) {
               </button>
             </div>
 
-            <div className="mx-4 mb-4 bg-[#FBF7EE] rounded-xl px-5 -py-1 flex items-center justify-between shrink-0">
-              <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
-                {t("getReliableAdvice")}
-              </p>
-              <div className="relative flex items-center justify-center" style={{ minWidth: 80, minHeight: 80 }}>
-                {catImgLoading && (
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      border: "4px solid rgba(0,0,0,0.12)",
-                      borderTopColor: "#111111",
-                      animation: "spinExpert 0.8s linear infinite",
-                      position: "absolute",
-                    }}
-                  />
-                )}
-                <img
-                  src="catexpert.svg"
-                  alt=""
-                  onLoad={() => setCatImgLoading(false)}
-                  onError={() => setCatImgLoading(false)}
-                  className={catImgLoading ? "opacity-0" : "expert-fade-in"}
-                />
-              </div>
-            </div>
-
+            {/* ✅ Banner + blogs dono ab scroll area ke andar hain */}
             <div className="px-4 pb-6 flex flex-col overflow-y-auto">
+
+              {/* Banner - scroll hoga header ke saath nahi */}
+              <div className="mb-4 bg-[#FBF7EE] rounded-xl px-5 py-3 flex items-center justify-between">
+                <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
+                  {t("getReliableAdvice")}
+                </p>
+                <div className="relative flex items-center justify-center" style={{ minWidth: 80, minHeight: 80 }}>
+                  {catImgLoading && (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        border: "4px solid rgba(0,0,0,0.12)",
+                        borderTopColor: "#111111",
+                        animation: "spinExpert 0.8s linear infinite",
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                  <img
+                    src="catexpert.svg"
+                    alt=""
+                    onLoad={() => setCatImgLoading(false)}
+                    onError={() => setCatImgLoading(false)}
+                    className={catImgLoading ? "opacity-0" : "expert-fade-in"}
+                  />
+                </div>
+              </div>
+
+              {/* Remaining blogs list */}
               {remainingBlogs.map((blog) => {
                 const displayName = language === "fr" ? (blog.french_name || blog.name) : (blog.name);
                 return (
@@ -229,6 +235,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
                   </div>
                 );
               })}
+
             </div>
           </div>
         </div>

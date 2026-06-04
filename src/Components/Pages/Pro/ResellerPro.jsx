@@ -6,6 +6,8 @@ import Footer from '../Footer';
 import { useRouter } from 'next/navigation';
 import ThankYouModal from './ThankyouModal';
 import { useTranslation } from 'react-i18next';
+import toast, { Toaster } from 'react-hot-toast';
+import { BASE_URL } from '../../API/API';
 
 export function ResellerForm() {
     const { t } = useTranslation('pro');
@@ -219,70 +221,95 @@ export function ResellerForm() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const [isLoading, setIsLoading] = useState(false);
 
-        // Clear previous errors
+    const resetForm = () => ({
+        companyName: '',
+        registrationNumber: '',
+        contactName: '',
+        jobTitle: '',
+        email: '',
+        countryCode: '+33',
+        phone: '',
+        website: '',
+        message: '',
+        resellerTypes: {
+            petShop: false,
+            gardenCenter: false,
+            groomingSalon: false,
+            professionalBreeder: false,
+            veterinaryClinic: false,
+            onlineStore: false
+        }
+    });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setErrors({});
 
-        // Validate required fields
         const newErrors = {};
-
-        if (!formData.companyName || formData.companyName.trim() === '') {
-            newErrors.companyName = 'Company name is required';
-        }
-
-        if (!formData.registrationNumber || formData.registrationNumber.trim() === '') {
-            newErrors.registrationNumber = 'Registration number is required';
-        }
-
-        if (!formData.contactName || formData.contactName.trim() === '') {
-            newErrors.contactName = 'Contact name is required';
-        }
-
-        if (!formData.jobTitle || formData.jobTitle.trim() === '') {
-            newErrors.jobTitle = 'Job title is required';
-        }
-
+        if (!formData.companyName || formData.companyName.trim() === '') newErrors.companyName = 'Company name is required';
+        if (!formData.registrationNumber || formData.registrationNumber.trim() === '') newErrors.registrationNumber = 'Registration number is required';
+        if (!formData.contactName || formData.contactName.trim() === '') newErrors.contactName = 'Contact name is required';
+        if (!formData.jobTitle || formData.jobTitle.trim() === '') newErrors.jobTitle = 'Job title is required';
         if (!formData.email || formData.email.trim() === '') {
             newErrors.email = 'Email is required';
         } else {
-            // Email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email)) {
-                newErrors.email = 'Please enter a valid email address';
-            }
+            if (!emailRegex.test(formData.email)) newErrors.email = 'Please enter a valid email address';
         }
 
-        // Check if there are any errors
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        // Sab kuch sahi hai, modal show karo
-        console.log('Form submitted:', formData);
-        setShowModal(true);
-        setFormData({
-            companyName: '',
-            registrationNumber: '',
-            contactName: '',
-            jobTitle: '',
-            email: '',
-            countryCode: '+33',
-            phone: '',
-            website: '',
-            message: '',
-            resellerTypes: {
-                petShop: false,
-                gardenCenter: false,
-                groomingSalon: false,
-                professionalBreeder: false,
-                veterinaryClinic: false,
-                onlineStore: false
+        const resellerValue = Object.entries({
+            petShop: 'Pet Shop / Specialty Store',
+            gardenCenter: 'Garden Center',
+            groomingSalon: 'Grooming Salon',
+            professionalBreeder: 'Professional Breeder',
+            veterinaryClinic: 'Veterinary Clinic',
+            onlineStore: 'Online Store'
+        })
+            .filter(([key]) => formData.resellerTypes[key])
+            .map(([, val]) => val)
+            .join(',');
+
+        try {
+            setIsLoading(true);
+            const res = await fetch(`${BASE_URL}/app/reseller`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company_name: formData.companyName,
+                    name: formData.contactName,
+                    email: formData.email,
+                    country_code: formData.countryCode,
+                    phone: `${formData.countryCode}${formData.phone}`,
+                    phone_number: formData.phone,
+                    register_number: formData.registrationNumber,
+                    website: formData.website,
+                    message: formData.message,
+                    job_title: formData.jobTitle,
+                    reseller: resellerValue,
+                }),
+            });
+            const data = await res.json();
+            if (data.status === false || data.status === 'false' || !res.ok) {
+                const msg = data.errors?.length > 0 ? data.errors[0].message : (data.action || data.title || 'Something went wrong.');
+                toast.error(msg);
+            } else {
+                setShowModal(true);
+                setFormData(resetForm());
             }
-        });
+        } catch (err) {
+            console.error('Reseller form error:', err);
+            toast.error('Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCancel = () => {
@@ -321,10 +348,11 @@ export function ResellerForm() {
 
     return (
         <>
+            <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
              <div className="fixed top-0 left-0 right-0 z-50">
                     <Navbar />
                   </div>
-            <div className="max-w-4xl mx-auto px-6 py-16 mt-10">
+            <div className="max-w-4xl mx-auto px-6 py-16 mt-15">
                 {/* Form Header */}
                 <div className="mb-8">
                     <h2 className="mb-3" style={{ fontSize: '28px', fontWeight: 700, lineHeight: '1.3', color: "black" }}>
@@ -479,7 +507,7 @@ export function ResellerForm() {
                                     </div>
 
                                     {isOpen && (
-                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
+                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-1 max-h-80 overflow-hidden">
                                             <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
                                                 <input
                                                     type="text"
@@ -638,10 +666,10 @@ export function ResellerForm() {
                         </button> */}
                         <button
                             type="submit"
-
-                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                            disabled={isLoading}
+                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                             style={{ fontSize: '14px', fontWeight: 600 }}>
-                            {t('resellerForm.buttons.submit')}
+                            {isLoading ? 'Submitting...' : t('resellerForm.buttons.submit')}
                         </button>
                     </div>
                 </form>

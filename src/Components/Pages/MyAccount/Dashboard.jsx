@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import { OrderDetailsModal } from "./ModalBox/OrderDetailsModal";
 
 // Shimmer Card Component for StatCard
@@ -137,16 +138,20 @@ function StatCard({ title, value, subtitle }) {
 
 export default function Dashboard() {
     const { t } = useTranslation('myaccount');
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [loadingState, setLoadingState] = useState('shimmer');
 
     useEffect(() => {
+      if (!localStorage.getItem('LoginData')) {
+        router.replace('/');
+        return;
+      }
       // Simulate loading for 2 seconds
       const timer = setTimeout(() => {
         setLoadingState('loaded');
       }, 1000);
-
       return () => clearTimeout(timer);
     }, []);
   // Sample orders data - set to empty array to show empty state

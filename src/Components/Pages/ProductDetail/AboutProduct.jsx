@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { HiPlus, HiMinus } from "react-icons/hi";
 import { MEDIA_URL } from "@/Components/API/API";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=900&q=80";
-
 const isVideoUrl = (url) => /\.(mp4|webm|ogg|mov)$/i.test(url);
 
 const ShimmerLoader = ({ className = "" }) => (
@@ -24,9 +22,9 @@ export default function AboutProduct({ apiProduct }) {
 
   const aboutMedia = apiProduct?.about_product_media
     ? `${MEDIA_URL}${apiProduct.about_product_media}`
-    : FALLBACK_IMAGE;
+    : null;
 
-  const isVideo = isVideoUrl(aboutMedia);
+  const isVideo = aboutMedia && isVideoUrl(aboutMedia);
 
   useEffect(() => {
     if (isVideo && videoRef.current) {
@@ -130,39 +128,57 @@ export default function AboutProduct({ apiProduct }) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col">
-              {accordionData.map((item, idx) => (
-                <div key={idx} className="border-t border-[#E0E0E0] last:border-b">
-                  <button
-                    onClick={() => toggle(idx)}
-                    className="w-full flex items-center justify-between py-4 text-left cursor-pointer"
-                  >
-                    <span className="text-[15px] font-medium text-[#1C1C1C]">{item.title}</span>
-                    <span className="shrink-0 ml-4 text-[#1C1C1C]">
-                      {openIndex === idx ? <HiMinus className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
-                    </span>
-                  </button>
+           <div className="flex flex-col">
+  {accordionData.map((item, idx) => (
+    <div key={idx} className="border-t border-[#E0E0E0] last:border-b">
+      <button
+        onClick={() => toggle(idx)}
+        className="w-full flex items-center justify-between py-4 text-left cursor-pointer"
+      >
+        <span className="text-[15px] font-medium text-[#1C1C1C]">{item.title}</span>
+        <span className="shrink-0 ml-4 text-[#1C1C1C]">
+          {openIndex === idx ? <HiMinus className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
+        </span>
+      </button>
 
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      openIndex === idx ? "max-h-96 pb-5" : "max-h-0"
-                    }`}
-                  >
-                    {item.isList ? (
-                      <ul className="flex flex-col gap-1">
-                        {item.content.map((line, i) => (
-                          <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[14px] text-[#555555] leading-relaxed whitespace-pre-line">
-                        {item.content}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Outer grid wrapper — controls height animation */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: openIndex === idx ? "1fr" : "0fr",
+          transition: "grid-template-rows 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
+        }}
+      >
+        {/* Inner div — clips overflow */}
+        <div style={{ overflow: "hidden" }}>
+          {/* Content wrapper — opacity + translateY animation */}
+          <div
+            style={{
+              paddingBottom: openIndex === idx ? "20px" : "0px",
+              opacity: openIndex === idx ? 1 : 0,
+              transform: openIndex === idx ? "translateY(0)" : "translateY(-8px)",
+              transition: openIndex === idx
+                ? "opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s, padding 0.5s cubic-bezier(0.77, 0, 0.175, 1)"
+                : "opacity 0.2s ease, transform 0.2s ease, padding 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
+            }}
+          >
+            {item.isList ? (
+              <ul className="flex flex-col gap-1">
+                {item.content.map((line, i) => (
+                  <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[14px] text-[#555555] leading-relaxed whitespace-pre-line">
+                {item.content}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
           )}
         </div>
 
@@ -176,8 +192,13 @@ export default function AboutProduct({ apiProduct }) {
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner — API aa gaya, image/video load ho rahi hai */}
-          {isLoaded && imageLoading && !isVideo && (
+          {/* State 2: No media from API — show grey background */}
+          {isLoaded && !aboutMedia && (
+            <div className="w-full h-full bg-[#E1E1E1]" />
+          )}
+
+          {/* State 3: Black spinner — API aa gaya, image/video load ho rahi hai */}
+          {isLoaded && aboutMedia && imageLoading && !isVideo && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div
                 style={{
@@ -192,8 +213,8 @@ export default function AboutProduct({ apiProduct }) {
             </div>
           )}
 
-          {/* State 3: Video autoplay loop */}
-          {isLoaded && isVideo && (
+          {/* State 4: Video autoplay loop */}
+          {isLoaded && aboutMedia && isVideo && (
             <video
               ref={videoRef}
               key={aboutMedia}
@@ -212,8 +233,8 @@ export default function AboutProduct({ apiProduct }) {
             </video>
           )}
 
-          {/* State 3: Image fade in */}
-          {isLoaded && !isVideo && (
+          {/* State 5: Image fade in */}
+          {isLoaded && aboutMedia && !isVideo && (
             <img
               src={aboutMedia}
               alt="About this product"

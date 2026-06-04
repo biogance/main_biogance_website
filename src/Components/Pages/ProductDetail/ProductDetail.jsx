@@ -1,9 +1,15 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FiHeart } from "react-icons/fi";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
 import Navbar from "@/Components/Pages/Navbar";
 import { GoArrowDownRight, GoArrowUpRight } from "react-icons/go";
 import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
@@ -13,17 +19,22 @@ import StickyAddToCart from "./StickyAddToCart";
 import Footer from "../Footer";
 import { LandingCards } from "@/Components/Pages/Landing/LandingCards";
 import ProductVideo from "./ProductVideo";
-import ProductModalAddReview from "./ProductModalAddReview";
 import ProductReviews from "./ProductReviews";
+import ProductLoadMore from "./ProductLoadMore";
+import ProductModalAddReview from "./ProductModalAddReview";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
+import { useTopLoader } from "@/Components/Pages/TopLoader";
+
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
-      if (rating >= star) return <FaStar key={star} className="text-black w-4 h-4" />;
-      else if (rating >= star - 0.5) return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
+      if (rating >= star)
+        return <FaStar key={star} className="text-black w-4 h-4" />;
+      else if (rating >= star - 0.5)
+        return <FaStarHalfAlt key={star} className="text-black w-4 h-4" />;
       else return <FaRegStar key={star} className="text-black w-4 h-4" />;
     })}
   </div>
@@ -31,17 +42,24 @@ const StarRating = ({ rating }) => (
 
 const formatProductForCard = (product) => {
   const firstProduct = product.products?.[0];
-  const firstImage = firstProduct?.images?.[0];
-  const firstProductPrice = firstProduct?.price;
+  const allImages = firstProduct?.images?.map(
+    (img) => `${MEDIA_URL}${img.media}`,
+  ) || [""];
+  const videoUrl = firstProduct?.video
+    ? `${MEDIA_URL}${firstProduct.video.media}`
+    : null;
   return {
     id: product.id,
     name: product.name,
     french_name: product.french_name,
-    price: firstProductPrice || product.price,
+    english_seo_keyword: product.english_seo_keyword || product.english_seo_keyboard || '',
+    french_seo_keyword: product.french_seo_keyword || '',
+    price: firstProduct?.price || product.price,
     discount: "",
-    image: firstImage ? `${MEDIA_URL}${firstImage.media}` : "",
-    images: [firstImage ? `${MEDIA_URL}${firstImage.media}` : ""],
-    liked: false,
+    image: allImages[0],
+    images: allImages,
+    videoUrl,
+    liked: false, 
   };
 };
 
@@ -54,7 +72,10 @@ export default function ProductDetail() {
   const router = useRouter();
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
-  const productId = searchParams.get("id");
+  const params = useParams();
+  const productId = searchParams.get("id") || params?.slug;
+  const { start } = useTopLoader();
+  const descriptionRef = useRef(null);
 
   const [apiProduct, setApiProduct] = useState(null);
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
@@ -66,42 +87,79 @@ export default function ProductDetail() {
   const [currentShipping, setCurrentShipping] = useState(0);
   const [isTransparent, setIsTransparent] = useState(true);
   const [showSticky, setShowSticky] = useState(false);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const footerRef = useRef(null);
+  const stickyCartRef = useRef(null);
+  const firstSectionRef = useRef(null);
   const [imageLoading, setImageLoading] = useState(true);
+  const [slideLoading, setSlideLoading] = useState(false);
+  const loadedSlides = useRef(new Set());
+  const currentSlideRef = useRef(0);
   const [isLoadMoreOpen, setIsLoadMoreOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isFetchingProduct, setIsFetchingProduct] = useState(true);
 
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
   const videoRef = useRef(null);
-  // ─── NEW: ref for the product title h1 ──────────────────────────────────────
   const titleRef = useRef(null);
 
   // ─── Fetch product detail ───────────────────────────────────────────────────
   useEffect(() => {
     if (!productId) return;
+
+    setIsFetchingProduct(true);
+    setApiProduct(null);
+    setSelectedProductIdx(0);
+    setSelectedVolume(null);
+    setSelectedColor(null);
+    setCurrentSlide(0);
+    setImageLoading(true);
+    setSlideLoading(false);
+    setReadMore(false);
+    setCurrentShipping(0);
+    setShowSticky(false);
+    setIsFooterVisible(false);
+    loadedSlides.current = new Set();
+    firstImageLoaded.current = false;
+    currentSlideRef.current = 0;
+
     fetch(`${BASE_URL}/product/detail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ device_id: "Abc", id: productId }),
+      body: JSON.stringify({ device_id: "Abc", seo_keyword: productId }),
     })
       .then((res) => res.json())
       .then((json) => {
         if (json.status) {
           setApiProduct(json.data);
+          setIsFetchingProduct(false);
           setSelectedProductIdx(0);
           const firstProduct = json.data.products?.[0];
-          if (firstProduct?.type === "size" || firstProduct?.type === "size-color") {
+          if (
+            firstProduct?.type === "size" ||
+            firstProduct?.type === "size-color"
+          ) {
             setSelectedVolume(firstProduct.size_name);
           }
-          if (firstProduct?.type === "color" || firstProduct?.type === "size-color") {
+          if (
+            firstProduct?.type === "color" ||
+            firstProduct?.type === "size-color"
+          ) {
             setSelectedColor(firstProduct.color_name);
           }
         } else {
-          toast.error(json.action_message || json.action || "Something went wrong.");
+          setIsFetchingProduct(false);
+          toast.error(
+            json.action_message || json.action || "Something went wrong.",
+          );
         }
       })
-      .catch((err) => console.error("API Error:", err));
+      .catch((err) => {
+        setIsFetchingProduct(false);
+        console.error("API Error:", err);
+      });
   }, [productId]);
 
   // ─── Derived values ─────────────────────────────────────────────────────────
@@ -116,22 +174,37 @@ export default function ProductDetail() {
       ? apiProduct?.french_description || apiProduct?.description
       : apiProduct?.description || "";
   const productType = apiProducts[0]?.type || "no-size-color";
-  const togetherProducts = apiProduct?.together || [];
+
+  const together1Products = apiProduct?.together1 || [];
+  const together2Products = apiProduct?.together2 || [];
+
   const displayPrice = selectedProduct?.price || apiProduct?.price || "0";
 
   const isTransparentProduct = selectedProduct?.is_transparent === 1;
 
   const rawImages = selectedProduct?.images || [];
   const firstImage = rawImages.find((img) => img.type !== "video");
-  const videoItem = rawImages.find((img) => img.type === "video");
-  const otherImages = rawImages.filter(
-    (img) => img !== firstImage && img.type !== "video"
-  );
+  const otherImages = rawImages.filter((img) => img !== firstImage);
+  const videoItem = selectedProduct?.video || null;
 
   const slides = [
-    ...(firstImage ? [{ type: "image", url: `${MEDIA_URL}${firstImage.media}`, isFirst: true }] : []),
-    ...(videoItem ? [{ type: "video", url: `${MEDIA_URL}${videoItem.media}` }] : []),
-    ...otherImages.map((img) => ({ type: "image", url: `${MEDIA_URL}${img.media}`, isFirst: false })),
+    ...(firstImage
+      ? [
+          {
+            type: "image",
+            url: `${MEDIA_URL}${firstImage.media}`,
+            isFirst: true,
+          },
+        ]
+      : []),
+    ...(videoItem
+      ? [{ type: "video", url: `${MEDIA_URL}${videoItem.media}` }]
+      : []),
+    ...otherImages.map((img) => ({
+      type: "image",
+      url: `${MEDIA_URL}${img.media}`,
+      isFirst: false,
+    })),
   ];
 
   const infiniteSlides = slides;
@@ -141,9 +214,16 @@ export default function ProductDetail() {
 
   // ─── Reset slide when product changes ───────────────────────────────────────
   useEffect(() => {
+    setNoTransition(true);
     setCurrentSlide(0);
+    currentSlideRef.current = 0;
     setImageLoading(true);
+    setSlideLoading(false);
+    loadedSlides.current = new Set();
     firstImageLoaded.current = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setNoTransition(false));
+    });
   }, [selectedProductIdx]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
@@ -163,44 +243,51 @@ export default function ProductDetail() {
     ...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name)),
   ];
   const uniqueColors = [
-    ...new Set(apiProducts.filter((p) => p.color_name).map((p) => p.color_name)),
+    ...new Set(
+      apiProducts.filter((p) => p.color_name).map((p) => p.color_name),
+    ),
   ];
 
-  // ─── Scroll handler — only handles sticky cart, NOT navbar transparency ──────
-  // Navbar transparency is now controlled by the IntersectionObserver below
+  // ─── Scroll handler — sticky cart visibility ────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
-      if (cartBtnRef.current) {
-        const rect = cartBtnRef.current.getBoundingClientRect();
-        setShowSticky(rect.bottom < 0 || rect.top > window.innerHeight);
-      }
+      if (!cartBtnRef.current) return;
+
+      const rect = cartBtnRef.current.getBoundingClientRect();
+      const isButtonOutOfView =
+        rect.bottom < 0 || rect.top > window.innerHeight;
+
+      setShowSticky(isButtonOutOfView && window.scrollY > 80);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ─── NEW: IntersectionObserver — watch title h1 against navbar ──────────────
-  // When the title h1 enters the top 80px zone (navbar area), make navbar solid.
-  // When title scrolls back down into view, make navbar transparent again.
+  // ─── IntersectionObserver — footer visibility ────────────────────────────────
   useEffect(() => {
-    if (!titleRef.current) return;
-
+    if (!footerRef.current) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        // jab title ka top edge navbar ke neeche ho → transparent
-        // jab title scroll karke navbar ko touch kare → solid white
-        setIsTransparent(entry.boundingClientRect.top > 80);
-      },
-      {
-        root: null,
-        rootMargin: "0px 0px 0px 0px",
-        threshold: [0, 1],
-      }
+      ([entry]) => setIsFooterVisible(entry.isIntersecting),
+      { threshold: 0 },
     );
-
-    observer.observe(titleRef.current);
+    observer.observe(footerRef.current);
     return () => observer.disconnect();
-  }, [apiProduct]); // re-run after product loads so titleRef.current is set
+  }, [apiProduct]);
+
+  // ─── Scroll handler — navbar transparency ──────────────────────────────────
+  useEffect(() => {
+    const check = () => {
+      if (!titleRef.current) {
+        setIsTransparent(window.scrollY < 10);
+        return;
+      }
+      const rect = titleRef.current.getBoundingClientRect();
+      setIsTransparent(rect.top > 80);
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  });
 
   // ─── When any modal opens → force navbar non-transparent ────────────────────
   useEffect(() => {
@@ -216,29 +303,43 @@ export default function ProductDetail() {
     return () => observer.disconnect();
   }, []);
 
-  // ─── Announcement bar ────────────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => setShowAnnouncement(true), 200);
-    return () => clearTimeout(timer);
-  }, []);
-
   // ─── Video auto-play when navigated to video slide ────────────────────────
   useEffect(() => {
     if (isVideo && videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => { });
+      videoRef.current.play().catch(() => {});
     }
   }, [currentSlide, isVideo]);
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => { });
+      videoRef.current.play().catch(() => {});
     }
   };
 
+  const [noTransition, setNoTransition] = useState(false);
+
   const goToSlide = (idx) => {
-    setCurrentSlide(idx);
+    const total = slides.length;
+    if (total === 0) return;
+    let target = idx;
+
+    if (idx < 0 || idx >= total) {
+      target = (idx + total) % total;
+      setNoTransition(true);
+      setCurrentSlide(target);
+      currentSlideRef.current = target;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setNoTransition(false));
+      });
+    } else {
+      setNoTransition(false);
+      setCurrentSlide(target);
+      currentSlideRef.current = target;
+    }
+
+    if (!loadedSlides.current.has(target)) setSlideLoading(true);
   };
 
   // ─── Shipping slider ─────────────────────────────────────────────────────────
@@ -255,14 +356,21 @@ export default function ProductDetail() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleProductCardClick = (productId) => {
-    router.push(`/product-detail?id=${productId}`);
+  const handleProductCardClick = (prod) => {
+    start();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const slug = i18n.language === 'fr' ? prod.french_seo_keyword : prod.english_seo_keyword;
+    router.push(`/product/${slug || prod.id}`);
   };
 
-  const formattedTogetherProducts = togetherProducts
+  const formattedTogether1 = together1Products
     .slice(0, 3)
     .map(formatProductForCard);
-  const isLoaded = apiProduct !== null;
+  const formattedTogether2 = together2Products
+    .slice(0, 3)
+    .map(formatProductForCard);
+
+  const isLoaded = !isFetchingProduct && apiProduct !== null;
 
   return (
     <div className="w-full bg-white">
@@ -279,7 +387,7 @@ export default function ProductDetail() {
             background-size: 600px 100%;
             animation: shimmerMove 1.4s infinite linear;
           }
-          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes spin89345 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
           .slides-track {
             display: flex;
             width: 100%;
@@ -309,66 +417,55 @@ export default function ProductDetail() {
         }}
       />
 
-      {/* ── Announcement Bar ── */}
+      <Navbar transparent={isTransparent} />
+
       <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? "h-[40px]" : "h-0"
-          }`}
+        ref={firstSectionRef}
+        className="flex flex-col lg:flex-row w-full min-h-screen"
       >
-        <p className="flex items-center justify-center h-[40px] font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-          Enjoy complimentary standard delivery across France on all orders over €39.
-        </p>
-      </div>
-
-      <Navbar
-        transparent={isLoadMoreOpen || isReviewModalOpen ? false : isTransparent}
-        announcementVisible={showAnnouncement}
-      />
-
-      <div className="flex flex-col lg:flex-row w-full min-h-screen">
-
         {/* ── LEFT: Image Section ── */}
         <div
           className="group w-full lg:w-1/2 relative flex items-center justify-center min-h-[420px] lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-colors duration-700"
-          style={{ background: "#E1E1E1" }}
+          style={{ background: "#f3f3f3" }}
         >
-          {/* State 1: Shimmer */}
           {!isLoaded && (
             <div className="shimmer-bg absolute inset-0 w-full h-full" />
           )}
 
-          {/* State 2: Black spinner on grey */}
-          {isLoaded && imageLoading && !isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
+          {isLoaded && (imageLoading || slideLoading) && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#E1E1E1]">
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 36,
+                  height: 36,
                   borderRadius: "50%",
-                  border: "4px solid rgba(0,0,0,0.12)",
-                  borderTopColor: "#111111",
-                  animation: "spin 0.8s linear infinite",
+                  border: "4px solid rgba(0, 0, 0, .1)",
+                  borderLeftColor: "transparent",
+                  animation: "spin89345 1s linear infinite",
                 }}
               />
             </div>
           )}
 
-          {/* State 3: Sliding track (images + video in order) */}
           {isLoaded && infiniteSlides.length > 0 && (
-            <div
-              className={`absolute inset-0 overflow-hidden ${imageLoading ? "opacity-0" : "first-fade-in"
-                }`}
-            >
+            <div className="absolute inset-0 overflow-hidden">
               <div
-                className="slides-track"
+                className={
+                  noTransition ? "slides-track-no-transition" : "slides-track"
+                }
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {infiniteSlides.map((slide, idx) => {
-                  const useContain = slide.isFirst && isTransparentProduct;
+                  const useContain =
+                    (slide.isFirst && isTransparentProduct) ||
+                    idx === infiniteSlides.length - 1;
                   return (
                     <div
                       key={idx}
                       className="slide-item"
-                      style={useContain ? {} : { padding: 0, position: "relative" }}
+                      style={
+                        useContain ? {} : { padding: 0, position: "relative" }
+                      }
                     >
                       {slide.type === "video" ? (
                         <video
@@ -378,6 +475,11 @@ export default function ProductDetail() {
                           muted
                           playsInline
                           onEnded={handleVideoEnded}
+                          onCanPlay={() => {
+                            loadedSlides.current.add(idx);
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
+                          }}
                         >
                           <source src={slide.url} type="video/mp4" />
                         </video>
@@ -386,20 +488,26 @@ export default function ProductDetail() {
                           src={slide.url}
                           alt={`Product ${idx + 1}`}
                           onLoad={() => {
+                            loadedSlides.current.add(idx);
                             if (!firstImageLoaded.current) {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
                           }}
                           onError={() => {
+                            loadedSlides.current.add(idx);
                             if (!firstImageLoaded.current) {
                               firstImageLoaded.current = true;
                               setImageLoading(false);
                             }
+                            if (currentSlideRef.current === idx)
+                              setSlideLoading(false);
                           }}
                           className={
                             useContain
-                              ? "object-contain h-full w-auto max-w-full drop-shadow-xl"
+                              ? "object-contain p-20 h-full w-auto max-w-full drop-shadow-xl"
                               : "object-cover absolute inset-0 w-full h-full"
                           }
                         />
@@ -411,43 +519,35 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Left Arrow */}
-          {isLoaded && !imageLoading && (
+          {isLoaded && !imageLoading && slides.length > 1 && (
             <button
               onClick={() => goToSlide(currentSlide - 1)}
-              className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide === 0
-                ? "opacity-0 pointer-events-none"
-                : "opacity-100"
-                }`}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
             >
               <MdChevronLeft className="w-6 h-6" />
             </button>
           )}
 
-          {/* Right Arrow */}
-          {isLoaded && !imageLoading && (
+          {isLoaded && !imageLoading && slides.length > 1 && (
             <button
               onClick={() => goToSlide(currentSlide + 1)}
-              className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer transition-opacity duration-300 ${currentSlide >= slides.length - 1
-                ? "opacity-0 pointer-events-none"
-                : "opacity-100"
-                }`}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md cursor-pointer"
             >
               <MdChevronRight className="w-6 h-6" />
             </button>
           )}
 
-          {/* Dot Indicators */}
           {isLoaded && !imageLoading && slides.length > 1 && (
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
-                  className={`rounded-full transition-all duration-700 ${currentSlide === idx
-                    ? "w-8 h-2 bg-gray-800"
-                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
-                    }`}
+                  className={`rounded-full transition-all duration-700 ${
+                    currentSlide === idx
+                      ? "w-8 h-2 bg-gray-800"
+                      : "w-2 h-2 bg-gray-400 hover:bg-gray-400"
+                  }`}
                 />
               ))}
             </div>
@@ -458,32 +558,56 @@ export default function ProductDetail() {
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
           {!isLoaded ? (
             <>
-              <ShimmerLoader className="h-8 w-3/4 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
+              <ShimmerLoader className="h-8 w-19/20 mb-4" />
               <div className="flex items-center gap-3 mb-5">
                 <ShimmerLoader className="h-5 w-24" />
                 <ShimmerLoader className="h-5 w-32" />
+                <ShimmerLoader className="h-5 w-32" />
               </div>
-              <ShimmerLoader className="h-20 w-full mb-5" />
-              <ShimmerLoader className="h-10 w-32 mb-7" />
-              <ShimmerLoader className="h-12 w-full mb-8" />
-              <ShimmerLoader className="h-32 w-full" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-full mb-5" />
+              <ShimmerLoader className="h-8 w-22 mb-4" />
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-8 w-12 mb-3" />
+                <ShimmerLoader className="h-8 w-12 mb-7" />
+                <ShimmerLoader className="h-8 w-12 mb-7" />
+              </div>
+              <ShimmerLoader className="h-8 w-22 mb-4" />
+              <div style={{ display: "flex", gap: "20px" }}>
+                <ShimmerLoader className="h-8 w-8 mb-3" />
+                <ShimmerLoader className="h-8 w-8 mb-7" />
+                <ShimmerLoader className="h-8 w-8 mb-7" />
+              </div>
+             
+              <div style={{ display: "flex", gap: "20px" }}>
+                 <ShimmerLoader className="h-12 w-42 mb-7" />
+                <ShimmerLoader className="h-12 w-19/20 mb-7" />
+                <ShimmerLoader className="h-12 w-12 mb-7" />
+              </div>
+              <ShimmerLoader className="h-5 w-full" />
             </>
           ) : (
             <>
-              {/*
-                ─── CHANGED: added ref={titleRef} so IntersectionObserver
-                    can watch when this title reaches the navbar ───────────────
-              */}
               <h1
                 ref={titleRef}
-                className="text-[22px] lg:text-[26px] font-bold text-[#1C1C1C] leading-snug mb-4"
+                className="text-[22px] lg:text-[26px] font-semibold text-[#1C1C1C] leading-snug mb-4"
+                style={{ lineHeight: "1.5" }}
               >
                 {displayName}
               </h1>
 
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-1 mb-5">
                 <StarRating rating={3.5} />
-                <span className="text-sm text-black">({t("reviews")})</span>
+                <button
+                  onClick={() => setIsLoadMoreOpen(true)}
+                  className="text-sm text-black cursor-pointer hover:underline"
+                >
+                  ({t("reviews")})
+                </button>
                 <button
                   onClick={() => setIsReviewModalOpen(true)}
                   className="text-sm cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors ml-1"
@@ -492,29 +616,77 @@ export default function ProductDetail() {
                 </button>
               </div>
 
-              {displayDescription && (
-                <>
-                  <div
-                    style={!readMore ? { display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}}
-                    className="text-[16px] text-black leading-relaxed mb-5"
-                    dangerouslySetInnerHTML={{ __html: displayDescription }}
-                  />
-                  <button
-                    onClick={() => setReadMore(!readMore)}
-                    className={`flex items-center gap-1 cursor-pointer text-sm font-medium border rounded-lg px-4 py-2 w-fit mb-7 ${readMore
-                      ? "bg-white text-black border-black"
-                      : "bg-black text-white border-gray-300"
-                      }`}
-                  >
-                    {readMore ? t("less") : t("readMore")}{" "}
-                    {readMore ? (
-                      <GoArrowUpRight className="w-4 h-4" />
-                    ) : (
-                      <GoArrowDownRight className="w-4 h-4" />
-                    )}
-                  </button>
-                </>
-              )}
+              {displayDescription &&
+                (() => {
+                  const plainText =
+                    typeof window !== "undefined"
+                      ? (() => {
+                          const d = document.createElement("div");
+                          d.innerHTML = displayDescription;
+                          return d.innerText || "";
+                        })()
+                      : displayDescription.replace(/<[^>]*>/g, "");
+
+                  const CHAR_LIMIT = 460;
+                  const isLong = plainText.length > CHAR_LIMIT;
+                  const truncated = plainText.slice(0, CHAR_LIMIT);
+
+                  return (
+                    <div
+                      ref={descriptionRef}
+                      className="mb-5 text-[14px] text-black leading-relaxed"
+                    >
+                      {!readMore ? (
+                        <span>
+                          {isLong ? (
+                            <>
+                              {truncated}
+                              {"... "}
+                              <button
+                                onClick={() => setReadMore(true)}
+                                className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+                              >
+                                {t("readMore")}
+                              </button>
+                            </>
+                          ) : (
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: displayDescription,
+                              }}
+                            />
+                          )}
+                        </span>
+                      ) : (
+                        <span>
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: displayDescription,
+                            }}
+                          />{" "}
+                          <button
+                            onClick={() => {
+                              setReadMore(false);
+                              setTimeout(() => {
+                                if (descriptionRef.current) {
+                                  const top =
+                                    descriptionRef.current.getBoundingClientRect()
+                                      .top +
+                                    window.scrollY -
+                                    500;
+                                  window.scrollTo({ top, behavior: "smooth" });
+                                }
+                              }, 50);
+                            }}
+                            className="cursor-pointer text-[#808080] underline hover:text-gray-600 transition-colors text-[14px]"
+                          >
+                            {t("less")}
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
               {/* Volume Selector */}
               {(productType === "size" || productType === "size-color") &&
@@ -528,10 +700,11 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedVolume === size
-                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                            }`}
+                          className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border ${
+                            selectedVolume === size
+                              ? "bg-black border-gray-800 text-white ring-1 ring-black"
+                              : "bg-white text-[#1C1C1C] border-[#E8E8E8] hover:bg-gray-50"
+                          }`}
                         >
                           {size}
                         </button>
@@ -553,10 +726,11 @@ export default function ProductDetail() {
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           title={color}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${selectedColor === color
-                            ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                            : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                            }`}
+                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
+                            selectedColor === color
+                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
+                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
+                          }`}
                         >
                           {color}
                         </button>
@@ -565,31 +739,60 @@ export default function ProductDetail() {
                   </div>
                 )}
 
-              {/* Add to Cart */}
-              <div className="flex items-center gap-3 mb-8">
-                <button
-                  ref={cartBtnRef}
-                  id="add-to-cart-btn"
-                  className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  {t("addToCart")} – €{displayPrice}
-                </button>
-                <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${isWishlisted
-                    ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
-                    : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
-                    }`}
-                >
-                  <FiHeart
-                    className={`w-5 h-5 ${isWishlisted ? "fill-black text-black" : ""
+              {/* Quantity, Add to Cart & Wishlist in one line */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3">
+                  <p className="text-md font-semibold text-[#1C1C1C] whitespace-nowrap">
+                    {t("quantity")}
+                  </p>
+                  <div className="flex items-center gap-2 border border-[#E8E8E8] rounded-md">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity === 1}
+                      className={`w-10 h-10 rounded-md border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
+                        quantity === 1
+                          ? "cursor-not-allowed text-[#aaa]"
+                          : "cursor-pointer hover:bg-[#e6e6e6] text-[#1C1C1C]"
                       }`}
-                  />
-                </button>
+                    >
+                      <FaMinus size={13} />
+                    </button>
+                    <span className="text-sm font-semibold text-[#1C1C1C] w-6 text-center">
+                      {String(quantity).padStart(2)}
+                    </span>
+                    <button
+                      onClick={() => setQuantity((q) => q + 1)}
+                      className="w-10 h-10 rounded-md bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
+                    >
+                      <FaPlus size={13} />
+                    </button>
+                  </div>
+                  <button
+                    ref={cartBtnRef}
+                    id="add-to-cart-btn"
+                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
+                  >
+                    {t("addToCart")} – €{displayPrice}
+                  </button>
+                  <button
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                      isWishlisted
+                        ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
+                        : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
+                    }`}
+                  >
+                    <FiHeart
+                      className={`w-5 h-5 ${
+                        isWishlisted ? "fill-black text-black" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Shipping Info */}
-              <div className="border-t border-gray-100 pt-5">
+              <div className="pt-1">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#1C1C1C]">
@@ -599,14 +802,16 @@ export default function ProductDetail() {
                       {shippingSlides[currentShipping].note}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     {shippingSlides.map((_, idx) => (
-                      <span
+                      <button
                         key={idx}
-                        className={`rounded-full inline-block transition-all duration-700 ${idx === currentShipping
-                          ? "w-6 h-2 bg-gray-800"
-                          : "w-2 h-2 bg-white border border-black"
-                          }`}
+                        onClick={() => setCurrentShipping(idx)}
+                        className={`rounded-full inline-block cursor-pointer transition-all duration-700 ${
+                          idx === currentShipping
+                            ? "w-4 h-1.5 bg-gray-800"
+                            : "w-1.5 h-1.5 bg-white border border-black hover:bg-gray-400"
+                        }`}
                       />
                     ))}
                   </div>
@@ -622,30 +827,23 @@ export default function ProductDetail() {
         <div className="hidden lg:flex w-full py-16 items-center justify-center gap-3">
           <RiDoubleQuotesL className="text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
           <p className="text-lg font-semibold text-[#1C1C1C]">
-            <span className="text-[#1A171B] font-normal">{t("madeInFrance")}</span>{" "}
+            <span className="text-[#1A171B] font-normal">
+              {t("madeInFrance")}
+            </span>{" "}
             - {t("ingredientsInfo")}
           </p>
           <RiDoubleQuotesR className="text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
         </div>
       )}
 
-      <AboutProduct apiProduct={apiProduct} />
-
-      {isLoaded && (
-        <StickyAddToCart
-          price={displayPrice}
-          productName={displayName}
-          visible={showSticky}
-          selectedVolume={selectedVolume}
-          onVolumeChange={handleVolumeSelect}
-          volumes={uniqueSizes}
-        />
-      )}
+      <div>
+        <AboutProduct apiProduct={apiProduct} />
+      </div>
 
       <ProductExpertAdvice apiProduct={apiProduct} />
 
-      {/* ── Together Products ── */}
-      {isLoaded && formattedTogetherProducts.length > 0 && (
+      {/* ── Together1 Products — Complete Grooming Routine ── */}
+      {isLoaded && formattedTogether1.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
@@ -655,11 +853,11 @@ export default function ProductDetail() {
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
-            {formattedTogetherProducts.map((prod) => (
+            {formattedTogether1.map((prod) => (
               <div
                 key={prod.id}
                 className="w-[350px] cursor-pointer"
-                onClick={() => handleProductCardClick(prod.id)}
+                onClick={() => handleProductCardClick(prod)}
               >
                 <LandingCards product={prod} showNav={true} />
               </div>
@@ -669,25 +867,21 @@ export default function ProductDetail() {
       )}
 
       {/* ── Video Section ── */}
-      <div className="py-4 lg:py-12 px-6 lg:px-14">
-        <div className="w-full py-0 lg:py-10 flex items-center justify-center gap-0 lg:gap-3 mb-4 lg:mb-0">
-          <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
-          <p className="text-lg font-semibold text-[#1C1C1C]">
-            {t("watchBenefitsLive")}
-          </p>
-          <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
-        </div>
-        <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-          <ProductVideo
-            videoLink={apiProduct?.video_link}
-            frenchVideoLink={apiProduct?.french_video_link}
-            isLoading={!isLoaded}
-          />
-        </div>
-      </div>
+      {isLoaded &&
+        (apiProduct?.video_link || apiProduct?.french_video_link) && (
+          <div className="py-4 lg:py-12 px-6 lg:px-14">
+          <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+              <ProductVideo
+                videoLink={apiProduct?.video_link}
+                frenchVideoLink={apiProduct?.french_video_link}
+                isLoading={false}
+              />
+            </div>
+          </div>
+        )}
 
-      {/* ── More Products ── */}
-      {isLoaded && formattedTogetherProducts.length > 0 && (
+      {/* ── Together2 Products — More Products Explore ── */}
+      {isLoaded && formattedTogether2.length > 0 && (
         <div className="py-4 lg:py-12 px-6 lg:px-14">
           <div className="w-full py-0 lg:py-12 flex items-center justify-center gap-0 lg:gap-3 mb-6 lg:mb-0">
             <RiDoubleQuotesL className="hidden lg:block text-[#aaa] w-4 h-4 mb-auto mt-1 shrink-0" />
@@ -697,11 +891,11 @@ export default function ProductDetail() {
             <RiDoubleQuotesR className="hidden lg:block text-[#aaa] w-4 h-4 mt-auto mb-1.5 shrink-0" />
           </div>
           <div className="flex justify-center gap-6 flex-wrap">
-            {formattedTogetherProducts.map((prod) => (
+            {formattedTogether2.map((prod) => (
               <div
                 key={prod.id}
-                className="w-[350px] cursor-pointer"
-                onClick={() => handleProductCardClick(prod.id)}
+                className="w-[350px] cursor-pointer"  
+                onClick={() => handleProductCardClick(prod)}
               >
                 <LandingCards product={prod} showNav={true} />
               </div>
@@ -710,14 +904,40 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <ProductReviews isLoading={!isLoaded} onLoadMoreOpen={setIsLoadMoreOpen} />
+      <ProductReviews isLoading={!isLoaded} apiProduct={apiProduct} />
+
+      <ProductLoadMore
+        isOpen={isLoadMoreOpen}
+        onClose={() => setIsLoadMoreOpen(false)}
+      />
 
       <ProductModalAddReview
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+        onSubmit={({ rating, feedback }) => console.log("Review submitted:", { rating, feedback })}
       />
 
-      <Footer />
+      <div className="h-[72px]" />
+      <div className="relative z-10">
+        <Footer />
+      </div>
+
+      {isLoaded && showSticky && !isFooterVisible && (
+        <div className="h-[72px]" />
+      )}
+
+      {isLoaded && showSticky && (
+        <StickyAddToCart
+          price={displayPrice}
+          productName={displayName}
+          selectedVolume={selectedVolume}
+          onVolumeChange={handleVolumeSelect}
+          volumes={uniqueSizes}
+          isFooterVisible={isFooterVisible}
+          quantity={quantity}
+          onQuantityChange={setQuantity}
+        />
+      )}
     </div>
   );
 }
