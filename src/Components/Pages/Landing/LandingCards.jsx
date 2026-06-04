@@ -501,7 +501,7 @@ export const LandingCards = ({
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
         product={safeProduct}
-        fullProductData={safeProduct}
+        fullProductData={safeProduct._raw || safeProduct}
       />
 <ModalAddToCart
   isOpen={isCartOpen}
@@ -585,10 +585,10 @@ export default function PopularProducts({
         : null,
       liked: item.liked ?? item.favorites_exists,
       productsCount: item.products?.length || 1,
-      // raw products array for ModalQuickView — no extra API call needed
       products: item.products || [],
       description: item.description || "",
       french_description: item.french_description || "",
+      _raw: item,
     }));
 
   const products = isBestSeller
