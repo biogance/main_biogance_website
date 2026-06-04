@@ -771,13 +771,13 @@ function FilterRail({ state, setters, options, hasAnimal, hasFamily, hasSpec }) 
             </span>
           )}
         </button>
-        <button
-          onClick={() => setOpenKey(openKey === "price" ? null : "price")}
-          className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${openKey === "price" ? "bg-stone-100 text-stone-900" : ""}`}
-        >
-          €{state.price}
-          <LuChevronDown className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`} />
-        </button>
+       <button
+  onClick={() => setOpenKey(openKey === "price" ? null : "price")}
+  className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${openKey === "price" ? "bg-stone-100 text-stone-900" : ""}`}
+>
+  €{state.price}
+  <LuChevronDown className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`} />
+</button>
       </div>
 
       {/* Desktop / tablet: existing horizontal tab rail */}
@@ -1121,22 +1121,32 @@ function FilterPanel({ openKey, state, setters, options, hasAnimal, hasFamily, h
     >
       <div className="mx-auto max-w-[1500px] px-8">
         {isPrice ? (
-          <div className="flex items-center justify-between gap-6 py-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Price</span>
-              <span className="font-serif text-2xl">€{state.price}</span>
-              <span className="text-xs text-stone-500">max</span>
-            </div>
-            <input
-              type="range" min={0} max={120} value={state.price}
-              onChange={(e) => setters.setPrice(Number(e.target.value))}
-              className="h-1 flex-1 accent-stone-900 cursor-pointer"
-            />
-            <div className="flex gap-4 text-xs uppercase tracking-[0.2em] text-stone-500">
-              <span>€0</span><span>€120</span>
-            </div>
-            <button onClick={onClose} className="rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition">Done</button>
-          </div>
+  <div className="flex flex-col gap-4 py-1 md:flex-row md:items-center md:gap-6">
+    {/* Label + value */}
+    <div className="flex items-baseline gap-3 shrink-0">
+      <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Price</span>
+      <span className="font-serif text-2xl">€{state.price}</span>
+      <span className="text-xs text-stone-500">max</span>
+    </div>
+    {/* Slider + range labels */}
+    <div className="flex flex-1 flex-col gap-1.5">
+      <input
+        type="range" min={0} max={120} value={state.price}
+        onChange={(e) => setters.setPrice(Number(e.target.value))}
+        className="h-1 w-full accent-stone-900 cursor-pointer"
+      />
+      <div className="flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
+        <span>€0</span><span>€120</span>
+      </div>
+    </div>
+    {/* Done button */}
+    <button
+      onClick={onClose}
+      className="self-start rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition md:self-auto"
+    >
+      Done
+    </button>
+  </div>
         ) : group ? (
           <FilterSheetContent group={group} onClose={onClose} />
         ) : null}
