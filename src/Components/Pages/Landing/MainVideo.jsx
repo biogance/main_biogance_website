@@ -59,8 +59,15 @@ const preloadHeroVideos = () => {
 export default function HeroSection() {
   const { t } = useTranslation('home');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => { preloadHeroVideos(); }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.9);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [apiData, setApiData] = useState(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('homePageData');
@@ -140,7 +147,7 @@ export default function HeroSection() {
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {/* Fixed Navbar at top */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        <Navbar transparent={!scrolled} />
       </div>
 
       {/* Main content with viewport height */}
@@ -284,10 +291,10 @@ export default function HeroSection() {
 
       {/* Sections */}
       <LandingCategories data={apiData} />
-      <LandingCards data={apiData} />
+      <LandingCards data={apiData} apiData={apiData} />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
-      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} />
+      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} />
       <LandingExpertAdvice data={apiData} />
       <LandingReview data={apiData} />
       <LandingBanner data={apiData} />

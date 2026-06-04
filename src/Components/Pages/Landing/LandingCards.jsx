@@ -8,6 +8,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
+
+import ModalAddToCart from "../Modal/ModalAddToCart";
 import ModalQuickView from "../Modal/ModalQuickView";
 
 const preloadPromises =
@@ -111,6 +113,8 @@ export const LandingCards = ({
   const blobUrlRef = useRef(null);
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
@@ -439,21 +443,24 @@ export const LandingCards = ({
       <button
         className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
         style={{
-          backgroundColor: "black",
-          color: "white",
+          backgroundColor: "white",
+          color: "black",
           border: "none",
+          borderRadius: "4px",
           transition: "background-color 0.2s ease, color 0.2s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#333";
+          e.currentTarget.style.backgroundColor = "black";
+          e.currentTarget.style.color = "white";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "black";
+          e.currentTarget.style.backgroundColor = "white";
+          e.currentTarget.style.color = "black";
         }}
-        onClick={(e) => {
-          e.stopPropagation();
-          // Add to cart logic here
-        }}
+       onClick={(e) => {
+  e.stopPropagation();
+  setIsCartOpen(true);
+}}
       >
         Add to cart – €{safeProduct.price ?? 0}
       </button>
@@ -465,6 +472,7 @@ export const LandingCards = ({
           backgroundColor: "white",
           color: "black",
           border: "none",
+          borderRadius: "4px",
           transition: "background-color 0.2s ease, color 0.2s ease",
         }}
         onMouseEnter={(e) => {
@@ -493,8 +501,13 @@ export const LandingCards = ({
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
         product={safeProduct}
+        fullProductData={safeProduct}
       />
-
+<ModalAddToCart
+  isOpen={isCartOpen}
+  onClose={() => setIsCartOpen(false)}
+  product={safeProduct}
+/>
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">
         <h3
@@ -554,7 +567,7 @@ export default function PopularProducts({
       id: item.id,
       name: item.name,
       french_name: item.french_name || "",
-      english_seo_keyword: item.english_seo_keyboard || "",
+      english_seo_keyword: item.english_seo_keyboard || item.english_seo_keyword || "",
       french_seo_keyword: item.french_seo_keyword || "",
       price: item.price || item.products?.[0]?.price || "0",
       discount: item.discount || item.products?.[0]?.off || "",
@@ -572,6 +585,10 @@ export default function PopularProducts({
         : null,
       liked: item.liked ?? item.favorites_exists,
       productsCount: item.products?.length || 1,
+      // raw products array for ModalQuickView — no extra API call needed
+      products: item.products || [],
+      description: item.description || "",
+      french_description: item.french_description || "",
     }));
 
   const products = isBestSeller
