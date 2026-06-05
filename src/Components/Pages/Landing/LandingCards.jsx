@@ -53,7 +53,7 @@ const getCachedVideoUrl = async (url) => {
 const LoadingCard = () => (
   <div className="w-full">
     <div
-      className="rounded-2xl border border-gray-200 p-3 relative mb-3 aspect-[5/6]"
+      className=" border border-gray-200 p-3 relative mb-3 aspect-[5/6]"
       style={{
         backgroundColor: "#f9fafb",
         background:
@@ -115,6 +115,7 @@ export const LandingCards = ({
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const isCurrentImageLoading = !loadedImages.has(currentImageIndex);
 
@@ -197,6 +198,7 @@ export const LandingCards = ({
   useEffect(() => {
     if (!videoUrl) return;
     let revoked = false;
+    setIsVideoReady(false);
     preloadVideo(videoUrl).then(() =>
       getCachedVideoUrl(videoUrl).then((src) => {
         if (!revoked) {
@@ -382,14 +384,32 @@ export const LandingCards = ({
               disablePictureInPicture
               disableRemotePlayback
               controlsList="nodownload nofullscreen noremoteplayback"
+              onCanPlay={() => setIsVideoReady(true)}
               style={{
                 pointerEvents: "none",
                 zIndex: isHovered ? 5 : -1,
-                opacity: isHovered ? 1 : 0,
+                opacity: isHovered && isVideoReady ? 1 : 0,
               }}
             />
           )}
-          {isHovered && videoUrl && (
+          {isHovered && videoUrl && !isVideoReady && (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center"
+              style={{ background: "#f0f0f0" }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  border: "3px solid #aaa",
+                  borderTopColor: "transparent",
+                  animation: "lcSpin 0.75s linear infinite",
+                }}
+              />
+            </div>
+          )}
+          {isHovered && videoUrl && isVideoReady && (
             <div
               className="absolute inset-0"
               style={{ zIndex: 6 }}
@@ -419,7 +439,7 @@ export const LandingCards = ({
 
          {/* Title + Price / QuickView overlay */}
 <div
-  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-6'} left-0 right-0 px-3 py-2`}
+  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-5'} left-0 right-0 px-3 py-2`}
   style={{ zIndex: 7 }}
 >
   {/* Title + Price — hover pe hide */}

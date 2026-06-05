@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import { MEDIA_URL } from '../../API/API';
 
 // Shimmer Card Component with inline styles
@@ -62,6 +63,7 @@ const LoadingCard = () => (
 
 export default function LandingCategories({ data }) {
   const { t, i18n } = useTranslation('home');
+  const router = useRouter();
   const isFrench = i18n.language === 'fr';
   const [loadingState, setLoadingState] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -139,6 +141,7 @@ export default function LandingCategories({ data }) {
               : categories.map((category) => (
                   <div
                     key={category.id}
+                    onClick={() => router.push(`/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`)}
                     className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
                   >
                     {/* bg-[#F7F7F7] */}

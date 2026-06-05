@@ -30,7 +30,7 @@
     "forwhich": "Select a category first"
   },
   "labels": {
-    "animal": "Category",
+    "animal": "Animal Collection",
     "universe": "Universe",
     "family": "Family",
     "specificity": "Specificity",
@@ -56,6 +56,12 @@
     "BirdsBackyardPoultry": "Birds & Backyard Poultry",
     "ReptilesTurtles": "Reptiles & Turtles",
     "Horses": "Horses"
+  },
+  "category": {
+    "eyebrow": "Category · Curated collection",
+    "titlePart1": "All ",
+    "titlePart3": "products.",
+    "description": "Browse our complete range of formulations crafted for this category — filtered by family, need and ritual."
   },
   "recommended": {
     "eyebrow": "Recommended · Curated for you",

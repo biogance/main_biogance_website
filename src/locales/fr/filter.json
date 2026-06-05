@@ -30,7 +30,7 @@
     "forwhich": "Sélectionnez d'abord une catégorie"
   },
   "labels": {
-    "animal": "Catégorie",
+    "animal": "Collection d'animaux",
     "universe": "Univers",
     "family": "Famille",
     "specificity": "Spécificité",
@@ -56,6 +56,12 @@
     "BirdsBackyardPoultry": "Oiseaux & Volaille de basse-cour",
     "ReptilesTurtles": "Reptiles & Tortues",
     "Horses": "Chevaux"
+  },
+  "category": {
+    "eyebrow": "Catégorie · Collection sélectionnée",
+    "titlePart1": "Tous les ",
+    "titlePart3": "produits.",
+    "description": "Parcourez notre gamme complète de formulations conçues pour cette catégorie — filtrées par famille, besoin et rituel."
   },
   "recommended": {
     "eyebrow": "Recommandé · Sélectionné pour vous",

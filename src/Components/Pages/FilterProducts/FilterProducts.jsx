@@ -298,7 +298,18 @@ const extendProductWithFilters = (product, rangesList, sizesList, colorsList, ca
 };
 
 // ───────────── Context (entry source) ─────────────
-function getShopContext(source, q, t) {
+function getShopContext(source, q, categoryName, t) {
+  if (categoryName) {
+    return {
+      key: "category",
+      crumbLabel: categoryName,
+      eyebrow: t("category.eyebrow", "Category · Curated collection"),
+      title: <>{t("category.titlePart1", "All ")}<em className="font-serif italic">{categoryName}</em><span className="block">{t("category.titlePart3", "products.")}</span></>,
+      description: t("category.description", "Browse our complete range of formulations crafted for this category — filtered by family, need and ritual."),
+      Icon: LuBookOpen,
+      accent: "text-stone-700",
+    };
+  }
   switch (source) {
     case "recommended":
       return {
@@ -366,7 +377,7 @@ function getShopContext(source, q, t) {
 
 const SkeletonCard = () => (
   <div className="w-full animate-pulse">
-    <div className="bg-stone-100 aspect-[7/10] rounded-2xl mb-4 relative overflow-hidden">
+    <div className="bg-stone-100 aspect-[7/10] mb-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     </div>
     <div className="h-4 bg-stone-100 rounded w-3/4 mb-2" />
@@ -380,9 +391,10 @@ export default function FilterProducts() {
   const source = searchParams ? searchParams.get("source") : undefined;
   const q = searchParams ? searchParams.get("q") : undefined;
   const from = searchParams ? searchParams.get("from") : undefined;
+  const categoryName = searchParams ? searchParams.get("category_name") : undefined;
 
   const { t, i18n } = useTranslation("filter");
-  const ctx = getShopContext(source, q, t);
+  const ctx = getShopContext(source, q, categoryName, t);
   const isFrench = i18n?.language === "fr";
 
   const [animals, setAnimals] = useState([]);
@@ -540,11 +552,11 @@ export default function FilterProducts() {
   useEffect(() => {
     if (catParam && categoriesList.length > 0) {
       const matchedCat = categoriesList.find((c) => String(c.id) === String(catParam));
-      if (matchedCat && !animals.includes(matchedCat.name)) {
+      if (matchedCat) {
         setAnimals([matchedCat.name]);
       }
     }
-  }, [catParam, categoriesList, animals]);
+  }, [catParam, categoriesList]);
 
   const getSelectedIds = () => {
     const categoryIds = categoriesList
@@ -964,7 +976,6 @@ export default function FilterProducts() {
             <nav className="flex items-center gap-2">
               <a href="/" className="hover:text-stone-900">{t("home", "Home")}</a>
              
-              {/* <a href="/shop" className="hover:text-stone-900">Catalogue</a> */}
               {ctx.key !== "catalogue" && (
                 <>
                   <span className="text-stone-300">/</span>
@@ -1260,7 +1271,7 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
           >
             <LuSlidersHorizontal className="h-3.5 w-3.5" /> {t("filter", "Filter")}
             {totalActive > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case ai-style-change-1">
                 {totalActive}
               </span>
             )}
@@ -1520,13 +1531,13 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
         onClick={onOpen}
         disabled={group.disabled}
         title={group.disabled ? displayTip : undefined}
-        className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer ${
+        className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer text-stone-900 font-semibold ai-style-change-3 ${
           group.disabled ? "cursor-not-allowed text-stone-300" : active ? "text-stone-900 font-semibold" : "text-stone-600 hover:text-stone-900"
         } ${open ? "bg-stone-100 text-stone-900" : ""}`}
       >
         {displayLabel}
         {active && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white ai-style-change-1">
             {count}
           </span>
         )}

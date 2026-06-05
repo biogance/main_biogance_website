@@ -15,6 +15,7 @@ import LandingBanner from './LandingBanner';
 import Footer from '../Footer';
 import LandingCategories from './LandingCategories';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
 
@@ -58,6 +59,7 @@ const preloadHeroVideos = () => {
 
 export default function HeroSection() {
   const { t } = useTranslation('home');
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => { preloadHeroVideos(); }, []);
@@ -194,10 +196,10 @@ export default function HeroSection() {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-                  <button className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
+                  <button onClick={() => router.push('/shop')} className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
                     {t('hero.shopNow')}
                   </button>
-                  <button className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
+                  <button onClick={() => router.push('/shop')} className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
                     {t('hero.discover')}
                   </button>
                 </div>

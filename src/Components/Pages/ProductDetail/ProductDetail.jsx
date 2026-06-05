@@ -866,7 +866,7 @@ export default function ProductDetail() {
           <div className="flex justify-center gap-6 flex-wrap">
             {formattedTogether1.map((prod) => (
               <div key={prod.id} className="w-[350px]">
-                <LandingCards product={prod} showNav={true} />
+                <LandingCards product={prod} showNav={true} compactButtons />
               </div>
             ))}
           </div>
@@ -900,7 +900,7 @@ export default function ProductDetail() {
           <div className="flex justify-center gap-6 flex-wrap">
             {formattedTogether2.map((prod) => (
               <div key={prod.id} className="w-[350px]">
-                <LandingCards product={prod} showNav={true} />
+                <LandingCards product={prod} showNav={true} compactButtons />
               </div>
             ))}
           </div>
