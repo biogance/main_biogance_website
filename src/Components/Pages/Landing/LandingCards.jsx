@@ -292,10 +292,17 @@ export const LandingCards = ({
           )}
         </button> */}
 
-        {/* CHANGE 2: Exclusive Pro — bhi ab hamesha show hoga */}
-        <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
-          Exclusive Pro
-        </div>
+        {/* CHANGE 2: Product Label — from API */}
+        {(() => {
+          const label = i18n.language === "fr" && safeProduct.french_product_label
+            ? safeProduct.french_product_label
+            : safeProduct.product_label || "";
+          return label ? (
+            <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
+              {label}
+            </div>
+          ) : null;
+        })()}
 
         <div className="flex-1 relative overflow-hidden">
           {/* CHANGE 1: showNav arrows — commented out (image case mein bhi) */}
@@ -412,7 +419,7 @@ export const LandingCards = ({
 
          {/* Title + Price / QuickView overlay */}
 <div
-  className={`absolute bottom-0 ${compactButtons ? 'mb-2' : 'mb-6'} left-0 right-0 px-3 py-2`}
+  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-6'} left-0 right-0 px-3 py-2`}
   style={{ zIndex: 7 }}
 >
   {/* Title + Price — hover pe hide */}
@@ -590,6 +597,8 @@ export default function PopularProducts({
       products: item.products || [],
       description: item.description || "",
       french_description: item.french_description || "",
+      product_label: item.product_label || "",
+      french_product_label: item.french_product_label || "",
       _raw: item,
     }));
 
