@@ -1,0 +1,107 @@
+{
+  "home": "Home",
+  "backToPrevious": "Back to previous",
+  "speciesCount": "{{count}} species",
+  "formulationsCount": "{{count}} formulations",
+  "keyword": "Keyword",
+  "productsInView": "products in view",
+  "searchPlaceholder": "Search shampoos, sprays, rituals…",
+  "clearSearch": "Clear search",
+  "sort": "Sort",
+  "showResults": "Show results",
+  "resetAll": "Reset all",
+  "noResultsFound": "No results found",
+  "noResultsDesc": "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.",
+  "filters": "Filters",
+  "filter": "Filter",
+  "price": "Price",
+  "all": "All",
+  "selectedCount": "{{count}} selected",
+  "searchGroupPlaceholder": "Search {{label}}…",
+  "noOptions": "No options",
+  "noOptionsAvailable": "No options available.",
+  "filterBy": "Filter by",
+  "done": "Done",
+  "tips": {
+    "family": "Select a category first",
+    "specificity": "Select a family first",
+    "needs": "Select a specificity first",
+    "breed": "Select a category first",
+    "forwhich": "Select a category first"
+  },
+  "labels": {
+    "animal": "Category",
+    "universe": "Universe",
+    "family": "Family",
+    "specificity": "Specificity",
+    "needs": "Needs",
+    "breed": "Breed",
+    "forwhich": "For Which",
+    "range": "Range",
+    "size": "Size",
+    "color": "Color",
+    "price": "Price"
+  },
+  "sortOptions": {
+    "featured": "Featured",
+    "newest": "Newest",
+    "priceLowToHigh": "Price · low to high",
+    "priceHighToLow": "Price · high to low"
+  },
+  "apiTranslations": {
+    "Dogs": "Dogs",
+    "Puppies": "Puppies",
+    "CatsKittens": "Cats & Kittens",
+    "Smallmammals": "Small Mammals",
+    "BirdsBackyardPoultry": "Birds & Backyard Poultry",
+    "ReptilesTurtles": "Reptiles & Turtles",
+    "Horses": "Horses"
+  },
+  "recommended": {
+    "eyebrow": "Recommended · Curated for you",
+    "titlePart1": "Picked ",
+    "titlePart2": "for your",
+    "titlePart3": "companions.",
+    "description": "A personal edit drawn from your recent visits, favourites and the rituals your animals respond to best."
+  },
+  "best": {
+    "crumbLabel": "Best Products",
+    "eyebrow": "Best products · Editor's selection",
+    "titlePart1": "The ",
+    "titlePart2": "very best",
+    "titlePart3": "of Biogance.",
+    "description": "Formulations that earned their place — chosen by our laboratory and reviewed by groomers, vets and breeders."
+  },
+  "popular": {
+    "crumbLabel": "Popular This Week",
+    "eyebrow": "Popular this week",
+    "titlePart1": "What everyone is ",
+    "titlePart2": "reaching",
+    "titlePart3": "for right now.",
+    "description": "Most-loved bottles across our community over the last seven days — refined by animal, family and ritual."
+  },
+  "search": {
+    "eyebrowWithQuery": "Search results · “{{q}}”",
+    "eyebrow": "Search results",
+    "titleWithQuery": "Results for ",
+    "titleWithoutQuery": "Search the ",
+    "titleWithoutQueryPart2": "catalogue",
+    "titlePart3": "across our library.",
+    "description": "Use the filters to narrow by species, breed, need or range — your keyword stays applied."
+  },
+  "ads": {
+    "eyebrow": "Featured campaign",
+    "titlePart1": "The ",
+    "titlePart2": "edit",
+    "titlePart3": "you came in for.",
+    "description": "A focused selection from the campaign that brought you here — all complementary products, in one place."
+  },
+  "catalogue": {
+    "crumbLabel": "Catalogue",
+    "eyebrow": "Catalogue · Vol. 04",
+    "titlePart1": "Care, ",
+    "titlePart2": "refined",
+    "titlePart3": "for every species.",
+    "description": "A living index of formulations — filtered by animal, family, need and ritual. Made in France, certified by nature."
+  }
+}

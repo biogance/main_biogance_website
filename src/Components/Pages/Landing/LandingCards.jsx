@@ -106,7 +106,7 @@ export const LandingCards = ({
   const [isLiked, setIsLiked] = useState(safeProduct.liked || false);
   const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [mediaLoading, setMediaLoading] = useState(false);
+  const [loadedImages, setLoadedImages] = useState(new Set());
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [cachedVideoUrl, setCachedVideoUrl] = useState(null);
@@ -114,6 +114,16 @@ export const LandingCards = ({
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const isCurrentImageLoading = !loadedImages.has(currentImageIndex);
+
+  const handleImageLoaded = (idx) => {
+    setLoadedImages(prev => {
+      const next = new Set(prev);
+      next.add(idx);
+      return next;
+    });
+  };
 
 
   const handleFavorite = async (e) => {
@@ -234,6 +244,9 @@ export const LandingCards = ({
 
   return (
     <div className="w-full h-full flex flex-col">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      `}} />
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"}`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
@@ -294,16 +307,20 @@ export const LandingCards = ({
             </>
           )} */}
 
-          {mediaLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-50">
+          {/* Image loader — #aaa background + centered #aaa spinning ring */}
+          {isCurrentImageLoading && (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center"
+              style={{ background: "#f0f0f0" }}
+            >
               <div
                 style={{
                   width: 28,
                   height: 28,
-                 
-                  border: "3px solid rgba(0,0,0,.1)",
-                  borderLeftColor: "transparent",
-                  animation: "spin89345 1s linear infinite",
+                  borderRadius: "50%",
+                  border: "3px solid #aaa",
+                  borderTopColor: "transparent",
+                  animation: "lcSpin 0.75s linear infinite",
                 }}
               />
             </div>
@@ -325,12 +342,8 @@ export const LandingCards = ({
                 <img
                   src={slide.url || safeProduct.image}
                   alt={safeProduct.name || ""}
-                  onLoad={() => {
-                    if (idx === currentImageIndex) setMediaLoading(false);
-                  }}
-                  onError={() => {
-                    if (idx === currentImageIndex) setMediaLoading(false);
-                  }}
+                  onLoad={() => handleImageLoaded(idx)}
+                  onError={() => handleImageLoaded(idx)}
                   onClick={() => {
                     const slug =
                       i18n.language === "fr"
@@ -338,6 +351,10 @@ export const LandingCards = ({
                         : safeProduct.english_seo_keyword;
                     start();
                     router.push(`/product/${slug}`);
+                  }}
+                  style={{
+                    opacity: loadedImages.has(idx) ? 1 : 0,
+                    transition: "opacity 0.3s ease",
                   }}
                   className="w-full h-full object-cover cursor-pointer"
                 />
@@ -462,7 +479,7 @@ export const LandingCards = ({
   setIsCartOpen(true);
 }}
       >
-        Add to cart – €{safeProduct.price ?? 0}
+        {t("products.addToCart")} – {safeProduct.price ?? 0} €
       </button>
     ) : (
       /* Multiple products → Quickview button */
@@ -488,7 +505,7 @@ export const LandingCards = ({
           setIsQuickViewOpen(true);
         }}
       >
-        Quickview
+        {t("products.quickview")}
       </button>
     )}
   </div>
@@ -671,7 +688,12 @@ export default function PopularProducts({
           0% { background-position: -200px 0; } 
           100% { background-position: 200px 0; } 
         }
+        @keyframes imgShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
         @keyframes spin89345 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hide-scrollbar { 
           -ms-overflow-style: none; 
           scrollbar-width: none; 

@@ -28,6 +28,29 @@ import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
+// ───────────── Video Cache (same as LandingCards) ─────────────
+const FP_CACHE_NAME = "biogance-videos-v1";
+
+const fpPreloadPromises =
+  globalThis.__fpPreloadPromises ||
+  (globalThis.__fpPreloadPromises = new Map());
+
+const fpPreloadVideo = (url) => {
+  if (!url || typeof window === "undefined") return Promise.resolve();
+  if (fpPreloadPromises.has(url)) return fpPreloadPromises.get(url);
+  const promise = (async () => {
+    try {
+      const cache = await caches.open(FP_CACHE_NAME);
+      const existing = await cache.match(url);
+      if (!existing) {
+        await cache.add(url);
+      }
+    } catch (_) {}
+  })();
+  fpPreloadPromises.set(url, promise);
+  return promise;
+};
+
 const GROUP_LABELS_FR = {
   "Category": "Catégorie",
   "Universe": "Univers",
@@ -275,43 +298,45 @@ const extendProductWithFilters = (product, rangesList, sizesList, colorsList, ca
 };
 
 // ───────────── Context (entry source) ─────────────
-function getShopContext(source, q) {
+function getShopContext(source, q, t) {
   switch (source) {
     case "recommended":
       return {
         key: "recommended",
-        eyebrow: "Recommended · Curated for you",
-        title: <>Picked <em className="font-serif italic">for your</em><span className="block">companions.</span></>,
-        description: "A personal edit drawn from your recent visits, favourites and the rituals your animals respond to best.",
+        crumbLabel: t("recommended.crumbLabel", "Recommended"),
+        eyebrow: t("recommended.eyebrow", "Recommended · Curated for you"),
+        title: <>{t("recommended.titlePart1", "Picked ")}<em className="font-serif italic">{t("recommended.titlePart2", "for your")}</em><span className="block">{t("recommended.titlePart3", "companions.")}</span></>,
+        description: t("recommended.description", "A personal edit drawn from your recent visits, favourites and the rituals your animals respond to best."),
         Icon: LuSparkles,
         accent: "text-amber-700",
       };
     case "best":
       return {
         key: "best",
-        crumbLabel: "Best Products",
-        eyebrow: "Best products · Editor's selection",
-        title: <>The <em className="font-serif italic">very best</em><span className="block">of Biogance.</span></>,
-        description: "Formulations that earned their place — chosen by our laboratory and reviewed by groomers, vets and breeders.",
+        crumbLabel: t("best.crumbLabel", "Best Products"),
+        eyebrow: t("best.eyebrow", "Best products · Editor's selection"),
+        title: <>{t("best.titlePart1", "The ")}<em className="font-serif italic">{t("best.titlePart2", "very best")}</em><span className="block">{t("best.titlePart3", "of Biogance.")}</span></>,
+        description: t("best.description", "Formulations that earned their place — chosen by our laboratory and reviewed by groomers, vets and breeders."),
         Icon: LuAward,
         accent: "text-emerald-700",
       };
     case "popular":
       return {
         key: "popular",
-        crumbLabel: "Popular This Week",
-        eyebrow: "Popular this week",
-        title: <>What everyone is <em className="font-serif italic">reaching</em><span className="block">for right now.</span></>,
-        description: "Most-loved bottles across our community over the last seven days — refined by animal, family and ritual.",
+        crumbLabel: t("popular.crumbLabel", "Popular This Week"),
+        eyebrow: t("popular.eyebrow", "Popular this week"),
+        title: <>{t("popular.titlePart1", "What everyone is ")}<em className="font-serif italic">{t("popular.titlePart2", "reaching")}</em><span className="block">{t("popular.titlePart3", "for right now.")}</span></>,
+        description: t("popular.description", "Most-loved bottles across our community over the last seven days — refined by animal, family and ritual."),
         Icon: LuFlame,
         accent: "text-rose-700",
       };
     case "search":
       return {
         key: "search",
-        eyebrow: q ? `Search results · “${q}”` : "Search results",
-        title: <>{q ? <>Results for <em className="font-serif italic">“{q}”</em></> : <>Search the <em className="font-serif italic">catalogue</em></>}<span className="block">across our library.</span></>,
-        description: "Use the filters to narrow by species, breed, need or range — your keyword stays applied.",
+        crumbLabel: t("search.crumbLabel", "Search"),
+        eyebrow: q ? t("search.eyebrowWithQuery", "Search results · “{{q}}”", { q }) : t("search.eyebrow", "Search results"),
+        title: <>{q ? <>{t("search.titleWithQuery", "Results for ")}<em className="font-serif italic">“{q}”</em></> : <>{t("search.titleWithoutQuery", "Search the ")}<em className="font-serif italic">{t("search.titleWithoutQueryPart2", "catalogue")}</em></>}<span className="block">{t("search.titlePart3", "across our library.")}</span></>,
+        description: t("search.description", "Use the filters to narrow by species, breed, need or range — your keyword stays applied."),
         Icon: LuSearch,
         accent: "text-stone-700",
       };
@@ -319,19 +344,20 @@ function getShopContext(source, q) {
     case "campaign":
       return {
         key: "ads",
-        eyebrow: "Featured campaign",
-        title: <>The <em className="font-serif italic">edit</em> you<span className="block">came in for.</span></>,
-        description: "A focused selection from the campaign that brought you here — all complementary products, in one place.",
+        crumbLabel: t("ads.crumbLabel", "Campaign"),
+        eyebrow: t("ads.eyebrow", "Featured campaign"),
+        title: <>{t("ads.titlePart1", "The ")}<em className="font-serif italic">{t("ads.titlePart2", "edit")}</em> <span className="block">{t("ads.titlePart3", "you came in for.")}</span></>,
+        description: t("ads.description", "A focused selection from the campaign that brought you here — all complementary products, in one place."),
         Icon: LuMegaphone,
         accent: "text-indigo-700",
       };
     default:
       return {
         key: "catalogue",
-        crumbLabel: "Catalogue",
-        eyebrow: "Catalogue · Vol. 04",
-        title: <>Care, <em className="font-serif italic">refined</em><span className="block">for every species.</span></>,
-        description: "A living index of formulations — filtered by animal, family, need and ritual. Made in France, certified by nature.",
+        crumbLabel: t("catalogue.crumbLabel", "Catalogue"),
+        eyebrow: t("catalogue.eyebrow", "Catalogue · Vol. 04"),
+        title: <>{t("catalogue.titlePart1", "Care, ")}<em className="font-serif italic">{t("catalogue.titlePart2", "refined")}</em><span className="block">{t("catalogue.titlePart3", "for every species.")}</span></>,
+        description: t("catalogue.description", "A living index of formulations — filtered by animal, family, need and ritual. Made in France, certified by nature."),
         Icon: LuBookOpen,
         accent: "text-stone-700",
       };
@@ -355,8 +381,8 @@ export default function FilterProducts() {
   const q = searchParams ? searchParams.get("q") : undefined;
   const from = searchParams ? searchParams.get("from") : undefined;
 
-  const ctx = getShopContext(source, q);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("filter");
+  const ctx = getShopContext(source, q, t);
   const isFrench = i18n?.language === "fr";
 
   const [animals, setAnimals] = useState([]);
@@ -422,8 +448,15 @@ export default function FilterProducts() {
 
   const translateName = (name) => {
     if (!name) return "";
-    if (isFrench && translationMap[name]) {
-      return translationMap[name];
+    if (isFrench) {
+      const translationKey = `apiTranslations.${name.replace(/[^a-zA-Z0-9]/g, "")}`;
+      const hasTranslation = t(translationKey) !== translationKey;
+      if (hasTranslation) {
+        return t(translationKey);
+      }
+      if (translationMap[name]) {
+        return translationMap[name];
+      }
     }
     return name;
   };
@@ -469,6 +502,17 @@ export default function FilterProducts() {
 
   useEffect(() => {
     searchedProductsRef.current = searchedProducts;
+  }, [searchedProducts]);
+
+  // Preload all product videos into browser cache as soon as products load
+  // So on hover they play instantly (same system as LandingCards)
+  useEffect(() => {
+    if (!searchedProducts.length) return;
+    searchedProducts.forEach((p) => {
+      if (p.videoUrl) {
+        fpPreloadVideo(p.videoUrl);
+      }
+    });
   }, [searchedProducts]);
 
   useEffect(() => {
@@ -561,6 +605,7 @@ export default function FilterProducts() {
 
   const prevFiltersRef = useRef(filtersSerialized);
   const prevPageRef = useRef(page);
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     if (!apiData) return;
@@ -577,10 +622,12 @@ export default function FilterProducts() {
       setHasSearched(false);
       searchedProductsRef.current = [];
       setSearchedProducts([]);
-    } else if (!pageChanged) {
+    } else if (!pageChanged && hasInitializedRef.current) {
       // apiData refreshed but nothing changed — don't re-fire
       return;
     }
+
+    hasInitializedRef.current = true;
 
     prevPageRef.current = targetPage;
 
@@ -913,13 +960,13 @@ export default function FilterProducts() {
           {/* Row 1 — breadcrumb + back */}
           <div className="flex flex-wrap items-center justify-between gap-3 py-4 text-[11px] uppercase tracking-[0.22em] text-stone-500">
             <nav className="flex items-center gap-2">
-              <a href="/" className="hover:text-stone-900">Home</a>
+              <a href="/" className="hover:text-stone-900">{t("home", "Home")}</a>
              
               {/* <a href="/shop" className="hover:text-stone-900">Catalogue</a> */}
               {ctx.key !== "catalogue" && (
                 <>
                   <span className="text-stone-300">/</span>
-                  <span className="text-stone-900">{ctx.crumbLabel || ctx.eyebrow.split("·")[0].trim()}</span>
+                  <span className="text-stone-900">{ctx.crumbLabel}</span>
                 </>
               )}
             </nav>
@@ -929,11 +976,11 @@ export default function FilterProducts() {
                 className="group inline-flex items-center gap-2 text-stone-600 transition hover:text-stone-900"
               >
                 <LuArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-0.5" />
-                Back to previous
+                {t("backToPrevious", "Back to previous")}
               </a>
             ) : (
               <span className="hidden sm:inline text-stone-400">
-                {categoriesList.length} species · {allProducts.length} formulations
+                {t("speciesCount", "{{count}} species", { count: categoriesList.length })} · {t("formulationsCount", "{{count}} formulations", { count: allProducts.length })}
               </span>
             )}
           </div>
@@ -963,7 +1010,7 @@ export default function FilterProducts() {
 
               {ctx.key === "search" && q ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">Keyword</span>
+                  <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">{t("keyword", "Keyword")}</span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-3 py-1.5 text-[11px] tracking-[0.05em] text-white">
                     <LuSearch className="h-3 w-3" /> {q}
                   </span>
@@ -974,7 +1021,7 @@ export default function FilterProducts() {
                     {totalCount.toLocaleString()}
                   </span>
                   <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">
-                    products in this view
+                    {t("productsInView", "products in this view")}
                   </span>
                 </div>
               )}
@@ -1006,7 +1053,7 @@ export default function FilterProducts() {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-5">
           <div className="flex items-baseline gap-3">
             <span className="font-serif text-3xl">{totalCount.toLocaleString()}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">products in view</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">{t("productsInView", "products in view")}</span>
           </div>
           <div className="flex flex-1 items-center justify-end gap-5">
             <div className="group relative flex w-full max-w-md items-center">
@@ -1015,20 +1062,20 @@ export default function FilterProducts() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search shampoos, sprays, rituals…"
+                placeholder={t("searchPlaceholder", "Search shampoos, sprays, rituals…")}
                 className="h-11 w-full rounded-full border border-stone-900/15 bg-stone-50/60 pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
               />
               {query && (
                 <button
                   onClick={() => setQuery("")}
                   className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
-                  aria-label="Clear search"
+                  aria-label={t("clearSearch", "Clear search")}
                 >
                   <LuX className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Sort</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">{t("sort", "Sort")}</span>
             <SortMenu value={sort} onChange={setSort} />
           </div>
         </div>
@@ -1040,11 +1087,11 @@ export default function FilterProducts() {
                 key={i}
                 className="group inline-flex items-center gap-1.5 rounded-full bg-stone-100 py-1.5 pl-3.5 pr-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-200"
               >
-                {c.label}
+                {translateName(c.label)}
                 <button
                   onClick={c.clear}
                   className="flex h-5 w-5 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
-                  aria-label={`Remove ${c.label}`}
+                  aria-label={`Remove ${translateName(c.label)}`}
                 >
                   <LuX className="h-3 w-3" />
                 </button>
@@ -1054,7 +1101,7 @@ export default function FilterProducts() {
               onClick={clearAll}
               className="ml-1 inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.18em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
             >
-              Reset all
+              {t("resetAll", "Reset all")}
             </button>
           </div>
         )}
@@ -1090,9 +1137,9 @@ export default function FilterProducts() {
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100">
                   <LuSearch className="h-7 w-7 text-stone-400" />
                 </div>
-                <p className="font-serif text-2xl text-stone-800">No results found</p>
+                <p className="font-serif text-2xl text-stone-800">{t("noResultsFound", "No results found")}</p>
                 <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
-                  Try adjusting your filters or keyword — a small tweak often reveals the right formulation.
+                  {t("noResultsDesc", "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.")}
                 </p>
               </div>
             )}
@@ -1107,6 +1154,7 @@ export default function FilterProducts() {
 
 // ───────────── Filter Rail ─────────────
 function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUniverse, hasFamily, hasSpec, dynamicLists }) {
+  const { t } = useTranslation("filter");
   const { RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench } = dynamicLists;
   const [openKey, setOpenKey] = useState(null);
   const [allOpen, setAllOpen] = useState(false);
@@ -1184,7 +1232,7 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
           className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-900 bg-stone-900 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-sm active:scale-[0.99] cursor-pointer"
         >
           <LuSlidersHorizontal className="h-4 w-4" />
-          Filters
+          {t("filters", "Filters")}
           {totalActive > 0 && (
             <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-semibold text-stone-900">
               {totalActive}
@@ -1208,9 +1256,9 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
             className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
             title="Open all filters"
           >
-            <LuSlidersHorizontal className="h-3.5 w-3.5" /> Filter
+            <LuSlidersHorizontal className="h-3.5 w-3.5" /> {t("filter", "Filter")}
             {totalActive > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white">
                 {totalActive}
               </span>
             )}
@@ -1229,7 +1277,7 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
             onClick={() => setOpenKey(openKey === "price" ? null : "price")}
             className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${openKey === "price" ? "bg-white text-stone-900" : ""}`}
           >
-            {isFrench ? "Prix" : "Price"} · €{state.price}
+            {t("price", "Price")} · €{state.price}
             <LuChevronDown className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`} />
           </button>
         </div>
@@ -1265,6 +1313,7 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
 }
 
 function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onClose, colorSwatches, translateName, isFrench }) {
+  const { t } = useTranslation("filter");
   const [isClosing, setIsClosing] = useState(false);
 
   const handleClose = () => {
@@ -1303,10 +1352,10 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
         <div className="flex items-center justify-between border-b border-stone-900/10 bg-white px-7 py-5">
           <div className="flex items-baseline gap-3">
             <span className="text-xs uppercase tracking-[0.25em] text-stone-500">
-              {isFrench ? "Tous" : "All"}
+              {t("all", "All")}
             </span>
             <h2 className="font-serif text-3xl text-stone-900">
-              {isFrench ? "Filtres" : "Filters"}
+              {t("filters", "Filters")}
             </h2>
             {totalActive > 0 && (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white">
@@ -1332,7 +1381,7 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
           <section className="border-t text-stone-900 border-stone-900/10 py-5">
             <div className="mb-3 flex items-baseline justify-between">
               <h3 className="font-serif text-lg">
-                {isFrench ? "Prix" : "Price"}
+                {t("price", "Price")}
               </h3>
               <span className="font-serif text-xl">€{price}</span>
             </div>
@@ -1356,13 +1405,13 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
             onClick={onClearAll}
             className="text-xs uppercase tracking-[0.2em] text-stone-500 underline underline-offset-4 hover:text-stone-900 cursor-pointer"
           >
-            {isFrench ? "Réinitialiser" : "Reset all"}
+            {t("resetAll", "Reset all")}
           </button>
           <button
             onClick={handleClose}
             className="rounded-full bg-stone-900 px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
           >
-            {isFrench ? "Afficher les résultats" : "Show results"}
+            {t("showResults", "Show results")}
           </button>
         </div>
       </aside>
@@ -1381,14 +1430,15 @@ function shouldShowSearchInput(group) {
 }
 
 function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
+  const { t } = useTranslation("filter");
   const [q, setQ] = useState("");
   const searchable = shouldShowSearchInput(g);
   const filtered = searchable && q
     ? g.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
     : g.options;
   const isColor = g.key === "color";
-  const displayTitle = isFrench ? (GROUP_LABELS_FR[g.label] || g.label) : g.label;
-  const searchPlaceholder = isFrench ? `Rechercher ${displayTitle.toLowerCase()}…` : `Search ${g.label.toLowerCase()}…`;
+  const displayTitle = t(`labels.${g.key}`, g.label);
+  const searchPlaceholder = t("searchGroupPlaceholder", { label: displayTitle.toLowerCase() });
 
   return (
     <section className="border-b border-stone-900/10 py-5 last:border-b-0">
@@ -1397,7 +1447,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
           <h3 className="font-serif text-lg text-stone-900">{displayTitle}</h3>
           {g.values.length > 0 && (
             <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              {g.values.length} {isFrench ? "sélectionné(s)" : "selected"}
+              {t("selectedCount", "{{count}} selected", { count: g.values.length })}
             </span>
           )}
         </div>
@@ -1419,7 +1469,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
         </div>
       )}
       {filtered.length === 0 ? (
-        <div className="text-xs text-stone-400">{isFrench ? "Aucune option" : "No options"}</div>
+        <div className="text-xs text-stone-400">{t("noOptions", "No options")}</div>
       ) : (
         <div className={`flex flex-wrap gap-2 ${searchable ? "max-h-60 overflow-y-auto pr-1" : ""}`}>
           {filtered.map((opt) => {
@@ -1457,10 +1507,11 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
 }
 
 function FilterTab({ group, open, onOpen, translateName, isFrench }) {
+  const { t } = useTranslation("filter");
   const count = group.values.length;
   const active = count > 0;
-  const displayLabel = isFrench ? (GROUP_LABELS_FR[group.label] || group.label) : group.label;
-  const displayTip = isFrench ? `Sélectionnez d'abord ${isFrench ? (GROUP_LABELS_FR[group.label] || group.label).toLowerCase() : group.label.toLowerCase()}` : group.tip;
+  const displayLabel = t(`labels.${group.key}`, group.label);
+  const displayTip = group.disabled ? t(`tips.${group.key}`, group.tip) : undefined;
 
   return (
     <button
@@ -1483,6 +1534,7 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
 }
 
 function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnimal, onClose, dynamicLists }) {
+  const { t } = useTranslation("filter");
   const { RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench } = dynamicLists;
   const [renderedKey, setRenderedKey] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -1560,10 +1612,10 @@ function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnim
     {/* Label + value */}
     <div className="flex items-baseline gap-3 shrink-0">
       <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-        {isFrench ? "Prix" : "Price"}
+        {t("price", "Price")}
       </span>
       <span className="font-serif text-2xl">€{state.price}</span>
-      <span className="text-xs text-stone-500">{isFrench ? "max" : "max"}</span>
+      <span className="text-xs text-stone-500">max</span>
     </div>
     {/* Slider + range labels */}
     <div className="flex flex-1 flex-col gap-1.5">
@@ -1581,7 +1633,7 @@ function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnim
       onClick={onClose}
       className="self-start rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition md:self-auto"
     >
-      {isFrench ? "Terminé" : "Done"}
+      {t("done", "Done")}
     </button>
   </div>
         ) : group ? (
@@ -1593,14 +1645,15 @@ function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnim
 }
 
 function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFrench }) {
+  const { t } = useTranslation("filter");
   const [q, setQ] = useState("");
   const searchable = shouldShowSearchInput(group);
   const filtered = searchable && q
     ? group.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
     : group.options;
   const isColor = group.key === "color";
-  const displayTitle = isFrench ? (GROUP_LABELS_FR[group.label] || group.label) : group.label;
-  const searchPlaceholder = isFrench ? `Rechercher ${displayTitle.toLowerCase()}…` : `Search ${group.label.toLowerCase()}…`;
+  const displayTitle = t(`labels.${group.key}`, group.label);
+  const searchPlaceholder = t("searchGroupPlaceholder", { label: displayTitle.toLowerCase() });
 
   useEffect(() => {
     setQ("");
@@ -1611,12 +1664,12 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-baseline gap-3">
           <span className="text-xs uppercase tracking-[0.25em] text-stone-500">
-            {isFrench ? "Filtrer par" : "Filter by"}
+            {t("filterBy", "Filter by")}
           </span>
           <h3 className="font-serif text-2xl">{displayTitle}</h3>
           {group.values.length > 0 && (
             <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-              {group.values.length} {isFrench ? "sélectionné(s)" : "selected"}
+              {t("selectedCount", "{{count}} selected", { count: group.values.length })}
             </span>
           )}
         </div>
@@ -1642,7 +1695,7 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
       )}
       {filtered.length === 0 ? (
         <div className="text-sm text-stone-500">
-          {isFrench ? "Aucune option disponible." : "No options available."}
+          {t("noOptionsAvailable", "No options available.")}
         </div>
       ) : (
         <div className={`flex flex-wrap gap-2 ${searchable ? "max-h-[320px] overflow-y-auto pr-1" : ""}`}>
@@ -1680,14 +1733,24 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
     </>
   );
 }
-
 // ───────────── Sort Menu ─────────────
 
 function SortMenu({ value, onChange }) {
+  const { t } = useTranslation("filter");
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const ref = useRef(null);
   const opts = ["Featured", "Newest", "Price · low to high", "Price · high to low"];
+
+  const getSortLabel = (key) => {
+    switch (key) {
+      case "Featured": return t("sortOptions.featured", "Featured");
+      case "Newest": return t("sortOptions.newest", "Newest");
+      case "Price · low to high": return t("sortOptions.priceLowToHigh", "Price · low to high");
+      case "Price · high to low": return t("sortOptions.priceHighToLow", "Price · high to low");
+      default: return key;
+    }
+  };
 
   const handleOpen = () => {
     if (open) {
@@ -1727,7 +1790,7 @@ function SortMenu({ value, onChange }) {
         onClick={handleOpen}
         className="flex items-center gap-2 border-b border-stone-900 pb-1 text-sm cursor-pointer"
       >
-        {value}
+        {getSortLabel(value)}
         <LuChevronDown
           className="h-3 w-3 transition-transform duration-200 ease-in-out"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -1759,7 +1822,7 @@ function SortMenu({ value, onChange }) {
               onClick={() => handleSelect(o)}
               className={`block w-full px-3 py-2 text-left text-sm hover:bg-stone-100 cursor-pointer ${value === o ? "font-semibold" : ""}`}
             >
-              {o}
+              {getSortLabel(o)}
             </button>
           ))}
         </div>

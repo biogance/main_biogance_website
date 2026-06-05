@@ -22,6 +22,7 @@
   "products": {
     "title": "Popular Products",
     "addToCart": "Add to Cart",
+    "quickview": "Quickview",
     "wishlistTitle": "Your Products Wishlist",
     "removeAll": "Remove All",
     "favoriteProducts": "Favorite Products",
