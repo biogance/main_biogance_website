@@ -90,6 +90,7 @@ export const LandingCards = ({
   squareCard,
   index,
   compact = false,
+  compactButtons = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -248,9 +249,17 @@ export const LandingCards = ({
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}} />
      <div
-  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"}`}
+  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
+  onClick={() => {
+    const slug =
+      i18n.language === "fr"
+        ? safeProduct.french_seo_keyword
+        : safeProduct.english_seo_keyword;
+    start();
+    router.push(`/product/${slug}`);
+  }}
 >
         {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
         {index === 0 && (
@@ -344,19 +353,11 @@ export const LandingCards = ({
                   alt={safeProduct.name || ""}
                   onLoad={() => handleImageLoaded(idx)}
                   onError={() => handleImageLoaded(idx)}
-                  onClick={() => {
-                    const slug =
-                      i18n.language === "fr"
-                        ? safeProduct.french_seo_keyword
-                        : safeProduct.english_seo_keyword;
-                    start();
-                    router.push(`/product/${slug}`);
-                  }}
                   style={{
                     opacity: loadedImages.has(idx) ? 1 : 0,
                     transition: "opacity 0.3s ease",
                   }}
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
@@ -383,16 +384,8 @@ export const LandingCards = ({
           )}
           {isHovered && videoUrl && (
             <div
-              className="absolute inset-0  cursor-pointer"
+              className="absolute inset-0"
               style={{ zIndex: 6 }}
-              onClick={() => {
-                const slug =
-                  i18n.language === "fr"
-                    ? safeProduct.french_seo_keyword
-                    : safeProduct.english_seo_keyword;
-                start();
-                router.push(`/product/${slug}`);
-              }}
             />
           )}
 
@@ -419,16 +412,8 @@ export const LandingCards = ({
 
          {/* Title + Price / QuickView overlay */}
 <div
-  className="absolute bottom-0 mb-6 left-0 right-0 px-3 py-2"
+  className={`absolute bottom-0 ${compactButtons ? 'mb-2' : 'mb-6'} left-0 right-0 px-3 py-2`}
   style={{ zIndex: 7 }}
-  onClick={() => {
-    const slug =
-      i18n.language === "fr"
-        ? safeProduct.french_seo_keyword
-        : safeProduct.english_seo_keyword;
-    start();
-    router.push(`/product/${slug}`);
-  }}
 >
   {/* Title + Price — hover pe hide */}
   <p
