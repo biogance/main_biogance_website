@@ -1122,7 +1122,7 @@ export default function FilterProducts() {
 
               {filteredProducts.map((p, i) => (
                 <div key={p.id} className="w-full">
-                  <LandingCards product={p} showNav={true} index={i} compact={false} />
+                  <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} />
                 </div>
               ))}
               {isFetchingMore && Array.from({ length: 4 }).map((_, i) => (

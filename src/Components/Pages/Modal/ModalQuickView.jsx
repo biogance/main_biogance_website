@@ -59,7 +59,8 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
   const [selectedVolume, setSelectedVolume] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [noTransition, setNoTransition] = useState(false);
+  // ── FIX: start with noTransition=true so first render never slides in ──
+  const [noTransition, setNoTransition] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
   const [slideLoading, setSlideLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -77,7 +78,6 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
       document.body.style.paddingRight = "";
       return;
     }
-    // Calculate scrollbar width to prevent layout shift
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
     document.body.style.paddingRight = `${scrollbarWidth}px`;
@@ -87,12 +87,14 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
     };
   }, [isOpen]);
 
+  // ── Reset on open — always noTransition so first image appears instantly ──
   useEffect(() => {
     if (!isOpen) return;
     setSelectedProductIdx(0);
     setSelectedVolume(null);
     setSelectedColor(null);
     setCurrentSlide(0);
+    setNoTransition(true); // ← FIX: no slide animation on open
     setImageLoading(true);
     setSlideLoading(false);
     setReadMore(false);
@@ -139,12 +141,14 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
     if (total === 0) return;
     let target = idx;
     if (idx < 0 || idx >= total) {
+      // Wrap-around: disable transition briefly then re-enable
       target = (idx + total) % total;
       setNoTransition(true);
       setCurrentSlide(target);
       currentSlideRef.current = target;
       requestAnimationFrame(() => requestAnimationFrame(() => setNoTransition(false)));
     } else {
+      // Normal navigation: enable transition
       setNoTransition(false);
       setCurrentSlide(target);
       currentSlideRef.current = target;
@@ -152,9 +156,11 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
     if (!loadedSlides.current.has(target)) setSlideLoading(true);
   };
 
+  // ── Reset on product variant change — no transition so it jumps to slide 0 ──
   useEffect(() => {
     setCurrentSlide(0);
     currentSlideRef.current = 0;
+    setNoTransition(true); // ← FIX: no slide animation when variant changes
     setImageLoading(true);
     setSlideLoading(false);
     loadedSlides.current = new Set();
@@ -199,7 +205,6 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
 
   if (!isOpen) return null;
 
-  // Fixed description char limit — same on all screens
   const CHAR_LIMIT = 220;
 
   const plainText =
@@ -243,7 +248,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
         }}
       />
 
-      {/* Backdrop — fixed, full screen, no scroll */}
+      {/* Backdrop */}
       <div
         onClick={handleBackdropClick}
         style={{
@@ -256,10 +261,10 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
           alignItems: "center",
           justifyContent: "center",
           padding: "16px",
-          overflowY: "auto",          // backdrop itself scrolls if viewport too small
+          overflowY: "auto",
         }}
       >
-        {/* Modal Box — fixed dimensions, never changes shape */}
+        {/* Modal Box */}
         <div
           style={{
             position: "relative",
@@ -268,7 +273,6 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
             overflow: "hidden",
             width: "100%",
             maxWidth: "900px",
-            // Fixed height — same on all screens
             height: "min(600px, calc(100vh - 32px))",
             display: "flex",
             flexDirection: "row",
@@ -293,7 +297,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
             <IoClose size={20} color="#1c1c1c" />
           </button>
 
-          {/* LEFT: Image Slider — exactly 50% width, full height */}
+          {/* LEFT: Image Slider */}
           <div
             style={{
               width: "50%",
@@ -316,12 +320,13 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                   style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                 >
                   {slides.map((slide, idx) => {
-                    const useContain = slide.isFirst;
+                    const isLastSlide = idx === slides.length - 1;
+                    const useContain = slide.isFirst || isLastSlide;
                     return (
                       <div
                         key={idx}
                         className="qv-slide-item"
-                        style={useContain ? { padding: "40px 32px" } : { padding: 0, position: "relative" }}
+                        style={useContain ? { padding: "40px 20px" } : { padding: 0, position: "relative" }}
                       >
                         {slide.type === "video" ? (
                           <video
@@ -329,6 +334,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                             key={slide.url}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             muted playsInline
+                              loop 
                             onCanPlay={() => {
                               loadedSlides.current.add(idx);
                               if (currentSlideRef.current === idx) setSlideLoading(false);
@@ -352,7 +358,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                             }}
                             style={
                               useContain
-                                ? { objectFit: "contain", height: "100%", width: "auto", maxWidth: "100%", padding: "40px 20px", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.12))" }
+                                ? { objectFit: "contain", height: "100%", width: "auto", maxWidth: "100%", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.12))" }
                                 : { objectFit: "cover", position: "absolute", inset: 0, width: "100%", height: "100%" }
                             }
                           />
@@ -433,7 +439,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                   </span>
                 </div>
 
-                {/* Description — fixed char limit, no flex: 1 */}
+                {/* Description */}
                 {displayDescription && (
                   <div style={{ fontSize: "13px", color: "#444", lineHeight: "1.7", marginBottom: "18px" }}>
                     {!readMore ? (
@@ -517,7 +523,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                   </div>
                 )}
 
-                {/* Spacer — pushes bottom section down */}
+                {/* Spacer */}
                 <div style={{ flex: 1 }} />
 
                 {/* Quantity + Add to Cart + Wishlist */}
@@ -560,8 +566,8 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                   </div>
                 </div>
 
-                {/* View Product Details — always at bottom */}
-                <div style={{ paddingTop: "12px", borderTop: "1px solid #F0F0F0" }}>
+                {/* View Product Details */}
+                <div style={{ paddingTop: "12px", paddingBottom: "8px", borderTop: "1px solid #F0F0F0" }}>
                   <button
                     onClick={handleViewProduct}
                     style={{ width: "100%", backgroundColor: "transparent", border: "none", padding: "10px 0", fontSize: "13px", fontWeight: 600, color: "#1C1C1C", textDecoration: "underline", textUnderlineOffset: "3px", cursor: "pointer", letterSpacing: "0.04em", textTransform: "uppercase", transition: "color 0.2s" }}
