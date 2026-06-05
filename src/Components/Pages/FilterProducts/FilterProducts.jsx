@@ -485,7 +485,9 @@ export default function FilterProducts() {
     productsCount: item.products?.length || 1,
     products: item.products || [],
     description: item.description || '',
-    french_description: item.french_description || ''
+    french_description: item.french_description || '',
+    product_label: item.product_label || '',
+    french_product_label: item.french_product_label || ''
   }));
 
   const [searchedProducts, setSearchedProducts] = useState([]);

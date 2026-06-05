@@ -419,12 +419,19 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
               </div>
             ) : (
               <>
-                {/* Exclusive Pro label */}
-                <div style={{ marginBottom: "12px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: "#1C1C1C", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f3f3f3", padding: "4px 10px", borderRadius: "6px" }}>
-                    Exclusive Pro
-                  </span>
-                </div>
+                {/* Product Label — from API */}
+                {(() => {
+                  const label = language === "fr" && rawBundleData?.french_product_label
+                    ? rawBundleData.french_product_label
+                    : rawBundleData?.product_label || "";
+                  return label ? (
+                    <div style={{ marginBottom: "12px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "#1C1C1C", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f3f3f3", padding: "4px 10px", borderRadius: "6px" }}>
+                        {label}
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* Product Name */}
                 <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#1C1C1C", lineHeight: "1.4", marginBottom: "10px", marginTop: 0, paddingRight: "30px" }}>
@@ -567,7 +574,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                 </div>
 
                 {/* View Product Details */}
-                <div style={{ paddingTop: "12px", paddingBottom: "8px", borderTop: "1px solid #F0F0F0" }}>
+                <div style={{ paddingTop: "10px", marginBottom:"-10px", borderTop: "1px solid #F0F0F0" }}>
                   <button
                     onClick={handleViewProduct}
                     style={{ width: "100%", backgroundColor: "transparent", border: "none", padding: "10px 0", fontSize: "13px", fontWeight: 600, color: "#1C1C1C", textDecoration: "underline", textUnderlineOffset: "3px", cursor: "pointer", letterSpacing: "0.04em", textTransform: "uppercase", transition: "color 0.2s" }}
