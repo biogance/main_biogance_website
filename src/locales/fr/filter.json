@@ -1,0 +1,107 @@
+{
+  "home": "Accueil",
+  "backToPrevious": "Retour au précédent",
+  "speciesCount": "{{count}} espèces",
+  "formulationsCount": "{{count}} formulations",
+  "keyword": "Mot-clé",
+  "productsInView": "produits affichés",
+  "searchPlaceholder": "Rechercher des shampooings, sprays, rituels…",
+  "clearSearch": "Effacer la recherche",
+  "sort": "Trier",
+  "showResults": "Afficher les résultats",
+  "resetAll": "Réinitialiser",
+  "noResultsFound": "Aucun résultat trouvé",
+  "noResultsDesc": "Essayez d'ajuster vos filtres ou votre mot-clé — une petite modification révèle souvent la bonne formulation.",
+  "filters": "Filtres",
+  "filter": "Filtrer",
+  "price": "Prix",
+  "all": "Tous",
+  "selectedCount": "{{count}} sélectionné(s)",
+  "searchGroupPlaceholder": "Rechercher {{label}}…",
+  "noOptions": "Aucune option",
+  "noOptionsAvailable": "Aucune option disponible.",
+  "filterBy": "Filtrer par",
+  "done": "Terminé",
+  "tips": {
+    "family": "Sélectionnez d'abord une catégorie",
+    "specificity": "Sélectionnez d'abord une famille",
+    "needs": "Sélectionnez d'abord une spécificité",
+    "breed": "Sélectionnez d'abord une catégorie",
+    "forwhich": "Sélectionnez d'abord une catégorie"
+  },
+  "labels": {
+    "animal": "Catégorie",
+    "universe": "Univers",
+    "family": "Famille",
+    "specificity": "Spécificité",
+    "needs": "Besoins",
+    "breed": "Race",
+    "forwhich": "Pour qui",
+    "range": "Gamme",
+    "size": "Taille",
+    "color": "Couleur",
+    "price": "Prix"
+  },
+  "sortOptions": {
+    "featured": "En vedette",
+    "newest": "Nouveautés",
+    "priceLowToHigh": "Prix · du moins cher au plus cher",
+    "priceHighToLow": "Prix · du plus cher au moins cher"
+  },
+  "apiTranslations": {
+    "Dogs": "Chiens",
+    "Puppies": "Chiots",
+    "CatsKittens": "Chats & Chatons",
+    "Smallmammals": "Petits mammifères",
+    "BirdsBackyardPoultry": "Oiseaux & Volaille de basse-cour",
+    "ReptilesTurtles": "Reptiles & Tortues",
+    "Horses": "Chevaux"
+  },
+  "recommended": {
+    "eyebrow": "Recommandé · Sélectionné pour vous",
+    "titlePart1": "Choisi ",
+    "titlePart2": "pour vos",
+    "titlePart3": "compagnons.",
+    "description": "Une sélection personnelle tirée de vos visites récentes, de vos favoris et des rituels auxquels vos animaux réagissent le mieux."
+  },
+  "best": {
+    "crumbLabel": "Meilleurs produits",
+    "eyebrow": "Meilleurs produits · Sélection de l'éditeur",
+    "titlePart1": "Le ",
+    "titlePart2": "meilleur",
+    "titlePart3": "de Biogance.",
+    "description": "Des formulations qui ont gagné leur place — choisies par notre laboratoire et examinées par des toiletteurs, des vétérinaires et des éleveurs."
+  },
+  "popular": {
+    "crumbLabel": "Populaire cette semaine",
+    "eyebrow": "Populaire cette semaine",
+    "titlePart1": "Ce que tout le monde ",
+    "titlePart2": "recherche",
+    "titlePart3": "en ce moment.",
+    "description": "Les flacons les plus appréciés de notre communauté au cours des sept derniers jours — affinés par animal, famille et rituel."
+  },
+  "search": {
+    "eyebrowWithQuery": "Résultats de recherche · “{{q}}”",
+    "eyebrow": "Résultats de recherche",
+    "titleWithQuery": "Résultats pour ",
+    "titleWithoutQuery": "Rechercher dans le ",
+    "titleWithoutQueryPart2": "catalogue",
+    "titlePart3": "à travers notre bibliothèque.",
+    "description": "Utilisez les filtres pour affiner par espèce, race, besoin ou gamme — votre mot-clé reste appliqué."
+  },
+  "ads": {
+    "eyebrow": "Campagne en vedette",
+    "titlePart1": "La ",
+    "titlePart2": "sélection",
+    "titlePart3": "pour laquelle vous êtes venu.",
+    "description": "Une sélection ciblée de la campagne qui vous a mené ici — tous les produits complémentaires, au même endroit."
+  },
+  "catalogue": {
+    "crumbLabel": "Catalogue",
+    "eyebrow": "Catalogue · Vol. 04",
+    "titlePart1": "Soins, ",
+    "titlePart2": "raffinés",
+    "titlePart3": "pour chaque espèce.",
+    "description": "Un index vivant de formulations — filtré par animal, famille, besoin et rituel. Fabriqué en France, certifié par la nature."
+  }
+}
