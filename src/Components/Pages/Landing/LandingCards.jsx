@@ -54,6 +54,7 @@ export const LandingCards = ({
   index,
   compact = false,
   compactButtons = false,
+   raisedLabel = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -186,6 +187,12 @@ export const LandingCards = ({
 
   return (
     <div className="w-full h-full flex flex-col">
+       <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
@@ -201,19 +208,22 @@ export const LandingCards = ({
 >
         {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
         {index === 0 && (
-          <div className="absolute top-3 left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
+      // Replace karo:
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             New
           </div>
         )}
 
         {index === 1 && (
-          <div className="absolute top-3 left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
+        // Replace karo:
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             Best
           </div>
         )}
 
         {index === 2 && (
-          <div className="absolute top-3 left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
+          // Replace karo:
+          <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             -20%
           </div>
         )}
@@ -265,7 +275,7 @@ export const LandingCards = ({
           {isCurrentImageLoading && (
             <div
               className="absolute inset-0 z-10 flex items-center justify-center"
-              style={{ background: "#f0f0f0" }}
+              style={{ background: "#f3f3f3" }}
             >
               <div
                 style={{
@@ -329,23 +339,26 @@ export const LandingCards = ({
               }}
             />
           )}
-          {isHovered && videoUrl && !isVideoReady && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ zIndex: 3, background: "#f0f0f0" }}
-            >
-              <div
-                style={{
+     
+{isHovered && videoUrl && !isVideoReady && (
+  <div
+    className="absolute inset-0 flex items-center justify-center"
+    style={{ zIndex: 3, background: "#f3f3f3" }}
+  >
+    <div
+     // Replace karo:
+
+ style={{
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
                   border: "3px solid #aaa",
                   borderTopColor: "transparent",
-                  animation: "lcSpin 0.75s linear infinite",
+                   animation: "spin 0.75s linear infinite",
                 }}
-              />
-            </div>
-          )}
+    />
+  </div>
+)}
 
           {/* CHANGE 1: Dot indicators — commented out (image case mein bhi) */}
           {/* {slides.length > 1 && !(isHovered && videoUrl) && (
@@ -370,7 +383,8 @@ export const LandingCards = ({
 
          {/* Title + Price / QuickView overlay */}
 <div
-  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
+   className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
+
   style={{ zIndex: 7 }}
 >
   {/* Title + Price — hover pe hide */}
