@@ -63,19 +63,16 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => { preloadHeroVideos(); }, []);
-  const [apiData, setApiData] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('homePageData');
-      return cached ? JSON.parse(cached) : null;
+  const [apiData, setApiData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const cached = localStorage.getItem('homePageData');
+    if (cached) {
+      setApiData(JSON.parse(cached));
+      setIsLoading(false);
     }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !localStorage.getItem('homePageData');
-    }
-    return true;
-  });
+  }, []);
   
   const slides = heroSlides;
   const hasMultipleSlides = slides.length > 1;

@@ -29,7 +29,7 @@ const LandingBanner = ({ data }) => {
     }
   }, [selectedImage]);
 
-  const isLoading = !data && !(typeof window !== 'undefined' && localStorage.getItem('homePageData'));
+  const isLoading = !data;
 
   if (!isLoading && imageList.length === 0) return null;
 
