@@ -1132,7 +1132,7 @@ export default function FilterProducts() {
           <>
           <div 
   className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
-   style={{ overflowAnchor: "none", contain: "none" }}
+   style={{ overflowAnchor: "none", }}
 >
   {filteredProducts.map((p, i) => (
               <div key={p.id} className="w-full min-h-0">

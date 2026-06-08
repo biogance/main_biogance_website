@@ -87,23 +87,29 @@ export const LandingCards = ({
   const handleImageLoaded = (_idx) => {
     if (_idx === currentImageIndex) setImageLoaded(true);
   };
+  const firstImage = safeProduct.images?.[0];
+  const restImages = safeProduct.images?.slice(1) || [];
+  const videoUrl = safeProduct.videoUrl || null;
 
-  // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
+  const slides = [
+    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
+    ...restImages.map((url) => ({ type: "image", url })),
+  ];
  useEffect(() => {
   const url = slides[currentImageIndex]?.url || safeProduct.image;
-  if (!url) { setImageLoaded(true); return; }
-  
-  // Pehle check karo kya image already browser cache mein hai
-  const img = new window.Image();
-  if (img.complete && img.naturalWidth > 0) {
+  if (!url) return;
+  const cached = new window.Image();
+  cached.src = url;
+  if (cached.complete && cached.naturalHeight !== 0) {
     setImageLoaded(true);
     return;
   }
   setImageLoaded(false);
+  const img = new window.Image();
   img.onload = () => setImageLoaded(true);
   img.onerror = () => setImageLoaded(true);
   img.src = url;
-}, [currentImageIndex, safeProduct.image]);
+}, [currentImageIndex, safeProduct.image , firstImage]);
 
 
   const handleFavorite = async (e) => {
@@ -138,14 +144,7 @@ export const LandingCards = ({
     }
   };
 
-  const firstImage = safeProduct.images?.[0];
-  const restImages = safeProduct.images?.slice(1) || [];
-  const videoUrl = safeProduct.videoUrl || null;
 
-  const slides = [
-    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
-    ...restImages.map((url) => ({ type: "image", url })),
-  ];
 
   const goToSlide = (idx) => {
     const total = slides.length;
@@ -215,7 +214,11 @@ export const LandingCards = ({
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
      <div
-  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
+  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}  style={{ 
+    willChange: "transform",      
+    transform: "translateZ(0)",     
+    backfaceVisibility: "hidden",   
+  }}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
   onClick={() => {
@@ -329,6 +332,8 @@ export const LandingCards = ({
                   alt={safeProduct.name || ""}
                   onLoad={() => handleImageLoaded(idx)}
                   onError={() => handleImageLoaded(idx)}
+                   loading="eager"    
+  decoding="sync" 
                   style={{
                     opacity: 1,
                     transition: "opacity 0.3s ease",
