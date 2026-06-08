@@ -811,10 +811,10 @@ export default function PopularProducts({
             useGrid
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 "
               : isFavourite || isWishlist
-                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 transform-gpu"
+                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 "
                 : isHorizontal
-                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] transform-gpu"
-                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] transform-gpu"
+                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] "
+                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] "
           }
           style={{
     // This is the silver bullet for Mac Chrome flickering
@@ -841,8 +841,8 @@ export default function PopularProducts({
                   key={product.id}
                   className={
                     useGrid || isFavourite || isWishlist
-                      ? "w-full max-w-[240px] mx-auto transform-gpu"
-                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)] transform-gpu"
+                      ? "w-full max-w-[240px] mx-auto "
+                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)] "
                   }
                   style={{
                     // This forces Chrome's WebKit rendering engine to paint the component immediately
