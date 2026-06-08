@@ -376,7 +376,7 @@ function getShopContext(source, q, categoryName, t) {
 }
 
 const SkeletonCard = () => (
-  <div className="w-full animate-pulse">
+  <div className="w-full animate-pulse min-h-[420px]">
     <div className="bg-stone-100 aspect-[7/10] mb-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     </div>
@@ -511,6 +511,7 @@ export default function FilterProducts() {
   const [lastPage, setLastPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
+  const scrollYBeforeLoad = useRef(0);
 
   const sentinelRef = useRef(null);
 
@@ -645,13 +646,14 @@ export default function FilterProducts() {
 
     prevPageRef.current = targetPage;
 
-    if (targetPage === 1) {
-      setIsSearching(true);
-      isFetchingRef.current = true;
-    } else {
-      setIsFetchingMore(true);
-      isFetchingRef.current = true;
-    }
+ if (targetPage === 1) {
+  setIsSearching(true);
+  isFetchingRef.current = true;
+} else {
+  scrollYBeforeLoad.current = window.scrollY;
+  setIsFetchingMore(true);
+  isFetchingRef.current = true;
+}
 
     const loginData = typeof window !== "undefined" ? localStorage.getItem("LoginData") : null;
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
@@ -733,11 +735,17 @@ export default function FilterProducts() {
         console.error("FilterProducts Search Error:", err);
         toast.error("Failed to load products from search API.");
       })
-      .finally(() => {
-        setIsSearching(false);
-        setIsFetchingMore(false);
-        isFetchingRef.current = false;
-      });
+     .finally(() => {
+  setIsSearching(false);
+  setIsFetchingMore(false);
+  isFetchingRef.current = false;
+
+  if (targetPage > 1) {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollYBeforeLoad.current, behavior: "instant" });
+    });
+  }
+});
   }, [
     apiData,
     filtersSerialized,
@@ -1138,14 +1146,16 @@ export default function FilterProducts() {
                   <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} />
                 </div>
               ))}
-              {isFetchingMore && Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonCard key={`more-${i}`} />
-              ))}
-            </div>
+             </div>
 
-            <div ref={sentinelRef} className="h-1" />
-
-            {filteredProducts.length === 0 && hasSearched && (
+{isFetchingMore && (
+  <div className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <SkeletonCard key={`more-${i}`} />
+    ))}
+  </div>
+)}
+{filteredProducts.length === 0 && hasSearched && (
               <div className="flex flex-col items-center justify-center py-28 text-center">
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100">
                   <LuSearch className="h-7 w-7 text-stone-400" />
@@ -1160,6 +1170,7 @@ export default function FilterProducts() {
         )}
       </section>
 
+    <div ref={sentinelRef} className="h-4" />
       <Footer />
     </div>
   );
@@ -1531,7 +1542,7 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
         onClick={onOpen}
         disabled={group.disabled}
         title={group.disabled ? displayTip : undefined}
-        className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer text-stone-900 font-semibold ai-style-change-3 ${
+        className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer font-semibold ai-style-change-3 ${
           group.disabled ? "cursor-not-allowed text-stone-300" : active ? "text-stone-900 font-semibold" : "text-stone-600 hover:text-stone-900"
         } ${open ? "bg-stone-100 text-stone-900" : ""}`}
       >
