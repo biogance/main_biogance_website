@@ -811,11 +811,17 @@ export default function PopularProducts({
             useGrid
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 "
               : isFavourite || isWishlist
-                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 transform-gpu"
                 : isHorizontal
-                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
-                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
+                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] transform-gpu"
+                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] transform-gpu"
           }
+          style={{
+    // This is the silver bullet for Mac Chrome flickering
+    WebkitTransform: "translateZ(0)",
+    transform: "translateZ(0)",
+    willChange: "transform, scroll-position" 
+  }}
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
