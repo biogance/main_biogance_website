@@ -575,6 +575,7 @@ export default function PopularProducts({
   const { t } = useTranslation("home");
   const router = useRouter();
   const { start } = useTopLoader();
+const currentCardIndexRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(() => {
@@ -626,14 +627,16 @@ export default function PopularProducts({
     ? mapProducts(bestSellerProducts)
     : mapProducts(apiProducts);
 
-  const checkScrollPosition = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
+ const checkScrollPosition = () => {
+  // Sirf tab run karo jab index 0 pe ho (initial state)
+  if (currentCardIndexRef.current > 0) return;
+  
+  if (scrollContainerRef.current) {
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  }
+};
 
   useEffect(() => {
     if (products.length === 0) return;
@@ -671,27 +674,51 @@ export default function PopularProducts({
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      container.addEventListener("scroll", checkScrollPosition);
+      // container.addEventListener("scroll", checkScrollPosition);
       window.addEventListener("resize", checkScrollPosition);
 
       return () => {
-        container.removeEventListener("scroll", checkScrollPosition);
+        // container.removeEventListener("scroll", checkScrollPosition);
         window.removeEventListener("resize", checkScrollPosition);
       };
     }
   }, [isLoading]);
 
- const scroll = (direction) => {
-    if (scrollContainerRef.current) {
-      const firstCard =
-        scrollContainerRef.current.querySelector(":scope > div");
-      const cardWidth = firstCard ? firstCard.offsetWidth + 2 : 300; // 2 = gap-[2px]
-      scrollContainerRef.current.scrollBy({
-        left: direction === "next" ? cardWidth : -cardWidth,
-        behavior: "smooth",
-      });
-    }
-  };
+const scroll = (direction) => {
+  if (!scrollContainerRef.current) return;
+
+  const container = scrollContainerRef.current;
+  const cards = container.querySelectorAll(":scope > div");
+  if (!cards.length) return;
+
+  const totalCards = cards.length;
+  const firstCard = cards[0];
+  const cardWidth = firstCard.offsetWidth + 3;
+  const visibleCount = Math.round(container.clientWidth / cardWidth);
+  const maxIndex = totalCards - visibleCount;
+
+  // Ref se current value lo — stale closure problem nahi hogi
+  const currentIndex = currentCardIndexRef.current;
+
+  let newIndex;
+  if (direction === "next") {
+    newIndex = Math.min(currentIndex + 1, maxIndex);
+  } else {
+    newIndex = Math.max(currentIndex - 1, 0);
+  }
+
+  // Dono update karo — ref turant, state re-render ke liye
+  currentCardIndexRef.current = newIndex;
+
+  const targetCard = cards[newIndex];
+  container.scrollTo({
+    left: targetCard.offsetLeft - 5,
+    behavior: "smooth",
+  });
+
+  setCanScrollLeft(newIndex > 0);
+  setCanScrollRight(newIndex < maxIndex);
+};
 
   return (
     <div className="w-full bg-white">

@@ -536,8 +536,13 @@ export default function FilterProducts() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !isFetchingRef.current) {
+          // Set the guard immediately to prevent duplicate triggers
+          // (macOS Chrome can fire the callback multiple times during layout reflow)
+          isFetchingRef.current = true;
           setPage(prev => {
             if (prev < lastPage) return prev + 1;
+            // If we're already at the last page, release the guard
+            isFetchingRef.current = false;
             return prev;
           });
         }
@@ -546,7 +551,7 @@ export default function FilterProducts() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [lastPage]);
+  }, [lastPage, page, isSearching]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -1167,7 +1172,10 @@ export default function FilterProducts() {
         )}
       </section>
 
-   <div ref={sentinelRef} className="h-4" style={{ overflowAnchor: "none" }} />
+   {/* Sentinel: only render when there are more pages to load and not currently searching */}
+   {!isSearching && page < lastPage && (
+     <div ref={sentinelRef} className="h-4" style={{ overflowAnchor: "none" }} />
+   )}
 
       <Footer />
     </div>
@@ -1246,7 +1254,7 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
   };
 
   return (
-    <div ref={ref} className="sticky top-[104px] z-40 border-y border-stone-900/10 bg-white/95 backdrop-blur">
+    <div ref={ref} className="sticky top-[104px] z-39 border-y border-stone-900/10 bg-white/95 backdrop-blur">
       {/* Mobile: single prominent CTA that opens the full filters modal */}
       <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-5 py-3 md:hidden">
         <button
