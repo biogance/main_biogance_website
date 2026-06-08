@@ -42,8 +42,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const scrollContainerRef = useRef(null);
 
   const apiAdvice = data?.expert_advice || [];
-  const hasCache = typeof window !== 'undefined' && !!localStorage.getItem('homePageData');
-  const isLoading = !data && !hasCache;
+  const isLoading = !data;
 
   const [favorites, setFavorites] = useState(() =>
     Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
@@ -115,7 +114,9 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     try {
-      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const d = new Date(dateStr);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
     } catch { return dateStr; }
   };
 

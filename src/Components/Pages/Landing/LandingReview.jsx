@@ -58,8 +58,7 @@ export default function LandingReview({ data }) {
   const scrollContainerRef = useRef(null);
 
   const apiReviews = data?.reviews || [];
-  const hasCache = typeof window !== 'undefined' && !!localStorage.getItem('homePageData');
-  const showShimmer = apiReviews.length === 0 && !hasCache;
+  const showShimmer = apiReviews.length === 0 && !data;
 
   const readMore = t('reviews.readMore');
   const showLess = t('reviews.showLess');
