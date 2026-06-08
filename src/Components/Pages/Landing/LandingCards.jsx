@@ -162,14 +162,14 @@ export const LandingCards = ({
   }, [videoUrl]);
 
   const handleMouseEnter = () => {
-    if (!videoUrl) return;
     clearTimeout(hoverTimeout.current);
     setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
-    if (!videoUrl) return;
-    hoverTimeout.current = setTimeout(() => setIsHovered(false), 100);
+    clearTimeout(hoverTimeout.current);
+    setIsHovered(false);
+    setIsCardHovered(false);
   };
 
   useEffect(() => {
@@ -329,15 +329,16 @@ export const LandingCards = ({
               onCanPlay={() => setIsVideoReady(true)}
               style={{
                 pointerEvents: "none",
-                zIndex: isHovered ? 5 : -1,
+                zIndex: 2,
                 opacity: isHovered && isVideoReady ? 1 : 0,
+                transition: "opacity 0.2s ease",
               }}
             />
           )}
           {isHovered && videoUrl && !isVideoReady && (
             <div
-              className="absolute inset-0 z-10 flex items-center justify-center"
-              style={{ background: "#f0f0f0" }}
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ zIndex: 3, background: "#f0f0f0" }}
             >
               <div
                 style={{
@@ -350,12 +351,6 @@ export const LandingCards = ({
                 }}
               />
             </div>
-          )}
-          {isHovered && videoUrl && isVideoReady && (
-            <div
-              className="absolute inset-0"
-              style={{ zIndex: 6 }}
-            />
           )}
 
           {/* CHANGE 1: Dot indicators — commented out (image case mein bhi) */}
