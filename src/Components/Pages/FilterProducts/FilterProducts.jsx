@@ -376,7 +376,7 @@ function getShopContext(source, q, categoryName, t) {
 }
 
 const SkeletonCard = () => (
-  <div className="w-full animate-pulse min-h-[420px]">
+  <div className="w-full animate-pulse min-h-[420px]" aria-hidden>
     <div className="bg-stone-100 aspect-[7/10] mb-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     </div>
@@ -536,22 +536,19 @@ export default function FilterProducts() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !isFetchingRef.current) {
-          // Set the guard immediately to prevent duplicate triggers
-          // (macOS Chrome can fire the callback multiple times during layout reflow)
           isFetchingRef.current = true;
           setPage(prev => {
             if (prev < lastPage) return prev + 1;
-            // If we're already at the last page, release the guard
             isFetchingRef.current = false;
             return prev;
           });
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: "200px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [lastPage, page, isSearching]);
+  }, [lastPage, isSearching]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -650,15 +647,13 @@ export default function FilterProducts() {
     hasInitializedRef.current = true;
 
     prevPageRef.current = targetPage;
+    isFetchingRef.current = true;
 
- if (targetPage === 1) {
-  setIsSearching(true);
-  isFetchingRef.current = true;
-} else {
-
-  setIsFetchingMore(true);
-  isFetchingRef.current = true;
-}
+    if (targetPage === 1) {
+      setIsSearching(true);
+    } else {
+      setIsFetchingMore(true);
+    }
 
     const loginData = typeof window !== "undefined" ? localStorage.getItem("LoginData") : null;
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
@@ -741,11 +736,11 @@ export default function FilterProducts() {
         console.error("FilterProducts Search Error:", err);
         toast.error("Failed to load products from search API.");
       })
-     .finally(() => {
-  setIsSearching(false);
-  setIsFetchingMore(false);
-  isFetchingRef.current = false;
-});
+      .finally(() => {
+        setIsSearching(false);
+        setIsFetchingMore(false);
+        isFetchingRef.current = false;
+      });
   }, [
     apiData,
     filtersSerialized,
@@ -1172,9 +1167,9 @@ export default function FilterProducts() {
         )}
       </section>
 
-   {/* Sentinel: only render when there are more pages to load and not currently searching */}
-   {!isSearching && page < lastPage && (
-     <div ref={sentinelRef} className="h-4" style={{ overflowAnchor: "none" }} />
+   {/* Sentinel: always render when more pages exist to prevent layout thrash on macOS Chrome */}
+   {page < lastPage && (
+     <div ref={sentinelRef} className="h-1" aria-hidden style={{ overflowAnchor: "none" }} />
    )}
 
       <Footer />
