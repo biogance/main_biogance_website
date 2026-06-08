@@ -387,10 +387,22 @@ export default function FilterProducts() {
   const [price, setPrice] = useState(250);
   const [sort, setSort] = useState("Featured");
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const queryDebounceRef = useRef(null);
 
   useEffect(() => {
-    setQuery(q || "");
+    const val = q || "";
+    setQuery(val);
+    setDebouncedQuery(val);
   }, [q]);
+
+  const handleQueryChange = (val) => {
+    setQuery(val);
+    clearTimeout(queryDebounceRef.current);
+    queryDebounceRef.current = setTimeout(() => {
+      setDebouncedQuery(val);
+    }, 1000);
+  };
 
   const [apiData, setApiData] = useState(null);
 
@@ -581,9 +593,9 @@ export default function FilterProducts() {
   // Serialize filters to detect changes and reset page to 1
   const filtersSerialized = useMemo(() => {
     return JSON.stringify({
-      query, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds
+      query: debouncedQuery, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds
     });
-  }, [query, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds]);
+  }, [debouncedQuery, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds]);
 
   const prevFiltersRef = useRef(filtersSerialized);
   const prevPageRef = useRef(page);
@@ -644,7 +656,7 @@ export default function FilterProducts() {
     } = getSelectedIds();
 
     const body = {
-      keyword: (query || q || "").trim(),
+      keyword: (debouncedQuery || q || "").trim(),
       ...(categoryIds ? { category_id: categoryIds } : {}),
       ...(universeIds ? { universe_id: universeIds } : {}),
       ...(familyIds ? { family_id: familyIds } : {}),
@@ -979,7 +991,14 @@ export default function FilterProducts() {
                   {ctx.eyebrow}
                 </span>
               </div>
-              <h1 className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900">
+              <h1 className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900"
+                style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
                 {ctx.title}
               </h1>
             </div>
@@ -991,10 +1010,19 @@ export default function FilterProducts() {
               </p>
 
               {ctx.key === "search" && q ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">{t("keyword", "Keyword")}</span>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-3 py-1.5 text-[11px] tracking-[0.05em] text-white">
-                    <LuSearch className="h-3 w-3" /> {q}
+                  <span className="inline-flex items-start gap-2 rounded-lg bg-stone-900 px-3 py-2 text-[11px] tracking-[0.05em] text-white max-w-[200px]">
+                    <LuSearch className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        wordBreak: "break-word",
+                      }}
+                    >{q}</span>
                   </span>
                 </div>
               ) : (
@@ -1043,13 +1071,13 @@ export default function FilterProducts() {
               <input
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder={t("searchPlaceholder", "Search shampoos, sprays, rituals…")}
                 className="h-11 w-full rounded-full border border-stone-900/15 bg-stone-50/60 pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
               />
               {query && (
                 <button
-                  onClick={() => setQuery("")}
+                  onClick={() => { setQuery(""); setDebouncedQuery(""); clearTimeout(queryDebounceRef.current); }}
                   className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
                   aria-label={t("clearSearch", "Clear search")}
                 >
