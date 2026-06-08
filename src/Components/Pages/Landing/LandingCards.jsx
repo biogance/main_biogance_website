@@ -70,7 +70,7 @@ export const LandingCards = ({
   const [isLiked, setIsLiked] = useState(safeProduct.liked || false);
   const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [loadedImages, setLoadedImages] = useState(new Set());
+  // const [loadedImages, setLoadedImages] = useState(new Set()); // DISABLED: causes blank cards on Chrome macOS after infinite scroll
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCardHovered, setIsCardHovered] = useState(false);
@@ -78,15 +78,9 @@ export const LandingCards = ({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
 
-  const isCurrentImageLoading = !loadedImages.has(currentImageIndex);
+  const isCurrentImageLoading = false; // DISABLED: cache removed to fix blank cards on Chrome macOS
 
-  const handleImageLoaded = (idx) => {
-    setLoadedImages(prev => {
-      const next = new Set(prev);
-      next.add(idx);
-      return next;
-    });
-  };
+  const handleImageLoaded = (_idx) => {}; // DISABLED: cache removed
 
 
   const handleFavorite = async (e) => {
@@ -305,7 +299,7 @@ export const LandingCards = ({
                   onLoad={() => handleImageLoaded(idx)}
                   onError={() => handleImageLoaded(idx)}
                   style={{
-                    opacity: loadedImages.has(idx) ? 1 : 0,
+                    opacity: 1, // DISABLED: was loadedImages.has(idx) — caused blank on Chrome macOS
                     transition: "opacity 0.3s ease",
                   }}
                   className="w-full h-full object-cover"
@@ -376,7 +370,7 @@ export const LandingCards = ({
 
          {/* Title + Price / QuickView overlay */}
 <div
-  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-5'} left-0 right-0 px-3 py-2`}
+  className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
   style={{ zIndex: 7 }}
 >
   {/* Title + Price — hover pe hide */}
