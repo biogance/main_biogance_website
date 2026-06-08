@@ -12,41 +12,19 @@ import { getDeviceId } from "../../../utils/deviceId";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import ModalQuickView from "../Modal/ModalQuickView";
 
-const preloadPromises =
-  globalThis.__landingPreloadPromises ||
-  (globalThis.__landingPreloadPromises = new Map());
-
 const CACHE_NAME = "biogance-videos-v1";
 
 const preloadVideo = (url) => {
-  if (!url || typeof window === "undefined") return Promise.resolve();
-  if (preloadPromises.has(url)) return preloadPromises.get(url);
-
-  const promise = (async () => {
-    try {
-      const cache = await caches.open(CACHE_NAME);
-      const existing = await cache.match(url);
-      if (!existing) {
-        await cache.add(url);
-      }
-    } catch (_) {}
-  })();
-
-  preloadPromises.set(url, promise);
-  return promise;
-};
-
-const getCachedVideoUrl = async (url) => {
-  if (!url || typeof window === "undefined") return url;
-  try {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(url);
-    if (cached) {
-      const blob = await cached.blob();
-      return URL.createObjectURL(blob);
-    }
-  } catch (_) {}
-  return url;
+  if (!url || typeof window === "undefined") return;
+  // Use a hidden video element to let the browser cache the video
+  // via its native HTTP cache — no blob URLs, no Cache API, no macOS Chrome crashes
+  if (globalThis.__fpPreloadPromises?.has(url)) return;
+  if (!globalThis.__fpPreloadPromises) globalThis.__fpPreloadPromises = new Set();
+  globalThis.__fpPreloadPromises.add(url);
+  const v = document.createElement("video");
+  v.preload = "auto";
+  v.muted = true;
+  v.src = url;
 };
 
 // Loading Card Component
@@ -111,7 +89,6 @@ export const LandingCards = ({
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [cachedVideoUrl, setCachedVideoUrl] = useState(null);
-  const blobUrlRef = useRef(null);
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -197,23 +174,9 @@ export const LandingCards = ({
 
   useEffect(() => {
     if (!videoUrl) return;
-    let revoked = false;
     setIsVideoReady(false);
-    preloadVideo(videoUrl).then(() =>
-      getCachedVideoUrl(videoUrl).then((src) => {
-        if (!revoked) {
-          blobUrlRef.current = src !== videoUrl ? src : null;
-          setCachedVideoUrl(src);
-        }
-      }),
-    );
-    return () => {
-      revoked = true;
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = null;
-      }
-    };
+    setCachedVideoUrl(videoUrl);
+    preloadVideo(videoUrl);
   }, [videoUrl]);
 
   const handleMouseEnter = () => {

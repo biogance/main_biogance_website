@@ -28,29 +28,6 @@ import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
-// ───────────── Video Cache (same as LandingCards) ─────────────
-const FP_CACHE_NAME = "biogance-videos-v1";
-
-const fpPreloadPromises =
-  globalThis.__fpPreloadPromises ||
-  (globalThis.__fpPreloadPromises = new Map());
-
-const fpPreloadVideo = (url) => {
-  if (!url || typeof window === "undefined") return Promise.resolve();
-  if (fpPreloadPromises.has(url)) return fpPreloadPromises.get(url);
-  const promise = (async () => {
-    try {
-      const cache = await caches.open(FP_CACHE_NAME);
-      const existing = await cache.match(url);
-      if (!existing) {
-        await cache.add(url);
-      }
-    } catch (_) {}
-  })();
-  fpPreloadPromises.set(url, promise);
-  return promise;
-};
-
 const GROUP_LABELS_FR = {
   "Category": "Catégorie",
   "Universe": "Univers",
@@ -517,17 +494,6 @@ export default function FilterProducts() {
 
   useEffect(() => {
     searchedProductsRef.current = searchedProducts;
-  }, [searchedProducts]);
-
-  // Preload all product videos into browser cache as soon as products load
-  // So on hover they play instantly (same system as LandingCards)
-  useEffect(() => {
-    if (!searchedProducts.length) return;
-    searchedProducts.forEach((p) => {
-      if (p.videoUrl) {
-        fpPreloadVideo(p.videoUrl);
-      }
-    });
   }, [searchedProducts]);
 
   useEffect(() => {
