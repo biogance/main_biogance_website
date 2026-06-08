@@ -727,6 +727,12 @@ export default function FilterProducts() {
           setHasSearched(true);
           setTotalCount(res.data.data?.total ?? unique.length);
           setLastPage(res.data.data?.last_page || (hasMore ? targetPage + 1 : targetPage));
+          if (targetPage > 1) {
+  const savedY = scrollYBeforeLoad.current;
+  setTimeout(() => {
+    window.scrollTo({ top: savedY, behavior: "instant" });
+  }, 50);
+}
         } else {
           toast.error(res.data.action_message || res.data.action || "Something went wrong.");
         }
@@ -740,11 +746,14 @@ export default function FilterProducts() {
   setIsFetchingMore(false);
   isFetchingRef.current = false;
 
-  if (targetPage > 1) {
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: scrollYBeforeLoad.current, behavior: "instant" });
-    });
-  }
+  // if (targetPage > 1) {
+  //   // Double rAF — pehla React render ke baad, doosra browser paint ke baad
+  //   requestAnimationFrame(() => {
+  //     requestAnimationFrame(() => {
+  //       window.scrollTo({ top: scrollYBeforeLoad.current, behavior: "instant" });
+  //     });
+  //   });
+  // }
 });
   }, [
     apiData,
