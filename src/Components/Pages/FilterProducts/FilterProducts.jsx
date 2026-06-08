@@ -511,7 +511,7 @@ export default function FilterProducts() {
   const [lastPage, setLastPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
-  const scrollYBeforeLoad = useRef(0);
+
 
   const sentinelRef = useRef(null);
 
@@ -650,7 +650,7 @@ export default function FilterProducts() {
   setIsSearching(true);
   isFetchingRef.current = true;
 } else {
-  scrollYBeforeLoad.current = window.scrollY;
+
   setIsFetchingMore(true);
   isFetchingRef.current = true;
 }
@@ -727,12 +727,7 @@ export default function FilterProducts() {
           setHasSearched(true);
           setTotalCount(res.data.data?.total ?? unique.length);
           setLastPage(res.data.data?.last_page || (hasMore ? targetPage + 1 : targetPage));
-          if (targetPage > 1) {
-  const savedY = scrollYBeforeLoad.current;
-  setTimeout(() => {
-    window.scrollTo({ top: savedY, behavior: "instant" });
-  }, 50);
-}
+         
         } else {
           toast.error(res.data.action_message || res.data.action || "Something went wrong.");
         }
@@ -745,15 +740,6 @@ export default function FilterProducts() {
   setIsSearching(false);
   setIsFetchingMore(false);
   isFetchingRef.current = false;
-
-  // if (targetPage > 1) {
-  //   // Double rAF — pehla React render ke baad, doosra browser paint ke baad
-  //   requestAnimationFrame(() => {
-  //     requestAnimationFrame(() => {
-  //       window.scrollTo({ top: scrollYBeforeLoad.current, behavior: "instant" });
-  //     });
-  //   });
-  // }
 });
   }, [
     apiData,
@@ -1148,9 +1134,11 @@ export default function FilterProducts() {
           </div>
         ) : (
           <>
-           <div className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]">
-
-              {filteredProducts.map((p, i) => (
+          <div 
+  className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
+  style={{ overflowAnchor: "none" }}
+>
+  {filteredProducts.map((p, i) => (
                 <div key={p.id} className="w-full">
                   <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} />
                 </div>
@@ -1179,7 +1167,8 @@ export default function FilterProducts() {
         )}
       </section>
 
-    <div ref={sentinelRef} className="h-4" />
+   <div ref={sentinelRef} className="h-4" style={{ overflowAnchor: "none" }} />
+
       <Footer />
     </div>
   );
