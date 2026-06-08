@@ -525,7 +525,7 @@ export default function FilterProducts() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [lastPage, isSearching]);
+  }, [lastPage]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -1118,7 +1118,9 @@ export default function FilterProducts() {
       </section>
 
       {/* Products — grid */}
-      <section className="mx-auto max-w-[1500px] px-8 pb-24 pt-10">
+      <section className="mx-auto max-w-[1500px] px-8 pb-24 pt-10"
+          style={{ overflowAnchor: "none" }}
+>
         {isSearching ? (
          <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]">
 
@@ -1133,7 +1135,8 @@ export default function FilterProducts() {
   style={{ overflowAnchor: "none" }}
 >
   {filteredProducts.map((p, i) => (
-                <div key={p.id} className="w-full">
+              <div key={p.id} className="w-full min-h-0">
+
                 <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} raisedLabel={true} />
 
 
@@ -1142,7 +1145,9 @@ export default function FilterProducts() {
              </div>
 
 {isFetchingMore && (
-  <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
+  <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]"
+        style={{ overflowAnchor: "none" }}
+>
     {Array.from({ length: 4 }).map((_, i) => (
       <SkeletonCard key={`more-${i}`} />
     ))}

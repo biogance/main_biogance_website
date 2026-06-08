@@ -201,7 +201,8 @@ export const LandingCards = ({
   const price = safeProduct.price ?? 0;
 
   return (
-    <div className="w-full h-full flex flex-col">
+   <div className="w-full flex flex-col">
+
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
