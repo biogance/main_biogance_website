@@ -994,7 +994,7 @@ export default function FilterProducts() {
               <h1 className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900"
                 style={{
                   display: "-webkit-box",
-                  WebkitLineClamp: 3,
+                  WebkitLineClamp: 4,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                 }}

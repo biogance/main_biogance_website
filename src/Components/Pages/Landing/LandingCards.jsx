@@ -78,10 +78,25 @@ export const LandingCards = ({
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = useRef(null);
 
-  const isCurrentImageLoading = false; // DISABLED: cache removed to fix blank cards on Chrome macOS
+  const isCurrentImageLoading = !imageLoaded;
 
-  const handleImageLoaded = (_idx) => {}; // DISABLED: cache removed
+  const handleImageLoaded = (_idx) => {
+    if (_idx === currentImageIndex) setImageLoaded(true);
+  };
+
+  // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
+  useEffect(() => {
+    setImageLoaded(false);
+    const url = slides[currentImageIndex]?.url || safeProduct.image;
+    if (!url) { setImageLoaded(true); return; }
+    const img = new window.Image();
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageLoaded(true);
+    img.src = url;
+  }, [currentImageIndex, safeProduct.image]);
 
 
   const handleFavorite = async (e) => {
@@ -187,12 +202,10 @@ export const LandingCards = ({
 
   return (
     <div className="w-full h-full flex flex-col">
-       <style>{`
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}</style>
+      <style>{`
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      `}</style>
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
@@ -309,7 +322,7 @@ export const LandingCards = ({
                   onLoad={() => handleImageLoaded(idx)}
                   onError={() => handleImageLoaded(idx)}
                   style={{
-                    opacity: 1, // DISABLED: was loadedImages.has(idx) — caused blank on Chrome macOS
+                    opacity: 1,
                     transition: "opacity 0.3s ease",
                   }}
                   className="w-full h-full object-cover"
@@ -580,30 +593,9 @@ const currentCardIndexRef = useRef(0);
 
   useEffect(() => {
     if (products.length === 0) return;
-
-    const imageUrls = products.flatMap((product) => product.images);
-    const imagePromises = imageUrls.map((url) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = img.onerror = () => resolve();
-        img.src = url;
-      });
-    });
-
-    Promise.all([
-      Promise.all(imagePromises),
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-    ]).then(() => {
-      setIsLoading(false);
-      setTimeout(checkScrollPosition, 100);
-    });
-
-    const fallbackTimer = setTimeout(() => {
-      setIsLoading(false);
-      setTimeout(checkScrollPosition, 100);
-    }, 3000);
-
-    return () => clearTimeout(fallbackTimer);
+    // Agar already loaded tha (cached data se), shimmer skip karo
+    setIsLoading(false);
+    setTimeout(checkScrollPosition, 100);
   }, [products]);
 
   useEffect(() => {
