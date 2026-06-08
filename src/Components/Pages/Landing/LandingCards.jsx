@@ -12,21 +12,6 @@ import { getDeviceId } from "../../../utils/deviceId";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import ModalQuickView from "../Modal/ModalQuickView";
 
-const CACHE_NAME = "biogance-videos-v1";
-
-const preloadVideo = (url) => {
-  if (!url || typeof window === "undefined") return;
-  // Use a hidden video element to let the browser cache the video
-  // via its native HTTP cache — no blob URLs, no Cache API, no macOS Chrome crashes
-  if (globalThis.__fpPreloadPromises?.has(url)) return;
-  if (!globalThis.__fpPreloadPromises) globalThis.__fpPreloadPromises = new Set();
-  globalThis.__fpPreloadPromises.add(url);
-  const v = document.createElement("video");
-  v.preload = "auto";
-  v.muted = true;
-  v.src = url;
-};
-
 // Loading Card Component
 const LoadingCard = () => (
   <div className="w-full">
@@ -88,7 +73,6 @@ export const LandingCards = ({
   const [loadedImages, setLoadedImages] = useState(new Set());
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [cachedVideoUrl, setCachedVideoUrl] = useState(null);
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -175,8 +159,6 @@ export const LandingCards = ({
   useEffect(() => {
     if (!videoUrl) return;
     setIsVideoReady(false);
-    setCachedVideoUrl(videoUrl);
-    preloadVideo(videoUrl);
   }, [videoUrl]);
 
   const handleMouseEnter = () => {
@@ -202,7 +184,7 @@ export const LandingCards = ({
     } else {
       videoRef.current.pause();
     }
-  }, [isHovered, videoUrl, cachedVideoUrl]);
+  }, [isHovered, videoUrl]);
 
   // CHANGE 3: title ke pehle 3 letters
   const shortTitle = displayName ? displayName.slice(0, 22) : "";
@@ -210,9 +192,6 @@ export const LandingCards = ({
 
   return (
     <div className="w-full h-full flex flex-col">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      `}} />
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
@@ -335,14 +314,14 @@ export const LandingCards = ({
             ))}
           </div>
 
-          {videoUrl && cachedVideoUrl && (
+          {videoUrl && (
             <video
               ref={videoRef}
-              src={cachedVideoUrl}
+              src={videoUrl}
               className="absolute inset-0 w-full h-full object-cover"
               muted
               playsInline
-              preload="auto"
+              preload="none"
               loop
               disablePictureInPicture
               disableRemotePlayback
@@ -541,12 +520,7 @@ export default function PopularProducts({
 const currentCardIndexRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("homePageData");
-    }
-    return true;
-  });
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("favorite");
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -603,11 +577,6 @@ const currentCardIndexRef = useRef(0);
 
   useEffect(() => {
     if (products.length === 0) return;
-    products.forEach((product) => {
-      if (product.videoUrl) {
-        preloadVideo(product.videoUrl);
-      }
-    });
 
     const imageUrls = products.flatMap((product) => product.images);
     const imagePromises = imageUrls.map((url) => {
