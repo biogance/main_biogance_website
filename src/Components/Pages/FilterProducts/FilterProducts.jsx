@@ -620,7 +620,7 @@ export default function FilterProducts() {
       setIsFetchingMore(true);
     }
 
-    const loginData = typeof window !== "undefined" ? localStorage.getItem("LoginData") : null;
+    const loginData = localStorage.getItem("LoginData");
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
 
     let sortParam = "";
@@ -1000,7 +1000,7 @@ export default function FilterProducts() {
               ) : (
                 <div className="flex items-baseline gap-2 border-t border-stone-900/10 pt-4">
                   <span className="font-serif text-3xl leading-none text-stone-900">
-                    {totalCount.toLocaleString()}
+                    {totalCount}
                   </span>
                   <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">
                     {t("productsInView", "products in this view")}
@@ -1034,7 +1034,7 @@ export default function FilterProducts() {
       <section className="mx-auto max-w-[1500px] px-8 pt-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-5">
           <div className="flex items-baseline gap-3">
-            <span className="font-serif text-3xl">{totalCount.toLocaleString()}</span>
+            <span className="font-serif text-3xl">{totalCount}</span>
             <span className="text-xs uppercase tracking-[0.2em] text-stone-500">{t("productsInView", "products in view")}</span>
           </div>
           <div className="flex flex-1 items-center justify-end gap-5">
