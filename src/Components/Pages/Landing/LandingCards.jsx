@@ -78,7 +78,8 @@ export const LandingCards = ({
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(true); // optimistic default
+
   const imgRef = useRef(null);
 
   const isCurrentImageLoading = !imageLoaded;
@@ -88,15 +89,21 @@ export const LandingCards = ({
   };
 
   // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
-  useEffect(() => {
-    setImageLoaded(false);
-    const url = slides[currentImageIndex]?.url || safeProduct.image;
-    if (!url) { setImageLoaded(true); return; }
-    const img = new window.Image();
-    img.onload = () => setImageLoaded(true);
-    img.onerror = () => setImageLoaded(true);
-    img.src = url;
-  }, [currentImageIndex, safeProduct.image]);
+ useEffect(() => {
+  const url = slides[currentImageIndex]?.url || safeProduct.image;
+  if (!url) { setImageLoaded(true); return; }
+  
+  // Pehle check karo kya image already browser cache mein hai
+  const img = new window.Image();
+  if (img.complete && img.naturalWidth > 0) {
+    setImageLoaded(true);
+    return;
+  }
+  setImageLoaded(false);
+  img.onload = () => setImageLoaded(true);
+  img.onerror = () => setImageLoaded(true);
+  img.src = url;
+}, [currentImageIndex, safeProduct.image]);
 
 
   const handleFavorite = async (e) => {
@@ -201,7 +208,7 @@ export const LandingCards = ({
   const price = safeProduct.price ?? 0;
 
   return (
-   <div className="w-full flex flex-col">
+     <div className="w-full flex flex-col" style={{ isolation: "isolate" }}>
 
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
