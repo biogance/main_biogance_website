@@ -406,10 +406,10 @@ export default function FilterProducts() {
 
   const [apiData, setApiData] = useState(null);
 
-  useEffect(() => {
-    const cached = localStorage.getItem("homePageData");
-    if (cached) setApiData(JSON.parse(cached));
-  }, []);
+  // useEffect(() => {
+  //   const cached = localStorage.getItem("homePageData");
+  //   if (cached) setApiData(JSON.parse(cached));
+  // }, []);
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -427,7 +427,7 @@ export default function FilterProducts() {
           toast.error(res.data.action || "Unable to load products.");
           return;
         }
-        localStorage.setItem("homePageData", JSON.stringify(res.data.data));
+        // localStorage.setItem("homePageData", JSON.stringify(res.data.data));
         setApiData(res.data.data);
       })
       .catch((err) => {
@@ -602,7 +602,7 @@ export default function FilterProducts() {
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
-    if (!apiData) return;
+
 
     // Detect if filters changed, reset page to 1
     let targetPage = page;
@@ -1120,7 +1120,7 @@ export default function FilterProducts() {
       {/* Products — grid */}
       <section className="mx-auto max-w-[1500px] px-8 pb-24 pt-10">
         {isSearching ? (
-         <div className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]">
+         <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]">
 
             {Array.from({ length: 8 }).map((_, i) => (
               <SkeletonCard key={i} />
@@ -1129,18 +1129,20 @@ export default function FilterProducts() {
         ) : (
           <>
           <div 
-  className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
+  className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
   style={{ overflowAnchor: "none" }}
 >
   {filteredProducts.map((p, i) => (
                 <div key={p.id} className="w-full">
-                  <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} />
+                <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} raisedLabel={true} />
+
+
                 </div>
               ))}
              </div>
 
 {isFetchingMore && (
-  <div className="grid grid-cols-1 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
+  <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
     {Array.from({ length: 4 }).map((_, i) => (
       <SkeletonCard key={`more-${i}`} />
     ))}

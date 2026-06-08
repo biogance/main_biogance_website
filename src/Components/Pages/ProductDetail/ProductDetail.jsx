@@ -478,22 +478,40 @@ export default function ProductDetail() {
                         useContain ? {} : { padding: 0, position: "relative" }
                       }
                     >
-                      {slide.type === "video" ? (
-                        <video
-                          ref={currentSlide === idx ? videoRef : null}
-                          key={slide.url}
-                          className="w-full h-full object-cover"
-                          muted
-                          playsInline
-                          onEnded={handleVideoEnded}
-                          onCanPlay={() => {
-                            loadedSlides.current.add(idx);
-                            if (currentSlideRef.current === idx)
-                              setSlideLoading(false);
-                          }}
-                        >
-                          <source src={slide.url} type="video/mp4" />
-                        </video>
+                      // Replace karo:
+{slide.type === "video" ? (
+  <div className="relative w-full h-full">
+    <video
+      ref={currentSlide === idx ? videoRef : null}
+      key={slide.url}
+      className="w-full h-full object-cover"
+      muted
+      playsInline
+      onEnded={handleVideoEnded}
+      onCanPlay={() => {
+        loadedSlides.current.add(idx);
+        if (currentSlideRef.current === idx)
+          setSlideLoading(false);
+      }}
+    >
+      <source src={slide.url} type="video/mp4" />
+    </video>
+    {/* Video loading spinner — jab tak canPlay nahi aata */}
+    {currentSlide === idx && slideLoading && (
+      <div className="absolute inset-0 flex items-center justify-center bg-[#f3f3f3] z-10">
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            border: "4px solid rgba(0,0,0,0.1)",
+            borderLeftColor: "transparent",
+            animation: "spin89345 1s linear infinite",
+          }}
+        />
+      </div>
+    )}
+  </div>
                       ) : (
                         <img
                           src={slide.url}
