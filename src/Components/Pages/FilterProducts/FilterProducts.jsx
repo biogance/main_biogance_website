@@ -392,13 +392,12 @@ export default function FilterProducts() {
     setQuery(q || "");
   }, [q]);
 
-  const [apiData, setApiData] = useState(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("homePageData");
-      return cached ? JSON.parse(cached) : null;
-    }
-    return null;
-  });
+  const [apiData, setApiData] = useState(null);
+
+  useEffect(() => {
+    const cached = localStorage.getItem("homePageData");
+    if (cached) setApiData(JSON.parse(cached));
+  }, []);
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -914,6 +913,7 @@ export default function FilterProducts() {
             0% { background-position: -200px 0; }
             100% { background-position: 200px 0; }
           }
+          @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
           .shimmer-anim {
             background: linear-gradient(90deg, #f3f3f3 25%, #e5e5e5 50%, #f3f3f3 75%);
             background-size: 200px 100%;
