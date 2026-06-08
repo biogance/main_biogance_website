@@ -801,7 +801,7 @@ export default function ProductDetail() {
                     id="add-to-cart-btn"
                     className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
                   >
-                    {t("addToCart")} – €{displayPrice}
+                    {t("addToCart")} – {displayPrice} €
                   </button>
                   <button
                     onClick={() => setIsWishlisted(!isWishlisted)}
