@@ -26,6 +26,7 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import toast, { Toaster } from "react-hot-toast";
 import { useTopLoader } from "@/Components/Pages/TopLoader";
+import ModalAddToCart from "../Modal/ModalAddToCart";
 
 
 const StarRating = ({ rating }) => (
@@ -116,6 +117,16 @@ export default function ProductDetail() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isFetchingProduct, setIsFetchingProduct] = useState(true);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartBtnLoading, setCartBtnLoading] = useState(false);
+
+  const handleOpenCart = () => {
+    setCartBtnLoading(true);
+    setTimeout(() => {
+      setCartBtnLoading(false);
+      setIsCartOpen(true);
+    }, 1000);
+  };
 
   const firstImageLoaded = useRef(false);
   const cartBtnRef = useRef(null);
@@ -805,9 +816,15 @@ export default function ProductDetail() {
                   <button
                     ref={cartBtnRef}
                     id="add-to-cart-btn"
-                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors"
+                    onClick={handleOpenCart}
+                    disabled={cartBtnLoading}
+                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
                   >
-                    {t("addToCart")} – {displayPrice} €
+                    {cartBtnLoading ? (
+                      <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin89345 0.75s linear infinite" }} />
+                    ) : (
+                      <>{t("addToCart")} – {displayPrice} €</>
+                    )}
                   </button>
                   <button
                     onClick={() => setIsWishlisted(!isWishlisted)}
@@ -963,8 +980,19 @@ export default function ProductDetail() {
           isFooterVisible={isFooterVisible}
           quantity={quantity}
           onQuantityChange={setQuantity}
+          onAddToCart={() => handleOpenCart()}
         />
       )}
+
+      <ModalAddToCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        product={{
+          name: displayName,
+          price: displayPrice,
+          image: slides[0]?.url || "",
+        }}
+      />
     </div>
   );
 }
