@@ -15,7 +15,7 @@ const WhoWe = () => {
         <Navbar />
       </div>
 
-      <main className="sticky top-0 h-screen -z-10">
+      <main className="relative h-screen -z-10">
         <div className="relative w-full min-h-screen flex items-center justify-center">
           <div className="absolute inset-0 overflow-hidden">
             <video

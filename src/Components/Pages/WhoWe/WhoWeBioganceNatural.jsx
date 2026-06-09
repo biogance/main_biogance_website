@@ -40,7 +40,9 @@ export default function WhoWeBioganceNatural() {
           alt={t('natural.imageAlt')}
           fill
           className="object-cover object-center"
-          priority               
+          priority
+          sizes="100vw"
+          quality={85}
         />
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-white/10"></div>
