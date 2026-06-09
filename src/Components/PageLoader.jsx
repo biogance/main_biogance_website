@@ -28,6 +28,7 @@ const VALID_ROUTES = [
   "/termsCondition",
   "/my-account",
   "/my-account/dashboard",
+  "/checkout",
 ];
 
 export default function PageLoader() {
