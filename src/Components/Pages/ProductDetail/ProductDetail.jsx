@@ -71,6 +71,12 @@ const formatProductForCard = (product) => {
     videoUrl,
     liked: product.favorites_exists || false,
     productsCount: product.products?.length || 1,
+    products: product.products || [],
+    description: product.description || "",
+    french_description: product.french_description || "",
+    product_label: product.product_label || "",
+    french_product_label: product.french_product_label || "",
+    _raw: product,
   };
 };
 
