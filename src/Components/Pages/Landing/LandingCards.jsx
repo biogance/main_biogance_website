@@ -54,7 +54,7 @@ export const LandingCards = ({
   index,
   compact = false,
   compactButtons = false,
-  raisedLabel = false,
+   raisedLabel = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -91,15 +91,13 @@ export const LandingCards = ({
   useEffect(() => {
     setImageLoaded(false);
     const url = slides[currentImageIndex]?.url || safeProduct.image;
-    if (!url) {
-      setImageLoaded(true);
-      return;
-    }
+    if (!url) { setImageLoaded(true); return; }
     const img = new window.Image();
     img.onload = () => setImageLoaded(true);
     img.onerror = () => setImageLoaded(true);
     img.src = url;
   }, [currentImageIndex, safeProduct.image]);
+
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
@@ -208,49 +206,37 @@ export const LandingCards = ({
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
-      <div
-        className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
-        onMouseEnter={() => {
-          setIsCardHovered(true);
-          handleMouseEnter();
-        }}
-        onMouseLeave={() => {
-          setIsCardHovered(false);
-          handleMouseLeave();
-        }}
-        onClick={() => {
-          const slug =
-            i18n.language === "fr"
-              ? safeProduct.french_seo_keyword
-              : safeProduct.english_seo_keyword;
-          start();
-          router.push(`/product/${slug}`);
-        }}
-      >
+     <div
+  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
+  onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
+  onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
+  onClick={() => {
+    const slug =
+      i18n.language === "fr"
+        ? safeProduct.french_seo_keyword
+        : safeProduct.english_seo_keyword;
+    start();
+    router.push(`/product/${slug}`);
+  }}
+>
         {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
         {index === 0 && (
-          // Replace karo:
-          <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}
-          >
+      // Replace karo:
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             New
           </div>
         )}
 
         {index === 1 && (
-          // Replace karo:
-          <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}
-          >
+        // Replace karo:
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             Best
           </div>
         )}
 
         {index === 2 && (
           // Replace karo:
-          <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}
-          >
+          <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
             -20%
           </div>
         )}
@@ -269,10 +255,9 @@ export const LandingCards = ({
 
         {/* CHANGE 2: Product Label — from API */}
         {(() => {
-          const label =
-            i18n.language === "fr" && safeProduct.french_product_label
-              ? safeProduct.french_product_label
-              : safeProduct.product_label || "";
+          const label = i18n.language === "fr" && safeProduct.french_product_label
+            ? safeProduct.french_product_label
+            : safeProduct.product_label || "";
           return label ? (
             <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
               {label}
@@ -367,26 +352,26 @@ export const LandingCards = ({
               }}
             />
           )}
+     
+{isHovered && videoUrl && !isVideoReady && (
+  <div
+    className="absolute inset-0 flex items-center justify-center"
+    style={{ zIndex: 3, background: "#f3f3f3" }}
+  >
+    <div
+     // Replace karo:
 
-          {isHovered && videoUrl && !isVideoReady && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ zIndex: 3, background: "#f3f3f3" }}
-            >
-              <div
-                // Replace karo:
-
-                style={{
+ style={{
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
                   border: "3px solid #aaa",
                   borderTopColor: "transparent",
-                  animation: "spin 0.75s linear infinite",
+                   animation: "spin 0.75s linear infinite",
                 }}
-              />
-            </div>
-          )}
+    />
+  </div>
+)}
 
           {/* CHANGE 1: Dot indicators — commented out (image case mein bhi) */}
           {/* {slides.length > 1 && !(isHovered && videoUrl) && (
@@ -409,91 +394,92 @@ export const LandingCards = ({
             </div>
           )} */}
 
-          {/* Title + Price / QuickView overlay */}
-          <div
-            className={`absolute bottom-0 ${compactButtons ? "mb-3" : "mb-4"} left-0 right-0 px-3 py-2`}
-            style={{ zIndex: 7 }}
-          >
-            {/* Title + Price — hover pe hide */}
-            <p
-              className="text-black text-xs font-medium truncate cursor-pointer"
-              style={{
-                margin: 0,
-                opacity: isCardHovered ? 0 : 1,
-                transition: "opacity 0.2s ease",
-                pointerEvents: isCardHovered ? "none" : "auto",
-              }}
-            >
-              {shortTitle} — <span style={{ color: "#6d6d6d" }}>{price} €</span>
-            </p>
+         {/* Title + Price / QuickView overlay */}
+<div
+   className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
 
-            {/* QuickView OR Add to Cart button — hover pe show */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: "12px",
-                right: "12px",
-                opacity: isCardHovered ? 1 : 0,
-                transition: "opacity 0.2s ease",
-                pointerEvents: isCardHovered ? "auto" : "none",
-              }}
-            >
-              {isSingleProduct ? (
-                /* Single product → Add to Cart button */
-                <button
-                  className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-                  style={{
-                    backgroundColor: "white",
-                    color: "black",
-                    border: "none",
-                    borderRadius: "4px",
-                    transition: "background-color 0.2s ease, color 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "black";
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "white";
-                    e.currentTarget.style.color = "black";
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsCartOpen(true);
-                  }}
-                >
-                  {t("products.addToCart")} – {safeProduct.price ?? 0} €
-                </button>
-              ) : (
-                /* Multiple products → Quickview button */
-                <button
-                  className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-                  style={{
-                    backgroundColor: "white",
-                    color: "black",
-                    border: "none",
-                    borderRadius: "4px",
-                    transition: "background-color 0.2s ease, color 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "black";
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "white";
-                    e.currentTarget.style.color = "black";
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsQuickViewOpen(true);
-                  }}
-                >
-                  {t("products.quickview")}
-                </button>
-              )}
-            </div>
-          </div>
+  style={{ zIndex: 7 }}
+>
+  {/* Title + Price — hover pe hide */}
+  <p
+    className="text-black text-xs font-medium truncate cursor-pointer"
+    style={{
+      margin: 0,
+      opacity: isCardHovered ? 0 : 1,
+      transition: "opacity 0.2s ease",
+      pointerEvents: isCardHovered ? "none" : "auto",
+    }}
+  >
+    {shortTitle} — <span style={{ color: "#6d6d6d" }}>{price} €</span>
+  </p>
+
+  {/* QuickView OR Add to Cart button — hover pe show */}
+  <div
+    style={{
+      position: "absolute",
+      bottom: 0,
+      left: "12px",
+      right: "12px",
+      opacity: isCardHovered ? 1 : 0,
+      transition: "opacity 0.2s ease",
+      pointerEvents: isCardHovered ? "auto" : "none",
+    }}
+  >
+    {isSingleProduct ? (
+      /* Single product → Add to Cart button */
+      <button
+        className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
+        style={{
+          backgroundColor: "white",
+          color: "black",
+          border: "none",
+          borderRadius: "4px",
+          transition: "background-color 0.2s ease, color 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "black";
+          e.currentTarget.style.color = "white";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "white";
+          e.currentTarget.style.color = "black";
+        }}
+       onClick={(e) => {
+  e.stopPropagation();
+  setIsCartOpen(true);
+}}
+      >
+        {t("products.addToCart")} – {safeProduct.price ?? 0} €
+      </button>
+    ) : (
+      /* Multiple products → Quickview button */
+      <button
+        className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
+        style={{
+          backgroundColor: "white",
+          color: "black",
+          border: "none",
+          borderRadius: "4px",
+          transition: "background-color 0.2s ease, color 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "black";
+          e.currentTarget.style.color = "white";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "white";
+          e.currentTarget.style.color = "black";
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsQuickViewOpen(true);
+        }}
+      >
+        {t("products.quickview")}
+      </button>
+    )}
+  </div>
+</div>
         </div>
       </div>
 
@@ -504,11 +490,11 @@ export const LandingCards = ({
         product={safeProduct}
         fullProductData={safeProduct._raw || safeProduct}
       />
-      <ModalAddToCart
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        product={safeProduct}
-      />
+<ModalAddToCart
+  isOpen={isCartOpen}
+  onClose={() => setIsCartOpen(false)}
+  product={safeProduct}
+/>
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">
         <h3
@@ -547,7 +533,7 @@ export default function PopularProducts({
   const { t } = useTranslation("home");
   const router = useRouter();
   const { start } = useTopLoader();
-  const currentCardIndexRef = useRef(0);
+const currentCardIndexRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -564,8 +550,7 @@ export default function PopularProducts({
       id: item.id,
       name: item.name,
       french_name: item.french_name || "",
-      english_seo_keyword:
-        item.english_seo_keyboard || item.english_seo_keyword || "",
+      english_seo_keyword: item.english_seo_keyboard || item.english_seo_keyword || "",
       french_seo_keyword: item.french_seo_keyword || "",
       price: item.price || item.products?.[0]?.price || "0",
       discount: item.discount || item.products?.[0]?.off || "",
@@ -595,17 +580,16 @@ export default function PopularProducts({
     ? mapProducts(bestSellerProducts)
     : mapProducts(apiProducts);
 
-  const checkScrollPosition = () => {
-    // Sirf tab run karo jab index 0 pe ho (initial state)
-    if (currentCardIndexRef.current > 0) return;
-
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
+ const checkScrollPosition = () => {
+  // Sirf tab run karo jab index 0 pe ho (initial state)
+  if (currentCardIndexRef.current > 0) return;
+  
+  if (scrollContainerRef.current) {
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  }
+};
 
   useEffect(() => {
     if (products.length === 0) return;
@@ -627,41 +611,41 @@ export default function PopularProducts({
     }
   }, [isLoading]);
 
-  const scroll = (direction) => {
-    if (!scrollContainerRef.current) return;
+const scroll = (direction) => {
+  if (!scrollContainerRef.current) return;
 
-    const container = scrollContainerRef.current;
-    const cards = container.querySelectorAll(":scope > div");
-    if (!cards.length) return;
+  const container = scrollContainerRef.current;
+  const cards = container.querySelectorAll(":scope > div");
+  if (!cards.length) return;
 
-    const totalCards = cards.length;
-    const firstCard = cards[0];
-    const cardWidth = firstCard.offsetWidth + 3;
-    const visibleCount = Math.round(container.clientWidth / cardWidth);
-    const maxIndex = totalCards - visibleCount;
+  const totalCards = cards.length;
+  const firstCard = cards[0];
+  const cardWidth = firstCard.offsetWidth + 3;
+  const visibleCount = Math.round(container.clientWidth / cardWidth);
+  const maxIndex = totalCards - visibleCount;
 
-    // Ref se current value lo — stale closure problem nahi hogi
-    const currentIndex = currentCardIndexRef.current;
+  // Ref se current value lo — stale closure problem nahi hogi
+  const currentIndex = currentCardIndexRef.current;
 
-    let newIndex;
-    if (direction === "next") {
-      newIndex = Math.min(currentIndex + 1, maxIndex);
-    } else {
-      newIndex = Math.max(currentIndex - 1, 0);
-    }
+  let newIndex;
+  if (direction === "next") {
+    newIndex = Math.min(currentIndex + 1, maxIndex);
+  } else {
+    newIndex = Math.max(currentIndex - 1, 0);
+  }
 
-    // Dono update karo — ref turant, state re-render ke liye
-    currentCardIndexRef.current = newIndex;
+  // Dono update karo — ref turant, state re-render ke liye
+  currentCardIndexRef.current = newIndex;
 
-    const targetCard = cards[newIndex];
-    container.scrollTo({
-      left: targetCard.offsetLeft - 5,
-      behavior: "smooth",
-    });
+  const targetCard = cards[newIndex];
+  container.scrollTo({
+    left: targetCard.offsetLeft - 5,
+    behavior: "smooth",
+  });
 
-    setCanScrollLeft(newIndex > 0);
-    setCanScrollRight(newIndex < maxIndex);
-  };
+  setCanScrollLeft(newIndex > 0);
+  setCanScrollRight(newIndex < maxIndex);
+};
 
   return (
     <div className="w-full bg-white">
@@ -811,17 +795,12 @@ export default function PopularProducts({
             useGrid
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 "
               : isFavourite || isWishlist
-                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 "
+                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
                 : isHorizontal
-                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] "
-                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px] "
+                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
+                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
+
           }
-          style={{
-    // This is the silver bullet for Mac Chrome flickering
-    WebkitTransform: "translateZ(0)",
-    transform: "translateZ(0)",
-    willChange: "transform, scroll-position" 
-  }}
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
@@ -841,14 +820,9 @@ export default function PopularProducts({
                   key={product.id}
                   className={
                     useGrid || isFavourite || isWishlist
-                      ? "w-full max-w-[240px] mx-auto "
-                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)] "
+                      ? "w-full max-w-[240px] mx-auto"
+                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)]"
                   }
-                  style={{
-                    // This forces Chrome's WebKit rendering engine to paint the component immediately
-                    backfaceVisibility: "hidden",
-                    WebkitBackfaceVisibility: "hidden",
-                  }}
                 >
                   <LandingCards
                     product={product}
