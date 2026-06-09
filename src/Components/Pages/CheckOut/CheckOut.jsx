@@ -718,7 +718,7 @@ export default function Checkout({ cartItems = [] }) {
         }}
       >
         <div
-          onClick={() => router.back()}
+        //   onClick={() => router.back()}
           style={{
             cursor: "pointer",
             display: "inline-block",
@@ -1143,9 +1143,9 @@ export default function Checkout({ cartItems = [] }) {
                   <rect width="38" height="24" fill="#2557d6" rx="3" />
                   <text
                     x="50%"
-                    y="16"
+                    y="15"
                     textAnchor="middle"
-                    fontSize="7"
+                    fontSize="9"
                     fontWeight="700"
                     fill="#fff"
                     fontFamily="Arial"
