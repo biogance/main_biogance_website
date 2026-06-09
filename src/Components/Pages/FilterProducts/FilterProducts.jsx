@@ -992,16 +992,17 @@ export default function FilterProducts() {
                   {ctx.eyebrow}
                 </span>
               </div>
-              <h1 className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900"
-                style={{
-                  display: "-webkit-box",
-                  WebkitLineClamp: 4,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {ctx.title}
-              </h1>
+              <h1
+  className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
+  style={{
+    display: "-webkit-box",
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  }}
+>
+  {ctx.title}
+</h1>
             </div>
 
             {/* Right: description + meta line */}
