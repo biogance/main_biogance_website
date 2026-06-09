@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaPlus, FaMinus } from "react-icons/fa";
 
@@ -12,8 +12,19 @@ export default function StickyAddToCart({
   isFooterVisible = false,
   quantity,
   onQuantityChange,
+  onAddToCart,
 }) {
   const { t } = useTranslation("stickyaddtocart");
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = () => {
+    if (loading) return;
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      onAddToCart?.();
+    }, 1000);
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[70] bg-white border-t border-[#E0E0E0]">
@@ -81,8 +92,19 @@ export default function StickyAddToCart({
           </div>
 
           {/* Add to Cart */}
-          <button className="flex-1 lg:flex-none bg-[#1C1C1C] text-white text-[11px] sm:text-[12px] lg:text-[13px] font-semibold px-3 sm:px-4 lg:px-6 h-[36px] sm:h-[38px] rounded-lg hover:bg-[#333] transition-colors cursor-pointer whitespace-nowrap text-center">
-            {t("addToCart")} – €{price}
+          <button
+            onClick={handleClick}
+            disabled={loading}
+            className="flex-1 lg:flex-none bg-[#1C1C1C] text-white text-[11px] sm:text-[12px] lg:text-[13px] font-semibold px-3 sm:px-4 lg:px-6 h-[36px] sm:h-[38px] rounded-lg hover:bg-[#333] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center"
+          >
+            {loading ? (
+              <>
+                <style>{`@keyframes stickySpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
+                <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "stickySpin 0.75s linear infinite" }} />
+              </>
+            ) : (
+              <>{t("addToCart")} – €{price}</>
+            )}
           </button>
         </div>
       </div>

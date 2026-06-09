@@ -125,16 +125,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const giftContentRef = useRef(null);
   const [giftContentHeight, setGiftContentHeight] = useState(0);
   const [giftChoice, setGiftChoice] = useState("none");
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
   useEffect(() => {
@@ -194,7 +191,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           flexDirection: "column",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        
           fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         }}
       >
