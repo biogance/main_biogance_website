@@ -1138,7 +1138,7 @@ export default function FilterProducts() {
         ) : (
           <>
           <div 
-  className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
+  className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] transform-gpu"
   style={{ overflowAnchor: "none" }}
 >
   {filteredProducts.map((p, i) => (
