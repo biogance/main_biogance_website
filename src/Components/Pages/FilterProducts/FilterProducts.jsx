@@ -354,12 +354,10 @@ function getShopContext(source, q, categoryName, t) {
 }
 
 const SkeletonCard = () => (
-  <div className="w-full animate-pulse min-h-[420px]" aria-hidden>
-    <div className="bg-stone-100 aspect-[7/10] mb-4 relative overflow-hidden">
+  <div className="w-full animate-pulse" aria-hidden>
+    <div className="bg-stone-100 aspect-[7/10] relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     </div>
-    <div className="h-4 bg-stone-100 rounded w-3/4 mb-2" />
-    <div className="h-4 bg-stone-100 rounded w-1/4" />
   </div>
 );
 
@@ -513,7 +511,7 @@ export default function FilterProducts() {
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isFetchingRef.current) {
+        if (entry.isIntersecting && !isFetchingRef.current && page < lastPage) {
           isFetchingRef.current = true;
           setPage(prev => {
             if (prev < lastPage) return prev + 1;
@@ -526,7 +524,7 @@ export default function FilterProducts() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [lastPage, isSearching]);
+  }, [lastPage, page, isSearching]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -1139,7 +1137,12 @@ export default function FilterProducts() {
           <>
           <div 
   className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] transform-gpu"
-  style={{ overflowAnchor: "none" }}
+  style={{
+    overflowAnchor: "none",
+    transform: "translateZ(0)",
+    WebkitTransform: "translateZ(0)",
+    willChange: "transform"
+  }}
 >
   {filteredProducts.map((p, i) => (
                 <div key={p.id} className="w-full">
@@ -1148,15 +1151,11 @@ export default function FilterProducts() {
 
                 </div>
               ))}
+  {isFetchingMore && Array.from({ length: 4 }).map((_, i) => (
+      <SkeletonCard key={`more-${i}`} />
+  ))}
              </div>
 
-{isFetchingMore && (
-  <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
-    {Array.from({ length: 4 }).map((_, i) => (
-      <SkeletonCard key={`more-${i}`} />
-    ))}
-  </div>
-)}
 {filteredProducts.length === 0 && hasSearched && (
               <div className="flex flex-col items-center justify-center py-28 text-center">
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100">
@@ -1172,10 +1171,8 @@ export default function FilterProducts() {
         )}
       </section>
 
-   {/* Sentinel: always render when more pages exist to prevent layout thrash on macOS Chrome */}
-   {page < lastPage && (
-     <div ref={sentinelRef} className="h-1" aria-hidden style={{ overflowAnchor: "none" }} />
-   )}
+   {/* Sentinel: always render to keep a stable DOM anchor and prevent layout thrash on macOS Chrome */}
+   <div ref={sentinelRef} className="h-1" aria-hidden style={{ overflowAnchor: "none" }} />
 
       <Footer />
     </div>
