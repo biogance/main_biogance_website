@@ -68,6 +68,15 @@ export const LandingCards = ({
   const videoRef = useRef(null);
   const hoverTimeout = useRef(null);
 
+  const firstImage = safeProduct.images?.[0];
+  const restImages = safeProduct.images?.slice(1) || [];
+  const videoUrl = safeProduct.videoUrl || null;
+
+  const slides = [
+    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
+    ...restImages.map((url) => ({ type: "image", url })),
+  ];
+
   const [isLiked, setIsLiked] = useState(safeProduct.liked || false);
   const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -89,14 +98,23 @@ export const LandingCards = ({
 
   // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
   useEffect(() => {
-    setImageLoaded(false);
     const url = slides[currentImageIndex]?.url || safeProduct.image;
-    if (!url) { setImageLoaded(true); return; }
+    if (!url) {
+      setImageLoaded(true);
+      return;
+    }
+    const cached = new window.Image();
+    cached.src = url;
+    if (cached.complete && cached.naturalHeight !== 0) {
+      setImageLoaded(true);
+      return;
+    }
+    setImageLoaded(false);
     const img = new window.Image();
     img.onload = () => setImageLoaded(true);
     img.onerror = () => setImageLoaded(true);
     img.src = url;
-  }, [currentImageIndex, safeProduct.image]);
+  }, [currentImageIndex, safeProduct.image, firstImage]);
 
 
   const handleFavorite = async (e) => {
@@ -130,15 +148,6 @@ export const LandingCards = ({
       setLoadingFav(false);
     }
   };
-
-  const firstImage = safeProduct.images?.[0];
-  const restImages = safeProduct.images?.slice(1) || [];
-  const videoUrl = safeProduct.videoUrl || null;
-
-  const slides = [
-    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
-    ...restImages.map((url) => ({ type: "image", url })),
-  ];
 
   const goToSlide = (idx) => {
     const total = slides.length;
@@ -208,6 +217,13 @@ export const LandingCards = ({
       `}</style>
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
+  style={{
+    willChange: "transform",
+    transform: "translateZ(0)",
+    WebkitTransform: "translateZ(0)",
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+  }}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
   onClick={() => {
