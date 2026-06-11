@@ -947,6 +947,13 @@ export default function FilterProducts() {
           .animate-scale-in {
             animation: scaleIn 0.2s ease-out forwards;
           }
+            .filter-rail-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.filter-rail-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
         `
       }} />
 
@@ -1273,7 +1280,8 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
 
       {/* Desktop / tablet: existing horizontal tab rail */}
       <div className="relative hidden md:block">
-        <div className="mx-auto flex max-w-[1500px] items-stretch gap-1 overflow-x-auto px-8">
+        <div className="filter-rail-scroll mx-auto flex max-w-[1500px] items-stretch gap-1 overflow-x-auto px-8">
+
           <button
             onClick={() => setAllOpen(true)}
             className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
@@ -1547,9 +1555,7 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
       >
         {displayLabel}
         {active && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white ai-style-change-1">
-            {count}
-          </span>
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">{count}</span>
         )}
         <LuChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
     </button>
