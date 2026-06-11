@@ -441,7 +441,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                 {/* Stars + Reviews */}
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
                   <StarRating rating={3.5} />
-                  <span style={{ fontSize: "13px", color: "#808080", cursor: "pointer" }} onClick={handleViewProduct}>
+                  <span className="hover:underline" style={{ fontSize: "13px", color: "#808080", cursor: "pointer" }} onClick={handleViewProduct}>
                     ({t("reviews")})
                   </span>
                 </div>

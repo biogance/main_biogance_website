@@ -1555,7 +1555,7 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
       >
         {displayLabel}
         {active && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">{count}</span>
+          <span className="flex h-5 min-w-5 items-center justify-center border border-white border-opacity-15 rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">{count}</span>
         )}
         <LuChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
     </button>
