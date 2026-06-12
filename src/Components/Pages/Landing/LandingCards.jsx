@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
@@ -68,15 +69,6 @@ export const LandingCards = ({
   const videoRef = useRef(null);
   const hoverTimeout = useRef(null);
 
-  const firstImage = safeProduct.images?.[0];
-  const restImages = safeProduct.images?.slice(1) || [];
-  const videoUrl = safeProduct.videoUrl || null;
-
-  const slides = [
-    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
-    ...restImages.map((url) => ({ type: "image", url })),
-  ];
-
   const [isLiked, setIsLiked] = useState(safeProduct.liked || false);
   const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -86,6 +78,7 @@ export const LandingCards = ({
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef(null);
@@ -98,23 +91,14 @@ export const LandingCards = ({
 
   // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
   useEffect(() => {
-    const url = slides[currentImageIndex]?.url || safeProduct.image;
-    if (!url) {
-      setImageLoaded(true);
-      return;
-    }
-    const cached = new window.Image();
-    cached.src = url;
-    if (cached.complete && cached.naturalHeight !== 0) {
-      setImageLoaded(true);
-      return;
-    }
     setImageLoaded(false);
+    const url = slides[currentImageIndex]?.url || safeProduct.image;
+    if (!url) { setImageLoaded(true); return; }
     const img = new window.Image();
     img.onload = () => setImageLoaded(true);
     img.onerror = () => setImageLoaded(true);
     img.src = url;
-  }, [currentImageIndex, safeProduct.image, firstImage]);
+  }, [currentImageIndex, safeProduct.image]);
 
 
   const handleFavorite = async (e) => {
@@ -148,6 +132,15 @@ export const LandingCards = ({
       setLoadingFav(false);
     }
   };
+
+  const firstImage = safeProduct.images?.[0];
+  const restImages = safeProduct.images?.slice(1) || [];
+  const videoUrl = safeProduct.videoUrl || null;
+
+  const slides = [
+    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
+    ...restImages.map((url) => ({ type: "image", url })),
+  ];
 
   const goToSlide = (idx) => {
     const total = slides.length;
@@ -217,13 +210,6 @@ export const LandingCards = ({
       `}</style>
      <div
   className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
-  style={{
-    willChange: "transform",
-    transform: "translateZ(0)",
-    WebkitTransform: "translateZ(0)",
-    backfaceVisibility: "hidden",
-    WebkitBackfaceVisibility: "hidden",
-  }}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
   onClick={() => {
@@ -460,12 +446,56 @@ export const LandingCards = ({
           e.currentTarget.style.backgroundColor = "white";
           e.currentTarget.style.color = "black";
         }}
-       onClick={(e) => {
+        onClick={async (e) => {
   e.stopPropagation();
-  setIsCartOpen(true);
+  if (addingToCart) return;
+  const firstProduct = safeProduct.products?.[0];
+  // Agar color ya size hai to modal kholo, warna direct API hit karo
+  if (firstProduct?.color || firstProduct?.size) {
+    setIsCartOpen(true);
+    return;
+  }
+  setAddingToCart(true);
+  try {
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    const payload = {
+      product_id: firstProduct?.id ?? safeProduct.id,
+      quantity: 1,
+    };
+    if (loginData?.data?.token) {
+      payload.token = loginData.data.token;
+    } else {
+      payload.device_id = getDeviceId();
+    }
+    const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
+    if (res.data.status === false) {
+      toast.error(res.data.action || "Could not add to cart.");
+    } else {
+      setIsCartOpen(true);
+    }
+  } catch {
+    toast.error("Something went wrong.");
+  } finally {
+    setAddingToCart(false);
+  }
 }}
       >
-        {t("products.addToCart")} – {safeProduct.price ?? 0} €
+        {addingToCart ? (
+          <span
+            style={{
+              display: "inline-block",
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              border: "2px solid white",
+              borderTopColor: "transparent",
+              animation: "lcSpin 0.75s linear infinite",
+              verticalAlign: "middle",
+            }}
+          />
+        ) : (
+          <>{t("products.addToCart")} – {safeProduct.price ?? 0} €</>
+        )}
       </button>
     ) : (
       /* Multiple products → Quickview button */

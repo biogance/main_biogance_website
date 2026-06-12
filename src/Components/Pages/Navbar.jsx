@@ -110,7 +110,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     setIsLanguageDropdownOpen(false);
   };
 
-  // Hover-based open/close for language dropdown — 150ms delay so user can move into dropdown
   const handleLangMouseEnter = () => {
     if (langCloseTimer.current) clearTimeout(langCloseTimer.current);
     setIsLanguageDropdownOpen(true);
@@ -122,15 +121,15 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     }, 150);
   };
 
-  // Dot indicator class
+  // Dot indicator class — bottom-1 after removing pb-3
   const dotClass = (key) =>
-    `absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
+    `absolute top-6 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
       hoveredLink === key ? 'opacity-100' : 'opacity-0'
     }`;
 
-  // ✅ All nav items share same font weight via navItemBase — no extra overrides
+  
   const navItemBase =
-    'relative flex flex-col items-center justify-center px-2 py-1 pb-3 text-sm font-[600] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
+    'relative flex flex-col items-center justify-center px-2 h-full text-sm font-[600] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
 
   return (
     <>
@@ -169,9 +168,9 @@ export default function Navbar({ transparent = false, announcementVisible = fals
           >
 
             {/* LEFT: Navigation Links - Desktop Only */}
-            <div className="hidden lg:flex items-stretch gap-1">
+            <div className="hidden lg:flex items-stretch gap-3">
 
-              {/* Our Products — same navItemBase, no extra font override */}
+              {/* Our Products */}
               <button
                 onClick={toggleProductsModal}
                 onMouseEnter={() => { setHoveredLink('products'); setIsNavHovered(true); }}
@@ -210,7 +209,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               </button>
             </div>
 
-            {/* CENTER: Logo — no hover handlers intentionally */}
+            {/* CENTER: Logo */}
             <div className="flex items-center justify-center">
               <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
                 <ImageWithFallback
@@ -222,20 +221,20 @@ export default function Navbar({ transparent = false, announcementVisible = fals
             </div>
 
             {/* RIGHT: Icons */}
-            <div className="hidden lg:flex items-stretch justify-end gap-1">
+            <div className="hidden lg:flex items-stretch justify-end gap-3">
 
-              {/* Search */}
+             
               <button
                 onClick={() => setIsSearchModalOpen(true)}
                 onMouseEnter={() => { setHoveredLink('search'); setIsNavHovered(true); }}
                 onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                 className={navItemBase}
               >
-                <FiSearch className="w-5 h-5" />
+                <FiSearch className="w-5 h-5" strokeWidth={2.5} />
                 <span className={dotClass('search')} />
               </button>
 
-             {/* Language Dropdown */}
+              {/* Language Dropdown */}
               <div className="relative" ref={desktopLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -267,8 +266,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </div>
 
-
-
               {/* Login */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
@@ -288,7 +285,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {cartCount}
                   </span>
                 ) : (
@@ -303,7 +300,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {cartCount}
                   </span>
                 ) : (
@@ -401,7 +398,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 onClick={() => setIsSearchModalOpen(true)}
                 className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
               >
-                <FiSearch className="w-5 h-5" />
+                <FiSearch className="w-5 h-5" strokeWidth={2.5} />
               </button>
 
               <button
@@ -411,7 +408,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 <FiUser className="w-5 h-5" />
               </button>
 
-              <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+              <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />
               </Link>
             </div>
