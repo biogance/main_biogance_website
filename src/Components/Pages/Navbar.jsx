@@ -138,17 +138,15 @@ export default function Navbar({ transparent = false, announcementVisible = fals
         onClick={handleMobileMenuToggle}
       />
 
-      <nav
-        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
-          showAnnouncement ? "top-[40px]" : "top-0"
-        } ${
-          isNavHovered || isProductsModalOpen || isMobileMenuOpen
-            ? "bg-white shadow-sm border-b border-gray-100"
-            : "bg-transparent border-b border-transparent"
-        }`}
-        onMouseEnter={() => setIsNavHovered(true)}
-        onMouseLeave={() => setIsNavHovered(false)}
-      >
+    <nav
+  className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
+    showAnnouncement ? "top-[40px]" : "top-0"
+  } ${
+    isNavHovered || isProductsModalOpen || isMobileMenuOpen
+      ? "bg-white shadow-sm border-b border-gray-100"
+      : "bg-transparent border-b border-transparent"
+  }`}
+>
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div className="relative flex items-center justify-between h-full">
 
@@ -166,8 +164,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               </button>
             </div>
 
-            {/* LEFT: Navigation Links - Desktop Only */}
-            <div className="hidden lg:flex items-center gap-4">
+          
+          {/* LEFT: Navigation Links - Desktop Only */}
+<div
+  className="hidden lg:flex items-center gap-4"
+  onMouseEnter={() => setIsNavHovered(true)}
+  onMouseLeave={() => setIsNavHovered(false)}
+>
 
               {/* Our Products Button with dot */}
               <button
