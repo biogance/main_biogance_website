@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -19,26 +18,11 @@ import { useRouter } from 'next/navigation';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
 
+// Only one video slide now - images removed
 const heroSlides = [
   {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1920&q=80',
-  },
-  {
     type: 'video',
-    url: '/LandingVideo.mp4',
-  },
-  {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1920&q=80',
-  },
-  {
-    type: 'video',
-    url: '/LandingVideo.mp4',
-  },
-  {
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1920&q=80',
+    url: '/demo1.mp4',
   },
 ];
 
@@ -104,8 +88,8 @@ export default function HeroSection() {
     description: t('hero.description'),
   };
 
-  const currentSlideData = slides[currentSlide];
-  const isCurrentVideo = currentSlideData.type === 'video';
+  const currentSlideData = slides[currentSlide] || slides[0];
+  const isCurrentVideo = currentSlideData?.type === 'video';
 
   // Auto-scroll functionality
   React.useEffect(() => {
@@ -132,7 +116,7 @@ export default function HeroSection() {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  const currentImageUrl = slides[currentSlide].url;
+  const currentImageUrl = currentSlideData?.url;
 
   return (
     <>
@@ -170,33 +154,33 @@ export default function HeroSection() {
           )}
           
           {/* Dark Overlay */}
-          <div className="absolute inset-0 bg-black/40"></div>
+          {/* <div className="absolute inset-0 bg-black/40"></div> */}
 
           {/* Content Container */}
           <div className="relative z-10 w-full h-full flex items-center">
             <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 2xl:px-24">
               <div className="max-w-3xl">
                 {/* Tagline */}
-                <p className="text-xs sm:text-sm md:text-base font-light mb-3 md:mb-4 tracking-wide text-white/90">
+                <p className="text-xs sm:text-sm md:text-base font-light mb-3 md:mb-4 tracking-wide text-black/90">
                   {heroContent.tagline}
                 </p>
 
                 {/* Main Heading */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 md:mb-6 text-white">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 md:mb-6 text-black">
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-white/90">
+                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
                   {heroContent.description}
                 </p>
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-                  <button onClick={() => router.push('/shop')} className="bg-white cursor-pointer text-black px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
+                  <button onClick={() => router.push('/shop')} className="bg-black cursor-pointer text-white px-6 md:px-8 py-2.5 md:py-3  font-medium hover:bg-gray-800 transition-colors text-sm md:text-base">
                     {t('hero.shopNow')}
                   </button>
-                  <button onClick={() => router.push('/shop')} className="bg-transparent cursor-pointer border-2 border-white text-white px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/10 transition-colors text-sm md:text-base">
+                  <button onClick={() => router.push('/shop')} className="bg-transparent cursor-pointer border-2 border-black text-black px-6 md:px-8 py-2.5 md:py-3 font-medium hover:bg-black/10 transition-colors text-sm md:text-base">
                     {t('hero.discover')}
                   </button>
                 </div>
@@ -208,7 +192,7 @@ export default function HeroSection() {
           {hasMultipleSlides && (
             <>
               {/* Desktop Navigation */}
-              <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
+              {/* <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
                 <div className="flex items-center gap-3 lg:gap-4">
                   <button 
                     onClick={goToPrevious}
@@ -239,10 +223,10 @@ export default function HeroSection() {
                     ></div>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Mobile Navigation */}
-              <div className="md:hidden absolute bottom-6 right-6 z-20">
+              {/* <div className="md:hidden absolute bottom-6 right-6 z-20">
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex items-center gap-3">
                     <button 
@@ -275,7 +259,7 @@ export default function HeroSection() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </>
           )}
         </div>

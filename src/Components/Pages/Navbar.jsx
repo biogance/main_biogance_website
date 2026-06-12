@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
@@ -32,6 +32,9 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
 
+  // Cart items count - 0 means empty cart (shows black dot instead of number)
+  const [cartCount, setCartCount] = useState(2);
+
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
     const payload = loginData?.data?.token
@@ -51,11 +54,38 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
     return () => clearTimeout(timer);
   }, []);
+
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const [isNavHovered, setIsNavHovered] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState(null);
+
+  // Refs for language dropdown (desktop + mobile) to detect outside clicks
+  const desktopLangRef = useRef(null);
+  const mobileLangRef = useRef(null);
+
+  // Close language dropdown when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const clickedDesktop = desktopLangRef.current && desktopLangRef.current.contains(event.target);
+      const clickedMobile = mobileLangRef.current && mobileLangRef.current.contains(event.target);
+
+      if (!clickedDesktop && !clickedMobile) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+
+    if (isLanguageDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isLanguageDropdownOpen]);
 
   const navLinks = [
     { href: '/who-are-we', text: t('ourLaboratory') },
@@ -63,9 +93,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     { href: '/navPro', text: 'Pro' },
   ];
 
+  // Removed flag images - now showing code (EN/FR) + currency symbol ($/€)
   const languages = [
-    { code: 'en', label: 'English', flag: '/UsaFlag.svg', shortLabel: 'EN' },
-    { code: 'fr', label: 'Français', flag: '/franceFlag.svg', shortLabel: 'FR' },
+    { code: 'en', label: 'English', shortLabel: 'EN', currency: '$' },
+    { code: 'fr', label: 'Français', shortLabel: 'FR', currency: '€' },
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
@@ -92,10 +123,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <div
         className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? 'h-[40px]' : 'h-0'}`}
       >
-       <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-  Enjoy complimentary standard delivery across France on all orders over €39.{" "}
-  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-</p>
+        <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
+          Enjoy complimentary standard delivery across France on all orders over €39.{" "}
+          <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+        </p>
       </div>
 
       {/* Backdrop overlay */}
@@ -108,13 +139,15 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-700 ${
+        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
           showAnnouncement ? "top-[40px]" : "top-0"
         } ${
-          transparent
-            ? "bg-transparent border-b border-transparent"
-            : "bg-white border-b border-gray-200"
+          isNavHovered || isProductsModalOpen || isMobileMenuOpen
+            ? "bg-white shadow-sm border-b border-gray-100"
+            : "bg-transparent border-b border-transparent"
         }`}
+        onMouseEnter={() => setIsNavHovered(true)}
+        onMouseLeave={() => setIsNavHovered(false)}
       >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div className="relative flex items-center justify-between h-full">
@@ -135,27 +168,39 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             {/* LEFT: Navigation Links - Desktop Only */}
             <div className="hidden lg:flex items-center gap-4">
+
+              {/* Our Products Button with dot */}
               <button
                 onClick={toggleProductsModal}
-                className="flex items-center gap-2 hover:text-gray-600 transition-colors p-2 cursor-pointer"
+                onMouseEnter={() => setHoveredLink('products')}
+                onMouseLeave={() => setHoveredLink(null)}
+                className="relative flex flex-col items-center  transition-colors  px-2 py-1 pb-3 cursor-pointer"
               >
-                <img src="/Menu.svg" className="w-6 h-6" alt="Menu" />
-                <div className="text-left">
+                <div className="flex items-center gap-2">
                   <div className="text-sm font-normal text-[#1C1C1C]">{t('ourProducts')}</div>
-                  <div className="text-xs text-gray-500">
-                    <img src="/france.svg" alt="France" />
-                  </div>
+                  <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
+                    isProductsModalOpen ? 'rotate-180' : 'rotate-0'
+                  }`} />
                 </div>
-                <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
-                  isProductsModalOpen ? 'rotate-180' : 'rotate-0'
+                {/* Black dot indicator */}
+                <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
+                  hoveredLink === 'products' || isProductsModalOpen ? 'opacity-100' : 'opacity-0'
                 }`} />
               </button>
 
               {navLinks.map((link) => (
                 <React.Fragment key={link.text}>
-                  <span className="text-gray-300">|</span>
-                  <Link href={link.href} className="text-sm font-normal text-[#1C1C1C] hover:text-gray-600 px-2 py-1">
+                  <Link
+                    href={link.href}
+                    onMouseEnter={() => setHoveredLink(link.text)}
+                    onMouseLeave={() => setHoveredLink(null)}
+                    className="relative flex flex-col items-center text-sm font-normal text-[#1C1C1C]  px-2 py-1 pb-3"
+                  >
                     {link.text}
+                    {/* Black dot indicator */}
+                    <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
+                      hoveredLink === link.text ? 'opacity-100' : 'opacity-0'
+                    }`} />
                   </Link>
                 </React.Fragment>
               ))}
@@ -185,19 +230,25 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             {/* RIGHT: Icons */}
             <div className="flex items-center space-x-2 sm:space-x-3">
+
+                <button
+                onClick={() => setIsSearchModalOpen(true)}
+                className="hidden lg:block p-2 text-sm  cursor-pointer font-[400] text-[#1C1C1C]"
+              >
+                <FiSearch className="w-5 h-5" />
+              </button>
               {/* Language Dropdown - Desktop */}
-              <div className="hidden lg:block relative">
-                <button 
+              <div className="hidden lg:block relative" ref={desktopLangRef}>
+                <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] font-[400] text-[#1C1C1C]"
                 >
-                  <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-5 h-4 object-cover" />
-                  <span>{currentLanguage.shortLabel}</span>
+                  <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
                     isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
                   }`} />
                 </button>
-                
+
                 {isLanguageDropdownOpen && (
                   <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden min-w-[140px] cursor-pointer">
                     {languages.map((lang) => (
@@ -208,7 +259,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                           i18n.language === lang.code ? 'text-black' : ''
                         }`}
                       >
-                        <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />
                         <span className="font-medium">{lang.label}</span>
                       </button>
                     ))}
@@ -216,31 +266,32 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </div>
 
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className="hidden lg:block p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
-              >
-                <FiSearch className="w-5 h-5" />
-              </button>
-              
+            
+
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="p-2 text-[10px] rounded-xl cursor-pointer border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50"
+                className="p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer"
               >
-                <FiUser className="w-5 h-5" />
+                {/* <FiUser className="w-5 h-5" /> */}
+                <span>Login</span>
               </button>
 
-              <Link href="/wishlist">
+              {/* <Link href="/wishlist">
                 <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
                   <FiHeart className="w-5 h-5" />
                 </button>
-              </Link>
+              </Link> */}
 
-              <button className="relative p-2 bg-gray-900 cursor-pointer hover:bg-gray-800 rounded-xl transition-colors">
-                <img src="/q.svg" alt="Cart" className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  0
-                </span>
+              <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
+                {/* <img src="/q.svg" alt="Cart" className="w-5 h-5" /> */}
+                <span className="uppercase">{t('cart') || 'Cart'}</span>
+                {cartCount > 0 ? (
+                  <span className="bg-black text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                ) : (
+                  <span className="bg-black w-2 h-2 rounded-full" />
+                )}
               </button>
             </div>
           </div>
@@ -300,29 +351,27 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             <div className="pt-4 border-t border-gray-200 flex items-center space-x-3">
               {/* Language Dropdown - Mobile */}
-              <div className="relative">
-                <button 
+              <div className="relative" ref={mobileLangRef}>
+                <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
                   className="flex items-center gap-1 p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
                 >
-                  <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-5 h-4 object-cover" />
-                  <span>{currentLanguage.shortLabel}</span>
+                  <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
                     isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
                   }`} />
                 </button>
-                
+
                 {isLanguageDropdownOpen && (
                   <div className="absolute top-full mt-2 left-0 bg-white text-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-black hover:bg-black transition-colors cursor-pointer ${
-                          i18n.language === lang.code 
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-black hover:bg-black hover:text-white transition-colors cursor-pointer ${
+                          i18n.language === lang.code ? 'font-semibold' : ''
                         }`}
                       >
-                        <img src={lang.flag} alt={lang.label} className="w-6 h-5 object-cover" />
                         <span className="font-medium">{lang.label}</span>
                       </button>
                     ))}
@@ -336,7 +385,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               >
                 <FiSearch className="w-5 h-5" />
               </button>
-              
+
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
