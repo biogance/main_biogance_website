@@ -129,7 +129,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   
   const navItemBase =
-    'relative flex flex-col items-center justify-center px-2 h-full text-sm font-[600] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
+    'relative flex flex-col items-center justify-center px-2 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
 
   return (
     <>
@@ -221,32 +221,26 @@ export default function Navbar({ transparent = false, announcementVisible = fals
             </div>
 
             {/* RIGHT: Icons */}
-            <div className="hidden lg:flex items-stretch justify-end gap-3">
+            <div className="hidden lg:flex items-stretch justify-end gap-5">
 
              
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                onMouseEnter={() => { setHoveredLink('search'); setIsNavHovered(true); }}
-                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                 className={navItemBase}
               >
-                <FiSearch className="w-5 h-5" strokeWidth={2.5} />
-                <span className={dotClass('search')} />
+                <FiSearch className="w-5 h-5" strokeWidth={2.0} />
               </button>
 
               {/* Language Dropdown */}
               <div className="relative" ref={desktopLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  onMouseEnter={() => { setHoveredLink('lang'); setIsNavHovered(true); }}
-                  onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                   className={`${navItemBase} flex-row gap-1`}
                 >
                   <span className="text-[14px]">{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
                     isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
                   }`} />
-                  <span className={dotClass('lang')} />
                 </button>
 
                 {isLanguageDropdownOpen && (
@@ -269,18 +263,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               {/* Login */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                onMouseEnter={() => { setHoveredLink('login'); setIsNavHovered(true); }}
-                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                 className={navItemBase}
               >
                 <span>LOGIN</span>
-                <span className={dotClass('login')} />
               </button>
 
               {/* Cart */}
               <button
-                onMouseEnter={() => { setHoveredLink('cart'); setIsNavHovered(true); }}
-                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                 className={`${navItemBase} flex-row gap-1`}
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
@@ -291,7 +280,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 ) : (
                   <span className="bg-black w-2 h-2 rounded-full" />
                 )}
-                <span className={dotClass('cart')} />
               </button>
             </div>
 

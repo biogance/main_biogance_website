@@ -49,12 +49,15 @@ export default function HeroSection() {
   const videoSectionRef = useRef(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVideoVisible(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    if (videoSectionRef.current) observer.observe(videoSectionRef.current);
-    return () => observer.disconnect();
+    const handleScroll = () => {
+      if (!videoSectionRef.current) return;
+      const rect = videoSectionRef.current.getBoundingClientRect();
+      // jab video section ka bottom navbar (64px) ko touch kare tab white ho
+      setIsVideoVisible(rect.bottom > 88);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => { preloadHeroVideos(); }, []);
