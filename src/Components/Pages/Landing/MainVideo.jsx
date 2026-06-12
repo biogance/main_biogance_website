@@ -177,12 +177,12 @@ export default function HeroSection() {
                 </p>
 
                 {/* Main Heading */}
-                <h1 className="text-2xl sm:text-2xl md:text-5xl lg:text-5xl xl:text-4xl font-medium leading-tight mb-4 md:mb-6 text-black">
+                <h1 className="text-7xl sm:text-2xl md:text-7xl lg:text-6xl xl:text-7xl font-semibold leading-tight mb-4 md:mb-6 text-black">
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-sm sm:text-base md:text-md mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
+                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
                   {heroContent.description}
                 </p>
 
