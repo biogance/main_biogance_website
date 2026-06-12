@@ -26,13 +26,11 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
   );
 };
 
-export default function Navbar({ transparent = false, announcementVisible = false }) {
+export default function Navbar({ transparent = false, announcementVisible = false, isVideoVisible = true }) {
   const { t, i18n } = useTranslation('navbar');
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
-
-  // Cart items count - 0 means empty cart (shows black dot instead of number)
   const [cartCount, setCartCount] = useState(2);
 
   useEffect(() => {
@@ -63,39 +61,33 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [isNavHovered, setIsNavHovered] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
-  // Refs for language dropdown (desktop + mobile) to detect outside clicks
   const desktopLangRef = useRef(null);
   const mobileLangRef = useRef(null);
 
-  // Close language dropdown when clicking outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       const clickedDesktop = desktopLangRef.current && desktopLangRef.current.contains(event.target);
       const clickedMobile = mobileLangRef.current && mobileLangRef.current.contains(event.target);
-
       if (!clickedDesktop && !clickedMobile) {
         setIsLanguageDropdownOpen(false);
       }
     };
-
     if (isLanguageDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isLanguageDropdownOpen]);
 
   const navLinks = [
-    { href: '/who-are-we', text: t('ourLaboratory') },
-    { href: '#', text: t('ourExpertAdvice') },
-    { href: '/navPro', text: 'Pro' },
+    { href: '/who-are-we', text: t('ourLaboratory'), key: 'laboratory' },
+    { href: '#', text: t('ourExpertAdvice'), key: 'advice' },
+    { href: '/navPro', text: 'PRO', key: 'pro' },
   ];
 
-  // Removed flag images - now showing code (EN/FR) + currency symbol ($/€)
   const languages = [
-    { code: 'en', label: 'English', shortLabel: 'EN', currency: '$' },
+    { code: 'en', label: 'English', shortLabel: 'EN', currency: '€' },
     { code: 'fr', label: 'Français', shortLabel: 'FR', currency: '€' },
   ];
 
@@ -116,6 +108,23 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     i18n.changeLanguage(langCode);
     setIsLanguageDropdownOpen(false);
   };
+
+  // ✅ FIX: navHoverProps — sirf nav items ke hover par bg-white ho
+  // Empty space, logo, ya nav ke bahar hover karne par transparent rahe
+  const navHoverProps = {
+    onMouseEnter: () => setIsNavHovered(true),
+    onMouseLeave: () => setIsNavHovered(false),
+  };
+
+  // Shared dot indicator class
+  const dotClass = (key) =>
+    `absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
+      hoveredLink === key ? 'opacity-100' : 'opacity-0'
+    }`;
+
+  // Shared nav item base class
+  const navItemBase =
+    'relative flex flex-col items-center justify-center px-2 py-1 pb-3 text-sm font-[600] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
 
   return (
     <>
@@ -138,19 +147,55 @@ export default function Navbar({ transparent = false, announcementVisible = fals
         onClick={handleMobileMenuToggle}
       />
 
-    <nav
-  className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
-    showAnnouncement ? "top-[40px]" : "top-0"
-  } ${
-    isNavHovered || isProductsModalOpen || isMobileMenuOpen
-      ? "bg-white shadow-sm border-b border-gray-100"
-      : "bg-transparent border-b border-transparent"
-  }`}
->
+      <nav
+        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
+          showAnnouncement ? "top-[40px]" : "top-0"
+        } ${
+          isNavHovered || isProductsModalOpen || isMobileMenuOpen || !isVideoVisible
+            ? "bg-white shadow-sm border-b border-gray-100"
+            : "bg-transparent border-b border-transparent"
+        }`}
+      >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
-          <div className="relative flex items-center justify-between h-full">
+          {/* 
+            ✅ FIX: onMouseEnter/Leave grid se HATA diye.
+            Ab sirf nav items apna hover report karte hain navHoverProps ke zariye.
+            Logo ya empty space pe hover karne se bg-white NAHI hogi.
+          */}
+          <div
+            className="h-full grid items-center"
+            style={{ gridTemplateColumns: '1fr auto 1fr' }}
+          >
 
-            {/* Mobile Menu Button */}
+            {/* LEFT: Navigation Links - Desktop Only */}
+            <div className="hidden lg:flex items-stretch gap-1">
+
+              {/* Our Products Button */}
+              <button
+                onClick={toggleProductsModal}
+                onMouseEnter={() => { setHoveredLink('products'); setIsNavHovered(true); }}
+                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                className={navItemBase}
+              >
+                <span className="text-sm font-[600] text-[#1C1C1C]">{t('ourProducts')}</span>
+                <span className={dotClass('products')} />
+              </button>
+
+              {navLinks.map((link) => (
+                <Link
+                  key={link.key}
+                  href={link.href}
+                  onMouseEnter={() => { setHoveredLink(link.key); setIsNavHovered(true); }}
+                  onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                  className={navItemBase}
+                >
+                  {link.text}
+                  <span className={dotClass(link.key)} />
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile Menu Button — sits in left cell on mobile */}
             <div className="flex items-center lg:hidden">
               <button
                 onClick={handleMobileMenuToggle}
@@ -164,64 +209,8 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               </button>
             </div>
 
-          
-          {/* LEFT: Navigation Links - Desktop Only */}
-<div
-  className="hidden lg:flex items-center gap-4"
-  onMouseEnter={() => setIsNavHovered(true)}
-  onMouseLeave={() => setIsNavHovered(false)}
->
-
-              {/* Our Products Button with dot */}
-              <button
-                onClick={toggleProductsModal}
-                onMouseEnter={() => setHoveredLink('products')}
-                onMouseLeave={() => setHoveredLink(null)}
-                className="relative flex flex-col items-center  transition-colors  px-2 py-1 pb-3 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="text-sm font-normal text-[#1C1C1C]">{t('ourProducts')}</div>
-                  <FiChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
-                    isProductsModalOpen ? 'rotate-180' : 'rotate-0'
-                  }`} />
-                </div>
-                {/* Black dot indicator */}
-                <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
-                  hoveredLink === 'products' || isProductsModalOpen ? 'opacity-100' : 'opacity-0'
-                }`} />
-              </button>
-
-              {navLinks.map((link) => (
-                <React.Fragment key={link.text}>
-                  <Link
-                    href={link.href}
-                    onMouseEnter={() => setHoveredLink(link.text)}
-                    onMouseLeave={() => setHoveredLink(null)}
-                    className="relative flex flex-col items-center text-sm font-normal text-[#1C1C1C]  px-2 py-1 pb-3"
-                  >
-                    {link.text}
-                    {/* Black dot indicator */}
-                    <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
-                      hoveredLink === link.text ? 'opacity-100' : 'opacity-0'
-                    }`} />
-                  </Link>
-                </React.Fragment>
-              ))}
-            </div>
-
-            {/* CENTER: Logo - Desktop (absolute center) */}
-            <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center">
-              <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
-                <ImageWithFallback
-                  src={logoImage}
-                  alt="Biogance Logo"
-                  className="h-10 sm:h-10"
-                />
-              </Link>
-            </div>
-
-            {/* CENTER: Logo - Mobile */}
-            <div className="flex lg:hidden flex-1 items-center justify-center">
+            {/* CENTER: Logo — intentionally NO navHoverProps, logo hover pe bg transparent rahe */}
+            <div className="flex items-center justify-center">
               <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
                 <ImageWithFallback
                   src={logoImage}
@@ -232,34 +221,42 @@ export default function Navbar({ transparent = false, announcementVisible = fals
             </div>
 
             {/* RIGHT: Icons */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="hidden lg:flex items-stretch justify-end gap-1">
 
-                <button
+              {/* Search */}
+              <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="hidden lg:block p-2 text-sm  cursor-pointer font-[400] text-[#1C1C1C]"
+                onMouseEnter={() => { setHoveredLink('search'); setIsNavHovered(true); }}
+                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                className={navItemBase}
               >
                 <FiSearch className="w-5 h-5" />
+                <span className={dotClass('search')} />
               </button>
-              {/* Language Dropdown - Desktop */}
-              <div className="hidden lg:block relative" ref={desktopLangRef}>
+
+              {/* Language Dropdown */}
+              <div className="relative" ref={desktopLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] font-[400] text-[#1C1C1C]"
+                  onMouseEnter={() => { setHoveredLink('lang'); setIsNavHovered(true); }}
+                  onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                  className={`${navItemBase} flex-row gap-1`}
                 >
-                  <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
+                  <span className="text-[14px]">{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
                     isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
                   }`} />
+                  <span className={dotClass('lang')} />
                 </button>
 
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-xl shadow-lg overflow-hidden min-w-[140px] cursor-pointer">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-black rounded-xl shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
                         className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
-                          i18n.language === lang.code ? 'text-black' : ''
+                          i18n.language === lang.code ? 'font-semibold' : ''
                         }`}
                       >
                         <span className="font-medium">{lang.label}</span>
@@ -269,27 +266,41 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </div>
 
-            
-
+              {/* Login */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer"
+                onMouseEnter={() => { setHoveredLink('login'); setIsNavHovered(true); }}
+                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                className={navItemBase}
               >
-                {/* <FiUser className="w-5 h-5" /> */}
-                <span>Login</span>
+                <span>LOGIN</span>
+                <span className={dotClass('login')} />
               </button>
 
-              {/* <Link href="/wishlist">
-                <button className="hidden lg:block p-2 text-[10px] font-[400] cursor-pointer rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50">
-                  <FiHeart className="w-5 h-5" />
-                </button>
-              </Link> */}
-
-              <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
-                {/* <img src="/q.svg" alt="Cart" className="w-5 h-5" /> */}
+              {/* Cart */}
+              <button
+                onMouseEnter={() => { setHoveredLink('cart'); setIsNavHovered(true); }}
+                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                className={`${navItemBase} flex-row gap-1`}
+              >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="bg-black border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                ) : (
+                  <span className="bg-black w-2 h-2 rounded-full" />
+                )}
+                <span className={dotClass('cart')} />
+              </button>
+            </div>
+
+            {/* Mobile right icons (cart only visible on mobile) */}
+            <div className="flex lg:hidden items-center justify-end">
+              <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
+                <span className="uppercase">{t('cart') || 'Cart'}</span>
+                {cartCount > 0 ? (
+                  <span className="bg-black  border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {cartCount}
                   </span>
                 ) : (
@@ -297,6 +308,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </button>
             </div>
+
           </div>
         </div>
 
@@ -344,7 +356,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             {navLinks.map((link) => (
               <a
-                key={link.text}
+                key={link.key}
                 href={link.href}
                 className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600 hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
               >

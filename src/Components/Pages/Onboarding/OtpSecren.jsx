@@ -14,6 +14,7 @@ export default function VerificationCodeModal({ isOpen, onClose, email, onAllClo
   const [isExpired, setIsExpired] = useState(false);
   const [isNewPasswordOpen, setIsNewPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const inputRefs = useRef([]);
 
   if (!isOpen) return null;
@@ -104,10 +105,37 @@ export default function VerificationCodeModal({ isOpen, onClose, email, onAllClo
     if (onClose) onClose();
   };
 
+  // Backdrop click -> shake the card instead of closing
+  const handleBackdropClick = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+  };
+
   return (
     <>
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70">
-        <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+      `}</style>
+
+      <div
+        className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70"
+        onClick={handleBackdropClick}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 ${
+            isShaking ? 'animate-shake' : ''
+          }`}
+        >
           <button
             type="button"
             onClick={handleClose}

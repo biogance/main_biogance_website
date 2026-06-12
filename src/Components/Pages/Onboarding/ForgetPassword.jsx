@@ -14,6 +14,7 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   const [touched, setTouched] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
 
   const validateEmail = (email) => {
     if (!email.trim()) {
@@ -97,69 +98,98 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
     if (onClose) onClose();
   };
 
+  // Backdrop click -> shake the card instead of closing
+  const handleBackdropClick = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+  };
+
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60">
-      <div className="relative bg-white rounded-3xl shadow-lg w-full max-w-lg p-8 overflow-y-auto">
-        {/* Close Button */}
-        <button
-            type="button"
-            onClick={handleClose}
-            className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <AiOutlineClose size={20}/>
-          </button>
+    <>
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+      `}</style>
 
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl mb-3 font-semibold text-black">{t('forgotPassword.title')}</h1>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            {t('forgotPassword.description')}
-          </p>
-        </div>
+      <div
+        className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60"
+        onClick={handleBackdropClick}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`relative bg-white rounded-3xl shadow-lg w-full max-w-lg p-8 overflow-y-auto ${
+            isShaking ? 'animate-shake' : ''
+          }`}
+        >
+          {/* Close Button */}
+          <button
+              type="button"
+              onClick={handleClose}
+              className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+            >
+              <AiOutlineClose size={20}/>
+            </button>
 
-        {/* ─── FORM ─── */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm mb-2 font-semibold text-black">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder= {t('forgotPassword.form.emailPlaceholder')}
-              value={email}
-              onChange={(e) => handleChange(e.target.value)}
-              onBlur={handleBlur}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none text-sm text-black ${
-                touched && error
-                  ? 'bg-red-50 border-red-300'
-                  : 'bg-gray-50 border-gray-300'
-              }`}
-            />
-            {touched && error && (
-              <p className="text-red-500 text-xs mt-1">{t('forgotPassword.errors.emailRequired')}</p>
-            )}
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl mb-3 font-semibold text-black">{t('forgotPassword.title')}</h1>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              {t('forgotPassword.description')}
+            </p>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Sending...' : t('forgotPassword.buttons.sendResetLink')}
-          </button>
-        </form>
-      </div>
+          {/* ─── FORM ─── */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm mb-2 font-semibold text-black">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder= {t('forgotPassword.form.emailPlaceholder')}
+                value={email}
+                onChange={(e) => handleChange(e.target.value)}
+                onBlur={handleBlur}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none text-sm text-black ${
+                  touched && error
+                    ? 'bg-red-50 border-red-300'
+                    : 'bg-gray-50 border-gray-300'
+                }`}
+              />
+              {touched && error && (
+                <p className="text-red-500 text-xs mt-1">{t('forgotPassword.errors.emailRequired')}</p>
+              )}
+            </div>
 
-      {/* OTP Modal */}
-      <VerificationCodeModal
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-        email={email}
-        onAllClose={onAllClose}
-      />
-    </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Sending...' : t('forgotPassword.buttons.sendResetLink')}
+            </button>
+          </form>
+        </div>
+
+        {/* OTP Modal */}
+        <VerificationCodeModal
+          isOpen={isOtpModalOpen}
+          onClose={() => setIsOtpModalOpen(false)}
+          email={email}
+          onAllClose={onAllClose}
+        />
+      </div>
+    </>
   );
 }

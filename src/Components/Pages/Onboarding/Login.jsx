@@ -16,6 +16,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const [showSignup, setShowSignup] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -62,7 +63,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const handleBlur = (field) => {
     setTouched({ ...touched, [field]: true });
-    
+
     let error = '';
     if (field === 'email') {
       error = validateEmail(formData.email);
@@ -74,7 +75,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    
+
     if (touched[field]) {
       let error = '';
       if (field === 'email') {
@@ -85,22 +86,22 @@ export default function LoginModal({ isOpen, onClose }) {
       setErrors({ ...errors, [field]: error });
     }
   };
-  
+
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.scrollY;
-      
+
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      
+
       return () => {
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        
+
         window.scrollTo(0, scrollY);
       };
     }
@@ -177,10 +178,37 @@ export default function LoginModal({ isOpen, onClose }) {
     setShowForgotPassword(false);
   };
 
+  // Backdrop click -> shake the card instead of closing
+  const handleBackdropClick = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+  };
+
   return (
     <>
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70">
-        <div className="relative bg-white rounded-3xl w-full max-w-lg p-8 overflow-y-auto">
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+      `}</style>
+
+      <div
+        className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70"
+        onClick={handleBackdropClick}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`relative bg-white rounded-3xl w-full max-w-lg p-8 overflow-y-auto ${
+            isShaking ? 'animate-shake' : ''
+          }`}
+        >
           {/* Close Button */}
           <button
             type="button"
