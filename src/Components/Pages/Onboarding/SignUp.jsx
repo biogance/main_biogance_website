@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
-import { PhoneInput } from 'react-international-phone';
-import { parsePhoneNumber } from 'libphonenumber-js';
-import 'react-international-phone/style.css';
+// import { PhoneInput } from 'react-international-phone';
+// import { parsePhoneNumber } from 'libphonenumber-js';
+// import 'react-international-phone/style.css';
 import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
 import { BASE_URL } from '../../API/API';
 import { useTranslation } from 'react-i18next';
@@ -14,22 +14,23 @@ import toast from 'react-hot-toast';
 export default function SignupModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
   const [showPassword, setShowPassword] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    phoneNumber: '',
+    // phoneNumber: '',
     password: ''
   });
   const [errors, setErrors] = useState({
     fullName: '',
     email: '',
-    phoneNumber: '',
+    // phoneNumber: '',
     password: ''
   });
   const [touched, setTouched] = useState({
     fullName: false,
     email: false,
-    phoneNumber: false,
+    // phoneNumber: false,
     password: false
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -55,12 +56,12 @@ export default function SignupModal({ isOpen, onClose }) {
     return '';
   };
 
-  const validatePhoneNumber = (phone) => {
-    if (!phone || phone.length < 10) {
-      return 'Please enter your phone number.';
-    }
-    return '';
-  };
+  // const validatePhoneNumber = (phone) => {
+  //   if (!phone || phone.length < 10) {
+  //     return 'Please enter your phone number.';
+  //   }
+  //   return '';
+  // };
 
   const validatePassword = (password) => {
     if (!password) {
@@ -83,9 +84,9 @@ export default function SignupModal({ isOpen, onClose }) {
       case 'email':
         error = validateEmail(formData.email);
         break;
-      case 'phoneNumber':
-        error = validatePhoneNumber(formData.phoneNumber);
-        break;
+      // case 'phoneNumber':
+      //   error = validatePhoneNumber(formData.phoneNumber);
+      //   break;
       case 'password':
         error = validatePassword(formData.password);
         break;
@@ -105,9 +106,9 @@ export default function SignupModal({ isOpen, onClose }) {
         case 'email':
           error = validateEmail(value);
           break;
-        case 'phoneNumber':
-          error = validatePhoneNumber(value);
-          break;
+        // case 'phoneNumber':
+        //   error = validatePhoneNumber(value);
+        //   break;
         case 'password':
           error = validatePassword(value);
           break;
@@ -145,7 +146,7 @@ export default function SignupModal({ isOpen, onClose }) {
     const newErrors = {
       fullName: validateFullName(formData.fullName),
       email: validateEmail(formData.email),
-      phoneNumber: validatePhoneNumber(formData.phoneNumber),
+      // phoneNumber: validatePhoneNumber(formData.phoneNumber),
       password: validatePassword(formData.password)
     };
     
@@ -153,30 +154,30 @@ export default function SignupModal({ isOpen, onClose }) {
     setTouched({
       fullName: true,
       email: true,
-      phoneNumber: true,
+      // phoneNumber: true,
       password: true
     });
     
     const hasErrors = Object.values(newErrors).some(error => error !== '');
     if (hasErrors) return;
 
-    let country_code = '';
-    let phone_number = '';
-    try {
-      const parsed = parsePhoneNumber(formData.phoneNumber);
-      country_code = `+${parsed.countryCallingCode}`;
-      phone_number = parsed.nationalNumber;
-    } catch {
-      country_code = '';
-      phone_number = formData.phoneNumber;
-    }
+    // let country_code = '';
+    // let phone_number = '';
+    // try {
+    //   const parsed = parsePhoneNumber(formData.phoneNumber);
+    //   country_code = `+${parsed.countryCallingCode}`;
+    //   phone_number = parsed.nationalNumber;
+    // } catch {
+    //   country_code = '';
+    //   phone_number = formData.phoneNumber;
+    // }
 
     const payload = {
       name: formData.fullName,
       email: formData.email,
-      country_code,
-      phone: phone_number,
-      phone_number: formData.phoneNumber,
+      // country_code,
+      // phone: phone_number,
+      // phone_number: formData.phoneNumber,
       password: formData.password,
       device: 'web',
       device_id: 'web123',
@@ -208,52 +209,80 @@ export default function SignupModal({ isOpen, onClose }) {
     onClose();
   };
 
-  const phoneInputStyles = `
-    .react-international-phone-input-container {
-      background-color: #F9FAFB !important;
-      border: 1px solid #E5E7EB !important;
-      border-radius: 8px !important;
-      height: 42px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .react-international-phone-input-container.error-border {
-      background-color: #FEF2F2 !important;
-      border: 1px solid #FCA5A5 !important;
-    }
-    .react-international-phone-input-container .react-international-phone-country-selector-button {
-      border: none !important;
-      background-color: transparent !important;
-      padding: 0 8px 0 12px !important;
-      height: 100% !important;
-    }
-    .react-international-phone-input-container .react-international-phone-country-selector-button__button-content {
-      gap: 6px !important;
-    }
-    .react-international-phone-input-container input {
-      border: none !important;
-      background-color: transparent !important;
-      height: 100% !important;
-      padding: 0 16px !important;
-      border-radius: 0 !important;
-    }
-    .react-international-phone-input-container input:focus {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-    .react-international-phone-input-container:focus-within {
-      ring: 2px !important;
-      ring-color: #9CA3AF !important;
-    }
-  `;
+  // Backdrop click -> shake the card instead of closing
+  const handleBackdropClick = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+  };
+
+  // const phoneInputStyles = `
+  //   .react-international-phone-input-container {
+  //     background-color: #F9FAFB !important;
+  //     border: 1px solid #E5E7EB !important;
+  //     border-radius: 8px !important;
+  //     height: 42px !important;
+  //     display: flex !important;
+  //     align-items: center !important;
+  //   }
+  //   .react-international-phone-input-container.error-border {
+  //     background-color: #FEF2F2 !important;
+  //     border: 1px solid #FCA5A5 !important;
+  //   }
+  //   .react-international-phone-input-container .react-international-phone-country-selector-button {
+  //     border: none !important;
+  //     background-color: transparent !important;
+  //     padding: 0 8px 0 12px !important;
+  //     height: 100% !important;
+  //   }
+  //   .react-international-phone-input-container .react-international-phone-country-selector-button__button-content {
+  //     gap: 6px !important;
+  //   }
+  //   .react-international-phone-input-container input {
+  //     border: none !important;
+  //     background-color: transparent !important;
+  //     height: 100% !important;
+  //     padding: 0 16px !important;
+  //     border-radius: 0 !important;
+  //   }
+  //   .react-international-phone-input-container input:focus {
+  //     outline: none !important;
+  //     box-shadow: none !important;
+  //   }
+  //   .react-international-phone-input-container:focus-within {
+  //     ring: 2px !important;
+  //     ring-color: #9CA3AF !important;
+  //   }
+  // `;
 
   if (!isOpen) return null;
 
   return (
     <>
-      <style>{phoneInputStyles}</style>
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70">
-        <div className="relative bg-white rounded-3xl  w-full max-w-lg p-6 overflow-y-auto ">
+      {/* <style>{phoneInputStyles}</style> */}
+
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+      `}</style>
+
+      <div
+        className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70"
+        onClick={handleBackdropClick}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`relative bg-white rounded-3xl  w-full max-w-lg p-6 overflow-y-auto ${
+            isShaking ? 'animate-shake' : ''
+          }`}
+        >
           {/* Close Button */}
           <button
             type="button"
@@ -274,7 +303,7 @@ export default function SignupModal({ isOpen, onClose }) {
           {/* Form Fields */}
           <div className="space-y-4">
             {/* Full Name and Email Row */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
               <div>
                 <label htmlFor="fullName" className="block text-sm mb-2 text-black font-semibold">
                   {t('contactUs.form.fullName')}
@@ -320,7 +349,7 @@ export default function SignupModal({ isOpen, onClose }) {
             </div>
 
             {/* Phone Number */}
-            <div>
+            {/* <div>
               <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-semibold">
                 {t('signup.form.phoneNumber')}
               </label>
@@ -336,7 +365,7 @@ export default function SignupModal({ isOpen, onClose }) {
               {touched.phoneNumber && errors.phoneNumber && (
                 <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
               )}
-            </div>
+            </div> */}
 
             {/* Password */}
             <div>

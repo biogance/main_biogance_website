@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -45,6 +45,17 @@ export default function HeroSection() {
   const { t } = useTranslation('home');
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const videoSectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVideoVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    if (videoSectionRef.current) observer.observe(videoSectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => { preloadHeroVideos(); }, []);
   const [apiData, setApiData] = useState(null);
@@ -123,12 +134,12 @@ export default function HeroSection() {
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {/* Fixed Navbar at top */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        <Navbar isVideoVisible={isVideoVisible} />
       </div>
 
       {/* Main content with viewport height */}
       <main className="relative bg-white">
-        <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+        <div ref={videoSectionRef} className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Image or Video */}
           {isCurrentVideo ? (
             <video
@@ -166,24 +177,24 @@ export default function HeroSection() {
                 </p>
 
                 {/* Main Heading */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 md:mb-6 text-black">
+                <h1 className="text-2xl sm:text-2xl md:text-5xl lg:text-5xl xl:text-4xl font-medium leading-tight mb-4 md:mb-6 text-black">
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
+                <p className="text-sm sm:text-base md:text-md mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
                   {heroContent.description}
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                {/* <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <button onClick={() => router.push('/shop')} className="bg-black cursor-pointer text-white px-6 md:px-8 py-2.5 md:py-3  font-medium hover:bg-gray-800 transition-colors text-sm md:text-base">
                     {t('hero.shopNow')}
                   </button>
                   <button onClick={() => router.push('/shop')} className="bg-transparent cursor-pointer border-2 border-black text-black px-6 md:px-8 py-2.5 md:py-3 font-medium hover:bg-black/10 transition-colors text-sm md:text-base">
                     {t('hero.discover')}
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
