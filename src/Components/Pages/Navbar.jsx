@@ -63,6 +63,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   const desktopLangRef = useRef(null);
   const mobileLangRef = useRef(null);
+  const langCloseTimer = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -109,20 +110,25 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     setIsLanguageDropdownOpen(false);
   };
 
-  // ✅ FIX: navHoverProps — sirf nav items ke hover par bg-white ho
-  // Empty space, logo, ya nav ke bahar hover karne par transparent rahe
-  const navHoverProps = {
-    onMouseEnter: () => setIsNavHovered(true),
-    onMouseLeave: () => setIsNavHovered(false),
+  // Hover-based open/close for language dropdown — 150ms delay so user can move into dropdown
+  const handleLangMouseEnter = () => {
+    if (langCloseTimer.current) clearTimeout(langCloseTimer.current);
+    setIsLanguageDropdownOpen(true);
   };
 
-  // Shared dot indicator class
+  const handleLangMouseLeave = () => {
+    langCloseTimer.current = setTimeout(() => {
+      setIsLanguageDropdownOpen(false);
+    }, 150);
+  };
+
+  // Dot indicator class
   const dotClass = (key) =>
     `absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
       hoveredLink === key ? 'opacity-100' : 'opacity-0'
     }`;
 
-  // Shared nav item base class
+  // ✅ All nav items share same font weight via navItemBase — no extra overrides
   const navItemBase =
     'relative flex flex-col items-center justify-center px-2 py-1 pb-3 text-sm font-[600] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
 
@@ -157,11 +163,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
         }`}
       >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
-          {/* 
-            ✅ FIX: onMouseEnter/Leave grid se HATA diye.
-            Ab sirf nav items apna hover report karte hain navHoverProps ke zariye.
-            Logo ya empty space pe hover karne se bg-white NAHI hogi.
-          */}
           <div
             className="h-full grid items-center"
             style={{ gridTemplateColumns: '1fr auto 1fr' }}
@@ -170,14 +171,14 @@ export default function Navbar({ transparent = false, announcementVisible = fals
             {/* LEFT: Navigation Links - Desktop Only */}
             <div className="hidden lg:flex items-stretch gap-1">
 
-              {/* Our Products Button */}
+              {/* Our Products — same navItemBase, no extra font override */}
               <button
                 onClick={toggleProductsModal}
                 onMouseEnter={() => { setHoveredLink('products'); setIsNavHovered(true); }}
                 onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
                 className={navItemBase}
               >
-                <span className="text-sm font-[600] text-[#1C1C1C]">{t('ourProducts')}</span>
+                {t('ourProducts')}
                 <span className={dotClass('products')} />
               </button>
 
@@ -195,7 +196,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               ))}
             </div>
 
-            {/* Mobile Menu Button — sits in left cell on mobile */}
+            {/* Mobile Menu Button */}
             <div className="flex items-center lg:hidden">
               <button
                 onClick={handleMobileMenuToggle}
@@ -209,7 +210,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               </button>
             </div>
 
-            {/* CENTER: Logo — intentionally NO navHoverProps, logo hover pe bg transparent rahe */}
+            {/* CENTER: Logo — no hover handlers intentionally */}
             <div className="flex items-center justify-center">
               <Link href="/" className="flex-shrink-0 cursor-pointer flex items-center">
                 <ImageWithFallback
@@ -234,7 +235,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 <span className={dotClass('search')} />
               </button>
 
-              {/* Language Dropdown */}
+             {/* Language Dropdown */}
               <div className="relative" ref={desktopLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -266,6 +267,8 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </div>
 
+
+
               {/* Login */}
               <button
                 onClick={() => setIsLoginModalOpen(true)}
@@ -295,12 +298,12 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               </button>
             </div>
 
-            {/* Mobile right icons (cart only visible on mobile) */}
+            {/* Mobile right icons */}
             <div className="flex lg:hidden items-center justify-end">
               <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black  border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="bg-black border border-gray-100 font-[600] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {cartCount}
                   </span>
                 ) : (
