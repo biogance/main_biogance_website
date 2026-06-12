@@ -63,7 +63,7 @@ export default function Products({ isOpen, onClose }) {
     setIsAnimating(false);
     setTimeout(() => {
       onClose();
-    }, 300);
+    }, 700);
   };
 
   if (!isOpen) return null;
@@ -72,26 +72,23 @@ export default function Products({ isOpen, onClose }) {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 ${
-          isAnimating ? 'opacity-50' : 'opacity-0'
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-700 ${
+          isAnimating ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleClose}
       />
-      
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-start justify-center sm:pt-10 md:pt-20 px-2 sm:px-4 overflow-y-auto">
+
+      {/* Modal Wrapper - centers the modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
         <div
-          className={`bg-white rounded-lg shadow-2xl max-w-6xl w-full my-4 sm:my-0 transition-all duration-300 ease-out transform ${
-            isAnimating 
-              ? 'opacity-100 scale-100 translate-y-0' 
-              : 'opacity-0 scale-95 -translate-y-4'
-          }`}
+          className="bg-white  shadow-2xl max-w-6xl w-full my-4 transition-transform duration-700 ease-in-out"
+          style={{ transform: isAnimating ? 'translateY(0)' : 'translateY(-150vh)' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-[70px] right-3 sm:top-4  sm:right-4 text-gray-600 hover:text-gray-900 text-xl w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-all duration-200 z-10 cursor-pointer hover:rotate-90"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 hover:text-gray-900 text-xl w-8 h-8 flex items-center justify-center hover:bg-gray-100  transition-all duration-200 z-10 cursor-pointer hover:rotate-90"
           >
             ✕
           </button>
@@ -103,7 +100,7 @@ export default function Products({ isOpen, onClose }) {
               <div className="lg:hidden">
                 <button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="w-full bg-[#2a2a2a] text-white px-4 py-3 rounded-lg flex items-center justify-between cursor-pointer"
+                  className="w-full bg-[#2a2a2a] text-white px-4 py-3  flex items-center justify-between cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     {categories.find(c => c.id === activeCategory)?.icon}
@@ -113,7 +110,7 @@ export default function Products({ isOpen, onClose }) {
                 </button>
                 
                 {isMobileMenuOpen && (
-                  <div className="mt-2 bg-[#2a2a2a] rounded-lg p-2 space-y-1">
+                  <div className="mt-2 bg-[#2a2a2a] p-2 space-y-1">
                     {categories.map((category) => (
                       <button
                         key={category.id}
@@ -121,7 +118,7 @@ export default function Products({ isOpen, onClose }) {
                           setActiveCategory(category.id);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`w-full cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
+                        className={`w-full cursor-pointer flex items-center gap-3 px-3 py-2.5  transition-all duration-300 ${
                           activeCategory === category.id
                             ? 'bg-white text-black'
                             : 'text-white hover:bg-[#3a3a3a]'
@@ -136,7 +133,7 @@ export default function Products({ isOpen, onClose }) {
               </div>
 
               {/* Desktop Sidebar */}
-              <div className={`hidden lg:block w-[220px] bg-[#2a2a2a] p-6 rounded-lg flex-shrink-0 h-fit transition-all duration-500 delay-100 ${
+              <div className={`hidden lg:block w-[220px] bg-[#2a2a2a] p-6 flex-shrink-0 h-fit transition-all duration-500 delay-100 ${
                 isAnimating ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
               }`}>
                 <div className="space-y-1">
@@ -144,7 +141,7 @@ export default function Products({ isOpen, onClose }) {
                     <button
                       key={category.id}
                       onClick={() => setActiveCategory(category.id)}
-                      className={`w-full cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
+                      className={`w-full cursor-pointer flex items-center gap-3 px-3 py-2.5  transition-all duration-300 ${
                         activeCategory === category.id
                           ? 'bg-white text-black shadow-lg scale-105'
                           : 'text-white hover:bg-[#3a3a3a] hover:translate-x-1'
@@ -173,11 +170,11 @@ export default function Products({ isOpen, onClose }) {
                       <h2 className="text-sm sm:text-base font-medium mb-3 text-black">{section.title}</h2>
 
                       {/* Section Image */}
-                      <div className="mb-4 overflow-hidden rounded-lg">
+                      <div className="mb-4 overflow-hidden ">
                         <img
                           src={section.image}
                           alt={section.title}
-                          className="w-full h-[140px] sm:h-[120px] md:h-[130px] object-cover rounded-lg hover:scale-110 transition-transform duration-500"
+                          className="w-full h-[140px] sm:h-[120px] md:h-[130px] object-cover  hover:scale-110 transition-transform duration-500"
                         />
                       </div>
 
