@@ -421,7 +421,7 @@ export default function SignupModal({ isOpen, onClose }) {
           </div>
 
            {/* Social Login */}
-                    <div className="flex justify-center gap-4 mb-6">
+                    <div className="flex justify-center gap-4 ">
             <button
               type="button"
               className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer"
