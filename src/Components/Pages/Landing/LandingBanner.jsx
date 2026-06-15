@@ -89,7 +89,7 @@ const LandingBanner = ({ data }) => {
               alt="Preview"
               width={imgSize.width}
               height={imgSize.height}
-              className="w-full h-full object-contain rounded-lg"
+              className="w-full h-full object-contain "
             />
           </div>
         </div>

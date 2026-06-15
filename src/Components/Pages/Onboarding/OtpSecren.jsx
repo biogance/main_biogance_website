@@ -16,76 +16,18 @@ export default function VerificationCodeModal({
   const { t } = useTranslation("onboarding");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-  const [isExpired, setIsExpired] = useState(false);
   const [isNewPasswordOpen, setIsNewPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isShaking, setIsShaking] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const inputRefs = useRef([]);
   const modalCardRef = useRef(null);
 
   if (!isOpen && !isClosing) return null;
 
-  const handleChange = (index, value) => {
-    if (isNaN(value)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (error) {
-      setError("");
-    }
-
-    if (value !== "" && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setOtp(["", "", "", "", "", ""]);
-    setError("");
-    inputRefs.current[0]?.focus();
-    try {
-      setIsLoading(true);
-      const res = await fetch(`${BASE_URL}/user/auth/forgot/password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.status === false) {
-        const msg =
-          data.errors?.length > 0 ? data.errors[0].message : data.action;
-        toast.error(msg);
-      }
-    } catch (err) {
-      console.error("Resend OTP error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const otpString = otp.join("");
-
-    if (otpString.length < 6) {
-      setError(t("verificationCode.errors.incomplete"));
-      return;
-    }
+  // ─── Auto submit helper ───────────────────────────────────────────────
+  const submitOtp = async (otpArray) => {
+    const otpString = otpArray.join("");
+    if (otpString.length < 6) return;
 
     try {
       setIsLoading(true);
@@ -110,6 +52,98 @@ export default function VerificationCodeModal({
     }
   };
 
+  // ─── Single digit change ──────────────────────────────────────────────
+  const handleChange = (index, value) => {
+    if (isNaN(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (error) setError("");
+
+    if (value !== "" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit jab last field fill ho manually
+    if (value !== "" && index === 5) {
+      submitOtp(newOtp);
+    }
+  };
+
+  // ─── Paste handler ────────────────────────────────────────────────────
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").trim();
+
+    // Sirf numbers allow karo
+    if (!/^\d+$/.test(pasted)) return;
+
+    const digits = pasted.slice(0, 6).split("");
+    const newOtp = ["", "", "", "", "", ""];
+    digits.forEach((d, i) => { newOtp[i] = d; });
+    setOtp(newOtp);
+    setError("");
+
+    // Focus last filled input
+    const lastIndex = Math.min(digits.length - 1, 5);
+    inputRefs.current[lastIndex]?.focus();
+
+    // Auto-submit agar 6 digits paste hue
+    if (digits.length === 6) {
+      submitOtp(newOtp);
+    }
+  };
+
+  // ─── Keyboard ─────────────────────────────────────────────────────────
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitOtp(otp);
+    }
+  };
+
+  // ─── Manual form submit ───────────────────────────────────────────────
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const otpString = otp.join("");
+    if (otpString.length < 6) {
+      setError(t("verificationCode.errors.incomplete"));
+      return;
+    }
+    submitOtp(otp);
+  };
+
+  // ─── Resend OTP ───────────────────────────────────────────────────────
+  const handleResendOTP = async () => {
+    setOtp(["", "", "", "", "", ""]);
+    setError("");
+    inputRefs.current[0]?.focus();
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${BASE_URL}/user/auth/forgot/password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg =
+          data.errors?.length > 0 ? data.errors[0].message : data.action;
+        toast.error(msg);
+      }
+    } catch (err) {
+      console.error("Resend OTP error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ─── Modal close ──────────────────────────────────────────────────────
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -123,10 +157,8 @@ export default function VerificationCodeModal({
       modalCardRef.current.classList.add("modal-shake");
       modalCardRef.current.addEventListener(
         "animationend",
-        () => {
-          modalCardRef.current?.classList.remove("modal-shake");
-        },
-        { once: true },
+        () => { modalCardRef.current?.classList.remove("modal-shake"); },
+        { once: true }
       );
     }
   };
@@ -134,11 +166,15 @@ export default function VerificationCodeModal({
   return (
     <>
       <div
-        className={`fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70 ${isClosing ? "backdrop-out" : "backdrop-in"}`}
+        className={`fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70 ${
+          isClosing ? "backdrop-out" : "backdrop-in"
+        }`}
         onClick={handleBackdropClick}
       >
         <div
-          className={`w-full max-w-lg ${isClosing ? "modal-pop-out" : "modal-pop-in"}`}
+          className={`w-full max-w-lg ${
+            isClosing ? "modal-pop-out" : "modal-pop-in"
+          }`}
         >
           <div
             ref={modalCardRef}
@@ -157,16 +193,17 @@ export default function VerificationCodeModal({
               {t("verificationCode.title")}
             </h1>
 
-           <p className="text-gray-700 text-center text-md leading-relaxed mb-2">
-  {t("verificationCode.description1")}
-  <br />
-  {t("verificationCode.description2")}
-</p>
+            <p className="text-gray-700 text-center text-md leading-relaxed mb-2">
+              {t("verificationCode.description1")}
+              <br />
+              {t("verificationCode.description2")}
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <p className="text-center text-sm font-semibold text-black">
                 {email}
               </p>
+
               <div className="flex justify-center gap-3 mb-2">
                 {otp.map((digit, index) => (
                   <input
@@ -177,12 +214,13 @@ export default function VerificationCodeModal({
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className={`w-14 h-14 text-center text-2xl font-medium border-2 mb-4 focus:outline-none text-black ${
+                    onPaste={handlePaste}
+                    className={`w-14 h-14 text-center text-2xl font-medium border-2 mb-4 focus:outline-none transition-colors duration-200 ${
                       error
-                        ? "border-red-300 bg-red-50"
+                        ? "border-red-300 bg-red-50 text-black"
                         : digit !== ""
-                          ? "border-gray-500 bg-gray-50 text-black"
-                          : "border-gray-300 bg-white focus:border-gray-400"
+                        ? "border-gray-500 bg-gray-50 text-black"
+                        : "border-gray-300 bg-white text-black focus:border-gray-400"
                     }`}
                   />
                 ))}
@@ -198,13 +236,12 @@ export default function VerificationCodeModal({
                 type="submit"
                 disabled={isLoading}
                 style={{ width: `calc(6 * 3.5rem + 5 * 0.75rem)` }}
-                className="mx-auto block bg-black text-white py-3  hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                className="mx-auto block bg-black text-white py-3 hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isLoading
-                  ? "Verfiying..."
-                  : t("verificationCode.submitButton")}
+                {isLoading ? "Verifying..." : t("verificationCode.submitButton")}
               </button>
-              <p className="text-center text-sm text-gray-700 ">
+
+              <p className="text-center text-sm text-gray-700">
                 {t("verificationCode.didntGetIt")}{" "}
                 <button
                   type="button"

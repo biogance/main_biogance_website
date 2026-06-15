@@ -5,7 +5,7 @@ import { MEDIA_URL } from '../../API/API';
 
 // Shimmer Card Component with inline styles
 const ShimmerCard = () => (
-  <div className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48">
+  <div className="bg-white p-8 flex flex-col items-center justify-center gap-4 border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48">
     {/* Icon Shimmer */}
     <div 
       style={{ 
@@ -33,9 +33,9 @@ const ShimmerCard = () => (
 
 // Loading Card with Spinner
 const LoadingCard = () => (
-  <div className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48">
+  <div className="bg-white  p-8 flex flex-col items-center justify-center gap-4 border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48">
     {/* Icon area with spinner */}
-    <div className="w-16 h-16 flex items-center justify-center bg-[#F7F7F7] rounded-xl">
+    <div className="w-16 h-16 flex items-center justify-center bg-[#F7F7F7]">
       <div 
         style={{
           border: '2px solid #f3f3f3',
@@ -132,10 +132,10 @@ export default function LandingCategories({ data }) {
                   <div
                     key={category.id}
                     onClick={() => router.push(`/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`)}
-                    className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
+                    className="bg-white p-8 flex flex-col items-center justify-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48"
                   >
                     {/* bg-[#F7F7F7] */}
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-black flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-black flex items-center justify-center overflow-hidden">
                       <img
                         src={`${MEDIA_URL}${category.media}`}
                         alt={category.name}

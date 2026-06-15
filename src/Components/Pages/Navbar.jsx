@@ -93,6 +93,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     return () => clearTimeout(timer);
   }, []);
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const loginData = localStorage.getItem('LoginData');
+    setIsLoggedIn(!!loginData);
+  }, [pathname]);
+
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -300,13 +307,19 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 )}
               </div>
 
-              {/* Login */}
-              <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className={navItemBase}
-              >
-                <span>LOGIN</span>
-              </button>
+              {/* Login / Profile */}
+              {isLoggedIn ? (
+                <Link href="/my-account" className={navItemBase}>
+                  <span>PROFILE</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className={navItemBase}
+                >
+                  <span>LOGIN</span>
+                </button>
+              )}
 
               {/* Cart */}
               <button
@@ -430,12 +443,18 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 <FiSearch className="w-5 h-5" strokeWidth={2.5} />
               </button>
 
-              <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
-              >
-                <FiUser className="w-5 h-5" />
-              </button>
+              {isLoggedIn ? (
+                <Link href="/my-account" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+                  <FiUser className="w-5 h-5" />
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                >
+                  <FiUser className="w-5 h-5" />
+                </button>
+              )}
 
               <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />
@@ -456,6 +475,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <OurProducts
         isOpen={isProductsModalOpen}
         onClose={() => setIsProductsModalOpen(false)}
+        categories={homeCategories}
       />
 
       <LoginModal
