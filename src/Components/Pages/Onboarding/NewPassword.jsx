@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AiOutlineClose, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -23,6 +23,17 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
     confirmPassword: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const modalCardRef = useRef(null);
+
+  const handleBackdropClick = () => {
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
+  };
 
   const validatePassword = (password) => {
     if (!password) return t('newPassword.errors.passwordRequired');
@@ -68,26 +79,10 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
   };
 
   useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
-      return () => {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        window.scrollTo(0, scrollY);
-      };
-    }
+    if (isOpen) setIsClosing(false);
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,21 +120,30 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
   };
 
   const handleClose = () => {
-    if (onClose) onClose();
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); if (onClose) onClose(); }, 250);
   };
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-80">
-      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 overflow-y-auto">
+    <div
+      className={`fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-80 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+      onClick={handleBackdropClick}
+    >
+      <div className={`w-full max-w-lg ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        <div
+          ref={modalCardRef}
+          onClick={(e) => e.stopPropagation()}
+          className="relative bg-white shadow-lg w-full p-8 overflow-y-auto"
+        >
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+             className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
         >
           <AiOutlineClose size={20}/>
         </button>
 
-        <h1 className="text-xl font-semibold text-center mb-4 text-black">
+        <h1 className="text-xl mt-6 font-semibold text-center mb-4 text-black">
           {t('newPassword.title')}
         </h1>
 
@@ -160,7 +164,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
                 onBlur={() => handleBlur('password')}
-                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none text-black text-sm pr-10 ${
+                className={`w-full px-3 py-2.5 border  focus:outline-none text-black text-sm pr-10 ${
                   touched.password && errors.password
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-200'
@@ -195,7 +199,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 value={formData.confirmPassword}
                 onChange={(e) => handleChange('confirmPassword', e.target.value)}
                 onBlur={() => handleBlur('confirmPassword')}
-                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none text-black text-sm pr-10 ${
+                className={`w-full px-3 py-2.5 border focus:outline-none text-black text-sm pr-10 ${
                   touched.confirmPassword && errors.confirmPassword
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-200'
@@ -218,18 +222,19 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
             )}
           </div>
 
-          <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
+          {/* <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
             {t('newPassword.requirements')}
-          </p>
+          </p> */}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Saving...' : t('newPassword.submitButton')}
           </button>
         </form>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import VerificationCodeModal from './OtpSecren';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,8 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const modalCardRef = useRef(null);
 
   const validateEmail = (email) => {
     if (!email.trim()) {
@@ -44,25 +46,23 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
 
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false);
       const scrollY = window.scrollY;
-      
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      
       return () => {
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        
         window.scrollTo(0, scrollY);
       };
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,55 +95,49 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   };
 
   const handleClose = () => {
-    if (onClose) onClose();
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); if (onClose) onClose(); }, 250);
   };
 
-  // Backdrop click -> shake the card instead of closing
   const handleBackdropClick = () => {
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
   };
 
   return (
     <>
-      <style jsx global>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
-        }
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-      `}</style>
-
       <div
-        className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60"
+        className={`fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
         onClick={handleBackdropClick}
       >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className={`relative bg-white rounded-3xl shadow-lg w-full max-w-lg p-8 overflow-y-auto ${
-            isShaking ? 'animate-shake' : ''
-          }`}
-        >
+        <div className={`w-full max-w-lg ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+          <div
+            ref={modalCardRef}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-white  shadow-lg w-full p-8 overflow-y-auto"
+          >
           {/* Close Button */}
           <button
               type="button"
               onClick={handleClose}
-              className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+             className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
             >
               <AiOutlineClose size={20}/>
             </button>
 
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl mb-3 font-semibold text-black">{t('forgotPassword.title')}</h1>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <h1 className="text-2xl mb-3 mt-6 font-semibold text-black">{t('forgotPassword.title')}</h1>
+            <p className="text-gray-600 text-md leading-relaxed">
               {t('forgotPassword.description')}
+               <br />
+  {t("forgotPassword.description2")}
             </p>
+            
           </div>
 
           {/* ─── FORM ─── */}
@@ -160,7 +154,7 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
                 value={email}
                 onChange={(e) => handleChange(e.target.value)}
                 onBlur={handleBlur}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none text-sm text-black ${
+                className={`w-full px-4 py-3 border  focus:outline-none text-sm text-black ${
                   touched && error
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-300'
@@ -175,12 +169,13 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Sending...' : t('forgotPassword.buttons.sendResetLink')}
             </button>
           </form>
         </div>
+      </div>
 
         {/* OTP Modal */}
         <VerificationCodeModal

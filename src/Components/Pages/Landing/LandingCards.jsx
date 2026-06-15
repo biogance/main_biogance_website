@@ -9,6 +9,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
+import { saveCartData } from "../../../utils/cartStorage";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import ModalQuickView from "../Modal/ModalQuickView";
@@ -79,7 +80,6 @@ export const LandingCards = ({
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [cartData, setCartData] = useState(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef(null);
@@ -454,45 +454,21 @@ export const LandingCards = ({
   setAddingToCart(true);
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    const payload = {
-      product_id: firstProduct?.id ?? safeProduct.id,
-      quantity: 1,
-    };
-    if (loginData?.data?.token) {
-      payload.token = loginData.data.token;
-    } else {
-      payload.device_id = getDeviceId();
-    }
-    // Agar color ya size hai to sirf modal kholo bina add kiye
+    const authPayload = loginData?.data?.token
+      ? { token: loginData.data.token }
+      : { device_id: getDeviceId() };
     if (firstProduct?.color || firstProduct?.size) {
-      const listPayload = loginData?.data?.token
-        ? { token: loginData.data.token }
-        : { device_id: getDeviceId() };
-      const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(listPayload),
-      });
-      const listData = await listRes.json();
-      if (listData.status) setCartData(listData.data);
       setIsCartOpen(true);
       return;
     }
-    const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
+    const res = await axios.post(`${BASE_URL}/user/cart/create`, {
+      ...authPayload, product_id: firstProduct?.id ?? safeProduct.id, quantity: 1,
+    });
     if (res.data.status === false) {
       toast.error(res.data.action || "Could not add to cart.");
     } else {
-      // Cart add ke baad list fetch karo
-      const listPayload = loginData?.data?.token
-        ? { token: loginData.data.token }
-        : { device_id: getDeviceId() };
-      const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(listPayload),
-      });
-      const listData = await listRes.json();
-      if (listData.status) setCartData(listData.data);
+      
+      saveCartData({ cartItem: [res.data.data.cartItem], cart_count: res.data.data.cart_count });
       setIsCartOpen(true);
     }
   } catch {
@@ -555,7 +531,7 @@ export const LandingCards = ({
       <ModalQuickView
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
-        onCartOpen={(data) => { setCartData(data); setIsCartOpen(true); }}
+        onCartOpen={() => setIsCartOpen(true)}
         product={safeProduct}
         fullProductData={safeProduct._raw || safeProduct}
       />
@@ -563,7 +539,6 @@ export const LandingCards = ({
   isOpen={isCartOpen}
   onClose={() => setIsCartOpen(false)}
   product={safeProduct}
-  initialCartData={cartData}
 />
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">

@@ -11,6 +11,7 @@ import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { getDeviceId } from "../../../utils/deviceId";
+import { saveCartData } from "../../../utils/cartStorage";
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -566,30 +567,19 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                         setAddingToCart(true);
                         try {
                           const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-                          const payload = {
-                            product_id: selectedProduct?.id,
-                            quantity,
-                          };
-                          if (loginData?.data?.token) {
-                            payload.token = loginData.data.token;
-                          } else {
-                            payload.device_id = getDeviceId();
-                          }
-                          const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
+                          const authPayload = loginData?.data?.token
+                            ? { token: loginData.data.token }
+                            : { device_id: getDeviceId() };
+                          const res = await axios.post(`${BASE_URL}/user/cart/create`, {
+                            ...authPayload, product_id: selectedProduct?.id, quantity,
+                          });
                           if (res.data.status === false) {
                             toast.error(res.data.action || "Could not add to cart.");
                           } else {
-                            const listPayload = loginData?.data?.token
-                              ? { token: loginData.data.token }
-                              : { device_id: getDeviceId() };
-                            const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify(listPayload),
-                            });
-                            const listData = await listRes.json();
+                            // Create response mein hi data hai — storage mein save karo, phir modal open
+                            saveCartData({ cartItem: [res.data.data.cartItem], cart_count: res.data.data.cart_count });
                             onClose();
-                            onCartOpen?.(listData.status ? listData.data : null);
+                            onCartOpen?.();
                           }
                         } catch {
                           toast.error("Something went wrong.");
