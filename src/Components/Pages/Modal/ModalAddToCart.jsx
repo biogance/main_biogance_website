@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
+import toast from "react-hot-toast";
+import { BASE_URL } from "../../API/API";
+import { getDeviceId } from "../../../utils/deviceId";
+
+// ─── Error Message Helper ─────────────────────────────────────────────────────
+const getErrorMsg = (data) => {
+  if (data.errors?.length > 0) return data.errors[0].message;
+  if (data.action) return data.action;
+  if (data.action_message) return data.action_message;
+  return null;
+};
 
 // ─── Custom Dropdown ─────────────────────────────────────────────────────────
-function CustomDropdown({ options, value, onChange }) {
+function CustomDropdown({ options, value, onChange, disabled }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -17,25 +28,29 @@ function CustomDropdown({ options, value, onChange }) {
   return (
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
       <div
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => !disabled && setOpen((v) => !v)}
         style={{
           border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
-          fontSize: "13px", background: "#fff", color: "#111", cursor: "pointer",
+          fontSize: "13px", background: "#fff", color: "#111",
+          cursor: disabled ? "default" : "pointer",
           display: "flex", alignItems: "center", gap: "8px", minWidth: "72px",
           justifyContent: "space-between", userSelect: "none", transition: "border-color 0.15s",
+          opacity: disabled ? 0.6 : 1,
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#999")}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#ddd")}
+        onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#999"; }}
+        onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#ddd"; }}
       >
         <span>{value}</span>
-        <span style={{
-          display: "inline-block", width: 0, height: 0,
-          borderLeft: "4px solid transparent", borderRight: "4px solid transparent",
-          borderTop: "5px solid #555", flexShrink: 0,
-          transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s",
-        }} />
+        {!disabled && (
+          <span style={{
+            display: "inline-block", width: 0, height: 0,
+            borderLeft: "4px solid transparent", borderRight: "4px solid transparent",
+            borderTop: "5px solid #555", flexShrink: 0,
+            transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s",
+          }} />
+        )}
       </div>
-      {open && (
+      {open && !disabled && (
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
           border: "1px solid #ddd", borderRadius: "4px", minWidth: "100%", zIndex: 1100,
@@ -68,13 +83,13 @@ function DropItem({ label, selected, onSelect }) {
   );
 }
 
-const SIZE_OPTIONS = ["250ml", "500ml", "1 Liter"];
 const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
 
-// ─── UPDATED: accepts onCheckout prop ────────────────────────────────────────
 export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
-  const [quantity, setQuantity] = useState("1");
-  const [selectedSize, setSelectedSize] = useState(SIZE_OPTIONS[0]);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
@@ -87,27 +102,108 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const fetchCart = async () => {
+      setIsLoading(true);
+      try {
+        const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+        const payload = loginData?.data?.token
+          ? { token: loginData.data.token }
+          : { device_id: getDeviceId() };
+        const res = await fetch(`${BASE_URL}/user/cart/list`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.status) {
+          setCartItems(data.data.cartItem || []);
+          setCartCount(data.data.cart_count || 0);
+        } else {
+          const msg = getErrorMsg(data);
+          if (msg) toast.error(msg);
+        }
+      } catch (err) {
+        console.error("Cart list error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCart();
+  }, [isOpen]);
+
+  useEffect(() => {
     if (giftContentRef.current) setGiftContentHeight(giftContentRef.current.scrollHeight);
   }, [giftOpen, giftChoice]);
 
   const handleOverlayClick = (e) => { if (e.target === overlayRef.current) onClose(); };
 
-  const safeProduct = product || {};
-  const price = parseFloat(safeProduct.price) || 0;
-  const name = safeProduct.name || "Mark-Fading Serum L64";
-  const image = safeProduct.image || safeProduct.images?.[0] || "";
-
   const deliveryCost = 5.9;
-  const qty = parseInt(quantity, 10) || 1;
-  const subtotal = (price * qty).toFixed(2);
-  const total = (parseFloat(subtotal) + deliveryCost).toFixed(2);
   const freeShippingThreshold = 50;
-  const remaining = Math.max(0, freeShippingThreshold - parseFloat(subtotal)).toFixed(2);
-  const progressPercent = Math.min(100, (parseFloat(subtotal) / freeShippingThreshold) * 100);
+  const subtotal = cartItems.reduce((sum, item) => {
+    const unitPrice = item.original_price || parseFloat(String(item.price).replace(",", ".")) || 0;
+    return sum + unitPrice * item.quantity;
+  }, 0);
+  const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
+  const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  const totalWithDelivery = (subtotal + deliveryCost).toFixed(2);
 
-  const handleCheckout = () => {
-    window.location.href = "/checkout";
+  const handleCheckout = () => { window.location.href = "/checkout"; };
+
+  const handleRemove = async (cartId) => {
+    setIsRemoving(true);
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const payload = loginData?.data?.token
+        ? { token: loginData.data.token, cartId }
+        : { device_id: getDeviceId(), cartId };
+      const res = await fetch(`${BASE_URL}/user/cart/remove`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = getErrorMsg(data);
+        if (msg) toast.error(msg);
+        return;
+      }
+      const updated = cartItems.filter((item) => item.id !== cartId);
+      setCartItems(updated);
+      setCartCount((prev) => Math.max(0, prev - 1));
+      if (updated.length === 0) onClose();
+    } catch (err) {
+      console.error("Cart remove error:", err);
+    } finally {
+      setIsRemoving(false);
+    }
   };
+
+  const handleQtyChange = async (cartId, newQty) => {
+    setCartItems((prev) =>
+      prev.map((item) => item.id === cartId ? { ...item, quantity: parseInt(newQty) } : item)
+    );
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const payload = loginData?.data?.token
+        ? { token: loginData.data.token, quantity: parseInt(newQty), cartId }
+        : { device_id: getDeviceId(), quantity: parseInt(newQty), cartId };
+      const res = await fetch(`${BASE_URL}/user/cart/update/quantity`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        const msg = getErrorMsg(data);
+        if (msg) toast.error(msg);
+      }
+    } catch (err) {
+      console.error("Cart update error:", err);
+    }
+  };
+
+  const isEmpty = !isLoading && cartItems.length === 0;
 
   return (
     <>
@@ -129,13 +225,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid #e5e5e5" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid #e5e5e5", flexShrink: 0 }}>
           <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Your Cart
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#111", color: "#fff", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {qty}
+              {cartCount}
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: "#111" }}>
               <IoClose size={20} />
@@ -143,69 +239,146 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 24px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
-            <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "4px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {image ? <img src={image} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 600, color: "#111" }}>{name}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                <CustomDropdown options={QTY_OPTIONS} value={quantity} onChange={setQuantity} />
-                <CustomDropdown options={SIZE_OPTIONS} value={selectedSize} onChange={setSelectedSize} />
-                <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                    <path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "#111", flexShrink: 0 }}>
-              {parseFloat(subtotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-            </div>
+        {/* Remove loader overlay */}
+        {isRemoving && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 10,
+            backgroundColor: "rgba(255,255,255,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            pointerEvents: "all",
+          }}>
+            <style>{`@keyframes removeSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "removeSpin 0.75s linear infinite" }} />
           </div>
+        )}
 
-          {/* Summary */}
-          <div style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}>
-            {[{ label: "Subtotal", value: `${parseFloat(subtotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €` }, { label: "Delivery costs", value: `${deliveryCost.toFixed(2).replace(".", ",")} €` }].map(({ label, value }) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
-                <span>{label}</span><span>{value}</span>
-              </div>
-            ))}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
-              <span>Estimated total</span>
-              <span>{parseFloat(total).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
-            </div>
+        {/* ── LOADING ── */}
+        {isLoading && (
+          <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
+            <style>{`@keyframes cartSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
           </div>
+        )}
 
-          {/* Gift accordion */}
-          <div>
-            <button onClick={() => setGiftOpen((v) => !v)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", fontSize: "13px", color: "#111" }}>
-              <span style={{ fontWeight: 500 }}>Add a gift pouch</span>
-              <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
-            </button>
-            <div style={{ maxHeight: giftOpen ? `${giftContentHeight}px` : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-              <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-                {["none", "large"].map((val) => (
-                  <label key={val} onClick={() => setGiftChoice(val)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", cursor: "pointer", borderBottom: val === "none" ? "1px solid #f0f0f0" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", border: `2px solid ${giftChoice === val ? "#111" : "#ccc"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color 0.2s ease" }}>
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#111", opacity: giftChoice === val ? 1 : 0, transition: "opacity 0.2s ease" }} />
-                      </div>
-                      <span style={{ fontSize: "13px", color: "#111" }}>{val === "none" ? "I don't want gift pouch" : "Large size - more than 3 products"}</span>
+        {/* ── EMPTY STATE — centered between header and footer ── */}
+        {isEmpty && (
+          <div style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "4px" }}>
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#111", letterSpacing: "0.01em" }}>
+              Your cart is empty.
+            </p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#999", fontWeight: 400 }}>
+              Start adding products.
+            </p>
+          </div>
+        )}
+
+        {/* ── BODY — items, summary, gift ── */}
+        {!isLoading && !isEmpty && (
+          <div style={{ flex: 1, overflowY: "auto", padding: "0 24px", pointerEvents: isRemoving ? "none" : "auto" }}>
+            {cartItems.map((item) => {
+              const p = item.product || {};
+              const firstImage = p.images?.[0]?.media
+                ? `https://d18f57oyxifcsh.cloudfront.net/${p.images[0].media}`
+                : "";
+              const name = p.name || "";
+              const sizeOptions = p.size_name ? [p.size_name] : [];
+              const isSingleSize = sizeOptions.length <= 1;
+              const unitPrice = item.original_price || parseFloat(String(item.price).replace(",", ".")) || 0;
+              const itemTotal = (unitPrice * item.quantity).toFixed(2);
+
+              return (
+                <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
+                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "4px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {firstImage
+                      ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
+                    {p.french_name && (
+                      <p style={{ margin: "0 0 10px", fontSize: "11px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.french_name}</p>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      <CustomDropdown
+                        options={QTY_OPTIONS}
+                        value={String(item.quantity)}
+                        onChange={(val) => handleQtyChange(item.id, val)}
+                      />
+                      {sizeOptions.length > 0 && (
+                        <CustomDropdown
+                          options={sizeOptions}
+                          value={sizeOptions[0]}
+                          onChange={() => {}}
+                          disabled={isSingleSize}
+                        />
+                      )}
+                      <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                        </svg>
+                      </button>
                     </div>
-                    {val === "large" && <span style={{ fontSize: "13px", color: "#111", fontWeight: 500, marginLeft: "12px" }}>5,00 €</span>}
-                  </label>
-                ))}
+                  </div>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#111", flexShrink: 0 }}>
+                    {parseFloat(itemTotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Summary */}
+            <div style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}>
+              {[{ label: "Subtotal", value: `${subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €` }, { label: "Delivery costs", value: `${deliveryCost.toFixed(2).replace(".", ",")} €` }].map(({ label, value }) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
+                  <span>{label}</span><span>{value}</span>
+                </div>
+              ))}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
+                <span>Estimated total</span>
+                <span>{parseFloat(totalWithDelivery).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+              </div>
+            </div>
+
+            {/* Gift accordion */}
+            <div>
+              <button onClick={() => setGiftOpen((v) => !v)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", fontSize: "13px", color: "#111" }}>
+                <span style={{ fontWeight: 500 }}>Add a gift pouch</span>
+                <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
+              </button>
+              <div style={{ maxHeight: giftOpen ? `${giftContentHeight}px` : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+                <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
+                  {["none", "large"].map((val) => (
+                    <label key={val} onClick={() => setGiftChoice(val)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", cursor: "pointer", borderBottom: val === "none" ? "1px solid #f0f0f0" : "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", border: `2px solid ${giftChoice === val ? "#111" : "#ccc"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color 0.2s ease" }}>
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#111", opacity: giftChoice === val ? 1 : 0, transition: "opacity 0.2s ease" }} />
+                        </div>
+                        <span style={{ fontSize: "13px", color: "#111" }}>{val === "none" ? "I don't want gift pouch" : "Large size - more than 3 products"}</span>
+                      </div>
+                      {val === "large" && <span style={{ fontSize: "13px", color: "#111", fontWeight: 500, marginLeft: "12px" }}>5,00 €</span>}
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Footer */}
-        <div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#fff" }}>
+        <div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#fff", flexShrink: 0 }}>
           <div style={{ padding: "14px 24px 0" }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
               <span>Complete for free shipping</span>
@@ -217,7 +390,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
           <div style={{ padding: "0 24px 24px" }}>
             <button
-              onClick={handleCheckout}          // ← navigate to checkout
+              onClick={handleCheckout}
               style={{
                 width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
                 fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",

@@ -7,7 +7,10 @@ import { FiHeart } from "react-icons/fi";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaPlus, FaMinus } from "react-icons/fa";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
-import { MEDIA_URL } from "@/Components/API/API";
+import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { getDeviceId } from "../../../utils/deviceId";
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -45,7 +48,7 @@ const buildSlides = (rawProduct) => {
   ];
 };
 
-export default function ModalQuickView({ isOpen, onClose, product, fullProductData }) {
+export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, fullProductData }) {
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
   const router = useRouter();
@@ -66,6 +69,7 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [readMore, setReadMore] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const rawBundleData = fullProductData || product;
   const apiProducts = rawBundleData?.products || [];
@@ -557,11 +561,43 @@ export default function ModalQuickView({ isOpen, onClose, product, fullProductDa
                     </div>
 
                     <button
-                      style={{ flex: 1, backgroundColor: "#1C1C1C", color: "#fff", border: "none", borderRadius: "8px", height: "40px", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.03em", transition: "background-color 0.2s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#333")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1C1C1C")}
+                      onClick={async () => {
+                        if (addingToCart) return;
+                        setAddingToCart(true);
+                        try {
+                          const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+                          const payload = {
+                            product_id: selectedProduct?.id,
+                            quantity,
+                          };
+                          if (loginData?.data?.token) {
+                            payload.token = loginData.data.token;
+                          } else {
+                            payload.device_id = getDeviceId();
+                          }
+                          const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
+                          if (res.data.status === false) {
+                            toast.error(res.data.action || "Could not add to cart.");
+                          } else {
+                            onClose();
+                            onCartOpen?.();
+                          }
+                        } catch {
+                          toast.error("Something went wrong.");
+                        } finally {
+                          setAddingToCart(false);
+                        }
+                      }}
+                      disabled={addingToCart}
+                      style={{ flex: 1, backgroundColor: "#1C1C1C", color: "#fff", border: "none", borderRadius: "8px", height: "40px", fontSize: "13px", fontWeight: 600, cursor: addingToCart ? "not-allowed" : "pointer", letterSpacing: "0.03em", transition: "background-color 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      onMouseEnter={(e) => { if (!addingToCart) e.currentTarget.style.backgroundColor = "#333"; }}
+                      onMouseLeave={(e) => { if (!addingToCart) e.currentTarget.style.backgroundColor = "#1C1C1C"; }}
                     >
-                      {t("addToCart")} – €{displayPrice}
+                      {addingToCart ? (
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin89345 0.75s linear infinite" }} />
+                      ) : (
+                        <>{t("addToCart")} – €{displayPrice}</>
+                      )}
                     </button>
 
                     {/* <button

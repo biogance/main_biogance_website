@@ -24,7 +24,9 @@ import ProductLoadMore from "./ProductLoadMore";
 import ProductModalAddReview from "./ProductModalAddReview";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { BASE_URL, MEDIA_URL } from "@/Components/API/API";
+import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { getDeviceId } from "../../../utils/deviceId";
 import { useTopLoader } from "@/Components/Pages/TopLoader";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 
@@ -120,12 +122,31 @@ export default function ProductDetail() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartBtnLoading, setCartBtnLoading] = useState(false);
 
-  const handleOpenCart = () => {
+  const handleOpenCart = async () => {
+    if (cartBtnLoading) return;
     setCartBtnLoading(true);
-    setTimeout(() => {
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const payload = {
+        product_id: selectedProduct?.id,
+        quantity,
+      };
+      if (loginData?.data?.token) {
+        payload.token = loginData.data.token;
+      } else {
+        payload.device_id = getDeviceId();
+      }
+      const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
+      if (res.data.status === false) {
+        toast.error(res.data.action || "Could not add to cart.");
+      } else {
+        setIsCartOpen(true);
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    } finally {
       setCartBtnLoading(false);
-      setIsCartOpen(true);
-    }, 1000);
+    }
   };
 
   const firstImageLoaded = useRef(false);

@@ -196,6 +196,9 @@ export default function SignupModal({ isOpen, onClose }) {
       if (data.status === false) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
         toast.error(msg);
+      } else {
+        toast.success('Account created successfully!');
+        onClose();
       }
     } catch (err) {
       console.error('Register error:', err);

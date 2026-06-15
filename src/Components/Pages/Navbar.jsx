@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
@@ -10,6 +11,7 @@ import { FaPlus } from 'react-icons/fa';
 
 import { getDeviceId } from '../../utils/deviceId';
 import { BASE_URL } from '../API/API';
+import ModalAddToCart from './Modal/ModalAddToCart';
 
 const logoImage = '/logo.svg';
 
@@ -28,10 +30,37 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 
 export default function Navbar({ transparent = false, announcementVisible = false, isVideoVisible = true }) {
   const { t, i18n } = useTranslation('navbar');
+  const pathname = usePathname();
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
-  const [cartCount, setCartCount] = useState(2);
+  const [cartCount, setCartCount] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    const payload = loginData?.data?.token
+      ? { token: loginData.data.token }
+      : { device_id: getDeviceId() };
+    fetch(`${BASE_URL}/user/cart/counter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      // AFTER
+.then((data) => {
+  if (data.status) {
+    setCartCount(data.data?.cart_count ?? data.data ?? 0);
+  } else {
+    const msg = data.errors?.length > 0
+      ? data.errors[0].message
+      : data.action || data.action_message;
+    if (msg) toast.error(msg);
+  }
+})
+      .catch(() => {});
+  }, [pathname]);
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
@@ -44,7 +73,17 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       body: JSON.stringify(payload),
     })
       .then((res) => res.json())
-      .then((data) => { if (data.status) setHomeCategories(data.data.categories || []); })
+     // AFTER
+.then((data) => {
+  if (data.status) {
+    setHomeCategories(data.data.categories || []);
+  } else {
+    const msg = data.errors?.length > 0
+      ? data.errors[0].message
+      : data.action || data.action_message;
+    if (msg) toast.error(msg);
+  }
+})
       .catch(() => {});
   }, []);
 
@@ -270,6 +309,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
               {/* Cart */}
               <button
+                onClick={() => setIsCartOpen(true)}
                 className={`${navItemBase} flex-row gap-1`}
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
@@ -285,7 +325,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             {/* Mobile right icons */}
             <div className="flex lg:hidden items-center justify-end">
-              <button className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
+              <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
                   <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -403,6 +443,8 @@ export default function Navbar({ transparent = false, announcementVisible = fals
           </div>
         </div>
       </nav>
+
+      <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       <SearchModal
         isOpen={isSearchModalOpen}

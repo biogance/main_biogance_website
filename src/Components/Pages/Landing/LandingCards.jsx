@@ -533,6 +533,7 @@ export const LandingCards = ({
       <ModalQuickView
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
+        onCartOpen={() => setIsCartOpen(true)}
         product={safeProduct}
         fullProductData={safeProduct._raw || safeProduct}
       />
