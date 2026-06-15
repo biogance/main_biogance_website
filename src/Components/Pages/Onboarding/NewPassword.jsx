@@ -229,7 +229,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-black text-white py-3 -mb-3  hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Saving...' : t('newPassword.submitButton')}
           </button>
