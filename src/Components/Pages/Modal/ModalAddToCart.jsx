@@ -30,14 +30,17 @@ function CustomDropdown({ options, value, onChange, disabled }) {
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
-        style={{
-          border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
-          fontSize: "13px", background: "#fff", color: "#111",
-          cursor: disabled ? "default" : "pointer",
-          display: "flex", alignItems: "center", gap: "8px", minWidth: "72px",
-          justifyContent: "space-between", userSelect: "none", transition: "border-color 0.15s",
-          opacity: disabled ? 0.6 : 1,
-        }}
+          style={{
+    border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
+    fontSize: "13px", background: "#fff", color: "#111",
+    cursor: disabled ? "default" : "pointer",
+    display: "flex", alignItems: "center", gap: "8px",
+    minWidth: disabled ? "auto" : "72px",
+    justifyContent: disabled ? "flex-start" : "space-between",
+    userSelect: "none", transition: "border-color 0.15s",
+    opacity: disabled ? 0.6 : 1,
+  }}
+
         onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#999"; }}
         onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#ddd"; }}
       >
@@ -448,9 +451,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
-                    {p.french_name && (
+                    {/* {p.french_name && (
                       <p style={{ margin: "0 0 10px", fontSize: "11px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.french_name}</p>
-                    )}
+                    )} */}
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                       <CustomDropdown
                         options={QTY_OPTIONS}
