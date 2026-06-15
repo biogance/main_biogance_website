@@ -79,6 +79,7 @@ export const LandingCards = ({
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [cartData, setCartData] = useState(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef(null);
@@ -450,11 +451,6 @@ export const LandingCards = ({
   e.stopPropagation();
   if (addingToCart) return;
   const firstProduct = safeProduct.products?.[0];
-  // Agar color ya size hai to modal kholo, warna direct API hit karo
-  if (firstProduct?.color || firstProduct?.size) {
-    setIsCartOpen(true);
-    return;
-  }
   setAddingToCart(true);
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -467,10 +463,36 @@ export const LandingCards = ({
     } else {
       payload.device_id = getDeviceId();
     }
+    // Agar color ya size hai to sirf modal kholo bina add kiye
+    if (firstProduct?.color || firstProduct?.size) {
+      const listPayload = loginData?.data?.token
+        ? { token: loginData.data.token }
+        : { device_id: getDeviceId() };
+      const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(listPayload),
+      });
+      const listData = await listRes.json();
+      if (listData.status) setCartData(listData.data);
+      setIsCartOpen(true);
+      return;
+    }
     const res = await axios.post(`${BASE_URL}/user/cart/create`, payload);
     if (res.data.status === false) {
       toast.error(res.data.action || "Could not add to cart.");
     } else {
+      // Cart add ke baad list fetch karo
+      const listPayload = loginData?.data?.token
+        ? { token: loginData.data.token }
+        : { device_id: getDeviceId() };
+      const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(listPayload),
+      });
+      const listData = await listRes.json();
+      if (listData.status) setCartData(listData.data);
       setIsCartOpen(true);
     }
   } catch {
@@ -533,7 +555,7 @@ export const LandingCards = ({
       <ModalQuickView
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
-        onCartOpen={() => setIsCartOpen(true)}
+        onCartOpen={(data) => { setCartData(data); setIsCartOpen(true); }}
         product={safeProduct}
         fullProductData={safeProduct._raw || safeProduct}
       />
@@ -541,6 +563,7 @@ export const LandingCards = ({
   isOpen={isCartOpen}
   onClose={() => setIsCartOpen(false)}
   product={safeProduct}
+  initialCartData={cartData}
 />
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">

@@ -85,7 +85,7 @@ function DropItem({ label, selected, onSelect }) {
 
 const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
 
-export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
+export default function ModalAddToCart({ isOpen, onClose, product = {}, initialCartData = null }) {
   const [cartItems, setCartItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,34 +103,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const fetchCart = async () => {
-      setIsLoading(true);
-      try {
-        const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-        const payload = loginData?.data?.token
-          ? { token: loginData.data.token }
-          : { device_id: getDeviceId() };
-        const res = await fetch(`${BASE_URL}/user/cart/list`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (data.status) {
-          setCartItems(data.data.cartItem || []);
-          setCartCount(data.data.cart_count || 0);
-        } else {
-          const msg = getErrorMsg(data);
-          if (msg) toast.error(msg);
-        }
-      } catch (err) {
-        console.error("Cart list error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCart();
-  }, [isOpen]);
+    if (initialCartData) {
+      setCartItems(initialCartData.cartItem || []);
+      setCartCount(initialCartData.cart_count || 0);
+    }
+  }, [isOpen, initialCartData]);
 
   useEffect(() => {
     if (giftContentRef.current) setGiftContentHeight(giftContentRef.current.scrollHeight);

@@ -121,6 +121,7 @@ export default function ProductDetail() {
   const [isFetchingProduct, setIsFetchingProduct] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartBtnLoading, setCartBtnLoading] = useState(false);
+  const [cartData, setCartData] = useState(null);
 
   const handleOpenCart = async () => {
     if (cartBtnLoading) return;
@@ -140,6 +141,16 @@ export default function ProductDetail() {
       if (res.data.status === false) {
         toast.error(res.data.action || "Could not add to cart.");
       } else {
+        const listPayload = loginData?.data?.token
+          ? { token: loginData.data.token }
+          : { device_id: getDeviceId() };
+        const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(listPayload),
+        });
+        const listData = await listRes.json();
+        if (listData.status) setCartData(listData.data);
         setIsCartOpen(true);
       }
     } catch {
@@ -1013,6 +1024,7 @@ export default function ProductDetail() {
           price: displayPrice,
           image: slides[0]?.url || "",
         }}
+        initialCartData={cartData}
       />
     </div>
   );

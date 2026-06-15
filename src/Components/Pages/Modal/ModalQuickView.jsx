@@ -579,8 +579,17 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                           if (res.data.status === false) {
                             toast.error(res.data.action || "Could not add to cart.");
                           } else {
+                            const listPayload = loginData?.data?.token
+                              ? { token: loginData.data.token }
+                              : { device_id: getDeviceId() };
+                            const listRes = await fetch(`${BASE_URL}/user/cart/list`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify(listPayload),
+                            });
+                            const listData = await listRes.json();
                             onClose();
-                            onCartOpen?.();
+                            onCartOpen?.(listData.status ? listData.data : null);
                           }
                         } catch {
                           toast.error("Something went wrong.");
