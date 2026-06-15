@@ -73,7 +73,7 @@ export function LandingProductFinder({ data }) {
 
       {/* Content */}
       <div className="relative min-h-screen flex items-center justify-center sm:justify-start px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-12">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 max-w-md w-full border border-white/30">
+        <div className="bg-white/10 backdrop-blur-sm  p-4 sm:p-5 md:p-6 max-w-md w-full border border-white/30">
           
           {/* Header */}
           <div className="mb-6 sm:mb-8">
@@ -95,7 +95,7 @@ export function LandingProductFinder({ data }) {
                 <button
                   key={pet.key}
                   onClick={() => setSelectedPet(pet.key)}
-                  className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3  cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
                     selectedPet === pet.key
                       ? 'bg-white text-black shadow-lg border border-white'
                       : 'bg-white/10 text-white hover:bg-white/20 border border-white/30' 
@@ -118,7 +118,7 @@ export function LandingProductFinder({ data }) {
               </button>
               <button
                 onClick={() => setExpandedSection(expandedSection === 'special' ? null : 'special')}
-                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg flex items-center justify-center transition-all"
+                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30  flex items-center justify-center transition-all"
               >
                 <AiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </button>
@@ -133,7 +133,7 @@ export function LandingProductFinder({ data }) {
               </button>
               <button
                 onClick={() => setExpandedSection(expandedSection === 'universe' ? null : 'universe')}
-                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg flex items-center justify-center transition-all"
+                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30  flex items-center justify-center transition-all"
               >
                 <AiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </button>
@@ -141,7 +141,7 @@ export function LandingProductFinder({ data }) {
           </div>
 
           {/* View Products Button */}
-          <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-3.5 sm:py-4 md:py-5 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
+          <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-3.5 sm:py-4 md:py-5  hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
             {t('productFinder.viewProducts')}
           </button>
         </div>

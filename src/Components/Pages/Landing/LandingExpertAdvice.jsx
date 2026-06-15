@@ -20,7 +20,7 @@ const FALLBACK_IMAGES = [
 ];
 
 const ShimmerCard = () => (
-  <div className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
+  <div className="article-card bg-[#F7F7F7] overflow-hidden border border-gray-100 flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
     <div className="h-[180px] md:h-[240px] bg-gray-200 animate-pulse" />
     <div className="p-4 md:p-6 lg:p-7 flex flex-col gap-3">
       <div className="flex gap-2">
@@ -181,7 +181,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                     const displayDesc = isFrench && article.short_french_description ? article.short_french_description : article.short_description;
 
                     return (
-                      <article key={article.id} className="article-card bg-[#F7F7F7] rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
+                      <article key={article.id} className="article-card bg-[#F7F7F7] overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
                         <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
                             src={imageUrl}
@@ -191,7 +191,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                           />
                           <button
                             onClick={() => toggleFavorite(article.id)}
-                            className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                            className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full  flex items-center justify-center hover:bg-gray-50 transition-colors"
                           >
                             {isFav
                               ? <FaHeart className="w-4 h-4 md:w-5 md:h-5 text-black" />
@@ -202,14 +202,14 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
 
                         <div className="p-4 md:p-6 lg:p-7 flex flex-col flex-grow">
                           <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium overflow-hidden">
-                            <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
+                            <span className="text-black border border-white  px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
                               {t('expertAdvice.expertLabel', { defaultValue: 'Expert Advice' })}
                             </span>
-                            <span className="text-black border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
+                            <span className="text-black border border-white px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
                               {formatDate(article.created_at)}
                             </span>
                             {tags.length > 0 && (
-                              <span className="text-gray-600 border border-white rounded-full px-2.5 py-0.5 md:px-3 md:py-1 bg-white truncate min-w-0">
+                              <span className="text-gray-600 border border-white  px-2.5 py-0.5 md:px-3 md:py-1 bg-white truncate min-w-0">
                                 {tags.join(' • ')}
                               </span>
                             )}
@@ -227,7 +227,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
 
                           <button
                             onClick={() => toggleExpanded(article.id)}
-                            className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto mt-auto"
+                            className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto mt-auto"
                           >
                             {isExp ? t('expertAdvice.showLess') : t('expertAdvice.continueReading')}
                           </button>

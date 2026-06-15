@@ -34,7 +34,7 @@ export const LandingFeatures = ({ data }) => {
             return (
               <div
                 key={index}
-                className="flex flex-col border border-[#E2E2E2] rounded-xl p-4 items-start gap-3"
+                className="flex flex-col border border-[#E2E2E2] p-4 items-start gap-3"
               >
                 <Icon />
                 <div>

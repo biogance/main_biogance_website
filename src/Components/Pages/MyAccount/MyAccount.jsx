@@ -24,11 +24,7 @@ export default function MyAccount() {
     const searchParams = useSearchParams();
     const router = useRouter();
     
-    useEffect(() => {
-        if (!localStorage.getItem('LoginData')) {
-            router.replace('/');
-        }
-    }, []);
+
 
     // Valid tabs ki list
     const validTabs = ['dashboard', 'orders', 'favorites', 'loyalty', 'profile', 'pet', 'addresses', 'settings', 'support'];

@@ -68,22 +68,22 @@ export default function Footer() {
               <div>
                 <p className="text-sm text-gray-400 mb-2">{t('social.biogance')}</p>
                 <div className="flex gap-2">
-                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="YouTube" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="YouTube" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <SlSocialYoutube className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="LinkedIn" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="LinkedIn" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                    <SlSocialLinkedin className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="Twitter" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="Twitter" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <PiTwitterLogo className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                    <BsTiktok size={15} className="p-[0.9]  border border gray-200   text-[#E3E3E3] rounded-sm" />
                   </a>
                 </div>
@@ -93,13 +93,13 @@ export default function Footer() {
               <div>
                 <p className="text-sm text-gray-400 mb-2">{t('social.ekinat')}</p>
                 <div className="flex gap-2">
-                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                      <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737] rounded-lg flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                   <BsTiktok size={15} className="p-[0.9]  text-[#E3E3E3] border border gray-200   rounded-sm" />
                   </a>
                 </div>
@@ -116,9 +116,9 @@ export default function Footer() {
                     <input
                       type="email"
                       placeholder={t('newsletter.emailPlaceholder')}
-                      className="flex-1 min-w-0 bg-[#393939] border border-[#393939] text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm rounded-xl placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
+                      className="flex-1 min-w-0 bg-[#393939] border border-[#393939] text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
                     />
-                    <button className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal rounded-xl hover:bg-black transition whitespace-nowrap">
+                    <button className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal  hover:bg-black transition whitespace-nowrap">
                       {t('newsletter.subscribeButton')}
                     </button>
                   </div>

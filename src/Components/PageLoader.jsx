@@ -39,11 +39,7 @@ export default function PageLoader() {
   useEffect(() => {
     const loginData = localStorage.getItem("LoginData");
 
-    if (loginData) {
-      if (pathname !== "/my-account") {
-        router.replace("/my-account");
-      }
-    } else {
+    if (!loginData) {
       const isValid = VALID_ROUTES.some(
         (r) => pathname === r || pathname.startsWith(r + "/"),
       );
