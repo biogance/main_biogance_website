@@ -36,6 +36,8 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [homeCategories, setHomeCategories] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartData, setCartData] = useState(null);
+  const [cartLoading, setCartLoading] = useState(false);
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
@@ -309,7 +311,27 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
               {/* Cart */}
               <button
-                onClick={() => setIsCartOpen(true)}
+                onClick={async () => {
+                  if (cartLoading) return;
+                  setCartLoading(true);
+                  try {
+                    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+                    const payload = loginData?.data?.token
+                      ? { token: loginData.data.token }
+                      : { device_id: getDeviceId() };
+                    const res = await fetch(`${BASE_URL}/user/cart/list`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload),
+                    });
+                    const data = await res.json();
+                    if (data.status) setCartData(data.data);
+                  } catch {}
+                  finally {
+                    setCartLoading(false);
+                    setIsCartOpen(true);
+                  }
+                }}
                 className={`${navItemBase} flex-row gap-1`}
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
@@ -325,7 +347,27 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
             {/* Mobile right icons */}
             <div className="flex lg:hidden items-center justify-end">
-              <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
+              <button onClick={async () => {
+                  if (cartLoading) return;
+                  setCartLoading(true);
+                  try {
+                    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+                    const payload = loginData?.data?.token
+                      ? { token: loginData.data.token }
+                      : { device_id: getDeviceId() };
+                    const res = await fetch(`${BASE_URL}/user/cart/list`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload),
+                    });
+                    const data = await res.json();
+                    if (data.status) setCartData(data.data);
+                  } catch {}
+                  finally {
+                    setCartLoading(false);
+                    setIsCartOpen(true);
+                  }
+                }} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
                   <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -444,7 +486,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
         </div>
       </nav>
 
-      <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} initialCartData={cartData} />
 
       <SearchModal
         isOpen={isSearchModalOpen}
