@@ -1,23 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useRef } from 'react';
-import { AiOutlineClose } from 'react-icons/ai';
-import CreateNewPasswordModal from './NewPassword';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { BASE_URL } from '../../API/API';
+import { useState, useRef } from "react";
+import { AiOutlineClose } from "react-icons/ai";
+import CreateNewPasswordModal from "./NewPassword";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import { BASE_URL } from "../../API/API";
 
-export default function VerificationCodeModal({ isOpen, onClose, email, onAllClose }) {
-  const { t } = useTranslation('onboarding');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [error, setError] = useState('');
+export default function VerificationCodeModal({
+  isOpen,
+  onClose,
+  email,
+  onAllClose,
+}) {
+  const { t } = useTranslation("onboarding");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [error, setError] = useState("");
   const [isExpired, setIsExpired] = useState(false);
   const [isNewPasswordOpen, setIsNewPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const inputRefs = useRef([]);
+  const modalCardRef = useRef(null);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   const handleChange = (index, value) => {
     if (isNaN(value)) return;
@@ -25,45 +32,46 @@ export default function VerificationCodeModal({ isOpen, onClose, email, onAllClo
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    
+
     if (error) {
-      setError('');
+      setError("");
     }
 
-    if (value !== '' && index < 5) {
+    if (value !== "" && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
 
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSubmit(e);
     }
   };
 
   const handleResendOTP = async () => {
-    setOtp(['', '', '', '', '', '']);
-    setError('');
+    setOtp(["", "", "", "", "", ""]);
+    setError("");
     inputRefs.current[0]?.focus();
     try {
       setIsLoading(true);
       const res = await fetch(`${BASE_URL}/user/auth/forgot/password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
       if (data.status === false) {
-        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        const msg =
+          data.errors?.length > 0 ? data.errors[0].message : data.action;
         toast.error(msg);
       }
     } catch (err) {
-      console.error('Resend OTP error:', err);
+      console.error("Resend OTP error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -72,139 +80,149 @@ export default function VerificationCodeModal({ isOpen, onClose, email, onAllClo
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const otpString = otp.join('');
-    
+    const otpString = otp.join("");
+
     if (otpString.length < 6) {
-      setError(t('verificationCode.errors.incomplete'));
+      setError(t("verificationCode.errors.incomplete"));
       return;
     }
 
     try {
       setIsLoading(true);
       const res = await fetch(`${BASE_URL}/user/auth/otp/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp: otpString }),
       });
       const data = await res.json();
       if (data.status === false) {
-        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        const msg =
+          data.errors?.length > 0 ? data.errors[0].message : data.action;
         toast.error(msg);
       } else {
-        setError('');
+        setError("");
         setIsNewPasswordOpen(true);
       }
     } catch (err) {
-      console.error('OTP verify error:', err);
+      console.error("OTP verify error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    if (onClose) onClose();
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      if (onClose) onClose();
+    }, 250);
   };
 
-  // Backdrop click -> shake the card instead of closing
   const handleBackdropClick = () => {
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add("modal-shake");
+      modalCardRef.current.addEventListener(
+        "animationend",
+        () => {
+          modalCardRef.current?.classList.remove("modal-shake");
+        },
+        { once: true },
+      );
+    }
   };
 
   return (
     <>
-      <style jsx global>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
-        }
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-      `}</style>
-
       <div
-        className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70"
+        className={`fixed inset-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center p-4 z-70 ${isClosing ? "backdrop-out" : "backdrop-in"}`}
         onClick={handleBackdropClick}
       >
         <div
-          onClick={(e) => e.stopPropagation()}
-          className={`relative bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 ${
-            isShaking ? 'animate-shake' : ''
-          }`}
+          className={`w-full max-w-lg ${isClosing ? "modal-pop-out" : "modal-pop-in"}`}
         >
-          <button
-            type="button"
-            onClick={handleClose}
-            className="absolute top-4 text-black right-4 hover:text-gray-600 transition-colors cursor-pointer"
+          <div
+            ref={modalCardRef}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-white shadow-lg w-full p-8"
           >
-            <AiOutlineClose size={20}/>
-          </button>
-
-          <h1 className="text-xl font-semibold text-center mb-4 text-black">
-            {t('verificationCode.title')}
-          </h1>
-
-          <p className="text-gray-700 text-center text-sm leading-relaxed mb-2">
-            {t('verificationCode.description')}
-          </p>
-          <p className="text-gray-700 text-center text-sm leading-relaxed mb-8">
-            {t('verificationCode.expiryNote')}
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-center gap-3 mb-2">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className={`w-14 h-14 text-center text-2xl font-medium border-2 rounded-lg focus:outline-none text-black ${
-                    error
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300 bg-white focus:border-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {error && (
-              <p className="text-red-500 text-xs text-center mb-4 mt-2">{error}</p>
-            )}
-
-            <p className="text-center text-sm text-gray-700 mb-6 mt-4">
-              {t('verificationCode.didntGetIt')}{' '}
-              <button
-                type="button"
-                onClick={handleResendOTP}
-                disabled={isLoading}
-                className="text-black font-semibold underline hover:text-gray-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Resending...' : t('verificationCode.resendOTP')}
-              </button>
-              .
-            </p>
-
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              type="button"
+              onClick={handleClose}
+              className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
             >
-              {isLoading ? 'Creating...' : t('verificationCode.submitButton')}
+              <AiOutlineClose size={20} />
             </button>
-          </form>
+
+            <h1 className="text-xl mt-6 font-semibold text-center mb-4 text-black">
+              {t("verificationCode.title")}
+            </h1>
+
+           <p className="text-gray-700 text-center text-md leading-relaxed mb-2">
+  {t("verificationCode.description1")}
+  <br />
+  {t("verificationCode.description2")}
+</p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <p className="text-center text-sm font-semibold text-black">
+                {email}
+              </p>
+              <div className="flex justify-center gap-3 mb-2">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className={`w-14 h-14 text-center text-2xl font-medium border-2 mb-4 focus:outline-none text-black ${
+                      error
+                        ? "border-red-300 bg-red-50"
+                        : digit !== ""
+                          ? "border-gray-500 bg-gray-50 text-black"
+                          : "border-gray-300 bg-white focus:border-gray-400"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {error && (
+                <p className="text-red-500 text-xs text-center mb-4 mt-2">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                style={{ width: `calc(6 * 3.5rem + 5 * 0.75rem)` }}
+                className="mx-auto block bg-black text-white py-3  hover:bg-gray-800 transition-colors text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading
+                  ? "Verfiying..."
+                  : t("verificationCode.submitButton")}
+              </button>
+              <p className="text-center text-sm text-gray-700 ">
+                {t("verificationCode.didntGetIt")}{" "}
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                  className="text-black font-semibold underline hover:text-gray-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Resending..." : t("verificationCode.resendOTP")}
+                </button>
+                .
+              </p>
+            </form>
+          </div>
         </div>
       </div>
 
-      <CreateNewPasswordModal 
-        isOpen={isNewPasswordOpen} 
+      <CreateNewPasswordModal
+        isOpen={isNewPasswordOpen}
         onClose={() => setIsNewPasswordOpen(false)}
         email={email}
         onAllClose={onAllClose}

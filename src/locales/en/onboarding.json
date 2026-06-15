@@ -17,7 +17,7 @@
     }
   },
   "login": {
-    "title": "Welcome Back to Biogance",
+    "title": "Login Biogance",
     "description": "Log in to access your account, track your orders, and enjoy exclusive rewards from our loyalty program.",
     "form": {
       "email": "Email",
@@ -29,9 +29,9 @@
     },
     "buttons": {
       "login": "Login",
-      "signup": "Signup"
+      "signup": "Sign Up"
     },
-    "divider": "OR LOGIN WITH",
+    "divider": "or continue with",
     "footer": "Don't have account",
     "errors": {
       "emailRequired": "Please enter your email.",
@@ -41,7 +41,7 @@
     }
   },
   "signup": {
-    "title": "Create Your Biogance Account",
+    "title": "Create Biogance Account",
     "description": "Discover products crafted for your pet's health and well-being. Earn loyalty points with every purchase and enjoy member-only benefits.",
     "form": {
       "fullName": "Full Name",
@@ -54,14 +54,14 @@
       "passwordHint": "Password must be at least 8 characters and include a number & special character."
     },
     "buttons": {
-      "createAccount": "Create My Account",
+      "createAccount": "Register",
       "login": "Login"
     },
     "terms": "By signing up, you agree to our",
     "termsLink": "Terms & Conditions",
     "and": "and",
     "privacyLink": "Privacy Policy",
-    "divider": "OR LOGIN WITH",
+    "divider": "or continue with",
     "footer": "Already have an account?",
     "errors": {
       "fullNameRequired": "Please enter your full name.",
@@ -77,7 +77,8 @@
   },
   "forgotPassword": {
     "title": "Forgot your Password?",
-    "description": "Enter your registered email address and we'll send you a link to create a new password.",
+    "description": "Enter your registered email address and we'll send",
+     "description2": "you a link to create a new password.",
     "form": {
       "email": "Email",
       "emailPlaceholder": "eg: john_doe@gmail.com"
@@ -99,11 +100,12 @@
   },
   "verificationCode": {
     "title": "Enter Verification Code",
-    "description": "Please enter the 6-digit OTP we sent to your registered email address to continue.",
+    "description1": "Please enter the 6-digit OTP we sent to your",
+        "description2": "registered email address to continue.",
     "expiryNote": "This code will expire in 10 minutes for your security.",
     "didntGetIt": "Didn't get it?",
     "resendOTP": "Resend OTP",
-    "submitButton": "Create New Password",
+    "submitButton": "Verify OTP",
     "errors": {
       "incomplete": "Please enter the complete 6-digit code.",
       "incorrect": "The code you entered is incorrect. Please try again.",

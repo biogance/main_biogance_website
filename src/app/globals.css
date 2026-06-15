@@ -33,6 +33,45 @@ body {
   display: none;
 }
 
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes modalPopOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.6); }
+}
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes backdropOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes modalShake {
+  0%, 100% { translate: 0px 0px; }
+  20%      { translate: -8px 0px; }
+  40%      { translate: 8px 0px; }
+  60%      { translate: -6px 0px; }
+  80%      { translate: 6px 0px; }
+}
+.modal-pop-in {
+  animation: modalPopIn 0.75s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+.modal-pop-out {
+  animation: modalPopOut 0.25s cubic-bezier(0.4, 0, 1, 1) both;
+}
+.backdrop-in {
+  animation: backdropIn 0.3s ease both;
+}
+.backdrop-out {
+  animation: backdropOut 0.25s ease both;
+}
+.modal-shake {
+  animation: modalShake 0.4s ease-in-out;
+}
+
 
 /* .react-international-phone-input-container {
   display: flex;
