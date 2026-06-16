@@ -168,17 +168,18 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
   const [selectedPill, setSelectedPill] = useState(null);
   const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(false);
+  const [appliedVoucherOff, setAppliedVoucherOff] = useState(0);
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
+  const [voucherPoints, setVoucherPoints] = useState(0);
 
   // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoInput, setPromoInput] = useState("");
   const [promoHovered, setPromoHovered] = useState(false);
   const [promoLoading, setPromoLoading] = useState(false);
-  // List of applied promo codes shown as pills under delivery cost
-  const [appliedPromoCodes, setAppliedPromoCodes] = useState([]);
-  // pendingPromoPill: code typed but not yet applied
+  const [promoError, setPromoError] = useState(null);
+  const [appliedPromo, setAppliedPromo] = useState(null); // { code, off }
   const [pendingPromoPill, setPendingPromoPill] = useState(null);
 
   const overlayRef = useRef(null);
@@ -253,7 +254,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         });
         const data = await res.json();
         if (data.status && data.data?.data) {
-          setVoucherPills(data.data.data);
+          const list = data.data.data;
+          setVoucherPills(list);
+          const totalPoints = list.reduce((sum, v) => sum + (v.point || 0), 0);
+          setVoucherPoints(totalPoints);
         }
       } catch { /* silent */ }
     };
@@ -358,6 +362,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         setLoggedVoucherLoading(false);
         return;
       }
+      setAppliedVoucherOff(data.data?.off || 0);
       setLoggedVoucherApplied(true);
     } catch {
       setLoggedVoucherError("Something went wrong.");
@@ -370,50 +375,47 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setLoggedVoucherApplied(false);
     setLoggedVoucherInput("");
     setLoggedVoucherError(null);
+    setAppliedVoucherOff(0);
   };
 
   // ─── CASE 3 HANDLERS (Promo) ─────────────────────────────────────────────
 
   const handlePromoInputChange = (e) => {
-    const val = e.target.value;
-    setPromoInput(val);
-    // Pill appears only after Apply click, not while typing
+    setPromoInput(e.target.value);
+    if (promoError) setPromoError(null);
   };
 
   const handlePromoApply = async () => {
-    const code = promoInput.trim().toUpperCase();
+    const code = promoInput.trim();
     if (!code) return;
-
     setPromoLoading(true);
+    setPromoError(null);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const payload = loginData?.data?.token
-        ? { token: loginData.data.token, promo_code: code }
-        : { device_id: getDeviceId(), promo_code: code };
-      const res = await fetch(`${BASE_URL}/user/promo/apply`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const token = loginData?.data?.token;
+      const res = await fetch(`${BASE_URL}/user/order/check/promo-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: code }),
       });
       const data = await res.json();
       if (data.status === false) {
-        const msg = getErrorMsg(data);
-        if (msg) toast.error(msg);
+        setPromoError(getErrorMsg(data) || "Invalid promo code.");
         setPromoLoading(false);
         return;
       }
-      // Success: add pill (black bg white text) under delivery cost, clear & disable input
-      setAppliedPromoCodes((prev) => [...prev, code]);
+      setAppliedPromo({ code, off: data.data?.off || 0 });
       setPromoInput("");
-      toast.success("Promo code applied!");
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      setPromoError("Something went wrong.");
     }
     setPromoLoading(false);
   };
 
-  const handleRemovePromoCode = (code) => {
-    setAppliedPromoCodes((prev) => prev.filter((c) => c !== code));
-    // Re-enable input if no more applied codes
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError(null);
+    setPromoInput("");
   };
 
   // Delivery & totals
@@ -426,7 +428,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   }, 0);
   const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-  const totalWithDelivery = (subtotal + deliveryCost).toFixed(2);
+  const totalDiscount = (loggedVoucherApplied ? appliedVoucherOff : 0) + (appliedPromo ? appliedPromo.off : 0);
+  const totalWithDelivery = Math.max(0, subtotal + deliveryCost - totalDiscount).toFixed(2);
 
   const handleCheckout = () => { window.location.href = "/checkout"; };
 
@@ -489,185 +492,237 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const isEmpty = !isLoading && cartItems.length === 0;
 
-  // ─── CASE 1: Guest Voucher Render (Redeem design) ────────────────────────
+  // ─── CASE 1: Guest Voucher Render ────────────────────────────────────────
   const renderGuestVoucherContent = () => (
-  <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-    <div style={{ display: "flex", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden" }}>
-      <input
-        type="text"
-        placeholder="Enter Voucher code"
-        disabled
-        style={{
-          flex: 1, border: "none", outline: "none", padding: "11px 14px",
-          fontSize: "13px", color: "#aaa", background: "#f9f9f9",
-          cursor: "not-allowed",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
-      />
-      <button disabled style={{
-        border: "none", borderLeft: "1px solid #ddd", background: "#f3f3f3",
-        color: "#aaa", padding: "11px 18px", fontSize: "12px", fontWeight: 700,
-        letterSpacing: "0.1em", textTransform: "uppercase", cursor: "default",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-      }}>Apply</button>
-    </div>
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
-      <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
-        You have <strong>240 points</strong> — redeem for a <strong>24 €</strong> voucher
-      </p>
-      <button
-        onClick={() => window.location.href = "/login"}
-        onMouseEnter={() => setRedeemHovered(true)}
-        onMouseLeave={() => setRedeemHovered(false)}
-        style={{
-          flexShrink: 0, marginLeft: "12px",
-          padding: "8px 16px", fontSize: "12px", fontWeight: 700,
-          letterSpacing: "0.08em", textTransform: "uppercase",
-          background: redeemHovered ? "#333" : "#111", color: "#fff",
-          border: "none", borderRadius: "2px", cursor: "pointer",
-          transition: "background 0.2s",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
-      >
-        Redeem
-      </button>
-    </div>
-  </div>
-);
-
-  // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
-  const renderLoggedVoucherContent = () => (
     <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-      {/* Input row */}
       <div style={{
-        display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+        display: "flex",
+        border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
         borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
       }}>
         <input
-          type="text"
-          placeholder="Enter Voucher code"
-          value={loggedVoucherInput}
-          disabled={loggedVoucherApplied}
-          onChange={(e) => {
-            setLoggedVoucherInput(e.target.value);
-            if (loggedVoucherError) setLoggedVoucherError(null);
-            const match = voucherPills.find(p => p.name === e.target.value);
-            if (match) setSelectedPill(match.name); else setSelectedPill(null);
-          }}
-          onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+          type="text" placeholder="Enter Voucher code"
+          value={guestAppliedVoucher ? guestAppliedVoucher : guestVoucherInput}
+          disabled={!!guestAppliedVoucher}
+          onChange={handleGuestInputChange}
+          onKeyDown={(e) => { if (e.key === "Enter") handleGuestApply(); }}
           style={{
-            flex: 1, border: "none", outline: "none", padding: "11px 14px",
-            fontSize: "13px",
-            color: loggedVoucherApplied ? "#aaa" : "#111",
-            background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
-            cursor: loggedVoucherApplied ? "not-allowed" : "text",
+            flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+            color: guestAppliedVoucher ? "#aaa" : "#111",
+            background: guestAppliedVoucher ? "#f9f9f9" : "#fff",
+            cursor: guestAppliedVoucher ? "not-allowed" : "text",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         />
         <button
-          onClick={handleLoggedApply}
-          disabled={(!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied || loggedVoucherLoading}
-          onMouseEnter={() => { if ((selectedPill || loggedVoucherInput.trim()) && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
-          onMouseLeave={() => setLoggedApplyHovered(false)}
+          onClick={handleGuestApply}
+          disabled={!guestVoucherInput.trim() || !!guestAppliedVoucher || guestVoucherLoading}
+          onMouseEnter={() => { if (guestVoucherInput.trim() && !guestAppliedVoucher) setGuestApplyHovered(true); }}
+          onMouseLeave={() => setGuestApplyHovered(false)}
           style={{
             border: "none", borderLeft: "1px solid #ddd",
-            background: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
-            color: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
+            background: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "#f3f3f3" : guestApplyHovered ? "#111" : "transparent",
+            color: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "#aaa" : guestApplyHovered ? "#fff" : "#111",
             padding: "11px 18px", fontSize: "12px", fontWeight: 700,
             letterSpacing: "0.1em", textTransform: "uppercase",
-            cursor: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "default" : "pointer",
+            cursor: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "default" : "pointer",
             transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         >
-          {loggedVoucherLoading ? "..." : "Apply"}
+          {guestVoucherLoading ? "..." : "Apply"}
         </button>
       </div>
 
-      {/* Pills from API */}
-      {!loggedVoucherApplied && voucherPills.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
-          {voucherPills.map((pill) => {
-            const code = pill.name;
-            const isSelected = selectedPill === code;
-            return (
-              <div
-                key={pill.id}
-                onClick={() => handlePillClick(code)}
-                style={{
-                  display: "inline-flex", alignItems: "center",
-                  border: "1px solid #ccc", borderRadius: "20px",
-                  overflow: "hidden", cursor: "pointer",
-                  background: isSelected ? "#111" : "#fff",
-                  transition: "background 0.15s",
-                  userSelect: "none",
-                }}
-              >
-                <span style={{
-                  padding: "6px 12px", fontSize: "12px", fontWeight: 600,
-                  color: isSelected ? "#fff" : "#111",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                }}>
-                  {code}
-                </span>
-                {isSelected && (
-                  <>
-                    <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.3)" }} />
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handlePillRemove(); }}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
-                    >
-                      <IoClose size={13} />
-                    </button>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* Error */}
-      {loggedVoucherError && (
-        <div style={{
-          display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px",
-          padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",
-          borderRadius: "4px",
-        }}>
+      {guestVoucherError && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
             <circle cx="12" cy="12" r="11" fill="#e02424" />
             <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
         </div>
       )}
 
       {/* Applied pill */}
-      {loggedVoucherApplied && selectedPill && (
+      {guestAppliedVoucher && !guestVoucherError && (
         <div style={{ marginTop: "10px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
-            <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-              {selectedPill}
+            <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              {guestAppliedVoucher}
             </span>
             <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
-            <button
-              onClick={handleLoggedRemoveVoucher}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
-            >
+            <button onClick={handleGuestRemoveApplied} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
               <IoClose size={13} />
             </button>
           </div>
         </div>
       )}
 
-      {/* Default helper */}
-      {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && (
+      {/* Default text — sirf jab kuch apply/select nahi */}
+      {!guestAppliedVoucher && !guestVoucherError && !guestVoucherInput.trim() && (
         <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
-        You don't have any vouchers or reward points yet. Points are earned automatically <br/> with every purchase, redeem them for discounts on your next order.
+          You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
         </p>
       )}
     </div>
   );
+
+  // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
+  const renderLoggedVoucherContent = () => {
+    const hasVouchers = voucherPills.length > 0;
+    const noVouchersAndNoPoints = !hasVouchers; // extend if points API added
+    return (
+      <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
+        {/* Input row */}
+        <div style={{
+          display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+          borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
+        }}>
+          <input
+            type="text" placeholder="Enter Voucher code"
+            value={loggedVoucherInput} disabled={loggedVoucherApplied}
+            onChange={(e) => {
+              setLoggedVoucherInput(e.target.value);
+              if (loggedVoucherError) setLoggedVoucherError(null);
+              const match = voucherPills.find(p => p.name === e.target.value);
+              if (match) setSelectedPill(match.name); else setSelectedPill(null);
+            }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+            style={{
+              flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+              color: loggedVoucherApplied ? "#aaa" : "#111",
+              background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+              cursor: loggedVoucherApplied ? "not-allowed" : "text",
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            }}
+          />
+          <button
+            onClick={handleLoggedApply}
+            disabled={(!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied || loggedVoucherLoading}
+            onMouseEnter={() => { if ((selectedPill || loggedVoucherInput.trim()) && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
+            onMouseLeave={() => setLoggedApplyHovered(false)}
+            style={{
+              border: "none", borderLeft: "1px solid #ddd",
+              background: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
+              color: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
+              padding: "11px 18px", fontSize: "12px", fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              cursor: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "default" : "pointer",
+              transition: "background 0.2s, color 0.2s",
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            }}
+          >
+            {loggedVoucherLoading ? "..." : "Apply"}
+          </button>
+        </div>
+
+        {/* "Voucher code added" hint — sirf pill click se, pills se upar */}
+        {selectedPill && !loggedVoucherApplied && voucherPills.some(p => p.name === selectedPill) && (
+          <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
+            Voucher code added. Click Apply to redeem it.
+          </p>
+        )}
+
+        {/* Pills from API — hide after apply */}
+        {!loggedVoucherApplied && hasVouchers && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
+            {voucherPills.map((pill) => {
+              const code = pill.name;
+              const isSelected = selectedPill === code;
+              return (
+                <div
+                  key={pill.id} onClick={() => handlePillClick(code)}
+                  style={{
+                    display: "inline-flex", alignItems: "center",
+                    border: "1px solid #ccc", borderRadius: "20px", overflow: "hidden",
+                    cursor: "pointer", background: isSelected ? "#111" : "#fff",
+                    transition: "background 0.15s", userSelect: "none",
+                  }}
+                >
+                  <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: isSelected ? "#fff" : "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                    {code}
+                  </span>
+                  {isSelected && (
+                    <>
+                      <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.3)" }} />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePillRemove(); }}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+                      >
+                        <IoClose size={13} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Points/Redeem — jab list empty ho YA total points 0 ho */}
+        {!loggedVoucherApplied && !selectedPill && !loggedVoucherError && (voucherPills.length === 0 || voucherPoints === 0) && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
+              You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
+            </p>
+            <button
+              onMouseEnter={() => setRedeemHovered(true)}
+              onMouseLeave={() => setRedeemHovered(false)}
+              style={{
+                flexShrink: 0, marginLeft: "12px",
+                padding: "8px 16px", fontSize: "12px", fontWeight: 700,
+                letterSpacing: "0.08em", textTransform: "uppercase",
+                background: redeemHovered ? "#333" : "#111", color: "#fff",
+                border: "none", borderRadius: "2px", cursor: "pointer",
+                transition: "background 0.2s",
+                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              }}
+            >
+              Redeem
+            </button>
+          </div>
+        )}
+
+        {/* Default text — sirf jab list empty ho aur koi applied/selected nahi */}
+        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && (
+          <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+            You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
+          </p>
+        )}
+
+        {/* Error */}
+        {loggedVoucherError && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <circle cx="12" cy="12" r="11" fill="#e02424" />
+              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+          </div>
+        )}
+
+        {/* Applied pill */}
+        {loggedVoucherApplied && selectedPill && (
+          <div style={{ marginTop: "10px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+              <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                {selectedPill}
+              </span>
+              <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
+              <button
+                onClick={handleLoggedRemoveVoucher}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+              >
+                <IoClose size={13} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -802,43 +857,37 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               ))}
 
-              {/* ─── CASE 3: Applied promo codes shown here under delivery cost ─── */}
-              {appliedPromoCodes.map((code) => (
-                <div key={code} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  marginBottom: "6px", fontSize: "13px",
-                }}>
+              {/* Voucher row */}
+              {loggedVoucherApplied && selectedPill && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#555" }}>Voucher</span>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", borderRadius: "20px" }}>
+                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
+                    </div>
+                  </div>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{appliedVoucherOff.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                </div>
+              )}
+
+              {/* Promo row */}
+              {appliedPromo && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Promo Code</span>
-                    {/* Black bg, white text pill — appears only after Apply clicked */}
-                    <div style={{
-                      display: "inline-flex", alignItems: "center",
-                      background: "#111", borderRadius: "20px", overflow: "hidden",
-                    }}>
-                      <span style={{
-                        padding: "4px 10px", fontSize: "11px", fontWeight: 600,
-                        color: "#fff", letterSpacing: "0.04em",
-                        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                      }}>
-                        {code}
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#fff", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                        {appliedPromo.code}
                       </span>
                       <span style={{ display: "block", width: "1px", height: "22px", background: "rgba(255,255,255,0.25)" }} />
-                      <button
-                        onClick={() => handleRemovePromoCode(code)}
-                        style={{
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          padding: "4px 8px", background: "none", border: "none",
-                          cursor: "pointer", color: "#fff",
-                        }}
-                      >
+                      <button onClick={handleRemovePromo} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4px 8px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
                         <IoClose size={11} />
                       </button>
                     </div>
                   </div>
-                  {/* Placeholder discount value — replace with API value */}
-                  <span style={{ color: "#111", fontWeight: 500 }}>— €</span>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{appliedPromo.off.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
                 </div>
-              ))}
+              )}
 
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
                 <span>Estimated total</span>
@@ -871,38 +920,39 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 opacity: promoOpen ? 1 : 0,
               }}>
                 <div style={{ paddingBottom: "16px" }}>
-                  {/* Input — disabled once any promo applied */}
                   <div style={{
-                    display: "flex", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden",
+                    display: "flex",
+                    border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
+                    borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
                   }}>
                     <input
                       type="text"
                       placeholder="Enter your code"
-                      value={appliedPromoCodes.length > 0 ? "" : promoInput}
-                      disabled={appliedPromoCodes.length > 0}
+                      value={appliedPromo ? appliedPromo.code : promoInput}
+                      disabled={!!appliedPromo}
                       onChange={handlePromoInputChange}
                       onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
                       style={{
                         flex: 1, border: "none", outline: "none", padding: "11px 14px",
                         fontSize: "13px",
-                        color: appliedPromoCodes.length > 0 ? "#aaa" : "#111",
-                        background: appliedPromoCodes.length > 0 ? "#f9f9f9" : "#fff",
-                        cursor: appliedPromoCodes.length > 0 ? "not-allowed" : "text",
+                        color: appliedPromo ? "#aaa" : "#111",
+                        background: appliedPromo ? "#f9f9f9" : "#fff",
+                        cursor: appliedPromo ? "not-allowed" : "text",
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                       }}
                     />
                     <button
                       onClick={handlePromoApply}
-                      disabled={(!promoInput.trim() && !pendingPromoPill) || appliedPromoCodes.length > 0 || promoLoading}
-                      onMouseEnter={() => { if (promoInput.trim() && appliedPromoCodes.length === 0) setPromoHovered(true); }}
+                      disabled={!promoInput.trim() || !!appliedPromo || promoLoading}
+                      onMouseEnter={() => { if (promoInput.trim() && !appliedPromo) setPromoHovered(true); }}
                       onMouseLeave={() => setPromoHovered(false)}
                       style={{
                         border: "none", borderLeft: "1px solid #ddd",
-                        background: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "#f3f3f3" : promoHovered ? "#111" : "transparent",
-                        color: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "#aaa" : promoHovered ? "#fff" : "#111",
+                        background: (!promoInput.trim() || appliedPromo) ? "#f3f3f3" : promoHovered ? "#111" : "transparent",
+                        color: (!promoInput.trim() || appliedPromo) ? "#aaa" : promoHovered ? "#fff" : "#111",
                         padding: "11px 18px", fontSize: "12px", fontWeight: 700,
                         letterSpacing: "0.1em", textTransform: "uppercase",
-                        cursor: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "default" : "pointer",
+                        cursor: (!promoInput.trim() || appliedPromo) ? "default" : "pointer",
                         transition: "background 0.2s, color 0.2s",
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                       }}
@@ -911,7 +961,31 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                     </button>
                   </div>
 
+                  {/* Error */}
+                  {promoError && (
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+                        <circle cx="12" cy="12" r="11" fill="#e02424" />
+                        <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                      <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{promoError}</span>
+                    </div>
+                  )}
 
+                  {/* Applied pill inside accordion */}
+                  {appliedPromo && (
+                    <div style={{ marginTop: "10px" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+                        <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                          {appliedPromo.code}
+                        </span>
+                        <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
+                        <button onClick={handleRemovePromo} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+                          <IoClose size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
