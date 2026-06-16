@@ -136,7 +136,46 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+const announcements = [
+  "Enjoy complimentary standard delivery across France on all orders over €39.",
+  "New arrivals just dropped — explore our latest skincare collection.",
+  "Earn loyalty points on every order. Join Biogance Rewards today.",
+];
 
+const [annIndex, setAnnIndex] = useState(0);
+const [nextIndex, setNextIndex] = useState(1);
+const [annPhase, setAnnPhase] = useState('idle'); // 'idle' | 'exit'
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    const next = (annIndex + 1) % announcements.length; // snapshot for closure
+    setNextIndex(next);
+    setAnnPhase('exit');
+
+    setTimeout(() => {
+      setAnnIndex(next);
+      setAnnPhase('idle');
+    }, 550);
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, [annIndex]);
+
+const currentStyle = {
+  transform: annPhase === 'exit' ? 'translateY(-120%)' : 'translateY(0)',
+  opacity: annPhase === 'exit' ? 0 : 1,
+  transition: annPhase === 'exit'
+    ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-in'
+    : 'none',
+};
+
+const nextStyle = {
+  transform: annPhase === 'exit' ? 'translateY(0)' : 'translateY(120%)',
+  opacity: annPhase === 'exit' ? 1 : 0,
+  transition: annPhase === 'exit'
+    ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-out'
+    : 'none',
+};
   const handleMobileMenuToggle = () => {
     if (isMobileMenuOpen) {
       setIsProductsOpen(false);
@@ -176,15 +215,24 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   return (
     <>
-      {/* Announcement Bar */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden`}
-      >
-        <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-          Enjoy complimentary standard delivery across France on all orders over €39.{" "}
-          <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-        </p>
-      </div>
+    <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
+  <div className="relative h-full overflow-hidden">
+    <p
+      style={currentStyle}
+      className="absolute inset-0 flex hover:underline items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+    >
+      {announcements[annIndex]}
+      <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+    </p>
+    <p
+      style={nextStyle}
+      className="absolute inset-0 flex hover:underline items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+    >
+      {announcements[nextIndex]}
+      <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+    </p>
+  </div>
+</div>
 
       {/* Backdrop overlay */}
       <div
