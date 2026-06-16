@@ -94,7 +94,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
           {/* Main Redeem Modal */}
           {!isSuccessModalOpen && (
             <div 
-                className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50 overflow-hidden"
+                className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden"
                 onClick={(e) => {
                     if (e.target === e.currentTarget) {
                         onClose();
@@ -184,7 +184,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
 
           {/* Success Modal */}
           {isSuccessModalOpen && (
-            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50 overflow-hidden">
+            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
                 {/* Success Illustration */}
                 <div className="flex justify-center mb-6">
