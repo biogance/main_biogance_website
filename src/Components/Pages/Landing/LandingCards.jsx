@@ -8,8 +8,8 @@ import { useTopLoader } from "../TopLoader";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
+import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
 import { getDeviceId } from "../../../utils/deviceId";
-import { saveCartData } from "../../../utils/cartStorage";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import ModalQuickView from "../Modal/ModalQuickView";
@@ -451,24 +451,23 @@ export const LandingCards = ({
   e.stopPropagation();
   if (addingToCart) return;
   const firstProduct = safeProduct.products?.[0];
+  if (firstProduct?.color || firstProduct?.size) {
+    setIsCartOpen(true);
+    return;
+  }
   setAddingToCart(true);
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    const authPayload = loginData?.data?.token
-      ? { token: loginData.data.token }
-      : { device_id: getDeviceId() };
-    if (firstProduct?.color || firstProduct?.size) {
-      setIsCartOpen(true);
-      return;
-    }
-    const res = await axios.post(`${BASE_URL}/user/cart/create`, {
-      ...authPayload, product_id: firstProduct?.id ?? safeProduct.id, quantity: 1,
-    });
+    const token = loginData?.data?.token;
+    const res = await axios.post(
+      `${BASE_URL}/user/cart/create`,
+      token ? { product_id: firstProduct?.id ?? safeProduct.id, quantity: 1 } : { device_id: getDeviceId(), product_id: firstProduct?.id ?? safeProduct.id, quantity: 1 },
+      token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+    );
     if (res.data.status === false) {
       toast.error(res.data.action || "Could not add to cart.");
     } else {
-      
-      saveCartData({ cartItem: [res.data.data.cartItem], cart_count: res.data.data.cart_count });
+      mergeCartItem(res.data.data);
       setIsCartOpen(true);
     }
   } catch {

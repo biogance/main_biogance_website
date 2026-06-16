@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
-
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -30,17 +28,16 @@ function CustomDropdown({ options, value, onChange, disabled }) {
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
-          style={{
-    border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
-    fontSize: "13px", background: "#fff", color: "#111",
-    cursor: disabled ? "default" : "pointer",
-    display: "flex", alignItems: "center", gap: "8px",
-    minWidth: disabled ? "auto" : "72px",
-    justifyContent: disabled ? "flex-start" : "space-between",
-    userSelect: "none", transition: "border-color 0.15s",
-    opacity: disabled ? 0.6 : 1,
-  }}
-
+        style={{
+          border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
+          fontSize: "13px", background: "#fff", color: "#111",
+          cursor: disabled ? "default" : "pointer",
+          display: "flex", alignItems: "center", gap: "8px",
+          minWidth: disabled ? "auto" : "72px",
+          justifyContent: disabled ? "flex-start" : "space-between",
+          userSelect: "none", transition: "border-color 0.15s",
+          opacity: disabled ? 0.6 : 1,
+        }}
         onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#999"; }}
         onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#ddd"; }}
       >
@@ -87,83 +84,105 @@ function DropItem({ label, selected, onSelect }) {
   );
 }
 
-function GiftDropItem({ gift, selected, onSelect }) {
-  const [hovered, setHovered] = useState(false);
+// Pill chip component (reused in voucher, promo applied areas)
+function AppliedPill({ code, label, onRemove }) {
   return (
-    <div
-      onClick={onSelect}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 14px", fontSize: "13px", cursor: "pointer",
-        background: hovered ? "#111" : "#fff",
-        color: hovered ? "#fff" : "#111",
-        transition: "background 0.15s, color 0.15s",
-        borderBottom: "1px solid #f0f0f0",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{
-          width: "16px", height: "16px", borderRadius: "50%", flexShrink: 0,
-          border: `2px solid ${selected ? (hovered ? "#fff" : "#111") : (hovered ? "#fff" : "#ccc")}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "border-color 0.15s",
-        }}>
-          <div style={{
-            width: "7px", height: "7px", borderRadius: "50%",
-            background: hovered ? "#fff" : "#111",
-            opacity: selected ? 1 : 0, transition: "opacity 0.15s",
-          }} />
-        </div>
-        <span>{gift.label}</span>
-      </div>
-      <span style={{ fontWeight: 500, flexShrink: 0, marginLeft: "12px" }}>{gift.price}</span>
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: "0",
+      border: "1px solid #ccc", borderRadius: "20px", overflow: "hidden",
+      background: "#fff",
+    }}>
+      <span style={{
+        padding: "5px 10px", fontSize: "12px", fontWeight: 600,
+        color: "#111", letterSpacing: "0.04em",
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      }}>
+        {code}
+      </span>
+      {label && (
+        <>
+          <span style={{ display: "block", width: "1px", height: "26px", background: "#ccc" }} />
+          <span style={{
+            padding: "5px 10px", fontSize: "12px", color: "#888",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+          }}>
+            {label}
+          </span>
+        </>
+      )}
+      {onRemove && (
+        <>
+          <span style={{ display: "block", width: "1px", height: "26px", background: "#ccc" }} />
+          <button
+            onClick={onRemove}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "5px 8px", background: "none", border: "none",
+              cursor: "pointer", color: "#555",
+            }}
+          >
+            <IoClose size={12} />
+          </button>
+        </>
+      )}
     </div>
   );
 }
 
 const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
 
-const GIFT_OPTIONS = [
-  { id: "small", label: "Small gift card", price: "Free" },
-  { id: "medium", label: "Medium gift card", price: "2,50 €" },
-  { id: "large", label: "Large gift card (3+ products)", price: "5,00 €" },
-  { id: "premium", label: "Premium gift card", price: "8,00 €" },
-];
-
 export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [cartItems, setCartItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+
   const [giftOpen, setGiftOpen] = useState(false);
-  const [giftDropOpen, setGiftDropOpen] = useState(false);
-  const [selectedGift, setSelectedGift] = useState(null);
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
-  const [promoHovered, setPromoHovered] = useState(false);
   const [giftContentHeight, setGiftContentHeight] = useState(0);
-  const [giftDropPos, setGiftDropPos] = useState({ top: 0, left: 0, width: 0 });
+
+  // Auth check
+  const isLoggedIn = (() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("LoginData") || "null");
+      return !!(d?.data?.token);
+    } catch { return false; }
+  })();
+
+  // ─── CASE 1: Guest Voucher States ────────────────────────────────────────
+  // Flow: type code → pill shown below → remove → same code → error → remove → success cycle
+  const [guestVoucherInput, setGuestVoucherInput] = useState("");
+  const [guestVoucherError, setGuestVoucherError] = useState(null);
+  const [guestVoucherLoading, setGuestVoucherLoading] = useState(false);
+  const [guestApplyHovered, setGuestApplyHovered] = useState(false);
+  // pendingPill = code shown below input (before apply clicked)
+  const [guestPendingPill, setGuestPendingPill] = useState(null);
+  // appliedVoucher = successfully applied code shown as pill
+  const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
+  // Track codes that have already been used once (for alternating success/error cycle)
+  const [guestUsedCodes, setGuestUsedCodes] = useState([]);
+
+  // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState("");
+  const [loggedVoucherError, setLoggedVoucherError] = useState(null);
+  const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
+  const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
+  const [selectedPill, setSelectedPill] = useState(null);
+  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(false);
+  const [redeemHovered, setRedeemHovered] = useState(false);
+  const [voucherPills, setVoucherPills] = useState([]);
+
+  // ─── CASE 3: Promo Code States ────────────────────────────────────────────
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoHovered, setPromoHovered] = useState(false);
+  const [promoLoading, setPromoLoading] = useState(false);
+  // List of applied promo codes shown as pills under delivery cost
+  const [appliedPromoCodes, setAppliedPromoCodes] = useState([]);
+  // pendingPromoPill: code typed but not yet applied
+  const [pendingPromoPill, setPendingPromoPill] = useState(null);
 
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
-  const giftDropRef = useRef(null);
-  const giftTriggerRef = useRef(null);
-
-  // Close gift portal dropdown on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (
-        giftDropRef.current && !giftDropRef.current.contains(e.target) &&
-        giftTriggerRef.current && !giftTriggerRef.current.contains(e.target)
-      ) {
-        setGiftDropOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   // Scroll lock
   useEffect(() => {
@@ -172,14 +191,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       document.body.style.touchAction = "";
       return;
     }
-
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
-
     const preventScroll = (e) => e.preventDefault();
     const overlay = overlayRef.current;
     overlay?.addEventListener("touchmove", preventScroll, { passive: false });
-
     return () => {
       document.body.style.overflow = "";
       document.body.style.touchAction = "";
@@ -187,92 +203,226 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     };
   }, [isOpen]);
 
-  // Cart list fetch on open
+  // Cart fetch on open
   useEffect(() => {
     if (!isOpen) return;
+    // Step 1: turant localStorage se show karo
     const stored = getCartData();
     if (stored) {
-      setCartItems(stored.cartItem || []);
+      setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
       setCartCount(stored.cart_count || 0);
     }
+    // Step 2: background mein list API hit karo — updated data aane pe refresh
     const fetchLatest = async () => {
       try {
         const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-        const payload = loginData?.data?.token
-          ? { token: loginData.data.token }
-          : { device_id: getDeviceId() };
+        const token = loginData?.data?.token;
         const res = await fetch(`${BASE_URL}/user/cart/list`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          headers: token
+            ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+            : { "Content-Type": "application/json" },
+          body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
         });
         const data = await res.json();
-        if (data.status === false) {
-          
-          const msg = getErrorMsg(data);
-          if (msg) toast.error(msg);
-          return;
-        }
         if (data.status) {
-          saveCartData(data.data);
-          setCartItems(data.data.cartItem || []);
-          setCartCount(data.data.cart_count || 0);
+          // normalize — list API cartItem ya cartItems dono handle karo
+          const normalizedData = {
+            ...data.data,
+            cartItem: (data.data.cartItem || data.data.cartItems || []).filter(Boolean),
+          };
+          saveCartData(normalizedData);
+          setCartItems(normalizedData.cartItem);
+          setCartCount(normalizedData.cart_count || 0);
         }
-      } catch {
-        // network error — silent
-      }
+      } catch { /* silent */ }
     };
     fetchLatest();
   }, [isOpen]);
 
-  // Recalculate accordion height when gift section changes
+  // Fetch voucher list when modal opens (logged-in only)
+  useEffect(() => {
+    if (!isOpen || !isLoggedIn) return;
+    const fetchVouchers = async () => {
+      try {
+        const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+        const token = loginData?.data?.token;
+        const res = await fetch(`${BASE_URL}/user/voucher/list`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.status && data.data?.data) {
+          setVoucherPills(data.data.data);
+        }
+      } catch { /* silent */ }
+    };
+    fetchVouchers();
+  }, [isOpen]);
+
+  // Recalculate accordion height
   useEffect(() => {
     if (giftContentRef.current) {
       setGiftContentHeight(giftContentRef.current.scrollHeight);
     }
-  }, [giftOpen, selectedGift, giftDropOpen]);
+  }, [
+    giftOpen, selectedPill, loggedVoucherApplied, loggedVoucherError,
+    voucherPills, guestPendingPill, guestAppliedVoucher, guestVoucherError,
+  ]);
 
   const handleOverlayClick = (e) => { if (e.target === overlayRef.current) onClose(); };
 
+  // ─── CASE 1 HANDLERS (Guest) ──────────────────────────────────────────────
+
+  // User types in input — pill only appears AFTER Apply is clicked
+  const handleGuestInputChange = (e) => {
+    const val = e.target.value;
+    setGuestVoucherInput(val);
+    setGuestVoucherError(null);
+    // Do NOT set guestPendingPill here — it's set only on Apply
+  };
+
+  // Remove the pending pill (X on pill below input)
+  const handleGuestPendingPillRemove = () => {
+    setGuestPendingPill(null);
+    setGuestVoucherInput("");
+    setGuestVoucherError(null);
+  };
+
+  // Apply button clicked (guest) — pill appears here (black bg, white text)
+  const handleGuestApply = async () => {
+    const code = guestVoucherInput.trim().toUpperCase();
+    if (!code) return;
+
+    setGuestVoucherLoading(true);
+    setGuestVoucherError(null);
+    await new Promise((r) => setTimeout(r, 600));
+
+    if (guestUsedCodes.includes(code)) {
+      // Error: already used once → show error, clear input, no pill
+      setGuestVoucherError("This voucher code is invalid or has already been used.");
+      // Remove from used so next try succeeds again (alternating cycle)
+      setGuestUsedCodes((prev) => prev.filter((c) => c !== code));
+      setGuestVoucherInput("");
+    } else {
+      // Success: show applied pill (black bg white text), disable input
+      setGuestUsedCodes((prev) => [...prev, code]);
+      setGuestAppliedVoucher(code);
+      setGuestVoucherInput("");
+      setGuestVoucherError(null);
+    }
+
+    setGuestVoucherLoading(false);
+  };
+
+  // Remove applied voucher pill (guest)
+  const handleGuestRemoveApplied = () => {
+    setGuestAppliedVoucher(null);
+    setGuestVoucherError(null);
+    setGuestVoucherInput("");
+    setGuestPendingPill(null);
+  };
+
+  // ─── CASE 2 HANDLERS (Logged-in) ─────────────────────────────────────────
+
+  const handlePillClick = (code) => {
+    if (loggedVoucherApplied) return;
+    setSelectedPill(code);
+    setLoggedVoucherInput(code);
+    setLoggedVoucherError(null);
+  };
+
+  const handlePillRemove = () => {
+    setSelectedPill(null);
+    setLoggedVoucherInput("");
+    setLoggedVoucherError(null);
+  };
+
+  const handleLoggedApply = async () => {
+    const codeToApply = selectedPill || loggedVoucherInput.trim();
+    if (!codeToApply || loggedVoucherApplied) return;
+    if (!selectedPill) setSelectedPill(codeToApply);
+    setLoggedVoucherLoading(true);
+    setLoggedVoucherError(null);
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await fetch(`${BASE_URL}/user/order/check/voucher`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: codeToApply }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        setLoggedVoucherError(getErrorMsg(data) || "Invalid voucher.");
+        setLoggedVoucherLoading(false);
+        return;
+      }
+      setLoggedVoucherApplied(true);
+    } catch {
+      setLoggedVoucherError("Something went wrong.");
+    }
+    setLoggedVoucherLoading(false);
+  };
+
+  const handleLoggedRemoveVoucher = () => {
+    setSelectedPill(null);
+    setLoggedVoucherApplied(false);
+    setLoggedVoucherInput("");
+    setLoggedVoucherError(null);
+  };
+
+  // ─── CASE 3 HANDLERS (Promo) ─────────────────────────────────────────────
+
+  const handlePromoInputChange = (e) => {
+    const val = e.target.value;
+    setPromoInput(val);
+    // Pill appears only after Apply click, not while typing
+  };
+
   const handlePromoApply = async () => {
-    if (!promoCode.trim()) return;
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+
+    setPromoLoading(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const payload = loginData?.data?.token
-        ? { token: loginData.data.token, promo_code: promoCode.trim() }
-        : { device_id: getDeviceId(), promo_code: promoCode.trim() };
+        ? { token: loginData.data.token, promo_code: code }
+        : { device_id: getDeviceId(), promo_code: code };
       const res = await fetch(`${BASE_URL}/user/promo/apply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.status === false) {
-        // ✅ errors array pehle check karo, phir action
         const msg = getErrorMsg(data);
         if (msg) toast.error(msg);
+        setPromoLoading(false);
         return;
       }
+      // Success: add pill (black bg white text) under delivery cost, clear & disable input
+      setAppliedPromoCodes((prev) => [...prev, code]);
+      setPromoInput("");
       toast.success("Promo code applied!");
     } catch {
       toast.error("Something went wrong. Please try again.");
     }
+    setPromoLoading(false);
   };
 
-  // Portal dropdown position from trigger element
-  const handleGiftDropToggle = () => {
-    if (!giftDropOpen && giftTriggerRef.current) {
-      const rect = giftTriggerRef.current.getBoundingClientRect();
-      setGiftDropPos({ top: rect.bottom, left: rect.left, width: rect.width });
-    }
-    setGiftDropOpen((v) => !v);
+  const handleRemovePromoCode = (code) => {
+    setAppliedPromoCodes((prev) => prev.filter((c) => c !== code));
+    // Re-enable input if no more applied codes
   };
 
+  // Delivery & totals
   const deliveryCost = 5.9;
   const freeShippingThreshold = 50;
   const subtotal = cartItems.reduce((sum, item) => {
-    const unitPrice = item.original_price || parseFloat(String(item.price).replace(",", ".")) || 0;
-    return sum + unitPrice * item.quantity;
+    if (!item) return sum;
+    const unitPrice = item.original_price || parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
+    return sum + unitPrice * (item.quantity || 0);
   }, 0);
   const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
@@ -284,17 +434,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setIsRemoving(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const payload = loginData?.data?.token
-        ? { token: loginData.data.token, cartId }
-        : { device_id: getDeviceId(), cartId };
+      const token = loginData?.data?.token;
       const res = await fetch(`${BASE_URL}/user/cart/remove`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? { cartId } : { device_id: getDeviceId(), cartId }),
       });
       const data = await res.json();
       if (data.status === false) {
-       
         const msg = getErrorMsg(data);
         if (msg) toast.error(msg);
         return;
@@ -304,7 +453,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setCartCount((prev) => Math.max(0, prev - 1));
       const existing = getCartData() || {};
       saveCartData({ ...existing, cartItem: updated, cart_count: Math.max(0, (existing.cart_count || 1) - 1) });
-      // if (updated.length === 0) onClose();
     } catch (err) {
       console.error("Cart remove error:", err);
     } finally {
@@ -321,17 +469,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     saveCartData({ ...existing, cartItem: updatedItems });
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const payload = loginData?.data?.token
-        ? { token: loginData.data.token, quantity: parseInt(newQty), cartId }
-        : { device_id: getDeviceId(), quantity: parseInt(newQty), cartId };
+      const token = loginData?.data?.token;
       const res = await fetch(`${BASE_URL}/user/cart/update/quantity`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? { quantity: parseInt(newQty), cartId } : { device_id: getDeviceId(), quantity: parseInt(newQty), cartId }),
       });
       const data = await res.json();
       if (data.status === false) {
-       
         const msg = getErrorMsg(data);
         if (msg) toast.error(msg);
       }
@@ -342,9 +489,190 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const isEmpty = !isLoading && cartItems.length === 0;
 
+  // ─── CASE 1: Guest Voucher Render (Redeem design) ────────────────────────
+  const renderGuestVoucherContent = () => (
+  <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
+    <div style={{ display: "flex", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden" }}>
+      <input
+        type="text"
+        placeholder="Enter Voucher code"
+        disabled
+        style={{
+          flex: 1, border: "none", outline: "none", padding: "11px 14px",
+          fontSize: "13px", color: "#aaa", background: "#f9f9f9",
+          cursor: "not-allowed",
+          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        }}
+      />
+      <button disabled style={{
+        border: "none", borderLeft: "1px solid #ddd", background: "#f3f3f3",
+        color: "#aaa", padding: "11px 18px", fontSize: "12px", fontWeight: 700,
+        letterSpacing: "0.1em", textTransform: "uppercase", cursor: "default",
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      }}>Apply</button>
+    </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
+      <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
+        You have <strong>240 points</strong> — redeem for a <strong>24 €</strong> voucher
+      </p>
+      <button
+        onClick={() => window.location.href = "/login"}
+        onMouseEnter={() => setRedeemHovered(true)}
+        onMouseLeave={() => setRedeemHovered(false)}
+        style={{
+          flexShrink: 0, marginLeft: "12px",
+          padding: "8px 16px", fontSize: "12px", fontWeight: 700,
+          letterSpacing: "0.08em", textTransform: "uppercase",
+          background: redeemHovered ? "#333" : "#111", color: "#fff",
+          border: "none", borderRadius: "2px", cursor: "pointer",
+          transition: "background 0.2s",
+          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        }}
+      >
+        Redeem
+      </button>
+    </div>
+  </div>
+);
+
+  // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
+  const renderLoggedVoucherContent = () => (
+    <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
+      {/* Input row */}
+      <div style={{
+        display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+        borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
+      }}>
+        <input
+          type="text"
+          placeholder="Enter Voucher code"
+          value={loggedVoucherInput}
+          disabled={loggedVoucherApplied}
+          onChange={(e) => {
+            setLoggedVoucherInput(e.target.value);
+            if (loggedVoucherError) setLoggedVoucherError(null);
+            const match = voucherPills.find(p => p.name === e.target.value);
+            if (match) setSelectedPill(match.name); else setSelectedPill(null);
+          }}
+          onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+          style={{
+            flex: 1, border: "none", outline: "none", padding: "11px 14px",
+            fontSize: "13px",
+            color: loggedVoucherApplied ? "#aaa" : "#111",
+            background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+            cursor: loggedVoucherApplied ? "not-allowed" : "text",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+          }}
+        />
+        <button
+          onClick={handleLoggedApply}
+          disabled={(!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied || loggedVoucherLoading}
+          onMouseEnter={() => { if ((selectedPill || loggedVoucherInput.trim()) && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
+          onMouseLeave={() => setLoggedApplyHovered(false)}
+          style={{
+            border: "none", borderLeft: "1px solid #ddd",
+            background: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
+            color: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
+            padding: "11px 18px", fontSize: "12px", fontWeight: 700,
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            cursor: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "default" : "pointer",
+            transition: "background 0.2s, color 0.2s",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+          }}
+        >
+          {loggedVoucherLoading ? "..." : "Apply"}
+        </button>
+      </div>
+
+      {/* Pills from API */}
+      {!loggedVoucherApplied && voucherPills.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
+          {voucherPills.map((pill) => {
+            const code = pill.name;
+            const isSelected = selectedPill === code;
+            return (
+              <div
+                key={pill.id}
+                onClick={() => handlePillClick(code)}
+                style={{
+                  display: "inline-flex", alignItems: "center",
+                  border: "1px solid #ccc", borderRadius: "20px",
+                  overflow: "hidden", cursor: "pointer",
+                  background: isSelected ? "#111" : "#fff",
+                  transition: "background 0.15s",
+                  userSelect: "none",
+                }}
+              >
+                <span style={{
+                  padding: "6px 12px", fontSize: "12px", fontWeight: 600,
+                  color: isSelected ? "#fff" : "#111",
+                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                }}>
+                  {code}
+                </span>
+                {isSelected && (
+                  <>
+                    <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.3)" }} />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handlePillRemove(); }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+                    >
+                      <IoClose size={13} />
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Error */}
+      {loggedVoucherError && (
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px",
+          padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",
+          borderRadius: "4px",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+            <circle cx="12" cy="12" r="11" fill="#e02424" />
+            <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+        </div>
+      )}
+
+      {/* Applied pill */}
+      {loggedVoucherApplied && selectedPill && (
+        <div style={{ marginTop: "10px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+            <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              {selectedPill}
+            </span>
+            <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
+            <button
+              onClick={handleLoggedRemoveVoucher}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+            >
+              <IoClose size={13} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Default helper */}
+      {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && (
+        <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+        You don't have any vouchers or reward points yet. Points are earned automatically <br/> with every purchase, redeem them for discounts on your next order.
+        </p>
+      )}
+    </div>
+  );
+
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Backdrop overlay */}
+      {/* Backdrop */}
       <div
         ref={overlayRef}
         onClick={handleOverlayClick}
@@ -356,15 +684,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       />
 
       {/* Slide-in panel */}
-      <div
-        style={{
-          position: "fixed", top: 0, right: 0, bottom: 0, width: "100%", maxWidth: "520px",
-          backgroundColor: "#fff", zIndex: 1001, display: "flex", flexDirection: "column",
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
-      >
+      <div style={{
+        position: "fixed", top: 0, right: 0, bottom: 0, width: "100%", maxWidth: "520px",
+        backgroundColor: "#fff", zIndex: 1001, display: "flex", flexDirection: "column",
+        transform: isOpen ? "translateX(0)" : "translateX(100%)",
+        transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      }}>
+
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -374,20 +701,22 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             Your Cart
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{
-              width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#111",
-              color: "#fff", fontSize: "12px", fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {cartCount}
-            </div>
+           {cartCount > 0 && (
+  <div style={{
+    width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#111",
+    color: "#fff", fontSize: "12px", fontWeight: 700,
+    display: "flex", alignItems: "center", justifyContent: "center",
+  }}>
+    {cartCount}
+  </div>
+)}
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: "#111" }}>
               <IoClose size={20} />
             </button>
           </div>
         </div>
 
-        {/* Remove loader overlay */}
+        {/* Remove overlay */}
         {isRemoving && (
           <div style={{
             position: "absolute", inset: 0, zIndex: 10,
@@ -395,7 +724,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             pointerEvents: "all",
           }}>
-            <style>{`@keyframes removeSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
+            <style>{`@keyframes removeSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
             <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "removeSpin 0.75s linear infinite" }} />
           </div>
         )}
@@ -403,33 +732,28 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         {/* Loading spinner */}
         {isLoading && (
           <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <style>{`@keyframes cartSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
+            <style>{`@keyframes cartSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
             <div style={{ width: 28, height: 28, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty */}
         {isEmpty && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "4px" }}>
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
             </svg>
-            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#111", letterSpacing: "0.01em" }}>Your cart is empty.</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#999", fontWeight: 400 }}>Start adding products.</p>
+            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#111" }}>Your cart is empty.</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#999" }}>Start adding products.</p>
           </div>
         )}
 
-        {/* Body — scrollable */}
+        {/* Body */}
         {!isLoading && !isEmpty && (
           <div style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "0 24px",
+            flex: 1, overflowY: "auto", padding: "0 24px",
             pointerEvents: isRemoving ? "none" : "auto",
-            overscrollBehavior: "contain",
-            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
           }}>
 
             {/* Cart Items */}
@@ -441,43 +765,21 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               const isSingleSize = sizeOptions.length <= 1;
               const unitPrice = item.original_price || parseFloat(String(item.price).replace(",", ".")) || 0;
               const itemTotal = (unitPrice * item.quantity).toFixed(2);
-
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
                   <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "4px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {firstImage
-                      ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
+                    {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
-                    {/* {p.french_name && (
-                      <p style={{ margin: "0 0 10px", fontSize: "11px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.french_name}</p>
-                    )} */}
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <CustomDropdown
-                        options={QTY_OPTIONS}
-                        value={String(item.quantity)}
-                        onChange={(val) => handleQtyChange(item.id, val)}
-                      />
+                      <CustomDropdown options={QTY_OPTIONS} value={String(item.quantity)} onChange={(val) => handleQtyChange(item.id, val)} />
                       {sizeOptions.length > 0 && (
-                        <CustomDropdown
-                          options={sizeOptions}
-                          value={sizeOptions[0]}
-                          onChange={() => {}}
-                          disabled={isSingleSize}
-                        />
+                        <CustomDropdown options={sizeOptions} value={sizeOptions[0]} onChange={() => {}} disabled={isSingleSize} />
                       )}
-                      <button
-                        onClick={() => handleRemove(item.id)}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }}
-                        title="Remove item"
-                      >
+                      <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                          <path d="M10 11v6M14 11v6" />
-                          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
                         </svg>
                       </button>
                     </div>
@@ -499,13 +801,52 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   <span>{label}</span><span>{value}</span>
                 </div>
               ))}
+
+              {/* ─── CASE 3: Applied promo codes shown here under delivery cost ─── */}
+              {appliedPromoCodes.map((code) => (
+                <div key={code} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  marginBottom: "6px", fontSize: "13px",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#555" }}>Promo Code</span>
+                    {/* Black bg, white text pill — appears only after Apply clicked */}
+                    <div style={{
+                      display: "inline-flex", alignItems: "center",
+                      background: "#111", borderRadius: "20px", overflow: "hidden",
+                    }}>
+                      <span style={{
+                        padding: "4px 10px", fontSize: "11px", fontWeight: 600,
+                        color: "#fff", letterSpacing: "0.04em",
+                        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                      }}>
+                        {code}
+                      </span>
+                      <span style={{ display: "block", width: "1px", height: "22px", background: "rgba(255,255,255,0.25)" }} />
+                      <button
+                        onClick={() => handleRemovePromoCode(code)}
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          padding: "4px 8px", background: "none", border: "none",
+                          cursor: "pointer", color: "#fff",
+                        }}
+                      >
+                        <IoClose size={11} />
+                      </button>
+                    </div>
+                  </div>
+                  {/* Placeholder discount value — replace with API value */}
+                  <span style={{ color: "#111", fontWeight: 500 }}>— €</span>
+                </div>
+              ))}
+
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
                 <span>Estimated total</span>
                 <span>{parseFloat(totalWithDelivery).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
               </div>
             </div>
 
-            {/* Promo Code Accordion */}
+            {/* ─── CASE 3: Promo Code Accordion ─────────────────────────────────── */}
             <div style={{ borderBottom: "1px solid #e5e5e5" }}>
               <button
                 onClick={() => setPromoOpen((v) => !v)}
@@ -524,48 +865,58 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 }}>+</span>
               </button>
               <div style={{
-                maxHeight: promoOpen ? "80px" : "0px",
+                maxHeight: promoOpen ? "200px" : "0px",
                 overflow: "hidden",
-                transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
                 opacity: promoOpen ? 1 : 0,
               }}>
                 <div style={{ paddingBottom: "16px" }}>
-                  <div style={{ display: "flex", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden" }}>
+                  {/* Input — disabled once any promo applied */}
+                  <div style={{
+                    display: "flex", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden",
+                  }}>
                     <input
                       type="text"
                       placeholder="Enter your code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
+                      value={appliedPromoCodes.length > 0 ? "" : promoInput}
+                      disabled={appliedPromoCodes.length > 0}
+                      onChange={handlePromoInputChange}
+                      onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
                       style={{
                         flex: 1, border: "none", outline: "none", padding: "11px 14px",
-                        fontSize: "13px", color: "#111", background: "#fff",
+                        fontSize: "13px",
+                        color: appliedPromoCodes.length > 0 ? "#aaa" : "#111",
+                        background: appliedPromoCodes.length > 0 ? "#f9f9f9" : "#fff",
+                        cursor: appliedPromoCodes.length > 0 ? "not-allowed" : "text",
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                       }}
                     />
                     <button
                       onClick={handlePromoApply}
-                      disabled={!promoCode.trim()}
+                      disabled={(!promoInput.trim() && !pendingPromoPill) || appliedPromoCodes.length > 0 || promoLoading}
+                      onMouseEnter={() => { if (promoInput.trim() && appliedPromoCodes.length === 0) setPromoHovered(true); }}
+                      onMouseLeave={() => setPromoHovered(false)}
                       style={{
                         border: "none", borderLeft: "1px solid #ddd",
-                        background: !promoCode.trim() ? "#f3f3f3" : promoHovered ? "#111" : "transparent",
-                        color: !promoCode.trim() ? "#aaa" : promoHovered ? "#fff" : "#111",
+                        background: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "#f3f3f3" : promoHovered ? "#111" : "transparent",
+                        color: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "#aaa" : promoHovered ? "#fff" : "#111",
                         padding: "11px 18px", fontSize: "12px", fontWeight: 700,
                         letterSpacing: "0.1em", textTransform: "uppercase",
-                        cursor: !promoCode.trim() ? "default" : "pointer",
+                        cursor: (!promoInput.trim() || appliedPromoCodes.length > 0) ? "default" : "pointer",
                         transition: "background 0.2s, color 0.2s",
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                       }}
-                      onMouseEnter={() => { if (promoCode.trim()) setPromoHovered(true); }}
-                      onMouseLeave={() => setPromoHovered(false)}
                     >
-                      Apply
+                      {promoLoading ? "..." : "Apply"}
                     </button>
                   </div>
+
+
                 </div>
               </div>
             </div>
 
-            {/* Gift Pouch Accordion */}
+            {/* ─── Apply Voucher Accordion ──────────────────────────────────────── */}
             <div style={{ paddingBottom: "8px" }}>
               <button
                 onClick={() => setGiftOpen((v) => !v)}
@@ -576,45 +927,19 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                 }}
               >
-                <span style={{ fontWeight: 500 }}>Add a gift pouch</span>
+                <span style={{ fontWeight: 500 }}>Apply Voucher</span>
                 <span style={{
                   fontSize: "18px", fontWeight: 300, display: "inline-block",
                   transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)",
                   transition: "transform 0.3s ease",
                 }}>+</span>
               </button>
-
               <div style={{
                 maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px",
                 overflow: "hidden",
                 transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
               }}>
-                <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-                  <div
-                    ref={giftTriggerRef}
-                    onClick={handleGiftDropToggle}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      padding: "11px 14px", fontSize: "13px",
-                      color: selectedGift ? "#111" : "#aaa",
-                      cursor: "pointer", background: "#fff", userSelect: "none",
-                      transition: "border-color 0.15s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = "#999"}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = "#ddd"}
-                  >
-                    <span>{selectedGift ? selectedGift.label : "Select a gift card"}</span>
-                    <span style={{
-                      display: "inline-block", width: 0, height: 0,
-                      borderLeft: "4px solid transparent", borderRight: "4px solid transparent",
-                      borderTop: "5px solid #888", flexShrink: 0,
-                      transform: giftDropOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s",
-                    }} />
-                  </div>
-                </div>
+                {isLoggedIn ? renderLoggedVoucherContent() : renderGuestVoucherContent()}
               </div>
             </div>
 
@@ -635,49 +960,21 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           <div style={{ padding: "0 24px 24px" }}>
             <button
               onClick={handleCheckout}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#111"}
               style={{
                 width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
                 fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
                 cursor: "pointer", borderRadius: "2px", transition: "background 0.2s",
                 fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#111"}
             >
               Continue to checkout
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Gift dropdown portal */}
-      {giftDropOpen && createPortal(
-        <div
-          ref={giftDropRef}
-          style={{
-            position: "fixed",
-            top: giftDropPos.top,
-            left: giftDropPos.left,
-            width: giftDropPos.width,
-            background: "#fff",
-            border: "1px solid #ddd",
-            borderTop: "none",
-            borderRadius: "0 0 4px 4px",
-            zIndex: 1200,
-            overflow: "hidden",
-          }}
-        >
-          {GIFT_OPTIONS.map((gift) => (
-            <GiftDropItem
-              key={gift.id}
-              gift={gift}
-              selected={selectedGift?.id === gift.id}
-              onSelect={() => { setSelectedGift(gift); setGiftDropOpen(false); }}
-            />
-          ))}
-        </div>,
-        document.body
-      )}
+      </div>
     </>
   );
 }

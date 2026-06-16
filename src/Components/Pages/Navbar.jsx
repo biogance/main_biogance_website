@@ -11,8 +11,8 @@ import { FaPlus } from 'react-icons/fa';
 
 import { getDeviceId } from '../../utils/deviceId';
 import { BASE_URL } from '../API/API';
+import { getCartData } from '../../utils/cartStorage';
 import ModalAddToCart from './Modal/ModalAddToCart';
-import { saveCartData } from '../../utils/cartStorage';
 
 const logoImage = '/logo.svg';
 
@@ -38,30 +38,16 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // localStorage se cart_count read karo — storage event se live update
   useEffect(() => {
-    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
-    const payload = loginData?.data?.token
-      ? { token: loginData.data.token }
-      : { device_id: getDeviceId() };
-    fetch(`${BASE_URL}/user/cart/counter`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      // AFTER
-.then((data) => {
-  if (data.status) {
-    setCartCount(data.data?.cart_count ?? data.data ?? 0);
-  } else {
-    const msg = data.errors?.length > 0
-      ? data.errors[0].message
-      : data.action || data.action_message;
-    if (msg) toast.error(msg);
-  }
-})
-      .catch(() => {});
-  }, [pathname]);
+    const readCount = () => {
+      const data = getCartData();
+      setCartCount(data?.cart_count || 0);
+    };
+    readCount();
+    window.addEventListener('storage', readCount);
+    return () => window.removeEventListener('storage', readCount);
+  }, []);
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
@@ -96,8 +82,18 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const loginData = localStorage.getItem('LoginData');
-    setIsLoggedIn(!!loginData);
+    const checkLogin = () => {
+      const loginData = localStorage.getItem('LoginData');
+      console.log("Navbar.jsx checkLogin: Retrieved LoginData =", loginData, "isLoggedIn =", !!loginData);
+      setIsLoggedIn(!!loginData);
+    };
+    checkLogin();
+    window.addEventListener('storage', checkLogin);
+    window.addEventListener('loginStateChange', checkLogin);
+    return () => {
+      window.removeEventListener('storage', checkLogin);
+      window.removeEventListener('loginStateChange', checkLogin);
+    };
   }, [pathname]);
 
   const [isProductsOpen, setIsProductsOpen] = useState(false);
@@ -182,7 +178,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     <>
       {/* Announcement Bar */}
       <div
-        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden transition-all duration-700 ${showAnnouncement ? 'h-[40px]' : 'h-0'}`}
+        className={`fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden`}
       >
         <p className="flex items-center justify-center h-[40px] cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
           Enjoy complimentary standard delivery across France on all orders over €39.{" "}
@@ -200,8 +196,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 transition-all duration-300 ${
-          showAnnouncement ? "top-[40px]" : "top-0"
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px]
         } ${
           isNavHovered || isProductsModalOpen || isMobileMenuOpen || !isVideoVisible
             ? "bg-white shadow-sm border-b border-gray-100"

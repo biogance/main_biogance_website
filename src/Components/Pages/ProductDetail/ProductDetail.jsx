@@ -29,7 +29,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { getDeviceId } from "../../../utils/deviceId";
 import { useTopLoader } from "@/Components/Pages/TopLoader";
 import ModalAddToCart from "../Modal/ModalAddToCart";
-import { saveCartData } from "../../../utils/cartStorage";
+import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
 
 
 const StarRating = ({ rating }) => (
@@ -128,17 +128,16 @@ export default function ProductDetail() {
     setCartBtnLoading(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const authPayload = loginData?.data?.token
-        ? { token: loginData.data.token }
-        : { device_id: getDeviceId() };
-      const res = await axios.post(`${BASE_URL}/user/cart/create`, {
-        ...authPayload, product_id: selectedProduct?.id, quantity,
-      });
+      const token = loginData?.data?.token;
+      const res = await axios.post(
+        `${BASE_URL}/user/cart/create`,
+        token ? { product_id: selectedProduct?.id, quantity } : { device_id: getDeviceId(), product_id: selectedProduct?.id, quantity },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      );
       if (res.data.status === false) {
         toast.error(res.data.action || "Could not add to cart.");
       } else {
-        // Create response mein hi data hai — storage mein save karo, phir modal open
-        saveCartData({ cartItem: [res.data.data.cartItem], cart_count: res.data.data.cart_count });
+        mergeCartItem(res.data.data);
         setIsCartOpen(true);
       }
     } catch {

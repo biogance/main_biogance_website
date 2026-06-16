@@ -11,7 +11,8 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   const { t } = useTranslation('onboarding');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  const [touched, setTouched] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
@@ -20,17 +21,17 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
 
   const validateEmail = (email) => {
     if (!email.trim()) {
-      return 'Please enter your email.';
+      return t('forgotPassword.errors.emailRequired');
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return "That doesn't look like a valid email.";
+      return t('forgotPassword.errors.emailInvalid');
     }
     return '';
   };
 
   const handleBlur = () => {
-    setTouched(true);
+    if (!submitAttempted) return;
     const validationError = validateEmail(email);
     setError(validationError);
   };
@@ -38,7 +39,7 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
   const handleChange = (value) => {
     setEmail(value);
     
-    if (touched) {
+    if (submitAttempted) {
       const validationError = validateEmail(value);
       setError(validationError);
     }
@@ -66,10 +67,11 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitAttempted(true);
+    setApiError('');
 
     const validationError = validateEmail(email);
     setError(validationError);
-    setTouched(true);
 
     if (validationError) return;
 
@@ -83,12 +85,13 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
       const data = await res.json();
       if (data.status === false) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
-        toast.error(msg);
+        setApiError(msg);
       } else {
         setIsOtpModalOpen(true);
       }
     } catch (err) {
       console.error('Forgot password error:', err);
+      setApiError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -144,9 +147,14 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm mb-2 font-semibold text-black">
-                Email
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-black">
+                  Email
+                </label>
+                {submitAttempted && error && (
+                  <span className="hidden md:inline text-red-500 text-xs font-semibold">{error}</span>
+                )}
+              </div>
               <input
                 id="email"
                 type="email"
@@ -155,13 +163,13 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
                 onChange={(e) => handleChange(e.target.value)}
                 onBlur={handleBlur}
                 className={`w-full px-4 py-3 border  focus:outline-none text-sm text-black ${
-                  touched && error
+                  submitAttempted && error
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-300'
                 }`}
               />
-              {touched && error && (
-                <p className="text-red-500 text-xs mt-1">{t('forgotPassword.errors.emailRequired')}</p>
+              {submitAttempted && error && (
+                <p className="text-red-500 text-xs mt-1 md:hidden">{error}</p>
               )}
             </div>
 
@@ -173,6 +181,9 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
             >
               {isLoading ? 'Sending...' : t('forgotPassword.buttons.sendResetLink')}
             </button>
+            {apiError && (
+              <p className="text-red-500 text-sm mt-3 text-center font-medium">{apiError}</p>
+            )}
           </form>
         </div>
       </div>

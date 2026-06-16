@@ -16,6 +16,7 @@ export default function VerificationCodeModal({
   const { t } = useTranslation("onboarding");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isNewPasswordOpen, setIsNewPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -31,6 +32,7 @@ export default function VerificationCodeModal({
 
     try {
       setIsLoading(true);
+      setApiError("");
       const res = await fetch(`${BASE_URL}/user/auth/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,13 +42,14 @@ export default function VerificationCodeModal({
       if (data.status === false) {
         const msg =
           data.errors?.length > 0 ? data.errors[0].message : data.action;
-        toast.error(msg);
+        setApiError(msg);
       } else {
         setError("");
         setIsNewPasswordOpen(true);
       }
     } catch (err) {
       console.error("OTP verify error:", err);
+      setApiError("Verification failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -110,6 +113,7 @@ export default function VerificationCodeModal({
   // ─── Manual form submit ───────────────────────────────────────────────
   const handleSubmit = (e) => {
     e.preventDefault();
+    setApiError("");
     const otpString = otp.join("");
     if (otpString.length < 6) {
       setError(t("verificationCode.errors.incomplete"));
@@ -122,6 +126,7 @@ export default function VerificationCodeModal({
   const handleResendOTP = async () => {
     setOtp(["", "", "", "", "", ""]);
     setError("");
+    setApiError("");
     inputRefs.current[0]?.focus();
     try {
       setIsLoading(true);
@@ -134,10 +139,13 @@ export default function VerificationCodeModal({
       if (data.status === false) {
         const msg =
           data.errors?.length > 0 ? data.errors[0].message : data.action;
-        toast.error(msg);
+        setApiError(msg);
+      } else {
+        toast.success("OTP resent successfully!");
       }
     } catch (err) {
       console.error("Resend OTP error:", err);
+      setApiError("Resend failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -240,6 +248,11 @@ export default function VerificationCodeModal({
               >
                 {isLoading ? "Verifying..." : t("verificationCode.submitButton")}
               </button>
+              {apiError && (
+                <p className="text-red-500 text-sm mt-3 text-center font-medium mx-auto" style={{ width: `calc(6 * 3.5rem + 5 * 0.75rem)` }}>
+                  {apiError}
+                </p>
+              )}
 
               <p className="text-center text-sm text-gray-700">
                 {t("verificationCode.didntGetIt")}{" "}
