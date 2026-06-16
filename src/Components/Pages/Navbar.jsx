@@ -217,20 +217,20 @@ const nextStyle = {
     <>
     <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
   <div className="relative h-full overflow-hidden">
-    <p
-      style={currentStyle}
-      className="absolute inset-0 flex hover:underline items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
-    >
-      {announcements[annIndex]}
-      <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-    </p>
-    <p
-      style={nextStyle}
-      className="absolute inset-0 flex hover:underline items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
-    >
-      {announcements[nextIndex]}
-      <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-    </p>
+   <p
+  style={currentStyle}
+  className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+>
+  <span className="hover:underline">{announcements[annIndex]}</span>
+  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+</p>
+<p
+  style={nextStyle}
+  className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+>
+  <span className="hover:underline">{announcements[nextIndex]}</span>
+  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+</p>
   </div>
 </div>
 
