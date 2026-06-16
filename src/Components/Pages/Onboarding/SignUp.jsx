@@ -29,12 +29,8 @@ export default function SignupModal({ isOpen, onClose }) {
     // phoneNumber: '',
     password: ''
   });
-  const [touched, setTouched] = useState({
-    fullName: false,
-    email: false,
-    // phoneNumber: false,
-    password: false
-  });
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const validateFullName = (name) => {
@@ -76,7 +72,7 @@ export default function SignupModal({ isOpen, onClose }) {
   };
 
   const handleBlur = (field) => {
-    setTouched({ ...touched, [field]: true });
+    if (!submitAttempted) return;
     
     let error = '';
     switch (field) {
@@ -99,7 +95,7 @@ export default function SignupModal({ isOpen, onClose }) {
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
     
-    if (touched[field]) {
+    if (submitAttempted) {
       let error = '';
       switch (field) {
         case 'fullName':
@@ -139,6 +135,8 @@ export default function SignupModal({ isOpen, onClose }) {
   if (!isOpen && !isClosing) return null;
 
   const handleSubmit = async () => {
+    setSubmitAttempted(true);
+    setApiError('');
     const newErrors = {
       fullName: validateFullName(formData.fullName),
       email: validateEmail(formData.email),
@@ -147,12 +145,6 @@ export default function SignupModal({ isOpen, onClose }) {
     };
     
     setErrors(newErrors);
-    setTouched({
-      fullName: true,
-      email: true,
-      // phoneNumber: true,
-      password: true
-    });
     
     const hasErrors = Object.values(newErrors).some(error => error !== '');
     if (hasErrors) return;
@@ -191,13 +183,14 @@ export default function SignupModal({ isOpen, onClose }) {
       const data = await res.json();
       if (data.status === false) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
-        toast.error(msg);
+        setApiError(msg);
       } else {
         toast.success('Account created successfully!');
         onClose();
       }
     } catch (err) {
       console.error('Register error:', err);
+      setApiError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -288,9 +281,14 @@ export default function SignupModal({ isOpen, onClose }) {
             {/* Full Name and Email Row */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="fullName" className="block text-sm mb-2 text-black font-semibold">
-                  {t('contactUs.form.fullName')}
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label htmlFor="fullName" className="block text-sm text-black font-semibold">
+                    {t('contactUs.form.fullName')}
+                  </label>
+                  {submitAttempted && errors.fullName && (
+                    <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.fullName}</span>
+                  )}
+                </div>
                 <input
                   id="fullName"
                   type="text"
@@ -299,19 +297,24 @@ export default function SignupModal({ isOpen, onClose }) {
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   onBlur={() => handleBlur('fullName')}
                   className={`w-full px-3 py-2.5 border text-black  focus:outline-none text-sm ${
-                    touched.fullName && errors.fullName
+                    submitAttempted && errors.fullName
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
                   }`}
                 />
-                {touched.fullName && errors.fullName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+                {submitAttempted && errors.fullName && (
+                  <p className="text-red-500 text-xs mt-1 md:hidden">{errors.fullName}</p>
                 )}
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm mb-2 text-black font-semibold">
-                  Email
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label htmlFor="email" className="block text-sm text-black font-semibold">
+                    Email
+                  </label>
+                  {submitAttempted && errors.email && (
+                    <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.email}</span>
+                  )}
+                </div>
                 <input
                   id="email"
                   type="email"
@@ -320,13 +323,13 @@ export default function SignupModal({ isOpen, onClose }) {
                   onChange={(e) => handleChange('email', e.target.value)}
                   onBlur={() => handleBlur('email')}
                   className={`w-full px-3 py-2.5 border text-black focus:outline-none text-sm ${
-                    touched.email && errors.email
+                    submitAttempted && errors.email
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
                   }`}
                 />
-                {touched.email && errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                {submitAttempted && errors.email && (
+                  <p className="text-red-500 text-xs mt-1 md:hidden">{errors.email}</p>
                 )}
               </div>
             </div>
@@ -352,9 +355,14 @@ export default function SignupModal({ isOpen, onClose }) {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
-                {t('signup.form.password')}
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="password" className="block text-sm text-black font-semibold">
+                  {t('signup.form.password')}
+                </label>
+                {submitAttempted && errors.password && (
+                  <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.password}</span>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="password"
@@ -364,7 +372,7 @@ export default function SignupModal({ isOpen, onClose }) {
                   onChange={(e) => handleChange('password', e.target.value)}
                   onBlur={() => handleBlur('password')}
                   className={`w-full text-black px-3 py-2.5 border  focus:outline-none text-sm pr-10 ${
-                    touched.password && errors.password
+                    submitAttempted && errors.password
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
                   }`}
@@ -381,8 +389,8 @@ export default function SignupModal({ isOpen, onClose }) {
                   )}
                 </button>
               </div>
-              {touched.password && errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              {submitAttempted && errors.password && (
+                <p className="text-red-500 text-xs mt-1 md:hidden">{errors.password}</p>
               )}
               {/* Terms */}
             <p className="text-center text-xs text-gray-600 mt-4">
@@ -406,6 +414,9 @@ export default function SignupModal({ isOpen, onClose }) {
             >
               {isLoading ? 'Creating...' : t('signup.buttons.createAccount')}
             </button>
+            {apiError && (
+              <p className="text-red-500 text-sm mt-3 text-center font-medium">{apiError}</p>
+            )}
 
             
           </div>

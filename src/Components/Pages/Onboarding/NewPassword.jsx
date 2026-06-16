@@ -18,10 +18,8 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
     password: '',
     confirmPassword: ''
   });
-  const [touched, setTouched] = useState({
-    password: false,
-    confirmPassword: false
-  });
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const modalCardRef = useRef(null);
@@ -48,7 +46,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
   };
 
   const handleBlur = (field) => {
-    setTouched({ ...touched, [field]: true });
+    if (!submitAttempted) return;
     
     let error = '';
     if (field === 'password') {
@@ -62,15 +60,13 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
     
-    if (touched[field]) {
+    if (submitAttempted) {
       let error = '';
       if (field === 'password') {
         error = validatePassword(value);
-        if (touched.confirmPassword) {
-          const confirmError = validateConfirmPassword(formData.confirmPassword, value);
-          setErrors({ ...errors, password: error, confirmPassword: confirmError });
-          return;
-        }
+        const confirmError = validateConfirmPassword(formData.confirmPassword, value);
+        setErrors({ ...errors, password: error, confirmPassword: confirmError });
+        return;
       } else if (field === 'confirmPassword') {
         error = validateConfirmPassword(value, formData.password);
       }
@@ -86,6 +82,8 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitAttempted(true);
+    setApiError('');
 
     const newErrors = {
       password: validatePassword(formData.password),
@@ -93,7 +91,6 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
     };
     
     setErrors(newErrors);
-    setTouched({ password: true, confirmPassword: true });
     
     const hasErrors = Object.values(newErrors).some(error => error !== '');
     if (hasErrors) return;
@@ -108,12 +105,13 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
       const data = await res.json();
       if (data.status === false) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
-        toast.error(msg);
+        setApiError(msg);
       } else {
         onAllClose?.();
       }
     } catch (err) {
       console.error('New password error:', err);
+      setApiError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -153,9 +151,14 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="password" className="block text-sm mb-2 text-black font-semibold">
-              {t('newPassword.passwordLabel')}
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="password" className="block text-sm text-black font-semibold">
+                {t('newPassword.passwordLabel')}
+              </label>
+              {submitAttempted && errors.password && (
+                <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.password}</span>
+              )}
+            </div>
             <div className="relative">
               <input
                 id="password"
@@ -165,7 +168,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 onChange={(e) => handleChange('password', e.target.value)}
                 onBlur={() => handleBlur('password')}
                 className={`w-full px-3 py-2.5 border  focus:outline-none text-black text-sm pr-10 ${
-                  touched.password && errors.password
+                  submitAttempted && errors.password
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-200'
                 }`}
@@ -182,15 +185,20 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 )}
               </button>
             </div>
-            {touched.password && errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            {submitAttempted && errors.password && (
+              <p className="text-red-500 text-xs mt-1 md:hidden">{errors.password}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm mb-2 text-black font-semibold">
-              {t('newPassword.confirmPasswordLabel')}
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm text-black font-semibold">
+                {t('newPassword.confirmPasswordLabel')}
+              </label>
+              {submitAttempted && errors.confirmPassword && (
+                <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.confirmPassword}</span>
+              )}
+            </div>
             <div className="relative">
               <input
                 id="confirmPassword"
@@ -200,7 +208,7 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 onChange={(e) => handleChange('confirmPassword', e.target.value)}
                 onBlur={() => handleBlur('confirmPassword')}
                 className={`w-full px-3 py-2.5 border focus:outline-none text-black text-sm pr-10 ${
-                  touched.confirmPassword && errors.confirmPassword
+                  submitAttempted && errors.confirmPassword
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-200'
                 }`}
@@ -217,14 +225,10 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
                 )}
               </button>
             </div>
-            {touched.confirmPassword && errors.confirmPassword && (
-              <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+            {submitAttempted && errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1 md:hidden">{errors.confirmPassword}</p>
             )}
           </div>
-
-          {/* <p className="text-gray-700 text-center text-xs leading-relaxed mt-5 mb-6">
-            {t('newPassword.requirements')}
-          </p> */}
 
           <button
             type="submit"
@@ -233,6 +237,9 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
           >
             {isLoading ? 'Saving...' : t('newPassword.submitButton')}
           </button>
+          {apiError && (
+            <p className="text-red-500 text-sm mt-5 text-center font-medium">{apiError}</p>
+          )}
         </form>
         </div>
       </div>

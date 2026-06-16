@@ -28,10 +28,8 @@ export default function LoginModal({ isOpen, onClose }) {
     email: '',
     password: ''
   });
-  const [touched, setTouched] = useState({
-    email: false,
-    password: false
-  });
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -65,7 +63,7 @@ export default function LoginModal({ isOpen, onClose }) {
   };
 
   const handleBlur = (field) => {
-    setTouched({ ...touched, [field]: true });
+    if (!submitAttempted) return;
 
     let error = '';
     if (field === 'email') {
@@ -79,7 +77,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
 
-    if (touched[field]) {
+    if (submitAttempted) {
       let error = '';
       if (field === 'email') {
         error = validateEmail(value);
@@ -112,6 +110,8 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitAttempted(true);
+    setApiError('');
 
     const newErrors = {
       email: validateEmail(formData.email),
@@ -119,7 +119,6 @@ export default function LoginModal({ isOpen, onClose }) {
     };
 
     setErrors(newErrors);
-    setTouched({ email: true, password: true });
 
     const hasErrors = Object.values(newErrors).some(error => error !== '');
     if (hasErrors) return;
@@ -141,7 +140,7 @@ export default function LoginModal({ isOpen, onClose }) {
       const data = await res.json();
       if (data.status === false) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
-        toast.error(msg);
+        setApiError(msg);
       } else {
         localStorage.setItem('LoginData', JSON.stringify(data));
         if (rememberMe) {
@@ -154,6 +153,7 @@ export default function LoginModal({ isOpen, onClose }) {
       }
     } catch (err) {
       console.error('Login error:', err);
+      setApiError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -223,9 +223,14 @@ export default function LoginModal({ isOpen, onClose }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm mb-2 font-semibold text-black">
-                Email
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-black">
+                  Email
+                </label>
+                {submitAttempted && errors.email && (
+                  <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.email}</span>
+                )}
+              </div>
               <input
                 id="email"
                 type="email"
@@ -234,21 +239,26 @@ export default function LoginModal({ isOpen, onClose }) {
                 onChange={(e) => handleChange('email', e.target.value)}
                 onBlur={() => handleBlur('email')}
                 className={`w-full px-3 py-2.5 border text-black focus:outline-none text-sm ${
-                  touched.email && errors.email
+                  submitAttempted && errors.email
                     ? 'bg-red-50 border-red-300'
                     : 'bg-gray-50 border-gray-300'
                 }`}
               />
-              {touched.email && errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              {submitAttempted && errors.email && (
+                <p className="text-red-500 text-xs mt-1 md:hidden">{errors.email}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm mb-2 font-semibold text-black">
-                {t('login.form.password')}
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-black">
+                  {t('login.form.password')}
+                </label>
+                {submitAttempted && errors.password && (
+                  <span className="hidden md:inline text-red-500 text-xs font-semibold">{errors.password}</span>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="password"
@@ -258,7 +268,7 @@ export default function LoginModal({ isOpen, onClose }) {
                   onChange={(e) => handleChange('password', e.target.value)}
                   onBlur={() => handleBlur('password')}
                   className={`w-full px-3 text-black py-2.5 border  focus:outline-none text-sm pr-10 ${
-                    touched.password && errors.password
+                    submitAttempted && errors.password
                       ? 'bg-red-50 border-red-300'
                       : 'bg-gray-50 border-gray-300'
                   }`}
@@ -275,8 +285,8 @@ export default function LoginModal({ isOpen, onClose }) {
                   )}
                 </button>
               </div>
-              {touched.password && errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              {submitAttempted && errors.password && (
+                <p className="text-red-500 text-xs mt-1 md:hidden">{errors.password}</p>
               )}
             </div>
 
@@ -308,6 +318,9 @@ export default function LoginModal({ isOpen, onClose }) {
             >
               {isLoading ? 'Logging in...' : t('login.buttons.login')}
             </button>
+            {apiError && (
+              <p className="text-red-500 text-sm mt-3 text-center font-medium">{apiError}</p>
+            )}
           </form>
 
           {/* Divider */}
