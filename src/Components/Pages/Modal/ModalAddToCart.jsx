@@ -169,13 +169,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
 
   // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
-  const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.input || "");
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.selectedPill || "");
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
   const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
-  const [selectedPill, setSelectedPill] = useState(() => getVoucherState()?.selectedPill || null);
   const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(() => getVoucherState()?.applied || false);
   const [appliedVoucherOff, setAppliedVoucherOff] = useState(() => getVoucherState()?.off || 0);
+  const [selectedPill, setSelectedPill] = useState(() => getVoucherState()?.selectedPill || null);
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
@@ -210,6 +210,24 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       document.body.style.touchAction = "";
       overlay?.removeEventListener("touchmove", preventScroll);
     };
+  }, [isOpen]);
+
+  // Voucher state sync on every open
+  useEffect(() => {
+    if (!isOpen) return;
+    const saved = getVoucherState();
+    if (saved) {
+      setLoggedVoucherApplied(saved.applied || false);
+      setAppliedVoucherOff(saved.off || 0);
+      setSelectedPill(saved.selectedPill || null);
+      setLoggedVoucherInput(saved.selectedPill || "");
+    } else {
+      // Pehli baar ya remove ke baad — kuch selected nahi
+      setLoggedVoucherApplied(false);
+      setAppliedVoucherOff(0);
+      setSelectedPill(null);
+      setLoggedVoucherInput("");
+    }
   }, [isOpen]);
 
   // Cart fetch on open
@@ -350,12 +368,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setSelectedPill(code);
     setLoggedVoucherInput(code);
     setLoggedVoucherError(null);
+    setVoucherState({ ...getVoucherState(), selectedPill: code, applied: false });
   };
 
   const handlePillRemove = () => {
     setSelectedPill(null);
     setLoggedVoucherInput("");
     setLoggedVoucherError(null);
+    setVoucherState({ ...getVoucherState(), selectedPill: null });
   };
 
   const handleLoggedApply = async () => {
