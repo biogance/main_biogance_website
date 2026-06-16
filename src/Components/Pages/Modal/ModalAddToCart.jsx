@@ -5,6 +5,7 @@ import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import { RiDeleteBinLine } from "react-icons/ri";
+import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -130,6 +131,11 @@ function AppliedPill({ code, label, onRemove }) {
   );
 }
 
+const VOUCHER_KEY = "cartVoucherState";
+const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null"); } catch { return null; } };
+const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
+const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
+
 const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
 
 export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
@@ -163,16 +169,17 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
 
   // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
-  const [loggedVoucherInput, setLoggedVoucherInput] = useState("");
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.input || "");
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
   const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
-  const [selectedPill, setSelectedPill] = useState(null);
-  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(false);
-  const [appliedVoucherOff, setAppliedVoucherOff] = useState(0);
+  const [selectedPill, setSelectedPill] = useState(() => getVoucherState()?.selectedPill || null);
+  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(() => getVoucherState()?.applied || false);
+  const [appliedVoucherOff, setAppliedVoucherOff] = useState(() => getVoucherState()?.off || 0);
   const [redeemHovered, setRedeemHovered] = useState(false);
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
-  const [voucherPoints, setVoucherPoints] = useState(0);
+  const [voucherPoints, setVoucherPoints] = useState(null);
 
   // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoOpen, setPromoOpen] = useState(false);
@@ -242,7 +249,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     fetchLatest();
   }, [isOpen]);
 
-  // Fetch voucher list when modal opens (logged-in only)
+  const voucherFetchedRef = useRef(false);
+
+  // Fetch voucher list — sirf ek baar, har open pe pills refresh karo
   useEffect(() => {
     if (!isOpen) return;
     const fetchVouchers = async () => {
@@ -260,8 +269,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         if (data.status && data.data?.data) {
           const list = data.data.data;
           setVoucherPills(list);
-          const totalPoints = list.reduce((sum, v) => sum + (v.point || 0), 0);
-          setVoucherPoints(totalPoints);
+          // sirf tab points set karo jab localStorage mein saved state na ho
+          if (!getVoucherState()) {
+            const totalPoints = list.reduce((sum, v) => sum + (v.point || 0), 0);
+            setVoucherPoints(totalPoints);
+          }
         }
       } catch { /* silent */ }
     };
@@ -275,7 +287,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     }
   }, [
     giftOpen, selectedPill, loggedVoucherApplied, loggedVoucherError,
-    voucherPills, guestPendingPill, guestAppliedVoucher, guestVoucherError,
+    voucherPills, voucherPoints, guestPendingPill, guestAppliedVoucher, guestVoucherError,
   ]);
 
   const handleOverlayClick = (e) => { if (e.target === overlayRef.current) onClose(); };
@@ -368,8 +380,18 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         setLoggedVoucherLoading(false);
         return;
       }
-      setAppliedVoucherOff(data.data?.off || 0);
-      setLoggedVoucherApplied(true);
+      const off = data.data?.off || 0;
+      const point = data.data?.point ?? 0;
+      setAppliedVoucherOff(off);
+      setVoucherPoints(point);
+      if (point === 0) {
+        setSelectedPill(null);
+        setLoggedVoucherInput("");
+        setVoucherState({ applied: false, selectedPill: null, input: "", off: 0 });
+      } else {
+        setLoggedVoucherApplied(true);
+        setVoucherState({ applied: true, selectedPill: codeToApply, input: codeToApply, off });
+      }
     } catch {
       setLoggedVoucherError("Something went wrong.");
     }
@@ -382,6 +404,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setLoggedVoucherInput("");
     setLoggedVoucherError(null);
     setAppliedVoucherOff(0);
+    setVoucherPoints(null);
+    removeVoucherState();
   };
 
   // ─── CASE 3 HANDLERS (Promo) ─────────────────────────────────────────────
@@ -630,14 +654,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </div>
 
         {/* "Voucher code added" hint — sirf pill click se, pills se upar */}
-        {selectedPill && !loggedVoucherApplied && voucherPills.some(p => p.name === selectedPill) && (
+        {selectedPill && !loggedVoucherApplied && voucherPoints !== 0 && voucherPills.some(p => p.name === selectedPill) && (
           <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
             Voucher code added. Click Apply to redeem it.
           </p>
         )}
 
-        {/* Pills from API — hide after apply */}
-        {!loggedVoucherApplied && hasVouchers && (
+        {/* Pills from API — hide after apply or when points 0 */}
+        {!loggedVoucherApplied && hasVouchers && voucherPoints !== 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
             {voucherPills.map((pill) => {
               const code = pill.name;
@@ -672,8 +696,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* Points/Redeem — jab list empty ho YA total points 0 ho */}
-        {!loggedVoucherApplied && !selectedPill && !loggedVoucherError && (voucherPills.length === 0 || voucherPoints === 0) && (
+        {/* Points/Redeem — point exactly 0 ho (null nahi) tab dikhao */}
+        {voucherPoints === 0 && !loggedVoucherError && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
             <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
               You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
@@ -681,6 +705,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             <button
               onMouseEnter={() => setRedeemHovered(true)}
               onMouseLeave={() => setRedeemHovered(false)}
+              onClick={() => setIsVoucherModalOpen(true)}
               style={{
                 flexShrink: 0, marginLeft: "12px",
                 padding: "8px 16px", fontSize: "12px", fontWeight: 700,
@@ -696,8 +721,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* Default text — sirf jab list empty ho aur koi applied/selected nahi */}
-        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && (
+        {/* Default text — sirf jab list empty ho, points bhi 0 hon, aur koi applied/selected nahi */}
+        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && voucherPoints === 0 && (
           <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
             You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
           </p>
@@ -1059,6 +1084,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </div>
 
       </div>
+
+      <CreateVoucherModal isOpen={isVoucherModalOpen} onClose={() => setIsVoucherModalOpen(false)} />
     </>
   );
 }
