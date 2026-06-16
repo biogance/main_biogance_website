@@ -33,6 +33,21 @@ body {
   display: none;
 }
 
+/* ─── Autofill Fix (Chrome + Firefox) ─── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px rgb(249 250 251) inset !important;
+  -webkit-text-fill-color: black !important;
+  box-shadow: 0 0 0px 1000px rgb(249 250 251) inset !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+input:-moz-autofill {
+  box-shadow: 0 0 0px 1000px rgb(249 250 251) inset !important;
+  color: black !important;
+}
+
 @keyframes modalPopIn {
   from { opacity: 0; transform: scale(0.6); }
   to   { opacity: 1; transform: scale(1); }
@@ -71,61 +86,3 @@ body {
 .modal-shake {
   animation: modalShake 0.4s ease-in-out;
 }
-
-
-/* .react-international-phone-input-container {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.react-international-phone-input-container .react-international-phone-country-selector-button {
-  height: 42px;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background-color: white;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.react-international-phone-input-container .react-international-phone-country-selector-button:hover {
-  background-color: #f9fafb;
-}
-
-.react-international-phone-input-container .react-international-phone-input {
-  flex: 1;
-  height: 42px;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  outline: none;
-}
-
-.react-international-phone-input-container .react-international-phone-input:focus {
-  outline: 2px solid #9ca3af;
-  outline-offset: 0;
-}
-
-.react-international-phone-country-selector-dropdown {
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.react-international-phone-country-selector-dropdown__list-item {
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
-.react-international-phone-country-selector-dropdown__list-item:hover {
-  background-color: #f3f4f6;
-}
-
-.react-international-phone-country-selector-dropdown__list-item--selected {
-  background-color: #e5e7eb;
-} */

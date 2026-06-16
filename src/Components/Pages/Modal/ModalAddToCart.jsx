@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
+import { RiDeleteBinLine } from "react-icons/ri";
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -33,7 +34,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
           fontSize: "13px", background: "#fff", color: "#111",
           cursor: disabled ? "default" : "pointer",
           display: "flex", alignItems: "center", gap: "8px",
-          minWidth: disabled ? "auto" : "72px",
+          minWidth: disabled ? "auto" : "42px",
           justifyContent: disabled ? "flex-start" : "space-between",
           userSelect: "none", transition: "border-color 0.15s",
           opacity: disabled ? 0.6 : 1,
@@ -243,14 +244,17 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   // Fetch voucher list when modal opens (logged-in only)
   useEffect(() => {
-    if (!isOpen || !isLoggedIn) return;
+    if (!isOpen) return;
     const fetchVouchers = async () => {
       try {
         const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
         const token = loginData?.data?.token;
         const res = await fetch(`${BASE_URL}/user/voucher/list`, {
           method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : { "Content-Type": "application/json" },
+          ...(token ? {} : { body: JSON.stringify({ device_id: getDeviceId() }) }),
         });
         const data = await res.json();
         if (data.status && data.data?.data) {
@@ -353,8 +357,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const token = loginData?.data?.token;
       const res = await fetch(`${BASE_URL}/user/order/check/voucher`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: codeToApply }),
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? { name: codeToApply } : { name: codeToApply, device_id: getDeviceId() }),
       });
       const data = await res.json();
       if (data.status === false) {
@@ -395,8 +401,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const token = loginData?.data?.token;
       const res = await fetch(`${BASE_URL}/user/order/check/promo-code`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: code }),
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? { name: code } : { name: code, device_id: getDeviceId() }),
       });
       const data = await res.json();
       if (data.status === false) {
@@ -497,71 +505,74 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
       <div style={{
         display: "flex",
-        border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
+        border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
         borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
       }}>
         <input
           type="text" placeholder="Enter Voucher code"
-          value={guestAppliedVoucher ? guestAppliedVoucher : guestVoucherInput}
-          disabled={!!guestAppliedVoucher}
-          onChange={handleGuestInputChange}
-          onKeyDown={(e) => { if (e.key === "Enter") handleGuestApply(); }}
+          value={loggedVoucherInput}
+          disabled={loggedVoucherApplied}
+          onChange={(e) => {
+            setLoggedVoucherInput(e.target.value);
+            if (loggedVoucherError) setLoggedVoucherError(null);
+          }}
+          onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
           style={{
             flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-            color: guestAppliedVoucher ? "#aaa" : "#111",
-            background: guestAppliedVoucher ? "#f9f9f9" : "#fff",
-            cursor: guestAppliedVoucher ? "not-allowed" : "text",
+            color: loggedVoucherApplied ? "#aaa" : "#111",
+            background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+            cursor: loggedVoucherApplied ? "not-allowed" : "text",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         />
         <button
-          onClick={handleGuestApply}
-          disabled={!guestVoucherInput.trim() || !!guestAppliedVoucher || guestVoucherLoading}
-          onMouseEnter={() => { if (guestVoucherInput.trim() && !guestAppliedVoucher) setGuestApplyHovered(true); }}
-          onMouseLeave={() => setGuestApplyHovered(false)}
+          onClick={handleLoggedApply}
+          disabled={!loggedVoucherInput.trim() || loggedVoucherApplied || loggedVoucherLoading}
+          onMouseEnter={() => { if (loggedVoucherInput.trim() && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
+          onMouseLeave={() => setLoggedApplyHovered(false)}
           style={{
             border: "none", borderLeft: "1px solid #ddd",
-            background: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "#f3f3f3" : guestApplyHovered ? "#111" : "transparent",
-            color: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "#aaa" : guestApplyHovered ? "#fff" : "#111",
+            background: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
+            color: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
             padding: "11px 18px", fontSize: "12px", fontWeight: 700,
             letterSpacing: "0.1em", textTransform: "uppercase",
-            cursor: (!guestVoucherInput.trim() || guestAppliedVoucher) ? "default" : "pointer",
+            cursor: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "default" : "pointer",
             transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         >
-          {guestVoucherLoading ? "..." : "Apply"}
+          {loggedVoucherLoading ? "..." : "Apply"}
         </button>
       </div>
 
       {/* Error */}
-      {guestVoucherError && (
+      {loggedVoucherError && (
         <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
             <circle cx="12" cy="12" r="11" fill="#e02424" />
             <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
+          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
         </div>
       )}
 
       {/* Applied pill */}
-      {guestAppliedVoucher && !guestVoucherError && (
+      {loggedVoucherApplied && selectedPill && (
         <div style={{ marginTop: "10px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
             <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-              {guestAppliedVoucher}
+              {selectedPill}
             </span>
             <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
-            <button onClick={handleGuestRemoveApplied} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+            <button onClick={handleLoggedRemoveVoucher} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
               <IoClose size={13} />
             </button>
           </div>
         </div>
       )}
 
-      {/* Default text — sirf jab kuch apply/select nahi */}
-      {!guestAppliedVoucher && !guestVoucherError && !guestVoucherInput.trim() && (
+      {/* Default text */}
+      {!loggedVoucherApplied && !loggedVoucherError && !loggedVoucherInput.trim() && (
         <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
           You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
         </p>
@@ -759,7 +770,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
            {cartCount > 0 && (
   <div style={{
     width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#111",
-    color: "#fff", fontSize: "12px", fontWeight: 700,
+    color: "#fff", fontSize: "14px", fontWeight: 700, border:"2px solid #ffffff21",
     display: "flex", alignItems: "center", justifyContent: "center",
   }}>
     {cartCount}
@@ -826,20 +837,19 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                     {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
+                    <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", }}>{name}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                       <CustomDropdown options={QTY_OPTIONS} value={String(item.quantity)} onChange={(val) => handleQtyChange(item.id, val)} />
                       {sizeOptions.length > 0 && (
                         <CustomDropdown options={sizeOptions} value={sizeOptions[0]} onChange={() => {}} disabled={isSingleSize} />
                       )}
                       <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-                        </svg>
+                       <RiDeleteBinLine className="hover:text-gray-600" />
+
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#111", flexShrink: 0 }}>
+                  <div style={{ fontSize: "13px", marginTop:"65px", color: "#555", flexShrink: 0 }}>
                     {parseFloat(itemTotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
                   </div>
                 </div>

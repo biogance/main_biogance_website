@@ -1,7 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons/ai';
-import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import SignupModal from './SignUp';
 import Forgotpassword from './ForgetPassword';
@@ -12,7 +11,6 @@ import { FaApple } from 'react-icons/fa';
 
 export default function LoginModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -148,7 +146,7 @@ export default function LoginModal({ isOpen, onClose }) {
         } else {
           localStorage.removeItem('rememberMe');
         }
-        router.push('/my-account');
+        window.dispatchEvent(new Event('loginStateChange'));
         onClose();
       }
     } catch (err) {
