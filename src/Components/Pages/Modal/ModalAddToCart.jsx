@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
-import { BASE_URL } from "../../API/API";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -56,7 +56,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       {open && !disabled && (
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
-          border: "1px solid #ddd", borderRadius: "4px", minWidth: "100%", zIndex: 1100,
+          border: "1px solid #ddd", borderRadius: "0px", minWidth: "100%", zIndex: 1100,
           maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}>
           {options.map((opt) => (
@@ -191,6 +191,20 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [pendingPromoPill, setPendingPromoPill] = useState(null);
 
+  // Delivery method
+  const [deliveryMethod, setDeliveryMethod] = useState("home");
+  const [deliveryDropdownOpen, setDeliveryDropdownOpen] = useState(false);
+  const deliveryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (deliveryDropdownRef.current && !deliveryDropdownRef.current.contains(e.target))
+        setDeliveryDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
 
@@ -297,13 +311,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           ...(token ? {} : { body: JSON.stringify({ device_id: getDeviceId() }) }),
         });
         const data = await res.json();
-        if (data.status && data.data?.data) {
-          const list = data.data.data;
+        const list = data.data?.vouchers?.data || data.data?.data;
+        if (data.status && list) {
           setVoucherPills(list);
           // FIX 1: Sirf jab localStorage mein saved voucherPoints na ho tab calculate karo
           const saved = getVoucherState();
           if (!saved || saved.voucherPoints === undefined) {
-            const totalPoints = list.reduce((sum, v) => sum + (v.point || 0), 0);
+            const totalPoints = data.data?.total_point !== undefined ? Number(data.data.total_point) : list.reduce((sum, v) => sum + (v.point || 0), 0);
             setVoucherPoints(totalPoints);
             // Aur is value ko bhi save karo
             setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
@@ -451,14 +465,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setPromoLoading(true);
     setPromoError(null);
     try {
-      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const token = loginData?.data?.token;
       const res = await fetch(`${BASE_URL}/user/order/check/promo-code`, {
         method: "POST",
-        headers: token
-          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
-          : { "Content-Type": "application/json" },
-        body: JSON.stringify(token ? { name: code } : { name: code, device_id: getDeviceId() }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: code }),
       });
       const data = await res.json();
       if (data.status === false) {
@@ -481,8 +491,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   };
 
   // Delivery & totals
-  const deliveryCost = 5.9;
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = 39;
   const subtotal = cartItems.reduce((sum, item) => {
     if (!item) return sum;
     const unitPrice = item.original_price || parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
@@ -491,6 +500,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
   const totalDiscount = (loggedVoucherApplied ? appliedVoucherOff : 0) + (appliedPromo ? appliedPromo.off : 0);
+
+  const getDeliveryCost = (method, total) => {
+    if (total < 39) return method === "pickup" ? 5.90 : 6.90;
+    if (total < 59) return method === "pickup" ? 0 : 6.90;
+    return method === "pickup" ? 0 : 2.90;
+  };
+  const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
+  const isFreeDelivery = deliveryCost === 0;
   const totalWithDelivery = Math.max(0, subtotal + deliveryCost - totalDiscount).toFixed(2);
 
   const handleCheckout = () => { window.location.href = "/checkout"; };
@@ -570,7 +587,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       <div style={{
         display: "flex",
         border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-        borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
+        borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
       }}>
         <input
           type="text" placeholder="Enter Voucher code"
@@ -611,7 +628,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
       {/* Error */}
       {loggedVoucherError && (
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
             <circle cx="12" cy="12" r="11" fill="#e02424" />
             <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -652,7 +669,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         {/* Input row */}
         <div style={{
           display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-          borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
+          borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
         }}>
           <input
             type="text" placeholder="Enter Voucher code"
@@ -693,14 +710,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </div>
 
         {/* "Voucher code added" hint */}
-        {selectedPill && !loggedVoucherApplied && voucherPoints !== 0 && voucherPills.some(p => p.name === selectedPill) && (
+        {selectedPill && !loggedVoucherApplied && voucherPills.some(p => p.name === selectedPill) && (
           <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
             Voucher code added. Click Apply to redeem it.
           </p>
         )}
 
         {/* Pills from API */}
-        {!loggedVoucherApplied && hasVouchers && voucherPoints !== 0 && (
+        {!loggedVoucherApplied && hasVouchers && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
             {voucherPills.map((pill) => {
               const code = pill.name;
@@ -735,8 +752,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* Points/Redeem — point exactly 0 ho (null nahi) tab dikhao */}
-        {voucherPoints === 0 && !loggedVoucherError && (
+        {/* Points/Redeem — show when user has points (not null and > 0) */}
+        {/* {voucherPoints !== null && voucherPoints > 0 && !loggedVoucherError && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
             <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
               You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
@@ -758,7 +775,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               Redeem
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Default text */}
         {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && voucherPoints === 0 && (
@@ -769,7 +786,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
         {/* Error */}
         {loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
               <circle cx="12" cy="12" r="11" fill="#e02424" />
               <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -823,28 +840,33 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       }}>
 
         {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "20px 24px", borderBottom: "1px solid #e5e5e5", flexShrink: 0,
-        }}>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Your Cart
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-           {cartCount > 0 && (
-  <div style={{
-    width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#111",
-    color: "#fff", fontSize: "14px", fontWeight: 700, border:"2px solid #ffffff21",
-    display: "flex", alignItems: "center", justifyContent: "center",
-  }}>
-    {cartCount}
+<div style={{
+  display: "flex", alignItems: "center", justifyContent: "space-between",
+  padding: "20px 24px", borderBottom: "1px solid #e5e5e5", flexShrink: 0,
+}}>
+  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      Your Cart
+    </span>
+    {cartCount > 0 && (
+      <div style={{
+        minWidth: "24px", height: "24px", padding: "0 6px",
+        borderRadius: "999px", backgroundColor: "#111",
+        color: "#fff", fontSize: "14px", fontWeight: 400,
+        border: "0px solid #ffffff21", boxSizing: "border-box",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        lineHeight: 1,
+        paddingBottom:"0.7px",
+        width: cartCount.toString().length > 1 ? 'auto' : '20px',
+      }}>
+        {cartCount}
+      </div>
+    )}
   </div>
-)}
-            <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: "#111" }}>
-              <IoClose size={20} />
-            </button>
-          </div>
-        </div>
+  <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: "#111" }}>
+    <IoClose size={20} />
+  </button>
+</div>
 
         {/* Remove overlay */}
         {isRemoving && (
@@ -889,7 +911,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             {/* Cart Items */}
             {cartItems.map((item) => {
               const p = item.product || {};
-              const firstImage = p.images?.[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${p.images[0].media}` : "";
+              const firstImage = p.images?.[0]?.media ? `${MEDIA_URL}${p.images[0].media}` : "";
               const name = p.name || "";
               const sizeOptions = p.size_name ? [p.size_name] : [];
               const isSingleSize = sizeOptions.length <= 1;
@@ -897,7 +919,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               const itemTotal = (unitPrice * item.quantity).toFixed(2);
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
-                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "4px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "0px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -921,14 +943,90 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
             {/* Order Summary */}
             <div style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}>
-              {[
-                { label: "Subtotal", value: `${subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €` },
-                { label: "Delivery costs", value: `${deliveryCost.toFixed(2).replace(".", ",")} €` },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
-                  <span>{label}</span><span>{value}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
+                <span>Subtotal</span><span>{subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+              </div>
+              {/* Delivery costs static row - Free if subtotal >= 39 */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
+                <span>Delivery costs</span>
+                {subtotal >= 39
+                  ? <span>Free</span>
+                  : <span>5,90 €</span>
+                }
+              </div>
+
+              {/* Delivery method selector */}
+              <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div
+                    ref={deliveryDropdownRef}
+                    style={{ position: "relative" }}
+                  >
+                    <button
+                      onClick={() => setDeliveryDropdownOpen((v) => !v)}
+                      style={{
+                        background: "none", border: "none", cursor: "pointer", padding: 0,
+                        display: "flex", alignItems: "center", gap: "5px",
+                        fontSize: "13px", color: "#555",
+                        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#111"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; }}
+                    >
+                      <span>{deliveryMethod === "home" ? "Home Delivery" : "Pickup Point"}</span>
+                      <span style={{
+                        display: "inline-block", width: 0, height: 0,
+                        borderLeft: "4px solid transparent", borderRight: "4px solid transparent",
+                        borderTop: "5px solid #555", flexShrink: 0,
+                        transform: deliveryDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.2s",
+                      }} />
+                    </button>
+                    {deliveryDropdownOpen && (
+                      <div
+                        style={{
+                          position: "absolute", top: "calc(100% + 6px)", left: 90,
+                          background: "#fff", border: "1px solid #ddd", borderRadius: "0px",
+                          zIndex: 1100, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: "140px",
+                        }}
+                      >
+                        {["home", "pickup"].map((opt) => (
+                          <div
+                            key={opt}
+                            onClick={() => { setDeliveryMethod(opt); setDeliveryDropdownOpen(false); }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#111";
+                              e.currentTarget.style.color = "#fff";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (deliveryMethod === opt) {
+                                e.currentTarget.style.backgroundColor = "#f3f3f3";
+                                e.currentTarget.style.color = "#111";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#fff";
+                                e.currentTarget.style.color = "#111";
+                              }
+                            }}
+                            style={{
+                              padding: "9px 14px", fontSize: "13px", cursor: "pointer",
+                              background: deliveryMethod === opt ? "#f3f3f3" : "#fff",
+                              color: deliveryMethod === opt ? "#111" : "#111",
+                              fontWeight: deliveryMethod === opt ? 600 : 400,
+                              transition: "background 0.15s, color 0.15s",
+                            }}
+                          >
+                            {opt === "home" ? "Home Delivery" : "Pickup Point"}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {isFreeDelivery
+                    ? <span>Free</span>
+                    : <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>
+                  }
                 </div>
-              ))}
+              </div>
 
               {/* Voucher row */}
               {loggedVoucherApplied && selectedPill && (
@@ -948,14 +1046,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Promo Code</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
-                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#fff", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", borderRadius: "20px", overflow: "hidden" }}>
+                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                         {appliedPromo.code}
                       </span>
                       <span style={{ display: "block", width: "1px", height: "22px", background: "rgba(255,255,255,0.25)" }} />
-                      <button onClick={handleRemovePromo} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4px 8px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
-                        <IoClose size={11} />
-                      </button>
+                     
                     </div>
                   </div>
                   <span style={{ color: "#111", fontWeight: 500 }}>-{appliedPromo.off.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
@@ -996,7 +1092,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   <div style={{
                     display: "flex",
                     border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
-                    borderRadius: "4px", overflow: "hidden", transition: "border-color 0.15s",
+                    borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
                   }}>
                     <input
                       type="text"
@@ -1036,7 +1132,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
                   {/* Error */}
                   {promoError && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "4px" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
                         <circle cx="12" cy="12" r="11" fill="#e02424" />
                         <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -1094,31 +1190,34 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         )}
 
         {/* Footer */}
-        <div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#fff", flexShrink: 0 }}>
-          <div style={{ padding: "14px 24px 0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
-              <span>Complete for free shipping</span>
-              <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span>
-            </div>
-            <div style={{ height: "4px", backgroundColor: "#e5e5e5", borderRadius: "2px", overflow: "hidden", marginBottom: "14px" }}>
-              <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111", borderRadius: "2px", transition: "width 0.4s ease" }} />
-            </div>
-          </div>
-          <div style={{ padding: "0 24px 24px" }}>
-            <button
-              onClick={handleCheckout}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#111"}
-              style={{
-                width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
-                fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: "pointer", borderRadius: "2px", transition: "background 0.2s",
-                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-              }}
-            >
-              Continue to checkout
-            </button>
-          </div>
+<div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
+ {subtotal < freeShippingThreshold && (
+  <div style={{ padding: "14px 24px 0" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
+      <span>Complete for free shipping</span>
+      <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span> 
+    </div>
+    <div style={{ height: "4px", backgroundColor: "#e5e5e5", borderRadius: "0px", overflow: "hidden", marginBottom: "14px" }}>
+      <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111", borderRadius: "0px", transition: "width 0.4s ease" }} />
+    </div>
+  </div>
+)}
+  <div style={{ padding: subtotal < freeShippingThreshold ? "0 24px 24px" : "24px 24px 24px" }}>
+    <button
+      onClick={handleCheckout}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#111"}
+      style={{
+        width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
+        fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+        cursor: "pointer", borderRadius: "2px", transition: "background 0.2s",
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      }}
+    >
+      Continue to checkout
+    </button>
+  </div>
+
         </div>
 
       </div>

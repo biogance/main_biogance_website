@@ -1,75 +1,279 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  PhoneInput as IntlPhoneInput,
-  parseCountry,
-  defaultCountries,
-} from "react-international-phone";
-import "react-international-phone/style.css";
-import { CiCircleInfo } from "react-icons/ci";
+import { parseCountry, defaultCountries } from "react-international-phone";
+import { IoClose } from "react-icons/io5";
+import { RiDeleteBinLine } from "react-icons/ri";
 
-// ─── Reusable Input ──────────────────────────────────────────────────────────
-function Input({ placeholder, type = "text", value, onChange, style = {} }) {
-  const [focused, setFocused] = useState(false);
+// ⚠️ Adjust these three import paths to match where Checkout.jsx actually
+// lives in your project — they're copied as-is from ModalAddToCart.jsx.
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getDeviceId } from "../../../utils/deviceId";
+import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
+
+const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+
+const getErrorMsg = (data) => {
+  if (data.errors?.length > 0) return data.errors[0].message;
+  if (data.action) return data.action;
+  if (data.action_message) return data.action_message;
+  return null;
+};
+
+const VOUCHER_KEY = "cartVoucherState";
+const getVoucherState = () => {
+  try {
+    return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null");
+  } catch {
+    return null;
+  }
+};
+const setVoucherState = (state) =>
+  localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
+const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
+
+const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
+
+/* ────────────────────────────────────────────────────────────────────────
+   Small UI primitives
+   ──────────────────────────────────────────────────────────────────────── */
+
+// Custom select dropdown (ported from ModalAddToCart — used for cart item quantity)
+function CustomDropdown({ options, value, onChange, disabled }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
-        width: "100%",
-        boxSizing: "border-box",
-        padding: "14px 14px",
-        fontSize: "13px",
-        border: `1px solid ${focused ? "#111" : "#ddd"}`,
-        borderRadius: "2px",
-        outline: "none",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        color: "#111",
-        background: "#fff",
-        transition: "border-color 0.2s",
-        ...style,
-      }}
-    />
+    <div
+      ref={wrapRef}
+      style={{ position: "relative", display: "inline-block" }}
+    >
+      <div
+        onClick={() => !disabled && setOpen((v) => !v)}
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          padding: "4px 8px",
+          fontSize: "13px",
+          background: "#fff",
+          color: "#111",
+          cursor: disabled ? "default" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          minWidth: disabled ? "auto" : "42px",
+          justifyContent: disabled ? "flex-start" : "space-between",
+          userSelect: "none",
+          transition: "border-color 0.15s",
+          opacity: disabled ? 0.6 : 1,
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled) e.currentTarget.style.borderColor = "#999";
+        }}
+        onMouseLeave={(e) => {
+          if (!disabled) e.currentTarget.style.borderColor = "#ddd";
+        }}
+      >
+        <span>{value}</span>
+        {!disabled && (
+          <span
+            style={{
+              display: "inline-block",
+              width: 0,
+              height: 0,
+              borderLeft: "4px solid transparent",
+              borderRight: "4px solid transparent",
+              borderTop: "5px solid #555",
+              flexShrink: 0,
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          />
+        )}
+      </div>
+      {open && !disabled && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            minWidth: "100%",
+            zIndex: 1100,
+            maxHeight: "calc(10 * 33px)",
+            overflowY: "auto",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
+          {options.map((opt) => (
+            <DropItem
+              key={opt}
+              label={opt}
+              selected={opt === value}
+              onSelect={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-// ─── Country list from react-international-phone ─────────────────────────────
-function CountrySelect({ iso2, onChange }) {
+function DropItem({ label, selected, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: "8px 12px",
+        fontSize: "13px",
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        background: hovered ? "#111" : "#fff",
+        color: hovered ? "#fff" : "#111",
+        fontWeight: selected ? 600 : 400,
+        transition: "background 0.15s, color 0.15s",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+// Floating-label text input — label floats up on focus or when value exists
+function FieldBox({
+  label,
+  type = "text",
+  value,
+  onChange,
+  disabled = false,
+  style = {},
+}) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || (value !== undefined && value !== "");
+  return (
+    <div
+      style={{
+        position: "relative",
+        border: `1px solid ${focused ? "#111" : "#ddd"}`,
+        borderRadius: "3px",
+        padding: floated ? "18px 14px 6px" : "14px 14px",
+        background: disabled ? "#f7f7f7" : "#fff",
+        transition: "border-color 0.2s, padding 0.15s",
+        boxSizing: "border-box",
+        ...style,
+      }}
+    >
+      <label
+        style={{
+          position: "absolute",
+          left: "14px",
+          top: floated ? "6px" : "50%",
+          transform: floated ? "none" : "translateY(-50%)",
+          fontSize: floated ? "10px" : "14px",
+          color: focused ? "#111" : "#999",
+          transition: "all 0.15s ease",
+          pointerEvents: "none",
+          fontFamily: FONT,
+          lineHeight: 1,
+        }}
+      >
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          width: "100%",
+          border: "none",
+          outline: "none",
+          padding: 0,
+          fontSize: "14px",
+          color: disabled ? "#888" : "#111",
+          background: "transparent",
+          fontFamily: FONT,
+        }}
+      />
+    </div>
+  );
+}
+
+// Floating-label-inside-box country select
+function CountryFieldBox({
+  label = "Country *",
+  iso2,
+  onChange,
+  disabled = false,
+}) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{
+        position: "relative",
+        border: `1px solid ${focused ? "#111" : "#ddd"}`,
+        borderRadius: "3px",
+        padding: "8px 34px 9px 14px",
+        background: disabled ? "#f7f7f7" : "#fff",
+        transition: "border-color 0.2s",
+        boxSizing: "border-box",
+      }}
+    >
+      <label
+        style={{
+          display: "block",
+          fontSize: "10.5px",
+          color: "#999",
+          marginBottom: "3px",
+          fontFamily: FONT,
+        }}
+      >
+        {label}
+      </label>
       <select
         value={iso2}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
           width: "100%",
-          padding: "14px 40px 14px 14px",
-          fontSize: "13px",
-          border: `1px solid ${focused ? "#111" : "#ddd"}`,
-          borderRadius: "2px",
+          border: "none",
           outline: "none",
+          padding: 0,
+          fontSize: "14px",
+          color: disabled ? "#888" : "#111",
+          background: "transparent",
           appearance: "none",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          color: iso2 ? "#111" : "#888",
-          background: "#fff",
-          cursor: "pointer",
-          transition: "border-color 0.2s",
-          boxSizing: "border-box",
+          cursor: disabled ? "default" : "pointer",
+          fontFamily: FONT,
         }}
       >
-        <option value="">Country *</option>
+        <option value="">Select country</option>
         {defaultCountries.map((c) => {
-          const parsed = parseCountry(c);
+          const p = parseCountry(c);
           return (
-            <option key={parsed.iso2} value={parsed.iso2}>
-              {parsed.name}
+            <option key={p.iso2} value={p.iso2}>
+              {p.name}
             </option>
           );
         })}
@@ -92,35 +296,27 @@ function CountrySelect({ iso2, onChange }) {
   );
 }
 
-// ─── Phone Input from react-international-phone ───────────────────────────────
-function PhoneInput({ phone, onChange, defaultCountry }) {
+// Flag + dial code + number, merged into one bordered box
+function PhoneFieldBox({
+  iso2,
+  onCountryChange,
+  value,
+  onChange,
+  disabled = false,
+}) {
   const [open, setOpen] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(
-    defaultCountry || "fr",
-  );
-  const [numberOnly, setNumberOnly] = useState("");
+  const [focused, setFocused] = useState(false);
+  const floatedPhone = focused || (value !== undefined && value !== "");
   const wrapRef = useRef(null);
 
-  // Get dial code from iso2
-  const getDialCode = (iso2) => {
-    const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso2);
+  const getDialCode = (code) => {
+    const c = defaultCountries.find((c) => parseCountry(c).iso2 === code);
     return c ? `+${parseCountry(c).dialCode}` : "";
   };
+  const dialCode = getDialCode(iso2 || "fr");
+  const flagUrl = (code) =>
+    `https://flagcdn.com/24x18/${(code || "fr").toLowerCase()}.png`;
 
-  // getFlagFromLibrary hatao, yeh use karo:
-  const getFlagUrl = (iso2) =>
-    `https://flagcdn.com/24x18/${iso2.toLowerCase()}.png`;
-
-  const dialCode = getDialCode(selectedCountry);
-
-  // Sync when parent changes country
-  useEffect(() => {
-    setSelectedCountry(defaultCountry || "fr");
-    setNumberOnly("");
-    onChange("");
-  }, [defaultCountry]);
-
-  // Close on outside click
   useEffect(() => {
     const h = (e) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target))
@@ -130,107 +326,109 @@ function PhoneInput({ phone, onChange, defaultCountry }) {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const handleSelect = (iso2) => {
-    setSelectedCountry(iso2);
-    setNumberOnly("");
-    onChange(getDialCode(iso2));
-    setOpen(false);
-  };
-
-  const handleNumberChange = (e) => {
-    setNumberOnly(e.target.value);
-    onChange(`${dialCode}${e.target.value}`);
-  };
-
   return (
-    <div ref={wrapRef} style={{ display: "flex", position: "relative" }}>
-      {/* Flag + dial code button */}
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        alignItems: "stretch",
+        border: `1px solid ${focused ? "#111" : "#ddd"}`,
+        borderRadius: "3px",
+        background: disabled ? "#f7f7f7" : "#fff",
+        transition: "border-color 0.2s",
+      }}
+    >
       <div
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => !disabled && setOpen((v) => !v)}
         style={{
           display: "flex",
           alignItems: "center",
           gap: "6px",
-          padding: "0 10px",
-          border: "1px solid #ddd",
-          borderRight: "none",
-          borderRadius: "2px 0 0 2px",
-          height: "48px",
-          background: "#fff",
-          cursor: "pointer",
-          fontSize: "13px",
+          padding: "0 12px",
+          borderRight: "1px solid #eee",
+          cursor: disabled ? "default" : "pointer",
           flexShrink: 0,
           userSelect: "none",
-          minWidth: "80px",
-          boxSizing: "border-box",
         }}
       >
-        {/* Flag + dial code button ke andar — span hatao, img lagao */}
         <img
-          src={getFlagUrl(selectedCountry)}
-          alt={selectedCountry}
+          src={flagUrl(iso2)}
+          alt=""
           style={{
-            width: "24px",
-            height: "18px",
+            width: "20px",
+            height: "15px",
             objectFit: "cover",
             borderRadius: "1px",
           }}
         />
-
-        <span style={{ color: "#555" }}>{dialCode}</span>
+        <span style={{ fontSize: "13px", color: "#333", fontFamily: FONT }}>
+          {dialCode}
+        </span>
         <span
           style={{
             width: 0,
             height: 0,
-            marginLeft: "auto",
             borderLeft: "3px solid transparent",
             borderRight: "3px solid transparent",
-            borderTop: "4px solid #555",
+            borderTop: "4px solid #888",
+          }}
+        />
+      </div>
+      <div
+        style={{
+          flex: 1,
+          position: "relative",
+          padding: floatedPhone ? "18px 14px 6px" : "14px 14px",
+          transition: "padding 0.15s",
+        }}
+      >
+        <label
+          style={{
+            position: "absolute",
+            left: "14px",
+            top: floatedPhone ? "6px" : "50%",
+            transform: floatedPhone ? "none" : "translateY(-50%)",
+            fontSize: floatedPhone ? "10px" : "14px",
+            color: focused ? "#111" : "#999",
+            transition: "all 0.15s ease",
+            pointerEvents: "none",
+            fontFamily: FONT,
+            lineHeight: 1,
+          }}
+        >
+          Phone Number
+        </label>
+        <input
+          type="tel"
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            width: "100%",
+            border: "none",
+            outline: "none",
+            padding: 0,
+            fontSize: "14px",
+            color: disabled ? "#888" : "#111",
+            background: "transparent",
+            fontFamily: FONT,
           }}
         />
       </div>
 
-      {/* Number input */}
-      <input
-        type="tel"
-        placeholder="Phone *"
-        value={numberOnly}
-        onChange={handleNumberChange}
-        style={{
-          flex: 1,
-          padding: "14px",
-          fontSize: "13px",
-          border: "1px solid #ddd",
-          borderLeft: "none",
-          borderRadius: "0 2px 2px 0",
-          outline: "none",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          color: "#111",
-          background: "#fff",
-          height: "48px",
-          boxSizing: "border-box",
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#111";
-          e.currentTarget.previousSibling.style.borderColor = "#111";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "#ddd";
-          e.currentTarget.previousSibling.style.borderColor = "#ddd";
-        }}
-      />
-
-      {/* Dropdown — position absolute, floats outside */}
       {open && (
         <div
           style={{
             position: "absolute",
             top: "calc(100% + 4px)",
             left: 0,
-            zIndex: 9999,
+            zIndex: 50,
             background: "#fff",
             border: "1px solid #ddd",
-            borderRadius: "2px",
+            borderRadius: "3px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             maxHeight: "220px",
             overflowY: "auto",
@@ -238,33 +436,35 @@ function PhoneInput({ phone, onChange, defaultCountry }) {
           }}
         >
           {defaultCountries.map((c) => {
-            const parsed = parseCountry(c);
+            const p = parseCountry(c);
             return (
               <div
-                key={parsed.iso2}
-                onClick={() => handleSelect(parsed.iso2)}
+                key={p.iso2}
+                onClick={() => {
+                  onCountryChange(p.iso2);
+                  setOpen(false);
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  padding: "9px 14px",
+                  padding: "8px 14px",
                   fontSize: "13px",
                   cursor: "pointer",
-                  background:
-                    parsed.iso2 === selectedCountry ? "#f5f5f5" : "#fff",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                  background: p.iso2 === iso2 ? "#f5f5f5" : "#fff",
+                  fontFamily: FONT,
                 }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.background = "#f5f5f5")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.background =
-                    parsed.iso2 === selectedCountry ? "#f5f5f5" : "#fff")
+                    p.iso2 === iso2 ? "#f5f5f5" : "#fff")
                 }
               >
-                <span style={{ fontSize: "18px" }}>{parsed.flag}</span>
-                <span style={{ flex: 1, color: "#111" }}>{parsed.name}</span>
-                <span style={{ color: "#888" }}>+{parsed.dialCode}</span>
+                <span style={{ fontSize: "16px" }}>{p.flag}</span>
+                <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
+                <span style={{ color: "#888" }}>+{p.dialCode}</span>
               </div>
             );
           })}
@@ -273,71 +473,83 @@ function PhoneInput({ phone, onChange, defaultCountry }) {
     </div>
   );
 }
-// ─── Promo Code Input ─────────────────────────────────────────────────────────
-function PromoInput() {
-  const [code, setCode] = useState("");
-  const hasValue = code.trim().length > 0;
 
+function Checkbox({ checked, onChange, label }) {
+  return (
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        cursor: "pointer",
+        fontSize: "13px",
+        color: "#333",
+        fontFamily: FONT,
+      }}
+    >
+      <span
+        onClick={() => onChange(!checked)}
+        style={{
+          width: "16px",
+          height: "16px",
+          border: `1.5px solid ${checked ? "#111" : "#bbb"}`,
+          borderRadius: "3px",
+          background: checked ? "#111" : "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          transition: "background 0.15s, border-color 0.15s",
+        }}
+      >
+        {checked && (
+          <svg width="10" height="8" viewBox="0 0 10 8">
+            <path
+              d="M1 4l3 3 5-6"
+              stroke="#fff"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </span>
+      <span className="mt-0.5"> {label}</span>
+    </label>
+  );
+}
+
+function RadioDot({ active }) {
   return (
     <div
       style={{
+        width: "18px",
+        height: "18px",
+        borderRadius: "50%",
+        border: `2px solid ${active ? "#111" : "#bbb"}`,
         display: "flex",
-        border: "1px solid #ddd",
-        borderRadius: "2px",
-        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        transition: "border-color 0.2s",
       }}
     >
-      <input
-        type="text"
-        placeholder="Enter your code"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        style={{
-          flex: 1,
-          padding: "13px 14px",
-          fontSize: "13px",
-          border: "none",
-          outline: "none",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          color: "#111",
-          background: "#fff",
-        }}
-      />
-      <button
-        disabled={!hasValue}
-        style={{
-          padding: "13px 18px",
-          fontSize: "11px",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          border: "none",
-          borderLeft: "1px solid #ddd",
-          cursor: hasValue ? "pointer" : "default",
-          background: hasValue ? "transparent" : "#f5f5f5",
-          color: hasValue ? "#111" : "#aaa",
-          transition: "background 0.2s, color 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          if (hasValue) {
-            e.currentTarget.style.background = "#111";
-            e.currentTarget.style.color = "#fff";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (hasValue) {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "#111";
-          }
-        }}
-      >
-        Apply
-      </button>
+      {active && (
+        <div
+          style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            background: "#111",
+          }}
+        />
+      )}
     </div>
   );
 }
-// ─── Accordion row (Gift / Promo) ────────────────────────────────────────────
+
+// ─── Accordion row (Gift card / Voucher) ────────────────────────────────────
 function AccordionRow({ label, children }) {
   const [open, setOpen] = useState(false);
   const contentRef = useRef(null);
@@ -362,7 +574,7 @@ function AccordionRow({ label, children }) {
           cursor: "pointer",
           fontSize: "13px",
           color: "#111",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+          fontFamily: FONT,
         }}
       >
         <span>{label}</span>
@@ -393,99 +605,1338 @@ function AccordionRow({ label, children }) {
   );
 }
 
-// ─── Order Summary Sidebar ────────────────────────────────────────────────────
-function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = false, paymentMethod = "card" }) {
+/* ────────────────────────────────────────────────────────────────────────
+   Brand badges (simplified, generic placeholders — not official logo art)
+   ──────────────────────────────────────────────────────────────────────── */
 
-  const [currentShipping, setCurrentShipping] = React.useState(0);
+function CardBrandIcons() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <svg
+        width="34"
+        height="22"
+        viewBox="0 0 38 24"
+        style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
+      >
+        <rect width="38" height="24" fill="#fff" rx="3" />
+        <circle cx="14" cy="12" r="7" fill="#eb001b" opacity="0.9" />
+        <circle cx="24" cy="12" r="7" fill="#f79e1b" opacity="0.9" />
+        <ellipse cx="19" cy="12" rx="3" ry="7" fill="#ff5f00" opacity="0.85" />
+      </svg>
+      <svg
+        width="34"
+        height="22"
+        viewBox="0 0 38 24"
+        style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
+      >
+        <rect width="38" height="24" fill="#fff" rx="3" />
+        <text
+          x="50%"
+          y="16"
+          textAnchor="middle"
+          fontSize="10"
+          fontWeight="700"
+          fill="#1a1f71"
+          fontFamily="Arial"
+        >
+          VISA
+        </text>
+      </svg>
+      <svg
+        width="34"
+        height="22"
+        viewBox="0 0 38 24"
+        style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
+      >
+        <rect width="38" height="24" fill="#2557d6" rx="3" />
+        <text
+          x="50%"
+          y="15"
+          textAnchor="middle"
+          fontSize="9"
+          fontWeight="700"
+          fill="#fff"
+          fontFamily="Arial"
+        >
+          AMEX
+        </text>
+      </svg>
+    </div>
+  );
+}
 
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentShipping((prev) => (prev + 1) % 3);
-    }, 3000);
+function GooglePayBadge() {
+  return (
+    <div
+      style={{
+       
+        
+        fontSize: "12px",
+        fontWeight: 600,
+        color: "#5f6368",
+        display: "flex",
+        alignItems: "center",
+        gap: "2px",
+        fontFamily: FONT,
+      }}
+    >
+     <img src="GPAY.svg" alt="" />
+    </div>
+  );
+}
+
+function ApplePayBadge() {
+  return (
+    <div
+      style={{
+        border: "1px solid #e5e5e5",
+        borderRadius: "3px",
+        padding: "5px 10px",
+        fontSize: "12px",
+        fontWeight: 500,
+        color: "#111",
+        display: "flex",
+        alignItems: "center",
+        gap: "0px",
+        fontFamily: FONT,
+      }}
+    >
+      <AppleIcon /> <span className="mt-0.5">Pay</span>
+    </div>
+  );
+}
+
+function PayPalBadge() {
+  return (
+    <div
+      style={{
+        
+        fontSize: "12px",
+        fontWeight: 700,
+        color: "#003087",
+        fontFamily: FONT,
+      }}
+    >
+      <img src="PPAY.svg" alt="" />
+    </div>
+  );
+}
+
+function AppleIcon({ color = "#111", size = 14 }) {
+  return (
+    <svg width={size} height={size * 1.15} viewBox="0 0 14 16" fill="none">
+      <path
+        d="M11.2 8.5c0-1.6 1.3-2.4 1.4-2.5-.8-1.1-1.9-1.3-2.3-1.3-1-.1-1.9.6-2.4.6-.5 0-1.3-.6-2.1-.6-1.1 0-2.1.6-2.7 1.6-1.1 2-.3 5 .8 6.6.5.8 1.1 1.7 1.9 1.6.7 0 1-.5 1.9-.5.9 0 1.1.5 1.9.5.8 0 1.4-.8 1.9-1.6.5-.8.7-1.5.7-1.6 0 0-1.9-.7-1.9-2.8Z"
+        fill={color}
+      />
+      <path
+        d="M8.6 3.5c.4-.5.7-1.2.6-1.9-.6 0-1.3.4-1.7.9-.4.4-.7 1.1-.6 1.8.7.1 1.3-.3 1.7-.8Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
+
+function CardNumberField({ value, onChange }) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value !== "";
+  return (
+    <div style={{ position: "relative", padding: floated ? "18px 14px 6px" : "14px 14px", transition: "padding 0.15s" }}>
+      <label style={{
+        position: "absolute", left: "52px",
+        top: floated ? "6px" : "50%",
+        transform: floated ? "none" : "translateY(-50%)",
+        fontSize: floated ? "10px" : "14px",
+        color: focused ? "#111" : "#999",
+        transition: "all 0.15s ease", pointerEvents: "none", fontFamily: FONT, lineHeight: 1,
+      }}>
+        Card number
+      </label>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <svg width="34" height="22" viewBox="0 0 38 24" style={{ border: "1px solid #e5e5e5", borderRadius: "3px", flexShrink: 0 }}>
+          <rect width="38" height="24" fill="#fff" rx="3" />
+          <circle cx="14" cy="12" r="7" fill="#eb001b" opacity="0.9" />
+          <circle cx="24" cy="12" r="7" fill="#f79e1b" opacity="0.9" />
+          <ellipse cx="19" cy="12" rx="3" ry="7" fill="#ff5f00" opacity="0.85" />
+        </svg>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{ flex: 1, border: "none", outline: "none", fontSize: "14px", color: "#111", background: "transparent", fontFamily: FONT, padding: 0 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CardIcon() {
+  return (
+    <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+      <rect x="0.5" y="0.5" width="19" height="13" rx="2" stroke="#111" />
+      <rect x="0.5" y="3.5" width="19" height="2.5" fill="#111" />
+    </svg>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Layout building blocks
+   ──────────────────────────────────────────────────────────────────────── */
+
+function Section({ title, children }) {
+  return (
+    <div
+      style={{
+        background: "#f3f3f3",
+        borderRadius: "2px",
+        padding: "26px 30px",
+      }}
+    >
+      <h2
+        style={{
+          margin: "0 0 18px",
+          fontSize: "17px",
+          fontWeight: 700,
+          color: "#111",
+          fontFamily: FONT,
+        }}
+      >
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function ExpressPaymentBar({ onSelect }) {
+  const baseBtn = {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    width:"50px",
+     height:"50px",
+    padding: "13px 10px",
+  backgroundColor:"#fff",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+    fontFamily: FONT,
+    color: "#111",
+    transition: "border-color 0.2s, background 0.2s",
+  };
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        backgroundColor: "#f3f3f3",
+        padding: "26px 30px 24px",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: "9px",
+          left: "12%",
+          transform: "translateX(-50%)",
+          margin: "10px",
+          padding: "0 12px",
+          fontSize: "17px",
+          fontWeight: 700,
+          color: "#111",
+          fontFamily: FONT,
+
+          whiteSpace: "nowrap",
+        }}
+      >
+        Express Payment
+      </div>
+      <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
+        <button
+          onClick={() => onSelect("card")}
+          style={baseBtn}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#111")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+        >
+         <img src="visa.svg" alt=""style={{width:"120px",  height:"90px"}} />
+        </button>
+        <button
+          onClick={() => onSelect("googlepay")}
+          style={baseBtn}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#4285F4")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+        >
+        <img src="pay-pal.svg" alt="" style={{width:"120px",  height:"100px"}} />
+        </button>
+        <button
+          onClick={() => onSelect("applepay")}
+          style={baseBtn}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#111")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+        >
+         <img src="apple-pay.svg" alt="" style={{width:"120px", height:"80px"}} />
+        </button>
+        <button
+          onClick={() => onSelect("paypal")}
+          style={{ ...baseBtn, color: "#003087", width:"50px", height:"50px" }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#003087")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+        >
+         <img src="google-pay.svg" alt="" style={{width:"100px",  height:"100px"}} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PaymentMethodRow({ active, onSelect, label, right, children, last }) {
+  return (
+    <div style={{ borderBottom: last ? "none" : "1px solid #e5e5e5" }}>
+      <div
+        onClick={onSelect}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 16px",
+          cursor: "pointer",
+          background: active ? "#fff" : "#fff",
+          transition: "background 0.15s",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <RadioDot active={active} />
+          <span style={{ fontSize: "14px", color: "#111", fontFamily: FONT }}>
+            {label}
+          </span>
+        </div>
+        {right}
+      </div>
+      {children && (
+        <div
+          style={{
+            maxHeight: active ? "260px" : "0px",
+            overflow: "hidden",
+            transition: "max-height 0.35s ease",
+            background: "#fff",
+          }}
+        >
+          <div style={{ padding: "0 16px 16px" }}>{children}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Cart item card (exactly same as ModalAddToCart.jsx) ───────────────────
+function CartItemRow({ item, index, onQtyChange, onRemove }) {
+  const p = item.product || {};
+  const firstImage = "https://placehold.co/64x80/f3f3f3/999?text=IMG";
+  const name = p.name || item.name || "";
+  // size_name: real API items mein item.product.size_name ya item.size_name hota hai
+  const sizeName = p.size_name || item.size_name || null;
+  const sizeOptions = sizeName ? [sizeName] : [];
+  const isSingleSize = true; // size sirf display ke liye, change nahi hota
+  const unitPrice =
+    item.original_price ||
+    parseFloat(String(item.price ?? "0").replace(",", ".")) ||
+    0;
+  const qty = item.quantity ?? item.qty ?? 1;
+  const itemTotal = (unitPrice * qty).toFixed(2);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "14px",
+        padding: "20px 0",
+        borderBottom: "1px solid #e5e5e5",
+      }}
+    >
+      {/* Image — same 64×80 box as ModalAddToCart */}
+      <div
+        style={{
+          width: "64px",
+          height: "80px",
+          flexShrink: 0,
+          backgroundColor: "#f3f3f3",
+          borderRadius: "0px",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <img
+          src={firstImage}
+          alt={name}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+
+      {/* Name + controls */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            margin: "0 0 4px",
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#111",
+            overflow: "hidden",
+          }}
+        >
+          {name}
+        </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
+          {/* Quantity dropdown */}
+          <CustomDropdown
+            options={QTY_OPTIONS}
+            value={String(qty)}
+            onChange={(val) => onQtyChange(index, parseInt(val))}
+          />
+          {/* Size dropdown */}
+          {sizeOptions.length > 0 && (
+            <CustomDropdown
+              options={sizeOptions}
+              value={sizeOptions[0]}
+              onChange={() => {}}
+              disabled={isSingleSize}
+            />
+          )}
+          {/* Delete icon */}
+          <button
+            onClick={() => onRemove(index)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px",
+              color: "#888",
+              display: "flex",
+              alignItems: "center",
+            }}
+            title="Remove item"
+          >
+            <RiDeleteBinLine className="hover:text-gray-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Price — pushed to bottom-right same as ModalAddToCart */}
+      <div
+        style={{
+          fontSize: "13px",
+          marginTop: "65px",
+          color: "#555",
+          flexShrink: 0,
+        }}
+      >
+        {parseFloat(itemTotal).toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+        })}{" "}
+        €
+      </div>
+    </div>
+  );
+}
+
+// ─── Order Summary Sidebar ────────────────────────────────────────────────
+function OrderSummary({
+  items,
+  onQtyChange,
+  onRemoveItem,
+  subtotal,
+  totalUnits,
+}) {
+  const [currentShipping, setCurrentShipping] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setCurrentShipping((prev) => (prev + 1) % 3),
+      3000,
+    );
     return () => clearInterval(interval);
   }, []);
 
   const shippingSlides = [
-    { title: "Shipping from France", note: "All orders shipped from Paris" },
-    { title: "Free Shipping", note: "Free on all orders over €50" },
+    { title: "Shipping From France", note: "All orders shipped from Paris" },
+    { title: "Free Shipping", note: "Free on all orders over €39" },
     { title: "Complimentary Gift", note: "Free gift pouch with every order" },
   ];
-  const subtotal = items.reduce((s, i) => s + i.price, 0);
-  const delivery = deliveryFree ? 0 : 5.9;
-  const total = subtotal + delivery;
+
+  // Auth check
+  const isLoggedIn = (() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("LoginData") || "null");
+      return !!d?.data?.token;
+    } catch {
+      return false;
+    }
+  })();
+
+  // ─── CASE 1: Guest Voucher States ────────────────────────────────────────
+  const [guestVoucherInput, setGuestVoucherInput] = useState("");
+  const [guestVoucherError, setGuestVoucherError] = useState(null);
+  const [guestVoucherLoading, setGuestVoucherLoading] = useState(false);
+  const [guestApplyHovered, setGuestApplyHovered] = useState(false);
+  const [guestPendingPill, setGuestPendingPill] = useState(null);
+  const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
+  const [guestUsedCodes, setGuestUsedCodes] = useState([]);
+
+  // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState(
+    () => getVoucherState()?.selectedPill || "",
+  );
+  const [loggedVoucherError, setLoggedVoucherError] = useState(null);
+  const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
+  const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
+  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(
+    () => getVoucherState()?.applied || false,
+  );
+  const [appliedVoucherOff, setAppliedVoucherOff] = useState(
+    () => getVoucherState()?.off || 0,
+  );
+  const [selectedPill, setSelectedPill] = useState(
+    () => getVoucherState()?.selectedPill || null,
+  );
+  const [redeemHovered, setRedeemHovered] = useState(false);
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+  const [voucherPills, setVoucherPills] = useState([]);
+  const [voucherPoints, setVoucherPoints] = useState(() => {
+    const saved = getVoucherState();
+    return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
+  });
+
+  // ─── CASE 3: Promo Code States ────────────────────────────────────────────
+  const [promoInput, setPromoInput] = useState("");
+  const [promoHovered, setPromoHovered] = useState(false);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState(null);
+  const [appliedPromo, setAppliedPromo] = useState(null);
+
+  // Delivery method
+  const [deliveryMethod, setDeliveryMethod] = useState("home");
+  const [deliveryDropdownOpen, setDeliveryDropdownOpen] = useState(false);
+  const deliveryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        deliveryDropdownRef.current &&
+        !deliveryDropdownRef.current.contains(e.target)
+      )
+        setDeliveryDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Voucher state sync on mount
+  useEffect(() => {
+    const saved = getVoucherState();
+    if (saved) {
+      setLoggedVoucherApplied(saved.applied || false);
+      setAppliedVoucherOff(saved.off || 0);
+      setSelectedPill(saved.selectedPill || null);
+      setLoggedVoucherInput(saved.selectedPill || "");
+      if (saved.voucherPoints !== undefined) {
+        setVoucherPoints(saved.voucherPoints);
+      }
+    }
+  }, []);
+
+  // Reset voucher state if cart becomes empty
+  useEffect(() => {
+    if (items.length === 0) {
+      removeVoucherState();
+      setLoggedVoucherApplied(false);
+      setAppliedVoucherOff(0);
+      setSelectedPill(null);
+      setLoggedVoucherInput("");
+      setVoucherPoints(null);
+    }
+  }, [items.length]);
+
+  // Fetch voucher list
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const loginData = JSON.parse(
+          localStorage.getItem("LoginData") || "null",
+        );
+        const token = loginData?.data?.token;
+        const res = await fetch(`${BASE_URL}/user/voucher/list`, {
+          method: "GET",
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : { "Content-Type": "application/json" },
+          ...(token
+            ? {}
+            : { body: JSON.stringify({ device_id: getDeviceId() }) }),
+        });
+        const data = await res.json();
+        const list = data.data?.vouchers?.data || data.data?.data;
+        if (data.status && list) {
+          setVoucherPills(list);
+          const saved = getVoucherState();
+          if (!saved || saved.voucherPoints === undefined) {
+            const totalPoints =
+              data.data?.total_point !== undefined
+                ? Number(data.data.total_point)
+                : list.reduce((sum, v) => sum + (v.point || 0), 0);
+            setVoucherPoints(totalPoints);
+            setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
+          }
+        }
+      } catch {
+        /* silent */
+      }
+    };
+    fetchVouchers();
+  }, []);
+
+  // ─── CASE 1 HANDLERS (Guest) ──────────────────────────────────────────────
+
+  const handleGuestInputChange = (e) => {
+    const val = e.target.value;
+    setGuestVoucherInput(val);
+    setGuestVoucherError(null);
+  };
+
+  const handleGuestPendingPillRemove = () => {
+    setGuestPendingPill(null);
+    setGuestVoucherInput("");
+    setGuestVoucherError(null);
+  };
+
+  const handleGuestApply = async () => {
+    const code = guestVoucherInput.trim().toUpperCase();
+    if (!code) return;
+
+    setGuestVoucherLoading(true);
+    setGuestVoucherError(null);
+    await new Promise((r) => setTimeout(r, 600));
+
+    if (guestUsedCodes.includes(code)) {
+      setGuestVoucherError(
+        "This voucher code is invalid or has already been used.",
+      );
+      setGuestUsedCodes((prev) => prev.filter((c) => c !== code));
+      setGuestVoucherInput("");
+    } else {
+      setGuestUsedCodes((prev) => [...prev, code]);
+      setGuestAppliedVoucher(code);
+      setGuestVoucherInput("");
+      setGuestVoucherError(null);
+    }
+
+    setGuestVoucherLoading(false);
+  };
+
+  const handleGuestRemoveApplied = () => {
+    setGuestAppliedVoucher(null);
+    setGuestVoucherError(null);
+    setGuestVoucherInput("");
+    setGuestPendingPill(null);
+  };
+
+  // ─── CASE 2 HANDLERS (Logged-in) ─────────────────────────────────────────
+
+  const handlePillClick = (code) => {
+    if (loggedVoucherApplied) return;
+    setSelectedPill(code);
+    setLoggedVoucherInput(code);
+    setLoggedVoucherError(null);
+    setVoucherState({
+      ...getVoucherState(),
+      selectedPill: code,
+      applied: false,
+    });
+  };
+
+  const handlePillRemove = () => {
+    setSelectedPill(null);
+    setLoggedVoucherInput("");
+    setLoggedVoucherError(null);
+    setVoucherState({ ...getVoucherState(), selectedPill: null });
+  };
+
+  const handleLoggedApply = async () => {
+    const codeToApply = selectedPill || loggedVoucherInput.trim();
+    if (!codeToApply || loggedVoucherApplied) return;
+    if (!selectedPill) setSelectedPill(codeToApply);
+    setLoggedVoucherLoading(true);
+    setLoggedVoucherError(null);
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await fetch(`${BASE_URL}/user/order/check/voucher`, {
+        method: "POST",
+        headers: token
+          ? {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          token
+            ? { name: codeToApply }
+            : { name: codeToApply, device_id: getDeviceId() },
+        ),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        setLoggedVoucherError(getErrorMsg(data) || "Invalid voucher.");
+        setLoggedVoucherLoading(false);
+        return;
+      }
+      const off = data.data?.off || 0;
+      const point = data.data?.point ?? 0;
+      setAppliedVoucherOff(off);
+      setVoucherPoints(point);
+      if (point === 0) {
+        setSelectedPill(null);
+        setLoggedVoucherInput("");
+        setVoucherState({
+          applied: false,
+          selectedPill: null,
+          input: "",
+          off: 0,
+          voucherPoints: 0,
+        });
+      } else {
+        setLoggedVoucherApplied(true);
+        setVoucherState({
+          applied: true,
+          selectedPill: codeToApply,
+          input: codeToApply,
+          off,
+          voucherPoints: point,
+        });
+      }
+    } catch {
+      setLoggedVoucherError("Something went wrong.");
+    }
+    setLoggedVoucherLoading(false);
+  };
+
+  const handleLoggedRemoveVoucher = () => {
+    setSelectedPill(null);
+    setLoggedVoucherApplied(false);
+    setLoggedVoucherInput("");
+    setLoggedVoucherError(null);
+    setAppliedVoucherOff(0);
+    setVoucherPoints(null);
+    removeVoucherState();
+  };
+
+  // ─── CASE 3 HANDLERS (Promo) ─────────────────────────────────────────────
+
+  const handlePromoInputChange = (e) => {
+    setPromoInput(e.target.value);
+    if (promoError) setPromoError(null);
+  };
+
+  const handlePromoApply = async () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    try {
+      const res = await fetch(`${BASE_URL}/user/order/check/promo-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: code }),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        setPromoError(getErrorMsg(data) || "Invalid promo code.");
+        setPromoLoading(false);
+        return;
+      }
+      setAppliedPromo({ code, off: data.data?.off || 0 });
+      setPromoInput("");
+    } catch {
+      setPromoError("Something went wrong.");
+    }
+    setPromoLoading(false);
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError(null);
+    setPromoInput("");
+  };
+
+  // Delivery & totals
+  const freeShippingThreshold = 39;
+  const totalDiscount =
+    (loggedVoucherApplied ? appliedVoucherOff : 0) +
+    (appliedPromo ? appliedPromo.off : 0);
+
+  const getDeliveryCost = (method, total) => {
+    if (total < 39) return method === "pickup" ? 5.9 : 6.9;
+    if (total < 59) return method === "pickup" ? 0 : 6.9;
+    return method === "pickup" ? 0 : 2.9;
+  };
+  const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
+  const isFreeDelivery = deliveryCost === 0;
+  const total = Math.max(0, subtotal + deliveryCost - totalDiscount);
+
+  // ─── CASE 1: Guest Voucher Render ────────────────────────────────────────
+  const renderGuestVoucherContent = () => (
+    <>
+      <div
+        style={{
+          display: "flex",
+          border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+          borderRadius: "0px",
+          overflow: "hidden",
+          transition: "border-color 0.15s",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Enter Voucher code"
+          value={loggedVoucherInput}
+          disabled={loggedVoucherApplied}
+          onChange={(e) => {
+            setLoggedVoucherInput(e.target.value);
+            if (loggedVoucherError) setLoggedVoucherError(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleLoggedApply();
+          }}
+          style={{
+            flex: 1,
+            border: "none",
+            outline: "none",
+            padding: "11px 14px",
+            fontSize: "13px",
+            color: loggedVoucherApplied ? "#aaa" : "#111",
+            background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+            cursor: loggedVoucherApplied ? "not-allowed" : "text",
+            fontFamily: FONT,
+          }}
+        />
+        <button
+          onClick={handleLoggedApply}
+          disabled={
+            !loggedVoucherInput.trim() ||
+            loggedVoucherApplied ||
+            loggedVoucherLoading
+          }
+          onMouseEnter={() => {
+            if (loggedVoucherInput.trim() && !loggedVoucherApplied)
+              setLoggedApplyHovered(true);
+          }}
+          onMouseLeave={() => setLoggedApplyHovered(false)}
+          style={{
+            border: "none",
+            borderLeft: "1px solid #ddd",
+            background:
+              !loggedVoucherInput.trim() || loggedVoucherApplied
+                ? "#f3f3f3"
+                : loggedApplyHovered
+                  ? "#111"
+                  : "transparent",
+            color:
+              !loggedVoucherInput.trim() || loggedVoucherApplied
+                ? "#aaa"
+                : loggedApplyHovered
+                  ? "#fff"
+                  : "#111",
+            padding: "11px 18px",
+            fontSize: "12px",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            cursor:
+              !loggedVoucherInput.trim() || loggedVoucherApplied
+                ? "default"
+                : "pointer",
+            transition: "background 0.2s, color 0.2s",
+            fontFamily: FONT,
+          }}
+        >
+          {loggedVoucherLoading ? "..." : "Apply"}
+        </button>
+      </div>
+
+      {loggedVoucherError && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px",
+            marginTop: "10px",
+            padding: "10px 12px",
+            background: "#fdecec",
+            border: "1px solid #f5c6c6",
+            borderRadius: "0px",
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            style={{ flexShrink: 0, marginTop: "1px" }}
+          >
+            <circle cx="12" cy="12" r="11" fill="#e02424" />
+            <path
+              d="M8 8l8 8M16 8l-8 8"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>
+            {loggedVoucherError}
+          </span>
+        </div>
+      )}
+
+      {loggedVoucherApplied && selectedPill && (
+        <div style={{ marginTop: "10px" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "#111",
+              borderRadius: "20px",
+              overflow: "hidden",
+            }}
+          >
+            <span
+              style={{
+                padding: "6px 12px",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#fff",
+                letterSpacing: "0.04em",
+                fontFamily: FONT,
+              }}
+            >
+              {selectedPill}
+            </span>
+            <span
+              style={{
+                display: "block",
+                width: "1px",
+                height: "28px",
+                background: "rgba(255,255,255,0.25)",
+              }}
+            />
+            <button
+              onClick={handleLoggedRemoveVoucher}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "6px 10px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#fff",
+              }}
+            >
+              <IoClose size={13} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!loggedVoucherApplied &&
+        !loggedVoucherError &&
+        !loggedVoucherInput.trim() && (
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontSize: "12px",
+              color: "#888",
+              lineHeight: 1.5,
+            }}
+          >
+            You don't have any vouchers or reward points yet. Points are earned
+            automatically with every purchase, redeem them for discounts on your
+            next order.
+          </p>
+        )}
+    </>
+  );
+
+  // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
+  const renderLoggedVoucherContent = () => {
+    const hasVouchers = voucherPills.length > 0;
+    return (
+      <>
+        <div
+          style={{
+            display: "flex",
+            border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+            borderRadius: "0px",
+            overflow: "hidden",
+            transition: "border-color 0.15s",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Enter Voucher code"
+            value={loggedVoucherInput}
+            disabled={loggedVoucherApplied}
+            onChange={(e) => {
+              setLoggedVoucherInput(e.target.value);
+              if (loggedVoucherError) setLoggedVoucherError(null);
+              const match = voucherPills.find((p) => p.name === e.target.value);
+              if (match) setSelectedPill(match.name);
+              else setSelectedPill(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleLoggedApply();
+            }}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              padding: "11px 14px",
+              fontSize: "13px",
+              color: loggedVoucherApplied ? "#aaa" : "#111",
+              background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+              cursor: loggedVoucherApplied ? "not-allowed" : "text",
+              fontFamily: FONT,
+            }}
+          />
+          <button
+            onClick={handleLoggedApply}
+            disabled={
+              (!selectedPill && !loggedVoucherInput.trim()) ||
+              loggedVoucherApplied ||
+              loggedVoucherLoading
+            }
+            onMouseEnter={() => {
+              if (
+                (selectedPill || loggedVoucherInput.trim()) &&
+                !loggedVoucherApplied
+              )
+                setLoggedApplyHovered(true);
+            }}
+            onMouseLeave={() => setLoggedApplyHovered(false)}
+            style={{
+              border: "none",
+              borderLeft: "1px solid #ddd",
+              background:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "#f3f3f3"
+                  : loggedApplyHovered
+                    ? "#111"
+                    : "transparent",
+              color:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "#aaa"
+                  : loggedApplyHovered
+                    ? "#fff"
+                    : "#111",
+              padding: "11px 18px",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "default"
+                  : "pointer",
+              transition: "background 0.2s, color 0.2s",
+              fontFamily: FONT,
+            }}
+          >
+            {loggedVoucherLoading ? "..." : "Apply"}
+          </button>
+        </div>
+
+        {selectedPill &&
+          !loggedVoucherApplied &&
+          voucherPills.some((p) => p.name === selectedPill) && (
+            <p
+              style={{
+                margin: "10px 0 6px",
+                fontSize: "12px",
+                color: "#555",
+                lineHeight: 1.5,
+              }}
+            >
+              Voucher code added. Click Apply to redeem it.
+            </p>
+          )}
+
+        {!loggedVoucherApplied && hasVouchers && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "12px",
+            }}
+          >
+            {voucherPills.map((pill) => {
+              const code = pill.name;
+              const isSelected = selectedPill === code;
+              return (
+                <div
+                  key={pill.id}
+                  onClick={() => handlePillClick(code)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    border: "1px solid #ccc",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    background: isSelected ? "#111" : "#fff",
+                    transition: "background 0.15s",
+                    userSelect: "none",
+                  }}
+                >
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: isSelected ? "#fff" : "#111",
+                      fontFamily: FONT,
+                    }}
+                  >
+                    {code}
+                  </span>
+                  {isSelected && (
+                    <>
+                      <span
+                        style={{
+                          display: "block",
+                          width: "1px",
+                          height: "28px",
+                          background: "rgba(255,255,255,0.3)",
+                        }}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePillRemove();
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "6px 10px",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#fff",
+                        }}
+                      >
+                        <IoClose size={13} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Points/Redeem — show when user has points (not null and > 0) */}
+        {/* {voucherPoints !== null && voucherPoints > 0 && !loggedVoucherError && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
+              You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
+            </p>
+            <button
+              onMouseEnter={() => setRedeemHovered(true)}
+              onMouseLeave={() => setRedeemHovered(false)}
+              onClick={() => setIsVoucherModalOpen(true)}
+              style={{
+                flexShrink: 0, marginLeft: "12px",
+                padding: "8px 16px", fontSize: "12px", fontWeight: 700,
+                letterSpacing: "0.08em", textTransform: "uppercase",
+                background: redeemHovered ? "#333" : "#111", color: "#fff",
+                border: "none", borderRadius: "0px", cursor: "pointer",
+                transition: "background 0.2s",
+                fontFamily: FONT,
+              }}
+            >
+              Redeem
+            </button>
+          </div>
+        )} */}
+
+        {!selectedPill &&
+          !loggedVoucherError &&
+          !loggedVoucherApplied &&
+          !hasVouchers &&
+          voucherPoints === 0 && (
+            <p
+              style={{
+                margin: "10px 0 0",
+                fontSize: "12px",
+                color: "#888",
+                lineHeight: 1.5,
+              }}
+            >
+              You don't have any vouchers or reward points yet. Points are
+              earned automatically with every purchase, redeem them for
+              discounts on your next order.
+            </p>
+          )}
+
+        {loggedVoucherError && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
+              marginTop: "10px",
+              padding: "10px 12px",
+              background: "#fdecec",
+              border: "1px solid #f5c6c6",
+              borderRadius: "4px",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              style={{ flexShrink: 0, marginTop: "1px" }}
+            >
+              <circle cx="12" cy="12" r="11" fill="#e02424" />
+              <path
+                d="M8 8l8 8M16 8l-8 8"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span
+              style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}
+            >
+              {loggedVoucherError}
+            </span>
+          </div>
+        )}
+
+        {loggedVoucherApplied && selectedPill && (
+          <div style={{ marginTop: "10px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "#111",
+                borderRadius: "20px",
+                overflow: "hidden",
+              }}
+            >
+              <span
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: FONT,
+                }}
+              >
+                {selectedPill}
+              </span>
+              <span
+                style={{
+                  display: "block",
+                  width: "1px",
+                  height: "28px",
+                  background: "rgba(255,255,255,0.25)",
+                }}
+              />
+              <button
+                onClick={handleLoggedRemoveVoucher}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 10px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#fff",
+                }}
+              >
+                <IoClose size={13} />
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div
       style={{
         width: "380px",
         flexShrink: 0,
-        background: "#fff",
-        borderRadius: "2px",
-        padding: "24px 28px",
-        position: "sticky",
-        top: "40px",
-        alignSelf: "flex-start",
+        background: "#f3f3f3",
+        borderRadius: "0px",
+        padding: "20px 26px 26px",
       }}
     >
-  {deliveryValidated ? (
-  paymentMethod === "paypal" ? (
-    <button
-      style={{
-        width: "100%", padding: "13px 15px",
-        backgroundColor: "#fff", color: "#003087",
-        border: "2px solid #003087", fontSize: "14px", fontWeight: 700,
-        cursor: "pointer", borderRadius: "2px",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        transition: "background 0.2s", display: "flex",
-        alignItems: "center", justifyContent: "center", gap: "6px",
-        marginBottom: "16px",
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "#003087"; e.currentTarget.style.color = "#fff"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#003087"; }}
-    >
-      Pay with <span>Pay<span style={{ color: "#009cde" }}>Pal</span></span>
-    </button>
-  ) : (
-    <button
-      style={{
-        width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff",
-        border: "none", fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em",
-        textTransform: "uppercase", cursor: "pointer", borderRadius: "2px",
-        marginBottom: "16px",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        transition: "background 0.2s",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
-    >
-      ORDER — {(subtotal + (deliveryFree ? 0 : 5.9)).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-    </button>
-  )
-) : (
-  <button
-    style={{
-      width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff",
-      border: "none", fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em",
-      textTransform: "uppercase", cursor: "pointer", borderRadius: "2px",
-      marginBottom: "16px",
-      fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-      transition: "background 0.2s",
-    }}
-    onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-    onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
-  >
-    NEXT
-  </button>
-)}
+      {/* Cart items — 3 cards visible, 4th on scroll */}
+      <div
+        style={{
+          maxHeight: "398px",
+          overflowY: "auto",
+          paddingRight: "6px",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#bbb #f3f3f3",
+        }}
+      >
+        {items.map((item, idx) => (
+          <CartItemRow
+            key={idx}
+            item={item}
+            index={idx}
+            onQtyChange={onQtyChange}
+            onRemove={onRemoveItem}
+          />
+        ))}
+      </div>
 
-      {/* Shipping Titles — same as ProductDetail.jsx */}
+      {/* Shipping carousel */}
       <div
         style={{
           paddingTop: "16px",
-          marginBottom: "20px",
-          marginBottom: "-1px",
-          borderBottom: "1px solid #e5e5e5",
           paddingBottom: "16px",
+          borderTop: "1px solid #e5e5e5",
+          borderBottom: "1px solid #e5e5e5",
         }}
       >
         <div
@@ -502,6 +1953,7 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
                 fontWeight: 600,
                 color: "#1C1C1C",
                 margin: 0,
+                fontFamily: FONT,
               }}
             >
               {shippingSlides[currentShipping].title}
@@ -512,6 +1964,7 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
                 color: "#9CA3AF",
                 marginTop: "2px",
                 marginBottom: 0,
+                fontFamily: FONT,
               }}
             >
               {shippingSlides[currentShipping].note}
@@ -525,12 +1978,12 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
                 style={{
                   borderRadius: "9999px",
                   cursor: "pointer",
-                  border: idx === currentShipping ? "none" : "1px solid black",
-                  background: idx === currentShipping ? "#1F2937" : "white",
+                  border: idx === currentShipping ? "none" : "1px solid #111",
+                  background: idx === currentShipping ? "#1F2937" : "#fff",
                   width: idx === currentShipping ? "16px" : "6px",
-                  height: idx === currentShipping ? "6px" : "6px",
+                  height: "6px",
                   padding: 0,
-                  transition: "all 0.7s",
+                  transition: "all 0.3s",
                 }}
               />
             ))}
@@ -538,18 +1991,170 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
         </div>
       </div>
 
-      {/* Promo & Gift */}
+      {/* Gift card / promo code — same logic as ModalAddToCart.jsx */}
       <AccordionRow label="Gift card / promo code">
-        <PromoInput />
-      </AccordionRow>
-      <AccordionRow label="Add a gift pouch">
-        <p style={{ fontSize: "13px", color: "#555", margin: "0 0 8px" }}>
-          Choose your gift pouch option at checkout.
-        </p>
+        <div
+          style={{
+            display: "flex",
+            border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
+            borderRadius: "0px",
+            overflow: "hidden",
+            transition: "border-color 0.15s",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Enter your code"
+            value={appliedPromo ? appliedPromo.code : promoInput}
+            disabled={!!appliedPromo}
+            onChange={handlePromoInputChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handlePromoApply();
+            }}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              padding: "11px 14px",
+              fontSize: "13px",
+              color: appliedPromo ? "#aaa" : "#111",
+              background: appliedPromo ? "#f9f9f9" : "#fff",
+              cursor: appliedPromo ? "not-allowed" : "text",
+              fontFamily: FONT,
+            }}
+          />
+          <button
+            onClick={handlePromoApply}
+            disabled={!promoInput.trim() || !!appliedPromo || promoLoading}
+            onMouseEnter={() => {
+              if (promoInput.trim() && !appliedPromo) setPromoHovered(true);
+            }}
+            onMouseLeave={() => setPromoHovered(false)}
+            style={{
+              border: "none",
+              borderLeft: "1px solid #ddd",
+              background:
+                !promoInput.trim() || appliedPromo
+                  ? "#f3f3f3"
+                  : promoHovered
+                    ? "#111"
+                    : "transparent",
+              color:
+                !promoInput.trim() || appliedPromo
+                  ? "#aaa"
+                  : promoHovered
+                    ? "#fff"
+                    : "#111",
+              padding: "11px 18px",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor:
+                !promoInput.trim() || appliedPromo ? "default" : "pointer",
+              transition: "background 0.2s, color 0.2s",
+              fontFamily: FONT,
+            }}
+          >
+            {promoLoading ? "..." : "Apply"}
+          </button>
+        </div>
+
+        {promoError && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
+              marginTop: "10px",
+              padding: "10px 12px",
+              background: "#fdecec",
+              border: "1px solid #f5c6c6",
+              borderRadius: "0px",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              style={{ flexShrink: 0, marginTop: "1px" }}
+            >
+              <circle cx="12" cy="12" r="11" fill="#e02424" />
+              <path
+                d="M8 8l8 8M16 8l-8 8"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span
+              style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}
+            >
+              {promoError}
+            </span>
+          </div>
+        )}
+
+        {appliedPromo && (
+          <div style={{ marginTop: "10px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "#111",
+                borderRadius: "20px",
+                overflow: "hidden",
+              }}
+            >
+              <span
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: FONT,
+                }}
+              >
+                {appliedPromo.code}
+              </span>
+              <span
+                style={{
+                  display: "block",
+                  width: "1px",
+                  height: "28px",
+                  background: "rgba(255,255,255,0.25)",
+                }}
+              />
+              <button
+                onClick={handleRemovePromo}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 10px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#fff",
+                }}
+              >
+                <IoClose size={13} />
+              </button>
+            </div>
+          </div>
+        )}
       </AccordionRow>
 
-      {/* Totals */}
-      <div style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}>
+      {/* Apply Voucher — same logic as ModalAddToCart.jsx (guest vs logged-in) */}
+      <AccordionRow label="Apply Voucher">
+        {isLoggedIn
+          ? renderLoggedVoucherContent()
+          : renderGuestVoucherContent()}
+      </AccordionRow>
+
+      {/* Totals — stays at the bottom, just before Confirm Order */}
+      <div style={{ padding: "16px 0" }}>
         <div
           style={{
             display: "flex",
@@ -557,13 +2162,16 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
             marginBottom: "6px",
             fontSize: "13px",
             color: "#555",
+            fontFamily: FONT,
           }}
         >
-          <span>Products ({items.length})</span>
+          <span>Products ({totalUnits})</span>
           <span>
             {subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
           </span>
         </div>
+
+        {/* Delivery costs static row */}
         <div
           style={{
             display: "flex",
@@ -571,26 +2179,247 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
             marginBottom: "6px",
             fontSize: "13px",
             color: "#555",
+            fontFamily: FONT,
           }}
         >
-          <span>Delivery cost</span>
-          <span
+          <span>Delivery costs</span>
+          {subtotal >= freeShippingThreshold ? (
+            <span>Free</span>
+          ) : (
+            <span>5,90 €</span>
+          )}
+        </div>
+
+        {/* Delivery method selector — same dropdown/logic as ModalAddToCart.jsx */}
+        <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
+          <div
             style={{
-              color: deliveryFree ? "#2a7a2a" : "#555",
-              fontWeight: deliveryFree ? 600 : 400,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            {deliveryFree ? "Free" : `${delivery.toFixed(2)} €`}
-          </span>
+            <div ref={deliveryDropdownRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setDeliveryDropdownOpen((v) => !v)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  fontSize: "13px",
+                  color: "#555",
+                  fontFamily: FONT,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#111";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#555";
+                }}
+              >
+                <span>
+                  {deliveryMethod === "home" ? "Home Delivery" : "Pickup Point"}
+                </span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 0,
+                    height: 0,
+                    borderLeft: "4px solid transparent",
+                    borderRight: "4px solid transparent",
+                    borderTop: "5px solid #555",
+                    flexShrink: 0,
+                    transform: deliveryDropdownOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                  }}
+                />
+              </button>
+              {deliveryDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: 0,
+                    background: "#fff",
+                    border: "1px solid #ddd",
+                    borderRadius: "0px",
+                    zIndex: 1100,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    minWidth: "140px",
+                  }}
+                >
+                  {["home", "pickup"].map((opt) => (
+                    <div
+                      key={opt}
+                      onClick={() => {
+                        setDeliveryMethod(opt);
+                        setDeliveryDropdownOpen(false);
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#111";
+                        e.currentTarget.style.color = "#fff";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (deliveryMethod === opt) {
+                          e.currentTarget.style.backgroundColor = "#f3f3f3";
+                          e.currentTarget.style.color = "#111";
+                        } else {
+                          e.currentTarget.style.backgroundColor = "#fff";
+                          e.currentTarget.style.color = "#111";
+                        }
+                      }}
+                      style={{
+                        padding: "9px 14px",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        background: deliveryMethod === opt ? "#f3f3f3" : "#fff",
+                        color: "#111",
+                        fontWeight: deliveryMethod === opt ? 600 : 400,
+                        transition: "background 0.15s, color 0.15s",
+                      }}
+                    >
+                      {opt === "home" ? "Home Delivery" : "Pickup Point"}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {isFreeDelivery ? (
+              <span>Free</span>
+            ) : (
+              <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>
+            )}
+          </div>
         </div>
+
+        {/* Voucher row */}
+        {loggedVoucherApplied && selectedPill && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "6px",
+              fontSize: "13px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#555" }}>Voucher</span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "#f0f0f0",
+                  borderRadius: "20px",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#111",
+                    fontFamily: FONT,
+                  }}
+                >
+                  {selectedPill}
+                </span>
+              </div>
+            </div>
+            <span style={{ color: "#111", fontWeight: 500 }}>
+              -
+              {appliedVoucherOff.toLocaleString("fr-FR", {
+                minimumFractionDigits: 2,
+              })}{" "}
+              €
+            </span>
+          </div>
+        )}
+
+        {/* Promo row */}
+        {appliedPromo && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "6px",
+              fontSize: "13px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#555" }}>Promo Code</span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "#111",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#fff",
+                    letterSpacing: "0.04em",
+                    fontFamily: FONT,
+                  }}
+                >
+                  {appliedPromo.code}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    width: "1px",
+                    height: "22px",
+                    background: "rgba(255,255,255,0.25)",
+                  }}
+                />
+                <button
+                  onClick={handleRemovePromo}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "4px 8px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#fff",
+                  }}
+                >
+                  <IoClose size={11} />
+                </button>
+              </div>
+            </div>
+            <span style={{ color: "#111", fontWeight: 500 }}>
+              -
+              {appliedPromo.off.toLocaleString("fr-FR", {
+                minimumFractionDigits: 2,
+              })}{" "}
+              €
+            </span>
+          </div>
+        )}
+
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             marginTop: "10px",
-            fontSize: "14px",
+            fontSize: "15px",
             fontWeight: 700,
             color: "#111",
+            fontFamily: FONT,
           }}
         >
           <span>Total</span>
@@ -600,1006 +2429,518 @@ function OrderSummary({ items = [], deliveryFree = false, deliveryValidated = fa
         </div>
       </div>
 
-      {/* Cart items */}
+      <CreateVoucherModal
+        isOpen={isVoucherModalOpen}
+        onClose={() => setIsVoucherModalOpen(false)}
+      />
     </div>
   );
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-function Section({ number, title, children, disabled, rightContent }) {
-  return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: "2px",
-        padding: "28px 32px",
-        opacity: disabled ? 0.45 : 1,
-        pointerEvents: disabled ? "none" : "auto",
-        transition: "opacity 0.3s",
-        overflow: "visible",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: "16px",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#111",
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        >
-          {number}. {title}
-        </h2>
-        {rightContent && <div>{rightContent}</div>}
-      </div>
-      {children && <div style={{ marginTop: "20px" }}>{children}</div>}
-    </div>
-  );
-}
+/* ────────────────────────────────────────────────────────────────────────
+   Checkout
+   ──────────────────────────────────────────────────────────────────────── */
 
-// ─── Checkout ─────────────────────────────────────────────────────────────────
 export default function Checkout({ cartItems = [] }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
-  // Add this state in Checkout component
-  const [deliveryValidated, setDeliveryValidated] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [saveCard, setSaveCard] = useState(null); 
+  const paymentSectionRef = useRef(null);
 
-  // Delivery fields
-  const [countryIso2, setCountryIso2] = useState("");
+  // Contact
+  const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  // Delivery
+  const [countryIso2, setCountryIso2] = useState("");
   const [street, setStreet] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [state, setState] = useState("");
+  const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
-  const [showAdditional, setShowAdditional] = useState(false);
-  const [additionalAddress, setAdditionalAddress] = useState("");
 
-  // When country changes → sync phone input country
+  // Billing
+  const [useDifferentBilling, setUseDifferentBilling] = useState(false);
+  const [billingCountryIso2, setBillingCountryIso2] = useState("");
+  const [billingStreet, setBillingStreet] = useState("");
+  const [billingPostcode, setBillingPostcode] = useState("");
+  const [billingRegion, setBillingRegion] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
+
+  useEffect(() => {
+    if (useDifferentBilling) {
+      setBillingCountryIso2((v) => v || countryIso2);
+      setBillingStreet((v) => v || street);
+      setBillingPostcode((v) => v || postcode);
+      setBillingRegion((v) => v || region);
+      setBillingCity((v) => v || city);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useDifferentBilling]);
+
   const handleCountryChange = (iso2) => {
     setCountryIso2(iso2);
-    // reset phone so IntlPhoneInput picks up new country dial code
     setPhone("");
   };
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const deliveryUnlocked = emailSubmitted && emailValid;
+  const handleExpressSelect = (method) => {
+    setPaymentMethod(method);
+    paymentSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
-  // Sample items if none passed
-  const items =
+  // Cart items
+  const [items, setItems] = useState(() =>
     cartItems.length > 0
       ? cartItems
       : [
           {
-            name: "Mark-Fading Serum L64",
-            subtitle: "— 30 ml · 14% PHA + Centella Asiatica",
-            price: 51.0,
+            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+            size_name: "550ml",
+            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
+            price: 17.9,
             qty: 2,
+            product: {
+              images: [
+                {
+                  media:
+                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
+                },
+              ],
+              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+              size_name: "550ml",
+            },
           },
           {
-            name: "9-Ingredient Face Moisturiser D41",
-            subtitle: "— 50 ml",
-            price: 22.5,
+            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+            size_name: "1L",
+            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
+            price: 17.9,
             qty: 1,
+            product: {
+              images: [
+                {
+                  media:
+                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
+                },
+              ],
+              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+              size_name: "1L",
+            },
           },
-        ];
+          {
+            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+            size_name: "30ml",
+            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
+            price: 17.9,
+            qty: 4,
+            product: {
+              images: [
+                {
+                  media:
+                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
+                },
+              ],
+              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
+              size_name: "30ml",
+            },
+          },
+          {
+            name: "Biogance Gliss Hair Repair Shampoo",
+            size_name: "250ml",
+            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
+            price: 12.5,
+            qty: 1,
+            product: {
+              images: [
+                {
+                  media:
+                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
+                },
+              ],
+              name: "Biogance Gliss Hair Repair Shampoo",
+              size_name: "250ml",
+            },
+          },
+        ],
+  );
 
-  const subtotal = items.reduce((s, i) => s + i.price, 0);
-  const deliveryFree = subtotal >= 50;
+  const handleQtyChange = (index, qty) => {
+    setItems((prev) =>
+      prev.map((it, i) => (i === index ? { ...it, qty, quantity: qty } : it)),
+    );
+  };
+
+  const handleRemoveItem = (index) => {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const totalUnits = items.reduce((s, i) => s + (i.quantity ?? i.qty ?? 0), 0);
+  const subtotal = items.reduce((s, i) => {
+    const price =
+      i.original_price ||
+      parseFloat(String(i.price ?? "0").replace(",", ".")) ||
+      0;
+    const qty = i.quantity ?? i.qty ?? 0;
+    return s + price * qty;
+  }, 0);
+
+  const placeOrderBtnStyle = {
+    width: "100%",
+    padding: "16px",
+    backgroundColor: "#111",
+    color: "#fff",
+    border: "none",
+    fontSize: "13px",
+    fontWeight: 700,
+    letterSpacing: "0.05em",
+    cursor: "pointer",
+    borderRadius: "2px",
+    fontFamily: FONT,
+    transition: "background 0.2s",
+  };
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f3f3f3",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#fff",
+        fontFamily: FONT,
       }}
     >
-      {/* ── Top Logo ── */}
+      {/* ── Header ── */}
       <div
         style={{
-          textAlign: "center",
-          padding: "28px 0 20px",
-
-          background: "#f3f3f3",
+          background: "#fff",
+          padding: "20px 44px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
         }}
       >
         <div
-        //   onClick={() => router.back()}
+          onClick={() => router.back?.()}
+          style={{ cursor: "pointer", display: "inline-block" }}
+        >
+          <img src="logo.svg" alt="" style={{ height: "40px" }} />
+        </div>
+        <div
           style={{
-            cursor: "pointer",
-            display: "inline-block",
-            marginTop: "20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontSize: "13px",
+            color: "#333",
           }}
         >
-          <img src="logo.svg" alt="" />
+          <span>Have an account?</span>
+          <button
+            style={{
+              padding: "8px 16px",
+              background: "#FAFAFA",
+              border: "1px solid #F0EEEE",
+
+              fontSize: "12px",
+              fontWeight: 600,
+              color: "#111",
+              cursor: "pointer",
+              fontFamily: FONT,
+            }}
+          >
+            Sign in
+          </button>
         </div>
       </div>
 
       {/* ── Main layout ── */}
-      <div
-        style={{
-          maxWidth: "1280px",
-          margin: "0 auto",
-          padding: "40px 44px",
-          display: "flex",
-          gap: "32px",
-          alignItems: "flex-start",
-        }}
-      >
-        {/* ── Left column ── */}
+      <div style={{ flex: 1 }}>
         <div
           style={{
-            flex: 1,
+            maxWidth: "1280px",
+            margin: "0 auto",
+            padding: "40px 44px",
             display: "flex",
-            flexDirection: "column",
-            gap: "16px",
+            gap: "32px",
+            alignItems: "flex-start",
           }}
         >
-          {/* Express Payment */}
-          <div style={{ position: "relative", padding: "28px 32px 24px" }}>
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                border: "1px solid #aaa",
-                borderRadius: "2px",
-                pointerEvents: "none",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                top: "-9px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                background: "#f3f3f3",
-                padding: "0 12px",
-                fontSize: "11px",
-                letterSpacing: "0.12em",
-                color: "#111",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Express Payment
-            </div>
-            <button
-              style={{
-                width: "50%",
-                padding: "4px",
-                border: "1.5px solid #2e2d2d",
-                borderRadius: "4px",
-                background: "#fff",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: 700,
-                color: "#003087",
-                margin: "0 auto",
-                transition: "border-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.borderColor = "#003087")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.borderColor = "#2e2d2d")
-              }
-            >
-              <img src="pay.png" alt="PayPal" style={{ height: "38px" }} />
-            </button>
-          </div>
-
-          {/* OR divider — BAHAR box ke */}
+          {/* ── Left column ── */}
           <div
             style={{
+              flex: 1,
               display: "flex",
-              alignItems: "center",
-              gap: "12px",
+              flexDirection: "column",
+              gap: "16px",
             }}
           >
-            <div style={{ flex: 1, height: "1px", background: "#aaa" }} />
-            <span
-              style={{
-                fontSize: "11px",
-                color: "#111",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              or
-            </span>
-            <div style={{ flex: 1, height: "1px", background: "#aaa " }} />
-          </div>
+            {/* Express Payment — kept, expanded to 4 methods */}
+            <ExpressPaymentBar onSelect={handleExpressSelect} />
 
-          {/* 1. Contact Information */}
-         
-<Section
-  number="1"
-  title="Contact Information"
-  rightContent={
-    emailSubmitted && (
-      <button
-        onClick={() => setEmailSubmitted(false)}
-        style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
-          textTransform: "uppercase", color: "#111", textDecoration: "underline",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
-      >
-        EDIT
-      </button>
-    )
-  }
->
-  {emailSubmitted ? (
-    // ── Confirmed state ──
-    <p style={{ margin: 0, fontSize: "13px", color: "#888" }}>{email}</p>
-  ) : (
-    // ── Input state ──
-    <>
-      <Input
-        placeholder="Email *"
-        type="email"
-        value={email}
-        style={{ width: "50%" }}
-        onChange={(e) => { setEmail(e.target.value); setEmailSubmitted(false); }}
-      />
-      <button
-        onClick={() => { if (emailValid) setEmailSubmitted(true); }}
-        style={{
-          width: "100%", marginTop: "12px", padding: "15px",
-          backgroundColor: emailValid ? "#111" : "#ccc", color: "#fff",
-          border: "none", fontSize: "12px", fontWeight: 700,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          cursor: emailValid ? "pointer" : "not-allowed", borderRadius: "2px",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          transition: "background 0.2s",
-        }}
-        onMouseEnter={(e) => { if (emailValid) e.currentTarget.style.background = "#333"; }}
-        onMouseLeave={(e) => { if (emailValid) e.currentTarget.style.background = "#111"; }}
-      >
-        NEXT
-      </button>
-    </>
-  )}
-</Section>
-
-          {/* 2. Delivery */}
-        
-<div>
-  <Section
-    number="2"
-    title="Delivery"
-   
-    rightContent={
-      deliveryValidated && (
-        <button
-          onClick={() => setDeliveryValidated(false)}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
-            textTransform: "uppercase", color: "#111", textDecoration: "underline",
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        >
-          EDIT
-        </button>
-      )
-    }
-  >
-    <div
-      style={{
-        maxHeight: deliveryUnlocked ? "1200px" : "0px",
-        overflow: deliveryUnlocked ? "visible" : "hidden",
-        transition: "max-height 0.6s cubic-bezier(0.4,0,0.2,1)",
-      }}
-    >
-      {deliveryValidated ? (
-        <>
-          <p style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 600, color: "#111" }}>
-            Delivery address
-          </p>
-          <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#888" }}>
-            {firstName} {lastName}
-          </p>
-          <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#888" }}>
-            {street}{additionalAddress ? `, ${additionalAddress}` : ""}
-          </p>
-          <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#888" }}>
-            {[postcode, state, city].filter(Boolean).join(", ")}
-            {countryIso2
-              ? `, ${(() => {
-                  const found = defaultCountries.find(
-                    (c) => parseCountry(c).iso2 === countryIso2
-                  );
-                  return found ? parseCountry(found).name : "";
-                })()}`
-              : ""}
-          </p>
-          <p style={{ margin: "0 0 20px", fontSize: "13px", color: "#888" }}>{phone}</p>
-
-          {/* Customs notice */}
-          <div
-            style={{
-              display: "flex", alignItems: "center",  justifyContent: "space-between",
-              background: "#f3f3f3", borderRadius: "2px", padding: "12px 16px",
-              marginBottom: "10px",
-            }}
-          >
-            <span style={{ fontSize: "13px", color: "#555", marginLeft:"240px" }}>
-              Any customs charges are at your charge.
-            </span>
-           
-                <CiCircleInfo style={{color:"#999"}} size={20} />
-
-           
-            
-          </div>
-
-          {/* Delivery method row */}
-          <div
-            style={{
-              border: "1px solid #ddd", borderRadius: "2px", padding: "14px 16px",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Contact details */}
+            <Section title="Contact Details">
               <div
                 style={{
-                  width: "18px", height: "18px", borderRadius: "50%",
-                  border: "2px solid #111", display: "flex",
-                  alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
                 }}
               >
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#111" }} />
+                <FieldBox
+                  label="Email *"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <div style={{ display: "flex", gap: "12px" }}>
+                 
+                  <FieldBox
+                    label="Full Name *"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                </div>
+                <PhoneFieldBox
+                  iso2={countryIso2 || "fr"}
+                  onCountryChange={handleCountryChange}
+                  value={phone}
+                  onChange={setPhone}
+                />
               </div>
-              <span style={{ fontSize: "13px", color: "#111" }}>
-                Standard Delivery - Custom fees at your charge
-              </span>
+            </Section>
+
+            {/* Delivery */}
+            <Section title="Delivery">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                }}
+              >
+                <CountryFieldBox
+                  iso2={countryIso2}
+                  onChange={handleCountryChange}
+                />
+                <FieldBox
+                  label="Full address *"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                />
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <FieldBox
+                    label="Postcode *"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <FieldBox
+                    label="State"
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <FieldBox
+                    label="Town/city *"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                </div>
+                <Checkbox
+                  checked={useDifferentBilling}
+                  onChange={setUseDifferentBilling}
+                  label="Use a different billing address?"
+                />
+              </div>
+            </Section>
+
+            {/* Billing address — only visible when checkbox checked */}
+            {useDifferentBilling && (
+              <Section title="Billing Address">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                  }}
+                >
+                  <CountryFieldBox
+                    iso2={billingCountryIso2 || countryIso2}
+                    onChange={setBillingCountryIso2}
+                  />
+                  <FieldBox
+                    label="Full address *"
+                    value={billingStreet}
+                    onChange={(e) => setBillingStreet(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <FieldBox
+                      label="Postcode *"
+                      value={billingPostcode}
+                      onChange={(e) => setBillingPostcode(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <FieldBox
+                      label="State"
+                      value={billingRegion}
+                      onChange={(e) => setBillingRegion(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <FieldBox
+                      label="Town/city *"
+                      value={billingCity}
+                      onChange={(e) => setBillingCity(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                </div>
+              </Section>
+            )}
+
+            {/* Payment */}
+            <div ref={paymentSectionRef}>
+              <Section title="Payment">
+                <div
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "3px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <PaymentMethodRow
+                    active={paymentMethod === "card"}
+                    onSelect={() => setPaymentMethod("card")}
+                    label="Credit card"
+                    right={<CardBrandIcons />}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "4px" }}>
+                      <div style={{ border: "1px solid #ddd", borderRadius: "3px", background: "#fff", overflow: "hidden" }}>
+                        <CardNumberField value={cardNumber} onChange={setCardNumber} />
+                      </div>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <FieldBox label="Expiration date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ flex: 1 }} />
+                        <FieldBox label="CVC/CVV" value={cvc} onChange={(e) => setCvc(e.target.value)} style={{ flex: 1 }} />
+                      </div>
+                    </div>
+                  </PaymentMethodRow>
+
+                  <PaymentMethodRow
+                    active={paymentMethod === "googlepay"}
+                    onSelect={() => setPaymentMethod("googlepay")}
+                    label="Google Pay"
+                    right={<GooglePayBadge />}
+                  />
+                  <PaymentMethodRow
+                    active={paymentMethod === "applepay"}
+                    onSelect={() => setPaymentMethod("applepay")}
+                    label="Apple Pay"
+                    right={<ApplePayBadge />}
+                  />
+                  <PaymentMethodRow
+                    last
+                    active={paymentMethod === "paypal"}
+                    onSelect={() => setPaymentMethod("paypal")}
+                    label="PayPal"
+                    right={<PayPalBadge />}
+                  />
+                </div>
+
+                <p
+                  style={{
+                    fontSize: "12.5px",
+                    color: "#888",
+                    margin: "16px 0 8px",
+                    lineHeight: 1.6,
+                    fontFamily: FONT,
+                  }}
+                >
+                  Your payment is processed securely through Stripe and your
+                  card details are never stored on our servers. All transactions
+                  are encrypted end-to-end.
+                </p>
+                <p
+                  style={{
+                    fontSize: "12.5px",
+                    color: "#888",
+                    margin: 0,
+                    lineHeight: 1.6,
+                    fontFamily: FONT,
+                  }}
+                >
+                  We respect your privacy. Your personal information is only
+                  used to deliver your order, nothing more, nothing less. Read
+                  our{" "}
+                  <a
+                    href="#"
+                    style={{
+                      color: "#111",
+                      fontWeight: 600,
+                      textDecoration: "underline",
+                    }}
+                  >
+                    privacy policy
+                  </a>{" "}
+                  to learn more.
+                </p>
+              </Section>
             </div>
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#2a7a2a" }}>
-              {deliveryFree ? "FREE" : "€5.90"}
-            </span>
-          </div>
-        </>
-      ) : (
-        <>
-          <p style={{ fontSize: "13px", fontWeight: 600, color: "#111", margin: "0 0 16px" }}>
-            Delivery address
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <CountrySelect iso2={countryIso2} onChange={handleCountryChange} />
 
-            <div style={{ display: "flex", gap: "10px" }}>
-              <Input
-                placeholder="First name *"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-              <Input
-                placeholder="Full last name *"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </div>
-
-            <Input
-              placeholder="Street address *"
-              value={street}
-              onChange={(e) => setStreet(e.target.value)}
-            />
-
-            {/* Additional fields toggle */}
+            {/* ── Left: Place Order button ── */}
             <button
-              onClick={() => setShowAdditional((v) => !v)}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: "13px", color: "#111", textDecoration: "underline",
-                padding: "2px 0", textAlign: "left", fontFamily: "inherit",
-              }}
+              style={placeOrderBtnStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
             >
-              {showAdditional ? "− Hide additional fields" : "+ Additional Fields (optional)"}
+              Confirm Order
             </button>
-            <div
-              style={{
-                maxHeight: showAdditional ? "80px" : "0px",
-                overflow: "hidden",
-                transition: "max-height 0.35s ease",
-              }}
-            >
-              <Input
-                placeholder="Apartment, suite, etc. (optional)"
-                value={additionalAddress}
-                onChange={(e) => setAdditionalAddress(e.target.value)}
-              />
-            </div>
+          </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
-              <Input
-                placeholder="Postcode *"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <Input
-                placeholder="State"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <Input
-                placeholder="Town/city *"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                style={{ flex: 1 }}
-              />
-            </div>
-
-            <PhoneInput
-              key={countryIso2}
-              phone={phone}
-              onChange={setPhone}
-              defaultCountry={countryIso2 || "fr"}
+          {/* ── Right sidebar ── */}
+          <div style={{ width: "380px", flexShrink: 0, position: "sticky", top: "90px", alignSelf: "flex-start" }}>
+            <OrderSummary
+              items={items}
+              onQtyChange={handleQtyChange}
+              onRemoveItem={handleRemoveItem}
+              subtotal={subtotal}
+              totalUnits={totalUnits}
             />
-
             <button
-              onClick={() => setDeliveryValidated(true)}
               style={{
-                width: "100%", marginTop: "4px", padding: "15px",
-                backgroundColor: "#111", color: "#fff", border: "none",
-                fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em",
-                textTransform: "uppercase", cursor: "pointer", borderRadius: "2px",
-                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                width: "100%",
+                marginTop: "12px",
+                padding: "15px",
+                backgroundColor: "#111",
+                color: "#fff",
+                border: "none",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+                borderRadius: "2px",
+                fontFamily: FONT,
                 transition: "background 0.2s",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
             >
-              VALIDATE
+              Confirm Order
             </button>
           </div>
-        </>
-      )}
-    </div>
-  </Section>
-</div>
-
-          {/* 3. Payment */}
-        
-          <Section
-            number="3"
-            title="Payment"
-            rightContent={
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                {/* Visa */}
-                <svg
-                  width="38"
-                  height="24"
-                  viewBox="0 0 38 24"
-                  style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
-                >
-                  <rect width="38" height="24" fill="#fff" rx="3" />    
-                  <text
-                    x="50%"
-                    y="16"
-                    textAnchor="middle"
-                    fontSize="10"
-                    fontWeight="700"
-                    fill="#1a1f71"
-                    fontFamily="Arial"
-                  >
-                    VISA
-                  </text>
-                </svg>
-                {/* Mastercard */}
-                <svg
-                  width="38"
-                  height="24"
-                  viewBox="0 0 38 24"
-                  style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
-                >
-                  <rect width="38" height="24" fill="#fff" rx="3" />
-                  <circle cx="14" cy="12" r="7" fill="#eb001b" opacity="0.9" />
-                  <circle cx="24" cy="12" r="7" fill="#f79e1b" opacity="0.9" />
-                  <ellipse
-                    cx="19"
-                    cy="12"
-                    rx="3"
-                    ry="7"
-                    fill="#ff5f00"
-                    opacity="0.85"
-                  />
-                </svg>
-                {/* Amex */}
-                <svg
-                  width="38"
-                  height="24"
-                  viewBox="0 0 38 24"
-                  style={{ border: "1px solid #e5e5e5", borderRadius: "3px" }}
-                >
-                  <rect width="38" height="24" fill="#2557d6" rx="3" />
-                  <text
-                    x="50%"
-                    y="15"
-                    textAnchor="middle"
-                    fontSize="9"
-                    fontWeight="700"
-                    fill="#fff"
-                    fontFamily="Arial"
-                  >
-                    AMEX
-                  </text>
-                </svg>
-              </div>
-            }
-          >
-            {/* Payment body — only renders after delivery validated */}
-            <div
-              style={{
-                maxHeight: deliveryValidated ? "600px" : "0px",
-                overflow: "hidden",
-                transition: "max-height 0.6s cubic-bezier(0.4,0,0.2,1)",
-              }}
-            >
-              {/* ── Add a card option ── */}
-              <div
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "2px",
-                  marginBottom: "8px",
-                  overflow: "hidden",
-                  background: paymentMethod === "card" ? "#f3f3f3" : "#fff",
-                }}
-              >
-                {/* Radio row */}
-                <div
-                  onClick={() => setPaymentMethod("card")}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "14px 16px",
-                    cursor: "pointer",
-                    background: paymentMethod === "card" ? "#f3f3f3" : "#fff",
-                  }}
-                >
-                  {/* Custom radio */}
-                  <div
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      borderRadius: "50%",
-                      border: `2px solid ${paymentMethod === "card" ? "#111" : "#bbb"}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      transition: "border-color 0.2s",
-                    }}
-                  >
-                    {paymentMethod === "card" && (
-                      <div
-                        style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          background: "#111",
-                        }}
-                      />
-                    )}
-                  </div>
-                  <span
-                    style={{ fontSize: "13px", color: "#111", fontWeight: 500 }}
-                  >
-                    Add a card
-                  </span>
-                </div>
-
-                {/* Card fields — expand when selected */}
-                <div
-                  style={{
-                    maxHeight: paymentMethod === "card" ? "200px" : "0px",
-                    overflow: "hidden",
-                    transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "0 16px 16px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
-                    }}
-                  >
-                    {/* Card inputs row */}
-                    <div style={{ display: "flex", gap: "10px" }}>
-                      {/* Card number */}
-                      <div
-                        style={{
-                          flex: 2,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          border: "1px solid #ddd",
-                          borderRadius: "2px",
-                          background: "#fff",
-                          padding: "12px 14px",
-                        }}
-                      >
-                        {/* Card icon */}
-                        <svg
-                          width="22"
-                          height="16"
-                          viewBox="0 0 22 16"
-                          fill="none"
-                        >
-                          <rect
-                            x="0.5"
-                            y="0.5"
-                            width="21"
-                            height="15"
-                            rx="1.5"
-                            stroke="#bbb"
-                            fill="#fff"
-                          />
-                          <rect y="3" width="22" height="3" fill="#bbb" />
-                        </svg>
-                        <input
-                          type="text"
-                          placeholder="Card number"
-                          style={{
-                            border: "none",
-                            outline: "none",
-                            fontSize: "13px",
-                            fontFamily:
-                              "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                            color: "#111",
-                            flex: 1,
-                            background: "transparent",
-                          }}
-                        />
-                      </div>
-                      {/* Expiry */}
-                      <input
-                        type="text"
-                        placeholder="Expiration date"
-                        style={{
-                          flex: 1,
-                          border: "1px solid #ddd",
-                          borderRadius: "2px",
-                          padding: "12px 14px",
-                          fontSize: "13px",
-                          background: "#fff",
-                          outline: "none",
-                          fontFamily:
-                            "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          color: "#111",
-                        }}
-                      />
-                      {/* CVC */}
-                      <input
-                        type="text"
-                        placeholder="CVC/CVV"
-                        style={{
-                          flex: 1,
-                          border: "1px solid #ddd",
-                          borderRadius: "2px",
-                          padding: "12px 14px",
-                          background: "#fff",
-                          fontSize: "13px",
-                          outline: "none",
-                          fontFamily:
-                            "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          color: "#111",
-                        }}
-                      />
-                    </div>
-
-                    {/* Save card radio */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "16px",
-                        fontSize: "13px",
-                        color: "#111",
-                      }}
-                    >
-                      <span>Save this card for future orders?*</span>
-                      {["yes", "no"].map((opt) => (
-                        <label
-                          key={opt}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <div
-                            onClick={() => setSaveCard(opt)}
-                            style={{
-                              width: "16px",
-                              height: "16px",
-                              borderRadius: "50%",
-                              border: `2px solid ${saveCard === opt ? "#111" : "#bbb"}`,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
-                              transition: "border-color 0.2s",
-                            }}
-                          >
-                            {saveCard === opt && (
-                              <div
-                                style={{
-                                  width: "7px",
-                                  height: "7px",
-                                  borderRadius: "50%",
-                                  background: "#111",
-                                }}
-                              />
-                            )}
-                          </div>
-                          <span style={{ textTransform: "capitalize" }}>
-                            {opt === "yes" ? "Yes" : "No"}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── PayPal option ── */}
-              <div
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "2px",
-                  overflow: "hidden",
-                }}
-              >
-                {/* Radio row */}
-                <div
-                  onClick={() => setPaymentMethod("paypal")}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "14px 16px",
-                    cursor: "pointer",
-                    background: paymentMethod === "paypal" ? "#f3f3f3" : "#fff",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                    }}
-                  >
-                    {/* Custom radio */}
-                    <div
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        borderRadius: "50%",
-                        border: `2px solid ${paymentMethod === "paypal" ? "#111" : "#bbb"}`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        transition: "border-color 0.2s",
-                      }}
-                    >
-                      {paymentMethod === "paypal" && (
-                        <div
-                          style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            background: "#111",
-                          }}
-                        />
-                      )}
-                    </div>
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        color: "#111",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Paypal
-                    </span>
-                  </div>
-                  {/* PayPal logo */}
-                  <div
-                    style={{
-                      border: "1px solid #e5e5e5",
-                      borderRadius: "3px",
-                      padding: "4px 8px",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      color: "#003087",
-                    }}
-                  >
-                    Pay<span style={{ color: "#009cde" }}>Pal</span>
-                  </div>
-                </div>
-
-                {/* PayPal message — expand when selected */}
-                <div
-                  style={{
-                    maxHeight: paymentMethod === "paypal" ? "80px" : "0px",
-                    overflow: "hidden",
-                    transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
-                    background: "#f3f3f3",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      padding: "12px 16px",
-                      fontSize: "13px",
-                      color: "#555",
-                    }}
-                  >
-                    Please confirm your shipping address in the Paypal window
-                    when entering payment details.
-                  </p>
-                </div>
-              </div>
-
-              {/* Billing address note */}
-              <p style={{ fontSize: "12px", color: "#888", margin: "12px 0" }}>
-                <span style={{ textDecoration: "underline", color: "#555" }}>
-                  Billing address:
-                </span>{" "}
-                Same as the delivery address
-              </p>
-
-              {/* Order / Pay button */}
-              {paymentMethod === "card" ? (
-                <button
-                  style={{
-                    width: "100%",
-                    padding: "15px",
-                    backgroundColor: "#111",
-                    color: "#fff",
-                    border: "none",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    borderRadius: "2px",
-                    fontFamily:
-                      "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                    transition: "background 0.2s",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#333")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "#111")
-                  }
-                >
-                  ORDER —{" "}
-                  {(subtotal + (deliveryFree ? 0 : 5.9)).toLocaleString(
-                    "fr-FR",
-                    {
-                      minimumFractionDigits: 2,
-                    },
-                  )}{" "}
-                  €
-                </button>
-              ) : (
-                <button
-                  style={{
-                    width: "100%",
-                    padding: "15px",
-                    backgroundColor: "#fff",
-                    color: "#003087",
-                    border: "2px solid #003087",
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    borderRadius: "2px",
-                    fontFamily:
-                      "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                    transition: "background 0.2s",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#003087";
-                    e.currentTarget.style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                    e.currentTarget.style.color = "#003087";
-                  }}
-                >
-                  Pay with{" "}
-                  <span>
-                    Pay<span style={{ color: "#009cde" }}>Pal</span>
-                  </span>
-                </button>
-              )}
-            </div>
-          </Section>
-
-          {/* Legal footer */}
-          <div
-            style={{
-              fontSize: "11px",
-              color: "#888",
-              lineHeight: "1.7",
-              padding: "4px 0 32px",
-            }}
-          >
-            <p style={{ margin: "0 0 8px" }}>
-              By creating a password, you're accepting our{" "}
-              <a href="#" style={{ color: "#111" }}>
-                Terms of Sale
-              </a>{" "}
-              and consent to the processing of your data in accordance with the{" "}
-              <a href="#" style={{ color: "#111" }}>
-                privacy policy
-              </a>{" "}
-              of Typology.
-            </p>
-            <p style={{ margin: 0 }}>
-              Your information is intended for use by Good Brands SAS in the
-              processing of your orders, and to send you offers and
-              communications by email or SMS. In accordance with the Regulation
-              on Personal Data, you have the right to access, rectify and oppose
-              the processing of your data. To exercise your rights, simply write
-              to us{" "}
-              <a
-                href="mailto:hello+global@biogance.com"
-                style={{ color: "#111" }}
-              >
-                hello+global@biogance.com
-              </a>
-              . Please find all the information detailed on our FAQ page{" "}
-              <a href="#" style={{ color: "#111" }}>
-                here
-              </a>
-              .
-            </p>
-          </div>
         </div>
-
-        {/* ── Right sidebar ── */}
-       <OrderSummary items={items} deliveryFree={deliveryFree} deliveryValidated={deliveryValidated} paymentMethod={paymentMethod}  />
-
       </div>
     </div>
   );
