@@ -11,6 +11,7 @@ import { BASE_URL } from '../../API/API';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FaApple } from 'react-icons/fa';
+import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
 
 export default function SignupModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
@@ -115,23 +116,33 @@ export default function SignupModal({ isOpen, onClose }) {
     }
   };
 
+  // useEffect(() => {
+  //     if (isOpen) {
+  //       setIsClosing(false);
+  //       const scrollY = window.scrollY;
+  //       document.body.style.overflow = 'hidden';
+  //       document.body.style.position = 'fixed';
+  //       document.body.style.top = `-${scrollY}px`;
+  //       document.body.style.width = '100%';
+  //       return () => {
+  //         document.body.style.overflow = '';
+  //         document.body.style.position = '';
+  //         document.body.style.top = '';
+  //         document.body.style.width = '';
+  //         window.scrollTo(0, scrollY);
+  //       };
+  //     }
+  //   }, [isOpen]);
+
+
   useEffect(() => {
-      if (isOpen) {
-        setIsClosing(false);
-        const scrollY = window.scrollY;
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        return () => {
-          document.body.style.overflow = '';
-          document.body.style.position = '';
-          document.body.style.top = '';
-          document.body.style.width = '';
-          window.scrollTo(0, scrollY);
-        };
-      }
-    }, [isOpen]);
+    if (isOpen) {
+      lockBodyScroll();
+      return () => {
+        unlockBodyScroll();
+      };
+    }
+  }, [isOpen]);
   if (!isOpen && !isClosing) return null;
 
   const handleSubmit = async () => {
