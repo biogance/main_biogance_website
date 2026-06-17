@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
@@ -31,7 +32,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
         style={{
-          border: "1px solid #ddd", borderRadius: "4px", padding: "4px 8px",
+          border: "1px solid #ddd",  padding: "4px 8px",
           fontSize: "13px", background: "#fff", color: "#111",
           cursor: disabled ? "default" : "pointer",
           display: "flex", alignItems: "center", gap: "8px",
@@ -56,7 +57,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       {open && !disabled && (
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
-          border: "1px solid #ddd", borderRadius: "0px", minWidth: "100%", zIndex: 1100,
+          border: "1px solid #ddd",  minWidth: "100%", zIndex: 1100,
           maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}>
           {options.map((opt) => (
@@ -91,7 +92,7 @@ function AppliedPill({ code, label, onRemove }) {
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: "0",
-      border: "1px solid #ccc", borderRadius: "20px", overflow: "hidden",
+      border: "1px solid #ccc",  overflow: "hidden",
       background: "#fff",
     }}>
       <span style={{
@@ -181,6 +182,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     const saved = getVoucherState();
     return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
   });
+  const [createMoreHovered, setCreateMoreHovered] = useState(false);
+  const [learnMoreHovered, setLearnMoreHovered] = useState(false);
 
   // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoOpen, setPromoOpen] = useState(false);
@@ -205,6 +208,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const router = useRouter();
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
 
@@ -296,35 +300,33 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const voucherFetchedRef = useRef(false);
 
-  // Fetch voucher list
+  // Fetch voucher list — extracted so it can be re-called after creating a new voucher
+  const fetchVouchers = async () => {
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await fetch(`${BASE_URL}/user/voucher/list`, {
+        method: "GET",
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        ...(token ? {} : { body: JSON.stringify({ device_id: getDeviceId() }) }),
+      });
+      const data = await res.json();
+      const list = data.data?.vouchers?.data || data.data?.data;
+      if (data.status) {
+        setVoucherPills(list || []);
+        // total_point seedha API se aata ha, har dafa fresh use karo
+        const totalPoints = data.data?.total_point !== undefined ? Number(data.data.total_point) : 0;
+        setVoucherPoints(totalPoints);
+        const saved = getVoucherState();
+        setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
+      }
+    } catch { /* silent */ }
+  };
+
   useEffect(() => {
     if (!isOpen) return;
-    const fetchVouchers = async () => {
-      try {
-        const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-        const token = loginData?.data?.token;
-        const res = await fetch(`${BASE_URL}/user/voucher/list`, {
-          method: "GET",
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : { "Content-Type": "application/json" },
-          ...(token ? {} : { body: JSON.stringify({ device_id: getDeviceId() }) }),
-        });
-        const data = await res.json();
-        const list = data.data?.vouchers?.data || data.data?.data;
-        if (data.status && list) {
-          setVoucherPills(list);
-          // FIX 1: Sirf jab localStorage mein saved voucherPoints na ho tab calculate karo
-          const saved = getVoucherState();
-          if (!saved || saved.voucherPoints === undefined) {
-            const totalPoints = data.data?.total_point !== undefined ? Number(data.data.total_point) : list.reduce((sum, v) => sum + (v.point || 0), 0);
-            setVoucherPoints(totalPoints);
-            // Aur is value ko bhi save karo
-            setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
-          }
-        }
-      } catch { /* silent */ }
-    };
     fetchVouchers();
   }, [isOpen]);
 
@@ -354,26 +356,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setGuestVoucherError(null);
   };
 
-  const handleGuestApply = async () => {
-    const code = guestVoucherInput.trim().toUpperCase();
-    if (!code) return;
-
-    setGuestVoucherLoading(true);
-    setGuestVoucherError(null);
-    await new Promise((r) => setTimeout(r, 600));
-
-    if (guestUsedCodes.includes(code)) {
-      setGuestVoucherError("This voucher code is invalid or has already been used.");
-      setGuestUsedCodes((prev) => prev.filter((c) => c !== code));
-      setGuestVoucherInput("");
-    } else {
-      setGuestUsedCodes((prev) => [...prev, code]);
-      setGuestAppliedVoucher(code);
-      setGuestVoucherInput("");
-      setGuestVoucherError(null);
-    }
-
-    setGuestVoucherLoading(false);
+  // Guest Apply: koi API call nahi, sirf "please login first" message dikhana ha
+  const handleGuestApply = () => {
+    if (!guestVoucherInput.trim()) return;
+    setGuestVoucherError("Please login first if you want to add a voucher.");
   };
 
   const handleGuestRemoveApplied = () => {
@@ -586,90 +572,87 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
       <div style={{
         display: "flex",
-        border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-        borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
+        border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
+         overflow: "hidden", transition: "border-color 0.15s",
       }}>
         <input
           type="text" placeholder="Enter Voucher code"
-          value={loggedVoucherInput}
-          disabled={loggedVoucherApplied}
-          onChange={(e) => {
-            setLoggedVoucherInput(e.target.value);
-            if (loggedVoucherError) setLoggedVoucherError(null);
-          }}
-          onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+          value={guestVoucherInput}
+          onChange={handleGuestInputChange}
+          onKeyDown={(e) => { if (e.key === "Enter") handleGuestApply(); }}
           style={{
             flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-            color: loggedVoucherApplied ? "#aaa" : "#111",
-            background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
-            cursor: loggedVoucherApplied ? "not-allowed" : "text",
+            color: "#111",
+            background: "#fff",
+            cursor: "text",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         />
         <button
-          onClick={handleLoggedApply}
-          disabled={!loggedVoucherInput.trim() || loggedVoucherApplied || loggedVoucherLoading}
-          onMouseEnter={() => { if (loggedVoucherInput.trim() && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
-          onMouseLeave={() => setLoggedApplyHovered(false)}
+          onClick={handleGuestApply}
+          disabled={!guestVoucherInput.trim()}
+          onMouseEnter={() => { if (guestVoucherInput.trim()) setGuestApplyHovered(true); }}
+          onMouseLeave={() => setGuestApplyHovered(false)}
           style={{
             border: "none", borderLeft: "1px solid #ddd",
-            background: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
-            color: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
+            background: !guestVoucherInput.trim() ? "#f3f3f3" : guestApplyHovered ? "#111" : "transparent",
+            color: !guestVoucherInput.trim() ? "#aaa" : guestApplyHovered ? "#fff" : "#111",
             padding: "11px 18px", fontSize: "12px", fontWeight: 700,
             letterSpacing: "0.1em", textTransform: "uppercase",
-            cursor: (!loggedVoucherInput.trim() || loggedVoucherApplied) ? "default" : "pointer",
+            cursor: !guestVoucherInput.trim() ? "default" : "pointer",
             transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         >
-          {loggedVoucherLoading ? "..." : "Apply"}
+          Apply
         </button>
       </div>
 
-      {/* Error */}
-      {loggedVoucherError && (
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
+      {/* Error: please login first */}
+      {guestVoucherError && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
             <circle cx="12" cy="12" r="11" fill="#e02424" />
             <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
         </div>
       )}
 
-      {/* Applied pill */}
-      {loggedVoucherApplied && selectedPill && (
-        <div style={{ marginTop: "10px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
-            <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-              {selectedPill}
-            </span>
-            <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
-            <button onClick={handleLoggedRemoveVoucher} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
-              <IoClose size={13} />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Default text with Learn More */}
+      <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+        You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
+        <span
+          onClick={() => { onClose(); router.push("/loyalty"); }}
+          onMouseEnter={() => setLearnMoreHovered(true)}
+          onMouseLeave={() => setLearnMoreHovered(false)}
+          style={{
+            color: "#111", cursor: "pointer",
+            textDecoration: learnMoreHovered ? "underline" : "none",
+          }}
+        >
+          Learn More
+        </span>
+      </p>
 
-      {/* Default text */}
-      {!loggedVoucherApplied && !loggedVoucherError && !loggedVoucherInput.trim() && (
-        <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
-          You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
-        </p>
-      )}
+      {/* Login-first hint line, always visible for guests */}
+      {/* <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#111", lineHeight: 1.5, fontWeight: 500 }}>
+        If you want to add a voucher, please login first.
+      </p> */}
     </div>
   );
 
   // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
   const renderLoggedVoucherContent = () => {
     const hasVouchers = voucherPills.length > 0;
+    const hasPoints = voucherPoints !== null && voucherPoints > 0;
+
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
         {/* Input row */}
         <div style={{
           display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-          borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
+           overflow: "hidden", transition: "border-color 0.15s",
         }}>
           <input
             type="text" placeholder="Enter Voucher code"
@@ -716,9 +699,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </p>
         )}
 
-        {/* Pills from API */}
+        {/* ── CASE 1: points 0, list a rahi ho → pills shape mein dikhao ── */}
+        {/* ── CASE 2: points a rahay hon, list b a rahi ho → pills + "Create More Voucher" button ── */}
         {!loggedVoucherApplied && hasVouchers && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", alignItems: "center" }}>
             {voucherPills.map((pill) => {
               const code = pill.name;
               const isSelected = selectedPill === code;
@@ -727,7 +711,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   key={pill.id} onClick={() => handlePillClick(code)}
                   style={{
                     display: "inline-flex", alignItems: "center",
-                    border: "1px solid #ccc", borderRadius: "20px", overflow: "hidden",
+                    border: "1px solid #ccc",  overflow: "hidden",
                     cursor: "pointer", background: isSelected ? "#111" : "#fff",
                     transition: "background 0.15s", userSelect: "none",
                   }}
@@ -749,12 +733,34 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               );
             })}
+
+            {/* CASE 2: points hain to "Create More Voucher" button bhi dikhana ha, same row mein pill jaisa */}
+            {hasPoints && (
+              <button
+                onClick={() => setIsVoucherModalOpen(true)}
+                onMouseEnter={() => setCreateMoreHovered(true)}
+                onMouseLeave={() => setCreateMoreHovered(false)}
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  padding: "7px 14px", fontSize: "12px", fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  background: createMoreHovered ? "#222" : "#000",
+                  color: "#fff",
+                  border: "none", 
+                  cursor: "pointer", transition: "background 0.2s",
+                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Create More Voucher
+              </button>
+            )}
           </div>
         )}
 
-        {/* Points/Redeem — show when user has points (not null and > 0) */}
-        {/* {voucherPoints !== null && voucherPoints > 0 && !loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
+        {/* ── CASE 3: points a rahay hon, list empty ho → Redeem UI ── */}
+        {!loggedVoucherApplied && !hasVouchers && hasPoints && !loggedVoucherError && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px", gap: "12px" }}>
             <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
               You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
             </p>
@@ -767,7 +773,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 padding: "8px 16px", fontSize: "12px", fontWeight: 700,
                 letterSpacing: "0.08em", textTransform: "uppercase",
                 background: redeemHovered ? "#333" : "#111", color: "#fff",
-                border: "none", borderRadius: "2px", cursor: "pointer",
+                border: "none",  cursor: "pointer",
                 transition: "background 0.2s",
                 fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
               }}
@@ -775,18 +781,29 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               Redeem
             </button>
           </div>
-        )} */}
+        )}
 
-        {/* Default text */}
-        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && voucherPoints === 0 && (
+        {/* ── CASE 4: points 0, list bhi empty → default text + Learn More ── */}
+        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && !hasPoints && (
           <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
-            You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
+            You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
+            <span
+              onClick={() => { onClose(); router.push("/loyalty"); }}
+              onMouseEnter={() => setLearnMoreHovered(true)}
+              onMouseLeave={() => setLearnMoreHovered(false)}
+              style={{
+                color: "#111", cursor: "pointer",
+                textDecoration: learnMoreHovered ? "underline" : "none",
+              }}
+            >
+              Learn More
+            </span>
           </p>
         )}
 
         {/* Error */}
         {loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
               <circle cx="12" cy="12" r="11" fill="#e02424" />
               <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -798,7 +815,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         {/* Applied pill */}
         {loggedVoucherApplied && selectedPill && (
           <div style={{ marginTop: "10px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", background: "#111",  overflow: "hidden" }}>
               <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                 {selectedPill}
               </span>
@@ -877,7 +894,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             pointerEvents: "all",
           }}>
             <style>{`@keyframes removeSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "removeSpin 0.75s linear infinite" }} />
+            <div style={{ width: 36, height: 36,  border: "3px solid #ddd", borderTopColor: "#111", animation: "removeSpin 0.75s linear infinite" }} />
           </div>
         )}
 
@@ -885,7 +902,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         {isLoading && (
           <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
             <style>{`@keyframes cartSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
+            <div style={{ width: 28, height: 28,  border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
           </div>
         )}
 
@@ -919,8 +936,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               const itemTotal = (unitPrice * item.quantity).toFixed(2);
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
-                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", borderRadius: "0px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0", borderRadius: "3px" }} />}
+                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3",  overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0",  }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", }}>{name}</p>
@@ -986,7 +1003,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       <div
                         style={{
                           position: "absolute", top: "calc(100% + 6px)", left: 90,
-                          background: "#fff", border: "1px solid #ddd", borderRadius: "0px",
+                          background: "#fff", border: "1px solid #ddd", 
                           zIndex: 1100, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: "140px",
                         }}
                       >
@@ -1033,7 +1050,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Voucher</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", borderRadius: "20px" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0",  }}>
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
                     </div>
                   </div>
@@ -1046,7 +1063,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Promo Code</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", borderRadius: "20px", overflow: "hidden" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0",  overflow: "hidden" }}>
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                         {appliedPromo.code}
                       </span>
@@ -1092,7 +1109,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   <div style={{
                     display: "flex",
                     border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
-                    borderRadius: "0px", overflow: "hidden", transition: "border-color 0.15s",
+                     overflow: "hidden", transition: "border-color 0.15s",
                   }}>
                     <input
                       type="text"
@@ -1132,7 +1149,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
                   {/* Error */}
                   {promoError && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6", borderRadius: "0px" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
                         <circle cx="12" cy="12" r="11" fill="#e02424" />
                         <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -1144,7 +1161,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   {/* Applied pill inside accordion */}
                   {appliedPromo && (
                     <div style={{ marginTop: "10px" }}>
-                      <div style={{ display: "inline-flex", alignItems: "center", background: "#111", borderRadius: "20px", overflow: "hidden" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", background: "#111",  overflow: "hidden" }}>
                         <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                           {appliedPromo.code}
                         </span>
@@ -1197,8 +1214,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       <span>Complete for free shipping</span>
       <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span> 
     </div>
-    <div style={{ height: "4px", backgroundColor: "#e5e5e5", borderRadius: "0px", overflow: "hidden", marginBottom: "14px" }}>
-      <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111", borderRadius: "0px", transition: "width 0.4s ease" }} />
+    <div style={{ height: "4px", backgroundColor: "#e5e5e5",  overflow: "hidden", marginBottom: "14px" }}>
+      <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111",  transition: "width 0.4s ease" }} />
     </div>
   </div>
 )}
@@ -1210,7 +1227,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       style={{
         width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
         fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-        cursor: "pointer", borderRadius: "2px", transition: "background 0.2s",
+        cursor: "pointer",  transition: "background 0.2s",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}
     >
@@ -1222,7 +1239,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
       </div>
 
-      <CreateVoucherModal isOpen={isVoucherModalOpen} onClose={() => setIsVoucherModalOpen(false)} />
+      <CreateVoucherModal
+        isOpen={isVoucherModalOpen}
+        totalPoints={voucherPoints || 0}
+        onClose={() => {
+          setIsVoucherModalOpen(false);
+          fetchVouchers();
+        }}
+      />
     </>
   );
 }

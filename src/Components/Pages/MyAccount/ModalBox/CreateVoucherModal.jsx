@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { FaRegEdit } from "react-icons/fa";
-import { FiChevronDown, FiAlertCircle, FiCopy } from "react-icons/fi"
+import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
+import { BASE_URL } from "../../../API/API";
 
-export default function CreateVoucherModal({ isOpen, onClose }) {
+export default function CreateVoucherModal({ isOpen, onClose, totalPoints = 0 }) {
     const { t } = useTranslation("myaccount");
     const [selectedPoints, setSelectedPoints] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -12,50 +13,65 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
     const [redeemedPoints, setRedeemedPoints] = useState(0);
     const [discountAmount, setDiscountAmount] = useState(0);
     const [voucherCode, setVoucherCode] = useState('');
-    
+    const [redeemLoading, setRedeemLoading] = useState(false);
+    const [redeemError, setRedeemError] = useState(null);
+
     const minimumPoints = 10;
-    const userBalance = 20;
+    const userBalance = totalPoints;
+    const maxVoucherValue = Math.floor(totalPoints / 10);
 
-    const pointsOptions = [
-      { value: "10", label: t('createVoucher.pointsOption', { points: 10 }) },
-      { value: "20", label: t('createVoucher.pointsOption', { points: 20 }) },
-      { value: "50", label: t('createVoucher.pointsOption', { points: 50 }) },
-      { value: "100", label: t('createVoucher.pointsOption', { points: 100 }) },
-      { value: "200", label: t('createVoucher.pointsOption', { points: 200 }) },
-      { value: "220", label: t('createVoucher.pointsOption', { points: 220 }) },
-    ];
+    // Generate dropdown: 1€, 2€, ... maxVoucherValue€ → each option = value*10 points
+    const pointsOptions = Array.from({ length: maxVoucherValue }, (_, i) => {
+      const pts = (i + 1) * 10;
+      return { value: String(pts), label: t('createVoucher.pointsOption', { points: pts }) };
+    });
 
-    const generateVoucherCode = () => {
-        return 'VOUCHER' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    };
-
-    const handleRedeem = () => {
-        if (!selectedPoints || parseInt(selectedPoints) > userBalance || parseInt(selectedPoints) < minimumPoints) {
-            return;
+    const handleRedeem = async () => {
+        if (!selectedPoints || parseInt(selectedPoints) > userBalance || parseInt(selectedPoints) < minimumPoints) return;
+        setRedeemLoading(true);
+        setRedeemError(null);
+        try {
+            const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+            const token = loginData?.data?.token;
+            const res = await fetch(`${BASE_URL}/user/voucher/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ point: parseInt(selectedPoints) }),
+            });
+            const data = await res.json();
+            if (!data.status) {
+                setRedeemError(data.message || "Something went wrong.");
+                setRedeemLoading(false);
+                return;
+            }
+            const points = parseInt(selectedPoints);
+            setRedeemedPoints(points);
+            setDiscountAmount(points / 10);
+            setVoucherCode(data.data?.name || data.data?.code || '');
+            setIsSuccessModalOpen(true);
+        } catch {
+            setRedeemError("Something went wrong.");
         }
-        
-        const points = parseInt(selectedPoints);
-        const discount = points / 10; // 10 points = 1 euro
-        
-        setRedeemedPoints(points);
-        setDiscountAmount(discount);
-        setVoucherCode(generateVoucherCode());
-        setIsSuccessModalOpen(true);
+        setRedeemLoading(false);
     };
 
     const handleSelectOption = (value) => {
         setSelectedPoints(value);
         setIsDropdownOpen(false);
+        setRedeemError(null);
     };
 
     const copyVoucherCode = () => {
         navigator.clipboard.writeText(voucherCode);
-        // Optional: Add a toast notification here
     };
 
     const handleCloseAll = () => {
         setIsSuccessModalOpen(false);
         setSelectedPoints('');
+        setRedeemError(null);
         onClose();
     };
 
@@ -101,7 +117,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                     }
                 }}
             >
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 ">
+              <div className="bg-white  shadow-2xl w-full max-w-4xl p-8 ">
                 <h2 className="text-xl text-black font-semibold mb-3">{t('createVoucher.title')}</h2>
                 
                 <div className="mb-6">
@@ -121,7 +137,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                     <button
                       type="button"
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className={`w-full px-4 py-3 border rounded-lg cursor-pointer focus:outline-none text-left flex items-center justify-between ${
+                      className={`w-full px-4 py-3 border  cursor-pointer focus:outline-none text-left flex items-center justify-between ${
                         showError 
                           ? 'bg-red-50 border-red-300 focus:ring-2 focus:ring-red-400' 
                           : 'bg-gray-50 border-gray-300 focus:ring-2 focus:ring-gray-400'
@@ -134,7 +150,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                     </button>
                     
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300  shadow-lg z-10 overflow-hidden">
                         {pointsOptions.map((option) => (
                           <div
                             key={option.value}
@@ -163,19 +179,26 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                   </span>
                 </div>
 
+                {redeemError && (
+                  <div className="flex items-center gap-2 mb-4 text-red-600 text-sm">
+                    <FiAlertCircle size={16} />
+                    <span>{redeemError}</span>
+                  </div>
+                )}
+
                 <div className="flex gap-4">
                   <button
                     onClick={onClose}
-                    className="flex-1 px-6 py-3 cursor-pointer bg-white border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-6 py-3 cursor-pointer bg-white border border-gray-300 text-gray-900  font-medium hover:bg-gray-50 transition-colors"
                   >
                     {t('createVoucher.cancel')}
                   </button>
                   <button
                     onClick={handleRedeem}
-                    disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints}
-                    className="flex-1 px-6 py-3 cursor-pointer bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints || redeemLoading}
+                    className="flex-1 px-6 py-3 cursor-pointer bg-black text-white  font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {t('createVoucher.redeem')}
+                    {redeemLoading ? "..." : t('createVoucher.redeem')}
                   </button>
                 </div>
               </div>
@@ -185,7 +208,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
           {/* Success Modal */}
           {isSuccessModalOpen && (
             <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
+              <div className="bg-white  shadow-2xl w-full max-w-xl p-8">
                 {/* Success Illustration */}
                 <div className="flex justify-center mb-6">
                     <img src="success.svg" alt="" />
@@ -211,7 +234,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                     <span className="text-lg text-black font-semibold">{voucherCode}</span>
                     <button
                       onClick={copyVoucherCode}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1 hover:bg-gray-100 transition-colors"
                       title={t('createVoucher.success.copyCode')}
                     >
                       <FaRegEdit size={18} className="text-gray-600" />
@@ -222,7 +245,7 @@ export default function CreateVoucherModal({ isOpen, onClose }) {
                 {/* Okay Button */}
                 <button
                   onClick={handleCloseAll}
-                  className="w-full px-6 py-3 cursor-pointer bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  className="w-full px-6 py-3 cursor-pointer bg-black text-white font-medium hover:bg-gray-800 transition-colors"
                 >
                   {t('createVoucher.success.okay')}
                 </button>
