@@ -132,6 +132,7 @@ function AppliedPill({ code, label, onRemove }) {
 }
 
 const VOUCHER_KEY = "cartVoucherState";
+// FIX 1: voucherPoints bhi localStorage mein save/get karo
 const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null"); } catch { return null; } };
 const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
@@ -156,16 +157,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   })();
 
   // ─── CASE 1: Guest Voucher States ────────────────────────────────────────
-  // Flow: type code → pill shown below → remove → same code → error → remove → success cycle
   const [guestVoucherInput, setGuestVoucherInput] = useState("");
   const [guestVoucherError, setGuestVoucherError] = useState(null);
   const [guestVoucherLoading, setGuestVoucherLoading] = useState(false);
   const [guestApplyHovered, setGuestApplyHovered] = useState(false);
-  // pendingPill = code shown below input (before apply clicked)
   const [guestPendingPill, setGuestPendingPill] = useState(null);
-  // appliedVoucher = successfully applied code shown as pill
   const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
-  // Track codes that have already been used once (for alternating success/error cycle)
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
 
   // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
@@ -179,7 +176,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
-  const [voucherPoints, setVoucherPoints] = useState(null);
+  // FIX 1: voucherPoints localStorage se initialize karo
+  const [voucherPoints, setVoucherPoints] = useState(() => {
+    const saved = getVoucherState();
+    return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
+  });
 
   // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoOpen, setPromoOpen] = useState(false);
@@ -187,7 +188,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [promoHovered, setPromoHovered] = useState(false);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState(null);
-  const [appliedPromo, setAppliedPromo] = useState(null); // { code, off }
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [pendingPromoPill, setPendingPromoPill] = useState(null);
 
   const overlayRef = useRef(null);
@@ -221,25 +222,27 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setAppliedVoucherOff(saved.off || 0);
       setSelectedPill(saved.selectedPill || null);
       setLoggedVoucherInput(saved.selectedPill || "");
+      // FIX 1: voucherPoints bhi restore karo
+      if (saved.voucherPoints !== undefined) {
+        setVoucherPoints(saved.voucherPoints);
+      }
     } else {
-      // Pehli baar ya remove ke baad — kuch selected nahi
       setLoggedVoucherApplied(false);
       setAppliedVoucherOff(0);
       setSelectedPill(null);
       setLoggedVoucherInput("");
+      setVoucherPoints(null);
     }
   }, [isOpen]);
 
   // Cart fetch on open
   useEffect(() => {
     if (!isOpen) return;
-    // Step 1: turant localStorage se show karo
     const stored = getCartData();
     if (stored) {
       setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
       setCartCount(stored.cart_count || 0);
     }
-    // Step 2: background mein list API hit karo — updated data aane pe refresh
     const fetchLatest = async () => {
       try {
         const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -253,14 +256,24 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         });
         const data = await res.json();
         if (data.status) {
-          // normalize — list API cartItem ya cartItems dono handle karo
           const normalizedData = {
             ...data.data,
             cartItem: (data.data.cartItem || data.data.cartItems || []).filter(Boolean),
           };
           saveCartData(normalizedData);
-          setCartItems(normalizedData.cartItem);
+          const items = normalizedData.cartItem;
+          setCartItems(items);
           setCartCount(normalizedData.cart_count || 0);
+
+          // FIX 2: Agar cart bilkul empty aa jaye to voucher localStorage reset karo
+          if (items.length === 0) {
+            removeVoucherState();
+            setLoggedVoucherApplied(false);
+            setAppliedVoucherOff(0);
+            setSelectedPill(null);
+            setLoggedVoucherInput("");
+            setVoucherPoints(null);
+          }
         }
       } catch { /* silent */ }
     };
@@ -269,7 +282,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const voucherFetchedRef = useRef(false);
 
-  // Fetch voucher list — sirf ek baar, har open pe pills refresh karo
+  // Fetch voucher list
   useEffect(() => {
     if (!isOpen) return;
     const fetchVouchers = async () => {
@@ -287,10 +300,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         if (data.status && data.data?.data) {
           const list = data.data.data;
           setVoucherPills(list);
-          // sirf tab points set karo jab localStorage mein saved state na ho
-          if (!getVoucherState()) {
+          // FIX 1: Sirf jab localStorage mein saved voucherPoints na ho tab calculate karo
+          const saved = getVoucherState();
+          if (!saved || saved.voucherPoints === undefined) {
             const totalPoints = list.reduce((sum, v) => sum + (v.point || 0), 0);
             setVoucherPoints(totalPoints);
+            // Aur is value ko bhi save karo
+            setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
           }
         }
       } catch { /* silent */ }
@@ -312,22 +328,18 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   // ─── CASE 1 HANDLERS (Guest) ──────────────────────────────────────────────
 
-  // User types in input — pill only appears AFTER Apply is clicked
   const handleGuestInputChange = (e) => {
     const val = e.target.value;
     setGuestVoucherInput(val);
     setGuestVoucherError(null);
-    // Do NOT set guestPendingPill here — it's set only on Apply
   };
 
-  // Remove the pending pill (X on pill below input)
   const handleGuestPendingPillRemove = () => {
     setGuestPendingPill(null);
     setGuestVoucherInput("");
     setGuestVoucherError(null);
   };
 
-  // Apply button clicked (guest) — pill appears here (black bg, white text)
   const handleGuestApply = async () => {
     const code = guestVoucherInput.trim().toUpperCase();
     if (!code) return;
@@ -337,13 +349,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     await new Promise((r) => setTimeout(r, 600));
 
     if (guestUsedCodes.includes(code)) {
-      // Error: already used once → show error, clear input, no pill
       setGuestVoucherError("This voucher code is invalid or has already been used.");
-      // Remove from used so next try succeeds again (alternating cycle)
       setGuestUsedCodes((prev) => prev.filter((c) => c !== code));
       setGuestVoucherInput("");
     } else {
-      // Success: show applied pill (black bg white text), disable input
       setGuestUsedCodes((prev) => [...prev, code]);
       setGuestAppliedVoucher(code);
       setGuestVoucherInput("");
@@ -353,7 +362,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setGuestVoucherLoading(false);
   };
 
-  // Remove applied voucher pill (guest)
   const handleGuestRemoveApplied = () => {
     setGuestAppliedVoucher(null);
     setGuestVoucherError(null);
@@ -403,14 +411,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const off = data.data?.off || 0;
       const point = data.data?.point ?? 0;
       setAppliedVoucherOff(off);
+      // FIX 1: voucherPoints update karo aur localStorage mein bhi save karo
       setVoucherPoints(point);
       if (point === 0) {
         setSelectedPill(null);
         setLoggedVoucherInput("");
-        setVoucherState({ applied: false, selectedPill: null, input: "", off: 0 });
+        // FIX 1: point 0 hone ka result bhi localStorage mein persist karo
+        setVoucherState({ applied: false, selectedPill: null, input: "", off: 0, voucherPoints: 0 });
       } else {
         setLoggedVoucherApplied(true);
-        setVoucherState({ applied: true, selectedPill: codeToApply, input: codeToApply, off });
+        setVoucherState({ applied: true, selectedPill: codeToApply, input: codeToApply, off, voucherPoints: point });
       }
     } catch {
       setLoggedVoucherError("Something went wrong.");
@@ -508,6 +518,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setCartCount((prev) => Math.max(0, prev - 1));
       const existing = getCartData() || {};
       saveCartData({ ...existing, cartItem: updated, cart_count: Math.max(0, (existing.cart_count || 1) - 1) });
+
+      // FIX 2: Jab last product delete ho to voucher localStorage reset karo
+      if (updated.length === 0) {
+        removeVoucherState();
+        setLoggedVoucherApplied(false);
+        setAppliedVoucherOff(0);
+        setSelectedPill(null);
+        setLoggedVoucherInput("");
+        setVoucherPoints(null);
+      }
     } catch (err) {
       console.error("Cart remove error:", err);
     } finally {
@@ -627,7 +647,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
   const renderLoggedVoucherContent = () => {
     const hasVouchers = voucherPills.length > 0;
-    const noVouchersAndNoPoints = !hasVouchers; // extend if points API added
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
         {/* Input row */}
@@ -673,14 +692,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </button>
         </div>
 
-        {/* "Voucher code added" hint — sirf pill click se, pills se upar */}
+        {/* "Voucher code added" hint */}
         {selectedPill && !loggedVoucherApplied && voucherPoints !== 0 && voucherPills.some(p => p.name === selectedPill) && (
           <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
             Voucher code added. Click Apply to redeem it.
           </p>
         )}
 
-        {/* Pills from API — hide after apply or when points 0 */}
+        {/* Pills from API */}
         {!loggedVoucherApplied && hasVouchers && voucherPoints !== 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
             {voucherPills.map((pill) => {
@@ -741,7 +760,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* Default text — sirf jab list empty ho, points bhi 0 hon, aur koi applied/selected nahi */}
+        {/* Default text */}
         {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && voucherPoints === 0 && (
           <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
             You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.
@@ -890,7 +909,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       )}
                       <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
                        <RiDeleteBinLine className="hover:text-gray-600" />
-
                       </button>
                     </div>
                   </div>
