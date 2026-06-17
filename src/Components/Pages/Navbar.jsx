@@ -145,21 +145,21 @@ const announcements = [
 const [annIndex, setAnnIndex] = useState(0);
 const [nextIndex, setNextIndex] = useState(1);
 const [annPhase, setAnnPhase] = useState('idle'); // 'idle' | 'exit'
+const [annPaused, setAnnPaused] = useState(false);
 
 useEffect(() => {
+  if (annPaused) return;
   const interval = setInterval(() => {
-    const next = (annIndex + 1) % announcements.length; // snapshot for closure
+    const next = (annIndex + 1) % announcements.length;
     setNextIndex(next);
     setAnnPhase('exit');
-
     setTimeout(() => {
       setAnnIndex(next);
       setAnnPhase('idle');
     }, 550);
   }, 4000);
-
   return () => clearInterval(interval);
-}, [annIndex]);
+}, [annIndex, annPaused]);
 
 const currentStyle = {
   transform: annPhase === 'exit' ? 'translateY(-120%)' : 'translateY(0)',
@@ -221,14 +221,14 @@ const nextStyle = {
   style={currentStyle}
   className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
 >
-  <span className="hover:underline">{announcements[annIndex]}</span>
+  <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[annIndex]}</span>
   <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
 </p>
 <p
   style={nextStyle}
   className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
 >
-  <span className="hover:underline">{announcements[nextIndex]}</span>
+  <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[nextIndex]}</span>
   <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
 </p>
   </div>
@@ -371,9 +371,9 @@ const nextStyle = {
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,  width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
                     {cartCount}
-                  </span>
+                  </div>
                 ) : (
                   <span className="bg-black w-2 h-2 rounded-full" />
                 )}
@@ -385,9 +385,9 @@ const nextStyle = {
               <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <span className="bg-black border border-gray-100 font-[500] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
                     {cartCount}
-                  </span>
+                  </div>
                 ) : (
                   <span className="bg-black w-2 h-2 rounded-full" />
                 )}
