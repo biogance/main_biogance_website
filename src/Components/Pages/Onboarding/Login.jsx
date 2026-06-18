@@ -76,16 +76,9 @@ export default function LoginModal({ isOpen, onClose }) {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (submitAttempted) {
-      let error = '';
-      if (field === 'email') {
-        error = validateEmail(value);
-      } else if (field === 'password') {
-        error = validatePassword(value);
-      }
-      setErrors({ ...errors, [field]: error });
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 useEffect(() => {

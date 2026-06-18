@@ -106,7 +106,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   return (
     <div
       ref={menuRef}
-      className="bg-white border-b border-gray-200 shadow-lg z-[999] flex"
+      className="bg-white shadow-lg z-[999] flex"
       style={{
         position: 'fixed',
         top: '104px',
