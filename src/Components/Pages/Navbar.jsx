@@ -35,7 +35,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
-  const [popularProducts, setPopularProducts] = useState([]); // ← popular data ke liye alag state
+  const [popularProducts, setPopularProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -66,7 +66,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       .then((data) => {
         if (data.status) {
           setHomeCategories(data.data.categories || []);
-          setPopularProducts(data.data.popular || []); // ← popular yahan set karo
+          setPopularProducts(data.data.popular || []);
         } else {
           const msg = data.errors?.length > 0
             ? data.errors[0].message
@@ -105,10 +105,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isNavHovered, setIsNavHovered] = useState(false);
 
-
   const desktopLangRef = useRef(null);
   const mobileLangRef = useRef(null);
   const langCloseTimer = useRef(null);
+  const navLeaveTimer = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -207,6 +207,19 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     }, 150);
   };
 
+  // Nav-level hover handlers — single source of truth for bg color
+  const handleNavMouseEnter = () => {
+    if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current);
+    setIsNavHovered(true);
+  };
+
+  const handleNavMouseLeave = () => {
+    navLeaveTimer.current = setTimeout(() => {
+      setIsNavHovered(false);
+      setIsProductsOpen(false);
+    }, 120);
+  };
+
   const dotClass =
     'block w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 opacity-0 group-hover:opacity-100 mt-1';
 
@@ -244,12 +257,11 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] ${
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-150 ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible
             ? "bg-white shadow-sm border-b border-gray-100"
             : "bg-transparent border-b border-transparent"
         }`}
-        style={{ position: 'relative' }}
       >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div
@@ -267,13 +279,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 onMouseEnter={() => {
                   if (productsCloseTimer.current) clearTimeout(productsCloseTimer.current);
                   setIsProductsOpen(true);
-                  setIsNavHovered(true);
+                  handleNavMouseEnter();
                 }}
                 onMouseLeave={() => {
                   productsCloseTimer.current = setTimeout(() => {
                     setIsProductsOpen(false);
-                    setIsNavHovered(false);
                   }, 150);
+                  handleNavMouseLeave();
                 }}
               >
                 <button className={navItemBase}>
@@ -293,9 +305,9 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 <Link
                   key={link.key}
                   href={link.href}
-                  onMouseEnter={() => setIsNavHovered(true)}
-                  onMouseLeave={() => setIsNavHovered(false)}
                   className={navItemBase}
+                  onMouseEnter={handleNavMouseEnter}
+                  onMouseLeave={handleNavMouseLeave}
                 >
                   {link.text}
                   <span className={dotClass} />
@@ -370,7 +382,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               {/* Login / Profile */}
               {isLoggedIn ? (
                 <Link href="/my-account" className={navItemBase}>
-                  <span  className='mt-0.5'>PROFILE</span>
+                  <span className='mt-0.5'>PROFILE</span>
                 </Link>
               ) : (
                 <button
@@ -388,7 +400,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
+                  <div style={{ minWidth: '24px', height: '24px',   marginLeft:"5px", paddingRight:"0.5px", borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -402,7 +414,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
+                   <div style={{ minWidth: '23px', height: '23px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -471,7 +483,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               <div className="relative" ref={mobileLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px]  border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
                 >
                   <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
@@ -498,25 +510,25 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
               >
                 <FiSearch className="w-5 h-5" strokeWidth={2.5} />
               </button>
 
               {isLoggedIn ? (
-                <Link href="/my-account" className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+                <Link href="/my-account" className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
                   <FiUser className="w-5 h-5" />
                 </Link>
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                  className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
                 >
                   <FiUser className="w-5 h-5" />
                 </button>
               )}
 
-              <Link href="/wishlist" className="p-2  border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
+              <Link href="/wishlist" className="p-2 border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />
               </Link>
             </div>

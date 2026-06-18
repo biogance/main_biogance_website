@@ -58,12 +58,12 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
   const currentSlideRef = useRef(0);
   const loadedSlides = useRef(new Set());
   const firstImageLoaded = useRef(false);
+  const modalCardRef = useRef(null); // For shake animation
 
   const [selectedProductIdx, setSelectedProductIdx] = useState(0);
   const [selectedVolume, setSelectedVolume] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  // ── FIX: start with noTransition=true so first render never slides in ──
   const [noTransition, setNoTransition] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
   const [slideLoading, setSlideLoading] = useState(false);
@@ -71,12 +71,13 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [readMore, setReadMore] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
 
   const rawBundleData = fullProductData || product;
   const apiProducts = rawBundleData?.products || [];
   const hasFullData = apiProducts.length > 0 && apiProducts[0]?.images !== undefined;
 
-  // ── Body scroll lock ──────────────────────────────────────────────────────
+  // Body scroll lock
   useEffect(() => {
     if (!isOpen) {
       document.body.style.overflow = "";
@@ -92,18 +93,19 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
     };
   }, [isOpen]);
 
-  // ── Reset on open — always noTransition so first image appears instantly ──
+  // Reset on open
   useEffect(() => {
     if (!isOpen) return;
     setSelectedProductIdx(0);
     setSelectedVolume(null);
     setSelectedColor(null);
     setCurrentSlide(0);
-    setNoTransition(true); // ← FIX: no slide animation on open
+    setNoTransition(true);
     setImageLoading(true);
     setSlideLoading(false);
     setReadMore(false);
     setQuantity(1);
+    setIsShaking(false);
     loadedSlides.current = new Set();
     firstImageLoaded.current = false;
     currentSlideRef.current = 0;
@@ -146,14 +148,12 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
     if (total === 0) return;
     let target = idx;
     if (idx < 0 || idx >= total) {
-      // Wrap-around: disable transition briefly then re-enable
       target = (idx + total) % total;
       setNoTransition(true);
       setCurrentSlide(target);
       currentSlideRef.current = target;
       requestAnimationFrame(() => requestAnimationFrame(() => setNoTransition(false)));
     } else {
-      // Normal navigation: enable transition
       setNoTransition(false);
       setCurrentSlide(target);
       currentSlideRef.current = target;
@@ -161,11 +161,11 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
     if (!loadedSlides.current.has(target)) setSlideLoading(true);
   };
 
-  // ── Reset on product variant change — no transition so it jumps to slide 0 ──
+  // Reset on product variant change
   useEffect(() => {
     setCurrentSlide(0);
     currentSlideRef.current = 0;
-    setNoTransition(true); // ← FIX: no slide animation when variant changes
+    setNoTransition(true);
     setImageLoading(true);
     setSlideLoading(false);
     loadedSlides.current = new Set();
@@ -204,17 +204,31 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
     router.push(`/product/${slug}`);
   };
 
+  // Shake animation when clicking outside (backdrop)
   const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget) {
+      if (modalCardRef.current) {
+        modalCardRef.current.classList.add("modal-shake");
+        setIsShaking(true);
+
+        setTimeout(() => {
+          modalCardRef.current?.classList.remove("modal-shake");
+          setIsShaking(false);
+        }, 400);
+      }
+    }
   };
 
   if (!isOpen) return null;
 
   const CHAR_LIMIT = 220;
-
   const plainText =
     typeof window !== "undefined"
-      ? (() => { const d = document.createElement("div"); d.innerHTML = displayDescription; return d.innerText || ""; })()
+      ? (() => {
+          const d = document.createElement("div");
+          d.innerHTML = displayDescription;
+          return d.innerText || "";
+        })()
       : displayDescription.replace(/<[^>]*>/g, "");
   const isLong = plainText.length > CHAR_LIMIT;
 
@@ -234,6 +248,17 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
           @keyframes spin89345 {
             0%   { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          /* Shake Animation - Same as Login Modal */
+          @keyframes modalShake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+          }
+          .modal-shake {
+            animation: modalShake 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) both;
           }
           .qv-slides-track {
             display: flex; width: 100%; height: 100%;
@@ -271,6 +296,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
       >
         {/* Modal Box */}
         <div
+          ref={modalCardRef}
           style={{
             position: "relative",
             backgroundColor: "#fff",
@@ -338,8 +364,9 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                             ref={currentSlide === idx ? videoRef : null}
                             key={slide.url}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                            muted playsInline
-                              loop 
+                            muted
+                            playsInline
+                            loop
                             onCanPlay={() => {
                               loadedSlides.current.add(idx);
                               if (currentSlideRef.current === idx) setSlideLoading(false);
@@ -377,10 +404,16 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
 
             {isLoaded && !imageLoading && slides.length > 1 && (
               <>
-                <button onClick={() => goToSlide(currentSlide - 1)} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", zIndex: 20, width: "38px", height: "38px", borderRadius: "50%", backgroundColor: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
+                <button 
+                  onClick={() => goToSlide(currentSlide - 1)} 
+                  style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", zIndex: 20, width: "38px", height: "38px", borderRadius: "50%", backgroundColor: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}
+                >
                   <MdChevronLeft size={22} color="#1c1c1c" />
                 </button>
-                <button onClick={() => goToSlide(currentSlide + 1)} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", zIndex: 20, width: "38px", height: "38px", borderRadius: "50%", backgroundColor: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
+                <button 
+                  onClick={() => goToSlide(currentSlide + 1)} 
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", zIndex: 20, width: "38px", height: "38px", borderRadius: "50%", backgroundColor: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}
+                >
                   <MdChevronRight size={22} color="#1c1c1c" />
                 </button>
               </>
@@ -424,7 +457,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
               </div>
             ) : (
               <>
-                {/* Product Label — from API */}
+                {/* Product Label */}
                 {(() => {
                   const label = language === "fr" && rawBundleData?.french_product_label
                     ? rawBundleData.french_product_label
@@ -538,7 +571,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                 {/* Spacer */}
                 <div style={{ flex: 1 }} />
 
-                {/* Quantity + Add to Cart + Wishlist */}
+                {/* Quantity + Add to Cart */}
                 <div style={{ marginBottom: "14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <p style={{ fontSize: "14px", fontWeight: 600, color: "#1C1C1C", whiteSpace: "nowrap", margin: 0 }}>{t("quantity")}</p>
@@ -597,18 +630,11 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                         <>{t("addToCart")} – €{displayPrice}</>
                       )}
                     </button>
-
-                    {/* <button
-                      onClick={() => setIsWishlisted(!isWishlisted)}
-                      style={{ width: "40px", height: "40px", borderRadius: "8px", border: "1px solid #E8E8E8", backgroundColor: "#F3F3F3", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}
-                    >
-                      <FiHeart size={18} style={{ fill: isWishlisted ? "#1C1C1C" : "none", color: isWishlisted ? "#1C1C1C" : "#666", transition: "all 0.2s" }} />
-                    </button> */}
                   </div>
                 </div>
 
                 {/* View Product Details */}
-                <div style={{ paddingTop: "10px", marginBottom:"-10px", borderTop: "1px solid #F0F0F0" }}>
+                <div style={{ paddingTop: "10px", marginBottom: "-10px", borderTop: "1px solid #F0F0F0" }}>
                   <button
                     onClick={handleViewProduct}
                     style={{ width: "100%", backgroundColor: "transparent", border: "none", padding: "10px 0", fontSize: "13px", fontWeight: 600, color: "#1C1C1C", textDecoration: "underline", textUnderlineOffset: "3px", cursor: "pointer", letterSpacing: "0.04em", textTransform: "uppercase", transition: "color 0.2s" }}
