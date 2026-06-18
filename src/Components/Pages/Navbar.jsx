@@ -35,10 +35,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
+  const [popularProducts, setPopularProducts] = useState([]); // ← popular data ke liye alag state
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // localStorage se cart_count read karo — storage event se live update
+  const productsRef = useRef(null);
+  const productsCloseTimer = useRef(null);
+
   useEffect(() => {
     const readCount = () => {
       const data = getCartData();
@@ -60,17 +63,17 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       body: JSON.stringify(payload),
     })
       .then((res) => res.json())
-     // AFTER
-.then((data) => {
-  if (data.status) {
-    setHomeCategories(data.data.categories || []);
-  } else {
-    const msg = data.errors?.length > 0
-      ? data.errors[0].message
-      : data.action || data.action_message;
-    if (msg) toast.error(msg);
-  }
-})
+      .then((data) => {
+        if (data.status) {
+          setHomeCategories(data.data.categories || []);
+          setPopularProducts(data.data.popular || []); // ← popular yahan set karo
+        } else {
+          const msg = data.errors?.length > 0
+            ? data.errors[0].message
+            : data.action || data.action_message;
+          if (msg) console.error(msg);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -84,7 +87,6 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   useEffect(() => {
     const checkLogin = () => {
       const loginData = localStorage.getItem('LoginData');
-      console.log("Navbar.jsx checkLogin: Retrieved LoginData =", loginData, "isLoggedIn =", !!loginData);
       setIsLoggedIn(!!loginData);
     };
     checkLogin();
@@ -136,46 +138,48 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
-const announcements = [
-  "Enjoy complimentary standard delivery across France on all orders over €39.",
-  "New arrivals just dropped — explore our latest skincare collection.",
-  "Earn loyalty points on every order. Join Biogance Rewards today.",
-];
 
-const [annIndex, setAnnIndex] = useState(0);
-const [nextIndex, setNextIndex] = useState(1);
-const [annPhase, setAnnPhase] = useState('idle'); // 'idle' | 'exit'
-const [annPaused, setAnnPaused] = useState(false);
+  const announcements = [
+    "Enjoy complimentary standard delivery across France on all orders over €39.",
+    "New arrivals just dropped — explore our latest skincare collection.",
+    "Earn loyalty points on every order. Join Biogance Rewards today.",
+  ];
 
-useEffect(() => {
-  if (annPaused) return;
-  const interval = setInterval(() => {
-    const next = (annIndex + 1) % announcements.length;
-    setNextIndex(next);
-    setAnnPhase('exit');
-    setTimeout(() => {
-      setAnnIndex(next);
-      setAnnPhase('idle');
-    }, 550);
-  }, 4000);
-  return () => clearInterval(interval);
-}, [annIndex, annPaused]);
+  const [annIndex, setAnnIndex] = useState(0);
+  const [nextIndex, setNextIndex] = useState(1);
+  const [annPhase, setAnnPhase] = useState('idle');
+  const [annPaused, setAnnPaused] = useState(false);
 
-const currentStyle = {
-  transform: annPhase === 'exit' ? 'translateY(-120%)' : 'translateY(0)',
-  opacity: annPhase === 'exit' ? 0 : 1,
-  transition: annPhase === 'exit'
-    ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-in'
-    : 'none',
-};
+  useEffect(() => {
+    if (annPaused) return;
+    const interval = setInterval(() => {
+      const next = (annIndex + 1) % announcements.length;
+      setNextIndex(next);
+      setAnnPhase('exit');
+      setTimeout(() => {
+        setAnnIndex(next);
+        setAnnPhase('idle');
+      }, 550);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [annIndex, annPaused]);
 
-const nextStyle = {
-  transform: annPhase === 'exit' ? 'translateY(0)' : 'translateY(120%)',
-  opacity: annPhase === 'exit' ? 1 : 0,
-  transition: annPhase === 'exit'
-    ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-out'
-    : 'none',
-};
+  const currentStyle = {
+    transform: annPhase === 'exit' ? 'translateY(-120%)' : 'translateY(0)',
+    opacity: annPhase === 'exit' ? 0 : 1,
+    transition: annPhase === 'exit'
+      ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-in'
+      : 'none',
+  };
+
+  const nextStyle = {
+    transform: annPhase === 'exit' ? 'translateY(0)' : 'translateY(120%)',
+    opacity: annPhase === 'exit' ? 1 : 0,
+    transition: annPhase === 'exit'
+      ? 'transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease-out'
+      : 'none',
+  };
+
   const handleMobileMenuToggle = () => {
     if (isMobileMenuOpen) {
       setIsProductsOpen(false);
@@ -203,36 +207,34 @@ const nextStyle = {
     }, 150);
   };
 
-  // Dot indicator class — bottom-1 after removing pb-3
   const dotClass = (key) =>
     `absolute top-6 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
       hoveredLink === key ? 'opacity-100' : 'opacity-0'
     }`;
 
-  
   const navItemBase =
     'relative flex flex-col items-center justify-center px-2 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
 
   return (
     <>
-    <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
-  <div className="relative h-full overflow-hidden">
-   <p
-  style={currentStyle}
-  className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
->
-  <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[annIndex]}</span>
-  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-</p>
-<p
-  style={nextStyle}
-  className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
->
-  <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[nextIndex]}</span>
-  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-</p>
-  </div>
-</div>
+      <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
+        <div className="relative h-full overflow-hidden">
+          <p
+            style={currentStyle}
+            className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+          >
+            <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[annIndex]}</span>
+            <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+          </p>
+          <p
+            style={nextStyle}
+            className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+          >
+            <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[nextIndex]}</span>
+            <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+          </p>
+        </div>
+      </div>
 
       {/* Backdrop overlay */}
       <div
@@ -244,12 +246,12 @@ const nextStyle = {
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px]
-        } ${
-          isNavHovered || isProductsModalOpen || isMobileMenuOpen || !isVideoVisible
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] ${
+          isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible
             ? "bg-white shadow-sm border-b border-gray-100"
             : "bg-transparent border-b border-transparent"
         }`}
+        style={{ position: 'relative' }}
       >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div
@@ -260,16 +262,36 @@ const nextStyle = {
             {/* LEFT: Navigation Links - Desktop Only */}
             <div className="hidden lg:flex items-stretch gap-3">
 
-              {/* Our Products */}
-              <button
-                onClick={toggleProductsModal}
-                onMouseEnter={() => { setHoveredLink('products'); setIsNavHovered(true); }}
-                onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
-                className={navItemBase}
+              {/* Our Products - Hover Mega Menu */}
+              <div
+                ref={productsRef}
+                className="relative h-full"
+                onMouseEnter={() => {
+                  if (productsCloseTimer.current) clearTimeout(productsCloseTimer.current);
+                  setIsProductsOpen(true);
+                  setIsNavHovered(true);
+                  setHoveredLink('products');
+                }}
+                onMouseLeave={() => {
+                  productsCloseTimer.current = setTimeout(() => {
+                    setIsProductsOpen(false);
+                    setIsNavHovered(false);
+                    setHoveredLink(null);
+                  }, 150);
+                }}
               >
-                {t('ourProducts')}
-                <span className={dotClass('products')} />
-              </button>
+                <button className={navItemBase}>
+                  {t('ourProducts')}
+                  <span className={dotClass('products')} />
+                </button>
+
+                <OurProducts
+                  isOpen={isProductsOpen}
+                  onClose={() => setIsProductsOpen(false)}
+                  categories={homeCategories}
+                  popular={popularProducts} // ← fixed: apiData ki jagah popularProducts state
+                />
+              </div>
 
               {navLinks.map((link) => (
                 <Link
@@ -313,7 +335,6 @@ const nextStyle = {
             {/* RIGHT: Icons */}
             <div className="hidden lg:flex items-stretch justify-end gap-5">
 
-             
               <button
                 onClick={() => setIsSearchModalOpen(true)}
                 className={navItemBase}
@@ -334,7 +355,7 @@ const nextStyle = {
                 </button>
 
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-black rounded-xl shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
@@ -371,7 +392,7 @@ const nextStyle = {
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,  width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
+                  <div style={{ minWidth: '24px', height: '24px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '14px', fontWeight: 400, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -411,7 +432,7 @@ const nextStyle = {
             <div>
               <button
                 onClick={toggleProductsModal}
-                className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400] hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
+                className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400] hover:bg-gray-50 px-2 transition-all duration-200"
               >
                 <div className="flex items-center space-x-2">
                   <img src="/Menu.svg" className="w-5 h-5" alt="Menu" />
@@ -443,7 +464,7 @@ const nextStyle = {
               <a
                 key={link.key}
                 href={link.href}
-                className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600 hover:bg-gray-50 rounded-lg px-2 transition-all duration-200"
+                className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600 hover:bg-gray-50 px-2 transition-all duration-200"
               >
                 {link.text}
               </a>
@@ -454,7 +475,7 @@ const nextStyle = {
               <div className="relative" ref={mobileLangRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] rounded-xl border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px]  border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
                 >
                   <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
                   <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
@@ -463,7 +484,7 @@ const nextStyle = {
                 </button>
 
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-0 bg-white text-black rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
+                  <div className="absolute top-full mt-2 left-0 bg-white text-black shadow-lg overflow-hidden z-50 min-w-[140px]">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
@@ -481,25 +502,25 @@ const nextStyle = {
 
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
               >
                 <FiSearch className="w-5 h-5" strokeWidth={2.5} />
               </button>
 
               {isLoggedIn ? (
-                <Link href="/my-account" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
+                <Link href="/my-account" className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
                   <FiUser className="w-5 h-5" />
                 </Link>
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+                  className="p-2  border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
                 >
                   <FiUser className="w-5 h-5" />
                 </button>
               )}
 
-              <Link href="/wishlist" className="p-2 rounded-xl border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
+              <Link href="/wishlist" className="p-2  border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
                 <FiHeart className="w-5 h-5" />
               </Link>
             </div>
@@ -512,12 +533,6 @@ const nextStyle = {
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        categories={homeCategories}
-      />
-
-      <OurProducts
-        isOpen={isProductsModalOpen}
-        onClose={() => setIsProductsModalOpen(false)}
         categories={homeCategories}
       />
 

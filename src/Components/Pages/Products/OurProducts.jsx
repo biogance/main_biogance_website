@@ -1,25 +1,17 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MEDIA_URL } from '../../API/API';
 
-export default function Products({ isOpen, onClose, categories = [] }) {
+export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [] }) {
   const { i18n } = useTranslation();
   const isFrench = i18n.language === 'fr';
   const [activeCategory, setActiveCategory] = useState(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const menuRef = useRef(null);
 
   const getName = (item) => isFrench ? (item.french_name || item.name) : item.name;
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsAnimating(true);
-      if (categories.length > 0 && !activeCategory) {
-        setActiveCategory(categories[0]);
-      }
-    }
-  }, [isOpen, categories]);
 
   useEffect(() => {
     if (categories.length > 0 && !activeCategory) {
@@ -28,25 +20,26 @@ export default function Products({ isOpen, onClose, categories = [] }) {
   }, [categories]);
 
   useEffect(() => {
-    const handleEscape = (e) => { if (e.key === 'Escape' && isOpen) handleClose(); };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    if (isOpen && categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0]);
+    }
   }, [isOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
+    if (isOpen) setActiveImageIndex(0);
   }, [isOpen]);
 
-  const handleClose = () => {
-    setIsAnimating(false);
-    setTimeout(onClose, 700);
-  };
+  const featuredProduct = popular[0] || null;
 
-  if (!isOpen) return null;
+  // Sahi images nikalo — media field check karo, empty/null skip karo
+  const rawImages = featuredProduct?.products?.[0]?.images || [];
+  const productImages = rawImages.filter(img => img?.media && img.media.trim() !== '');
 
-  // Active category ki sub_categories mein universe type wale
-  const universes = (activeCategory?.sub_categories || []).filter(s => s.type === 'universe');
+  const productName = featuredProduct
+    ? (isFrench ? (featuredProduct.french_name || featuredProduct.name) : featuredProduct.name)
+    : '';
+
+  const handleDotClick = (index) => setActiveImageIndex(index);
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -54,122 +47,147 @@ export default function Products({ isOpen, onClose, categories = [] }) {
     return `${MEDIA_URL}${path}`;
   };
 
+  const universes = (activeCategory?.sub_categories || []).filter(s => s.type === 'universe');
+
+  if (!isOpen) return null;
+
   return (
-    <>
-      <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-700 ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
-        onClick={handleClose}
-      />
-
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
-        <div
-          className="bg-white shadow-2xl max-w-6xl w-full my-4 transition-transform duration-700 ease-in-out"
-          style={{ transform: isAnimating ? 'translateY(0)' : 'translateY(-150vh)' }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Close Button */}
-          <button
-            onClick={handleClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 hover:text-gray-900 text-xl w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-all duration-200 z-10 cursor-pointer hover:rotate-90"
-          >
-            ✕
-          </button>
-
-          <div className="p-4 sm:p-6 md:p-8">
-            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8">
-
-              {/* Left Sidebar - Categories */}
-              <div className={`hidden lg:block w-[220px] bg-[#2a2a2a] p-6 flex-shrink-0 h-fit transition-all duration-500 delay-100 ${isAnimating ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-                <div className="space-y-1">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`w-full cursor-pointer flex items-center gap-3 px-3 py-2.5 transition-all duration-300 ${
-                        activeCategory?.id === cat.id
-                          ? 'bg-white text-black shadow-lg scale-105'
-                          : 'text-white hover:bg-[#3a3a3a] hover:translate-x-1'
-                      }`}
-                    >
-                      {cat.black_media ? (
-                        <img
-                          src={getImageUrl(activeCategory?.id === cat.id ? cat.media : cat.black_media)}
-                          alt={getName(cat)}
-                          className="w-5 h-5 object-contain flex-shrink-0"
-                        />
-                      ) : null}
-                      <span className="text-xs">{getName(cat)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mobile Dropdown */}
-              <div className="lg:hidden">
-                <select
-                  className="w-full bg-[#2a2a2a] text-white px-4 py-3 text-sm"
-                  value={activeCategory?.id || ''}
-                  onChange={(e) => {
-                    const found = categories.find(c => c.id === Number(e.target.value));
-                    if (found) setActiveCategory(found);
-                  }}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{getName(cat)}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Right - Universes grid */}
-              <div className="flex-1 overflow-y-auto max-h-[70vh]">
-                {universes.length === 0 ? (
-                  <p className="text-gray-400 text-sm">No products found.</p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-                    {universes.map((universe, index) => {
-                      const families = (universe.sub_categories || []).filter(s => s.type === 'family');
-                      return (
-                        <div
-                          key={universe.id}
-                          className={`flex flex-col transition-all duration-500 ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-                          style={{ transitionDelay: `${index * 80 + 200}ms` }}
-                        >
-                          {/* Universe Name */}
-                          <h2 className="text-sm font-semibold mb-2 text-black">{getName(universe)}</h2>
-
-                          {/* Universe Image */}
-                          {getImageUrl(universe.media) && (
-                            <div className="mb-3 overflow-hidden">
-                              <img
-                                src={getImageUrl(universe.media)}
-                                alt={getName(universe)}
-                                className="w-full h-[130px] object-cover hover:scale-110 transition-transform duration-500"
-                              />
-                            </div>
-                          )}
-
-                          {/* Family list */}
-                          <div className="space-y-2">
-                            {families.map((fam) => (
-                              <div
-                                key={fam.id}
-                                className="text-xs text-gray-600 hover:text-gray-900 hover:translate-x-2 cursor-pointer transition-all duration-300"
-                              >
-                                {getName(fam)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
-        </div>
+    <div
+      ref={menuRef}
+      className="bg-white border-b border-gray-200 shadow-lg z-[999] flex"
+      style={{
+        position: 'fixed',
+        top: '104px',
+        left: 0,
+        right: 0,
+        minHeight: '420px',
+      }}
+    >
+      {/* Left Sidebar - Categories */}
+      <div className="w-[200px] bg-[#2a2a2a] flex-shrink-0 py-4">
+        {categories.map((cat) => {
+          const isActive = activeCategory?.id === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onMouseEnter={() => setActiveCategory(cat)}
+              onClick={() => setActiveCategory(cat)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 transition-all duration-200 cursor-pointer ${
+                isActive ? 'bg-white text-black' : 'text-white hover:bg-[#3a3a3a]'
+              }`}
+            >
+              {(cat.black_media || cat.media) && (
+                <img
+                  src={getImageUrl(isActive ? cat.black_media : (cat.media || cat.black_media))}
+                  alt={getName(cat)}
+                  className="w-5 h-5 object-contain flex-shrink-0"
+                />
+              )}
+              <span className="text-xs font-medium truncate min-w-0 flex-1 text-left">
+                {getName(cat)}
+              </span>
+            </button>
+          );
+        })}
       </div>
-    </>
+
+      {/* Middle — Universes Grid — flex-1 so it takes all remaining space */}
+      <div className="flex-1 overflow-y-auto px-10 py-8">
+        {universes.length === 0 ? (
+          <p className="text-gray-400 text-sm">No products found.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-7">
+            {universes.map((universe) => {
+              const families = (universe.sub_categories || []).filter(s => s.type === 'family');
+              return (
+                <div key={universe.id} className="flex flex-col">
+                  <h3 className="text-xs font-semibold text-black uppercase tracking-wider mb-3">
+                    {getName(universe)}
+                  </h3>
+                  <div className="space-y-1.5">
+                    {families.map((fam) => (
+                      <div
+                        key={fam.id}
+                        className="text-xs text-gray-500 hover:text-black hover:translate-x-1 cursor-pointer transition-all duration-200"
+                      >
+                        {getName(fam)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Right — Product Image Carousel — fixed width, snug to content */}
+      {productImages.length > 0 && (
+        <div
+          className="flex-shrink-0 flex flex-col mr-50 items-center justify-center gap-3 py-8 px-5"
+          style={{ width: '250px' }}
+        >
+          {/* Image */}
+          <div
+            className="w-full bg-[#f3f3f3]  flex items-center justify-center overflow-hidden"
+            style={{ height: '250px' }}
+          >
+            <img
+              key={activeImageIndex}
+              src={getImageUrl(productImages[activeImageIndex]?.media)}
+              alt={`Product image ${activeImageIndex + 1}`}
+              className="w-full h-full object-contain"
+              style={{ animation: 'fadeIn 0.3s ease' }}
+              onError={(e) => {
+                // agar image load na ho to next valid image try karo
+                const next = (activeImageIndex + 1) % productImages.length;
+                if (next !== activeImageIndex) setActiveImageIndex(next);
+              }}
+            />
+          </div>
+
+          {/* Dot Indicators */}
+          {productImages.length > 1 && (
+            <div className="flex items-center gap-1.5">
+              {productImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleDotClick(idx)}
+                  className="cursor-pointer transition-all duration-300 rounded-full"
+                  style={{
+                    width: idx === activeImageIndex ? '18px' : '6px',
+                    height: '6px',
+                    backgroundColor: idx === activeImageIndex ? '#111' : '#d1d5db',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Product Name */}
+          {productName && (
+            <p
+              className="text-center text-gray-400 leading-snug px-1"
+              style={{
+                fontSize: '10px',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {productName}
+            </p>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.97); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
   );
 }
