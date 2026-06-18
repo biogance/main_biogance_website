@@ -31,7 +31,6 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
 
   const featuredProduct = popular[0] || null;
 
-  // Sahi images nikalo — media field check karo, empty/null skip karo
   const rawImages = featuredProduct?.products?.[0]?.images || [];
   const productImages = rawImages.filter(img => img?.media && img.media.trim() !== '');
 
@@ -62,6 +61,8 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         right: 0,
         minHeight: '420px',
       }}
+      // Jab mouse dropdown se bahar (upar navbar center/right mein) jaaye toh close karo
+      onMouseLeave={onClose}
     >
       {/* Left Sidebar - Categories */}
       <div className="w-[200px] bg-[#2a2a2a] flex-shrink-0 py-4">
@@ -91,7 +92,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         })}
       </div>
 
-      {/* Middle — Universes Grid — flex-1 so it takes all remaining space */}
+      {/* Middle — Universes Grid */}
       <div className="flex-1 overflow-y-auto px-10 py-8">
         {universes.length === 0 ? (
           <p className="text-gray-400 text-sm">No products found.</p>
@@ -108,7 +109,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                     {families.map((fam) => (
                       <div
                         key={fam.id}
-                        className="text-xs text-gray-500 hover:text-black hover:translate-x-1 cursor-pointer transition-all duration-200"
+                        className="text-xs text-gray-500 hover:text-black hover:underline cursor-pointer transition-all duration-200"
                       >
                         {getName(fam)}
                       </div>
@@ -121,15 +122,14 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         )}
       </div>
 
-      {/* Right — Product Image Carousel — fixed width, snug to content */}
+      {/* Right — Product Image Carousel */}
       {productImages.length > 0 && (
         <div
           className="flex-shrink-0 flex flex-col mr-50 items-center justify-center gap-3 py-8 px-5"
           style={{ width: '250px' }}
         >
-          {/* Image */}
           <div
-            className="w-full bg-[#f3f3f3]  flex items-center justify-center overflow-hidden"
+            className="w-full bg-[#f3f3f3] flex items-center justify-center overflow-hidden"
             style={{ height: '250px' }}
           >
             <img
@@ -139,14 +139,12 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
               className="w-full h-full object-contain"
               style={{ animation: 'fadeIn 0.3s ease' }}
               onError={(e) => {
-                // agar image load na ho to next valid image try karo
                 const next = (activeImageIndex + 1) % productImages.length;
                 if (next !== activeImageIndex) setActiveImageIndex(next);
               }}
             />
           </div>
 
-          {/* Dot Indicators */}
           {productImages.length > 1 && (
             <div className="flex items-center gap-1.5">
               {productImages.map((_, idx) => (
@@ -164,7 +162,6 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             </div>
           )}
 
-          {/* Product Name */}
           {productName && (
             <p
               className="text-center text-gray-400 leading-snug px-1"

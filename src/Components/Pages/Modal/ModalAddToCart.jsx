@@ -34,7 +34,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
         style={{
-          border: "1px solid #ddd",  padding: "4px 8px",
+          border: "1px solid #ddd", padding: "4px 8px",
           fontSize: "13px", background: "#fff", color: "#111",
           cursor: disabled ? "default" : "pointer",
           display: "flex", alignItems: "center", gap: "8px",
@@ -59,7 +59,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       {open && !disabled && (
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
-          border: "1px solid #ddd",  minWidth: "100%", zIndex: 1100,
+          border: "1px solid #ddd", minWidth: "100%", zIndex: 1100,
           maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}>
           {options.map((opt) => (
@@ -89,12 +89,11 @@ function DropItem({ label, selected, onSelect }) {
   );
 }
 
-// Pill chip component (reused in voucher, promo applied areas)
 function AppliedPill({ code, label, onRemove }) {
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: "0",
-      border: "1px solid #ccc",  overflow: "hidden",
+      border: "1px solid #ccc", overflow: "hidden",
       background: "#fff",
     }}>
       <span style={{
@@ -134,30 +133,87 @@ function AppliedPill({ code, label, onRemove }) {
   );
 }
 
-// 🔵 Small reusable spinner for Apply buttons (color flips black/white based on hover state)
 function ButtonSpinner({ color = "#111" }) {
   return (
-    <span
-      style={{
-        display: "inline-block",
-        width: "13px",
-        height: "13px",
-        border: `2px solid ${color}`,
-        borderTopColor: "transparent",
-        borderRadius: "50%",
-        animation: "applyBtnSpin 0.6s linear infinite",
-      }}
-    />
+    <>
+      <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+      <span
+        style={{
+          display: "inline-block",
+          width: "13px",
+          height: "13px",
+          border: `2px solid ${color === "#fff" ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.15)"}`,
+          borderTopColor: color,
+          borderRadius: "50%",
+          animation: "applyBtnSpin 0.6s linear infinite",
+        }}
+      />
+    </>
   );
 }
 
 const VOUCHER_KEY = "cartVoucherState";
-// FIX 1: voucherPoints bhi localStorage mein save/get karo
 const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null"); } catch { return null; } };
 const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
 const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
+
+// ─── Upsell Product Card ──────────────────────────────────────────────────────
+function UpsellCard({ item, onAdd }) {
+  const [addHovered, setAddHovered] = useState(false);
+  if (!item) return null;
+
+  const imageUrl = item.image ||
+    (item.products?.[0]?.images?.[0]?.media
+      ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
+      : null);
+
+  const price = parseFloat(String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", ".")) || 0;
+  const name = item.name || "";
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "#fff" }}>
+      {/* Image */}
+      <div style={{
+        width: "64px", height: "72px", flexShrink: 0,
+        backgroundColor: "#f3f3f3",
+        overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {imageUrl
+          ? <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : <div style={{ width: "36px", height: "48px", backgroundColor: "#ddd" }} />
+        }
+      </div>
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          margin: "0 0 8px", fontSize: "12px", fontWeight: 600, color: "#111",
+          overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          lineHeight: 1.4, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        }}>
+          {name}
+        </p>
+        <button
+          onClick={() => onAdd(item)}
+          onMouseEnter={() => setAddHovered(true)}
+          onMouseLeave={() => setAddHovered(false)}
+          style={{
+            padding: "6px 14px", fontSize: "11px", fontWeight: 700,
+            letterSpacing: "0.08em", textTransform: "uppercase",
+            border: "1px solid #111",
+            background: addHovered ? "#111" : "#fff",
+            color: addHovered ? "#fff" : "#111",
+            cursor: "pointer", transition: "background 0.2s, color 0.2s",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+          }}
+        >
+          Add — {price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [cartItems, setCartItems] = useState([]);
@@ -165,10 +221,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
+  // Upsell products state
+  const [upsellProducts, setUpsellProducts] = useState([]);
+  const [upsellIndex, setUpsellIndex] = useState(0);
+
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftContentHeight, setGiftContentHeight] = useState(0);
 
-  // Auth check
   const isLoggedIn = (() => {
     try {
       const d = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -176,7 +235,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     } catch { return false; }
   })();
 
-  // ─── CASE 1: Guest Voucher States ────────────────────────────────────────
   const [guestVoucherInput, setGuestVoucherInput] = useState("");
   const [guestVoucherError, setGuestVoucherError] = useState(null);
   const [guestVoucherLoading, setGuestVoucherLoading] = useState(false);
@@ -184,12 +242,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [guestPendingPill, setGuestPendingPill] = useState(null);
   const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
-
-  // 🔵 Login text (next to "Please login first" error) hover + modal state
   const [guestLoginHovered, setGuestLoginHovered] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
   const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.selectedPill || "");
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
@@ -200,7 +255,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
-  // FIX 1: voucherPoints localStorage se initialize karo
   const [voucherPoints, setVoucherPoints] = useState(() => {
     const saved = getVoucherState();
     return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
@@ -208,7 +262,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [createMoreHovered, setCreateMoreHovered] = useState(false);
   const [learnMoreHovered, setLearnMoreHovered] = useState(false);
 
-  // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoInput, setPromoInput] = useState("");
   const [promoHovered, setPromoHovered] = useState(false);
@@ -217,7 +270,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [pendingPromoPill, setPendingPromoPill] = useState(null);
 
-  // Delivery method
   const [deliveryMethod, setDeliveryMethod] = useState("home");
   const [deliveryDropdownOpen, setDeliveryDropdownOpen] = useState(false);
   const deliveryDropdownRef = useRef(null);
@@ -235,7 +287,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
 
-  // Scroll lock
   useEffect(() => {
     if (!isOpen) {
       document.body.style.overflow = "";
@@ -254,7 +305,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     };
   }, [isOpen]);
 
-  // Voucher state sync on every open
   useEffect(() => {
     if (!isOpen) return;
     const saved = getVoucherState();
@@ -263,10 +313,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setAppliedVoucherOff(saved.off || 0);
       setSelectedPill(saved.selectedPill || null);
       setLoggedVoucherInput(saved.selectedPill || "");
-      // FIX 1: voucherPoints bhi restore karo
-      if (saved.voucherPoints !== undefined) {
-        setVoucherPoints(saved.voucherPoints);
-      }
+      if (saved.voucherPoints !== undefined) setVoucherPoints(saved.voucherPoints);
     } else {
       setLoggedVoucherApplied(false);
       setAppliedVoucherOff(0);
@@ -276,11 +323,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     }
   }, [isOpen]);
 
-  // 🔵 NEW: extracted, reusable, SILENT cart-list resync.
-  // Used both on modal open AND in the background after delete/qty-update API calls.
-  // It never touches `isLoading`, so it never shows a spinner — it just quietly
-  // brings localStorage + state in line with whatever the server says is true.
-  const refreshCartFromServer = async () => {
+  const refreshCartFromServer = async (stopLoader = false) => {
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const token = loginData?.data?.token;
@@ -301,8 +344,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         const items = normalizedData.cartItem;
         setCartItems(items);
         setCartCount(normalizedData.cart_count || 0);
-
-        // FIX 2: Agar cart bilkul empty aa jaye to voucher localStorage reset karo
         if (items.length === 0) {
           removeVoucherState();
           setLoggedVoucherApplied(false);
@@ -312,10 +353,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           setVoucherPoints(null);
         }
       }
-    } catch { /* silent */ }
+    } catch { } finally {
+      if (stopLoader) setIsRemoving(false);
+    }
   };
 
-  // Cart fetch on open
   useEffect(() => {
     if (!isOpen) return;
     const stored = getCartData();
@@ -324,11 +366,33 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setCartCount(stored.cart_count || 0);
     }
     refreshCartFromServer();
+    fetchUpsellProducts();
   }, [isOpen]);
+
+  // Fetch upsell products — localStorage se pehle, phir API
+  const fetchUpsellProducts = () => {
+    try {
+      const cached = localStorage.getItem("homePageData");
+      if (cached) {
+        const data = JSON.parse(cached);
+        const popular = data?.popular || [];
+        setUpsellProducts(popular);
+        return;
+      }
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      fetch(`${BASE_URL}/web/home`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? { token } : { device_id: getDeviceId() }),
+      }).then(r => r.json()).then(data => {
+        if (data.status) setUpsellProducts(data.data?.popular || []);
+      }).catch(() => {});
+    } catch {}
+  };
 
   const voucherFetchedRef = useRef(false);
 
-  // Fetch voucher list — extracted so it can be re-called after creating a new voucher
   const fetchVouchers = async () => {
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -344,13 +408,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const list = data.data?.vouchers?.data || data.data?.data;
       if (data.status) {
         setVoucherPills(list || []);
-        // total_point seedha API se aata ha, har dafa fresh use karo
         const totalPoints = data.data?.total_point !== undefined ? Number(data.data.total_point) : 0;
         setVoucherPoints(totalPoints);
         const saved = getVoucherState();
         setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
       }
-    } catch { /* silent */ }
+    } catch { }
   };
 
   useEffect(() => {
@@ -358,7 +421,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     fetchVouchers();
   }, [isOpen]);
 
-  // Recalculate accordion height
   useEffect(() => {
     if (giftContentRef.current) {
       setGiftContentHeight(giftContentRef.current.scrollHeight);
@@ -369,8 +431,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   ]);
 
   const handleOverlayClick = (e) => { if (e.target === overlayRef.current) onClose(); };
-
-  // ─── CASE 1 HANDLERS (Guest) ──────────────────────────────────────────────
 
   const handleGuestInputChange = (e) => {
     const val = e.target.value;
@@ -384,7 +444,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setGuestVoucherError(null);
   };
 
-  // Guest Apply: koi API call nahi, sirf "please login first" message dikhana ha
   const handleGuestApply = () => {
     if (!guestVoucherInput.trim()) return;
     setGuestVoucherError("Please login first if you want to add a voucher.");
@@ -396,8 +455,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setGuestVoucherInput("");
     setGuestPendingPill(null);
   };
-
-  // ─── CASE 2 HANDLERS (Logged-in) ─────────────────────────────────────────
 
   const handlePillClick = (code) => {
     if (loggedVoucherApplied) return;
@@ -439,12 +496,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const off = data.data?.off || 0;
       const point = data.data?.point ?? 0;
       setAppliedVoucherOff(off);
-      // FIX 1: voucherPoints update karo aur localStorage mein bhi save karo
       setVoucherPoints(point);
       if (point === 0) {
         setSelectedPill(null);
         setLoggedVoucherInput("");
-        // FIX 1: point 0 hone ka result bhi localStorage mein persist karo
         setVoucherState({ applied: false, selectedPill: null, input: "", off: 0, voucherPoints: 0 });
       } else {
         setLoggedVoucherApplied(true);
@@ -465,8 +520,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setVoucherPoints(null);
     removeVoucherState();
   };
-
-  // ─── CASE 3 HANDLERS (Promo) ─────────────────────────────────────────────
 
   const handlePromoInputChange = (e) => {
     setPromoInput(e.target.value);
@@ -504,11 +557,29 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setPromoInput("");
   };
 
-  // Delivery & totals
+  const handleUpsellAdd = async (item) => {
+    const prod = item.products?.[0] || item;
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      await fetch(`${BASE_URL}/user/cart/create`, {
+        method: "POST",
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token
+          ? { product_id: prod.id, quantity: 1 }
+          : { device_id: getDeviceId(), product_id: prod.id, quantity: 1 }
+        ),
+      });
+      refreshCartFromServer();
+    } catch {}
+  };
+
   const freeShippingThreshold = 39;
   const subtotal = cartItems.reduce((sum, item) => {
     if (!item) return sum;
-    const unitPrice = item.original_price || parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
+    const unitPrice = parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
     return sum + unitPrice * (item.quantity || 0);
   }, 0);
   const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
@@ -547,40 +618,18 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       if (data.status === false) {
         const msg = getErrorMsg(data);
         if (msg) toast.error(msg);
+        setIsRemoving(false);
         return;
       }
-      // Foran local state + localStorage update — UI turant updated data dikhaye
-      const updated = cartItems.filter((item) => item.id !== cartId);
-      setCartItems(updated);
-      setCartCount((prev) => Math.max(0, prev - 1));
-      const existing = getCartData() || {};
-      saveCartData({ ...existing, cartItem: updated, cart_count: Math.max(0, (existing.cart_count || 1) - 1) });
-
-      // FIX 2: Jab last product delete ho to voucher localStorage reset karo
-      if (updated.length === 0) {
-        removeVoucherState();
-        setLoggedVoucherApplied(false);
-        setAppliedVoucherOff(0);
-        setSelectedPill(null);
-        setLoggedVoucherInput("");
-        setVoucherPoints(null);
-      }
+      refreshCartFromServer(true);
     } catch (err) {
       console.error("Cart remove error:", err);
-    } finally {
       setIsRemoving(false);
-      // 🔵 NEW: background resync — fire-and-forget, koi loader nahi, sirf data ko server se confirm/correct karta ha
-      refreshCartFromServer();
     }
   };
 
   const handleQtyChange = async (cartId, newQty) => {
-    const updatedItems = cartItems.map((item) =>
-      item.id === cartId ? { ...item, quantity: parseInt(newQty) } : item
-    );
-    setCartItems(updatedItems);
-    const existing = getCartData() || {};
-    saveCartData({ ...existing, cartItem: updatedItems });
+    setIsRemoving(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const token = loginData?.data?.token;
@@ -595,24 +644,24 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       if (data.status === false) {
         const msg = getErrorMsg(data);
         if (msg) toast.error(msg);
+        setIsRemoving(false);
+        return;
       }
+      refreshCartFromServer(true);
     } catch (err) {
       console.error("Cart update error:", err);
-    } finally {
-      // 🔵 NEW: background resync — fire-and-forget, koi loader nahi
-      refreshCartFromServer();
+      setIsRemoving(false);
     }
   };
 
   const isEmpty = !isLoading && cartItems.length === 0;
 
-  // ─── CASE 1: Guest Voucher Render ────────────────────────────────────────
   const renderGuestVoucherContent = () => (
     <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
       <div style={{
         display: "flex",
         border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
-         overflow: "hidden", transition: "border-color 0.15s",
+        overflow: "hidden", transition: "border-color 0.15s",
       }}>
         <input
           type="text" placeholder="Enter Voucher code"
@@ -621,9 +670,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           onKeyDown={(e) => { if (e.key === "Enter") handleGuestApply(); }}
           style={{
             flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-            color: "#111",
-            background: "#fff",
-            cursor: "text",
+            color: "#111", background: "#fff", cursor: "text",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         />
@@ -647,7 +694,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </button>
       </div>
 
-      {/* Error: please login first */}
       {guestVoucherError && (
         <div style={{
           display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px",
@@ -660,8 +706,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             </svg>
             <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
           </div>
-
-          {/* Login link — opens LoginModal */}
           <span
             onClick={() => setIsLoginModalOpen(true)}
             onMouseEnter={() => setGuestLoginHovered(true)}
@@ -678,37 +722,29 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </div>
       )}
 
-      {/* Default text with Learn More */}
       <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
         You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
         <span
           onClick={() => { onClose(); router.push("/loyalty"); }}
           onMouseEnter={() => setLearnMoreHovered(true)}
           onMouseLeave={() => setLearnMoreHovered(false)}
-          style={{
-            color: "#111", cursor: "pointer",
-            textDecoration: learnMoreHovered ? "underline" : "none",
-          }}
+          style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }}
         >
           Learn More
         </span>
       </p>
-
-     
     </div>
   );
 
-  // ─── CASE 2: Logged-in Voucher Render ────────────────────────────────────
   const renderLoggedVoucherContent = () => {
     const hasVouchers = voucherPills.length > 0;
     const hasPoints = voucherPoints !== null && voucherPoints > 0;
 
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-        {/* Input row */}
         <div style={{
           display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-           overflow: "hidden", transition: "border-color 0.15s",
+          overflow: "hidden", transition: "border-color 0.15s",
         }}>
           <input
             type="text" placeholder="Enter Voucher code"
@@ -745,21 +781,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
             }}
           >
-            {loggedVoucherLoading
-              ? <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} />
-              : "Apply"}
+            {loggedVoucherLoading ? <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} /> : "Apply"}
           </button>
         </div>
 
-        {/* "Voucher code added" hint */}
         {selectedPill && !loggedVoucherApplied && voucherPills.some(p => p.name === selectedPill) && (
           <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
             Voucher code added. Click Apply to redeem it.
           </p>
         )}
 
-        {/* ── CASE 1: points 0, list a rahi ho → pills shape mein dikhao ── */}
-        {/* ── CASE 2: points a rahay hon, list b a rahi ho → pills + "Create More Voucher" button ── */}
         {!loggedVoucherApplied && hasVouchers && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", alignItems: "center" }}>
             {voucherPills.map((pill) => {
@@ -770,7 +801,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   key={pill.id} onClick={() => handlePillClick(code)}
                   style={{
                     display: "inline-flex", alignItems: "center",
-                    border: "1px solid #ccc",  overflow: "hidden",
+                    border: "1px solid #ccc", overflow: "hidden",
                     cursor: "pointer", background: isSelected ? "#111" : "#fff",
                     transition: "background 0.15s", userSelect: "none",
                   }}
@@ -792,8 +823,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               );
             })}
-
-            {/* CASE 2: points hain to "Create More Voucher" button bhi dikhana ha, same row mein pill jaisa */}
             {hasPoints && (
               <button
                 onClick={() => setIsVoucherModalOpen(true)}
@@ -801,14 +830,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 onMouseLeave={() => setCreateMoreHovered(false)}
                 style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  padding: "7px 14px", fontSize: "12px", fontWeight: 700,
-                  letterSpacing: "0.04em",
-                  background: createMoreHovered ? "#222" : "#000",
-                  color: "#fff",
-                  border: "none", 
-                  cursor: "pointer", transition: "background 0.2s",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                  whiteSpace: "nowrap",
+                  padding: "7px 14px", fontSize: "12px", fontWeight: 700, letterSpacing: "0.04em",
+                  background: createMoreHovered ? "#222" : "#000", color: "#fff",
+                  border: "none", cursor: "pointer", transition: "background 0.2s",
+                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", whiteSpace: "nowrap",
                 }}
               >
                 Create More Voucher
@@ -817,7 +842,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* ── CASE 3: points a rahay hon, list empty ho → Redeem UI ── */}
         {!loggedVoucherApplied && !hasVouchers && hasPoints && !loggedVoucherError && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px", gap: "12px" }}>
             <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
@@ -832,8 +856,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 padding: "8px 16px", fontSize: "12px", fontWeight: 700,
                 letterSpacing: "0.08em", textTransform: "uppercase",
                 background: redeemHovered ? "#333" : "#111", color: "#fff",
-                border: "none",  cursor: "pointer",
-                transition: "background 0.2s",
+                border: "none", cursor: "pointer", transition: "background 0.2s",
                 fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
               }}
             >
@@ -842,7 +865,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* ── CASE 4: points 0, list bhi empty → default text + Learn More ── */}
         {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && !hasPoints && (
           <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
             You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
@@ -850,19 +872,15 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               onClick={() => { onClose(); router.push("/loyalty"); }}
               onMouseEnter={() => setLearnMoreHovered(true)}
               onMouseLeave={() => setLearnMoreHovered(false)}
-              style={{
-                color: "#111", cursor: "pointer",
-                textDecoration: learnMoreHovered ? "underline" : "none",
-              }}
+              style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }}
             >
               Learn More
             </span>
           </p>
         )}
 
-        {/* Error */}
         {loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
               <circle cx="12" cy="12" r="11" fill="#e02424" />
               <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -871,10 +889,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* Applied pill */}
         {loggedVoucherApplied && selectedPill && (
           <div style={{ marginTop: "10px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", background: "#111",  overflow: "hidden" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", background: "#111", overflow: "hidden" }}>
               <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                 {selectedPill}
               </span>
@@ -892,7 +909,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     );
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <>
       {/* Backdrop */}
@@ -900,8 +916,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         ref={overlayRef}
         onClick={handleOverlayClick}
         style={{
-          position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.35)",
-          zIndex: 1000, opacity: isOpen ? 1 : 0, 
+          position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)",
+          zIndex: 1000, opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none", transition: "opacity 0.35s ease",
         }}
       />
@@ -915,56 +931,77 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}>
 
-        {/* Global keyframes for the Apply button spinner */}
-        <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-
-        {/* Header */}
+       {/* Header */}
 <div style={{
-  display: "flex", alignItems: "center", justifyContent: "space-between",
-  padding: "20px 24px", borderBottom: "1px solid #e5e5e5", flexShrink: 0,
+  display: "flex", 
+  alignItems: "center", 
+  justifyContent: "space-between",
+  padding: "20px 24px", 
+  borderBottom: "1px solid #e5e5e5", 
+  flexShrink: 0,
+  height: "68px"   // Fixed height for better vertical centering
 }}>
-  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-    <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+  
+  {/* Left Side - Your Cart (with badge) */}
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    gap: "10px" 
+  }}>
+    <span style={{ 
+      fontSize: "13px", 
+      fontWeight: 600, 
+      color: "#111", 
+      letterSpacing: "0.08em", 
+      textTransform: "uppercase" 
+    }}>
       Your Cart
     </span>
+    
     {cartCount > 0 && (
       <div style={{
-        minWidth: "24px", height: "24px", padding: "0 6px",
-        borderRadius: "999px", backgroundColor: "#111",
-        color: "#fff", fontSize: "14px", fontWeight: 400,
-        border: "0px solid #ffffff21", boxSizing: "border-box",
-        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "23px", 
+        minWidth: "23px", 
+        padding: "0 6px",
+        borderRadius: "999px", 
+        backgroundColor: "#111",
+        color: "#fff", 
+        fontSize: "12px", 
+        fontWeight: 600,
+        boxSizing: "border-box",
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
         lineHeight: 1,
-        paddingBottom:"0.7px",
-        width: cartCount.toString().length > 1 ? 'auto' : '20px',
       }}>
         {cartCount}
       </div>
     )}
   </div>
-  <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: "#111" }}>
-    <IoClose size={20} />
+
+  {/* Right Side - Close Button with same spacing */}
+  <button 
+    onClick={onClose} 
+    style={{ 
+      background: "none", 
+      border: "none", 
+      cursor: "pointer", 
+      padding: "4px 0",        // Balanced padding
+      display: "flex", 
+      alignItems: "center", 
+      color: "#111",
+      marginRight: "-4px"      // Fine adjustment for visual balance
+    }}
+  >
+    <IoClose size={22} />       {/* Slightly bigger for better touch/visibility */}
   </button>
 </div>
 
-        {/* Remove overlay */}
-        {isRemoving && (
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 10,
-            backgroundColor: "rgba(255,255,255,0.7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            pointerEvents: "all",
-          }}>
-            <style>{`@keyframes removeSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div style={{ width: 36, height: 36,  border: "3px solid #ddd", borderTopColor: "#111", animation: "removeSpin 0.75s linear infinite" }} />
-          </div>
-        )}
-
-        {/* Loading spinner */}
+        {/* Loading */}
         {isLoading && (
           <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
             <style>{`@keyframes cartSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div style={{ width: 28, height: 28,  border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
+            <div style={{ width: 28, height: 28, border: "3px solid #ddd", borderTopColor: "#111", animation: "cartSpin 0.75s linear infinite" }} />
           </div>
         )}
 
@@ -980,40 +1017,50 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         )}
 
         {/* Body */}
+        {isRemoving && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 10,
+            backgroundColor: "rgba(255,255,255,0.6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            pointerEvents: "all",
+          }}>
+            <style>{`@keyframes panelSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+            <div style={{ width: 32, height: 32, border: "3px solid #ddd", borderTopColor: "#111", borderRadius: "50%", animation: "panelSpin 0.75s linear infinite" }} />
+          </div>
+        )}
+
         {!isLoading && !isEmpty && (
           <div style={{
             flex: 1, overflowY: "auto", padding: "0 24px",
             pointerEvents: isRemoving ? "none" : "auto",
             overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
           }}>
-
-            {/* Cart Items */}
             {cartItems.map((item) => {
               const p = item.product || {};
               const firstImage = p.images?.[0]?.media ? `${MEDIA_URL}${p.images[0].media}` : "";
               const name = p.name || "";
               const sizeOptions = p.size_name ? [p.size_name] : [];
               const isSingleSize = sizeOptions.length <= 1;
-              const unitPrice = item.original_price || parseFloat(String(item.price).replace(",", ".")) || 0;
+              const unitPrice = parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
               const itemTotal = (unitPrice * item.quantity).toFixed(2);
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0", borderBottom: "1px solid #e5e5e5" }}>
-                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3",  overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0",  }} />}
+                  <div style={{ width: "64px", height: "80px", flexShrink: 0, backgroundColor: "#f3f3f3", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {firstImage ? <img src={firstImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "36px", height: "48px", backgroundColor: "#c8c2b0" }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden", }}>{name}</p>
+                    <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden" }}>{name}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                       <CustomDropdown options={QTY_OPTIONS} value={String(item.quantity)} onChange={(val) => handleQtyChange(item.id, val)} />
                       {sizeOptions.length > 0 && (
                         <CustomDropdown options={sizeOptions} value={sizeOptions[0]} onChange={() => {}} disabled={isSingleSize} />
                       )}
                       <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
-                       <RiDeleteBinLine className="hover:text-gray-600" />
+                        <RiDeleteBinLine className="hover:text-gray-600" />
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontSize: "13px", marginTop:"65px", color: "#555", flexShrink: 0 }}>
+                  <div style={{ fontSize: "13px", marginTop: "65px", color: "#555", flexShrink: 0 }}>
                     {parseFloat(itemTotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
                   </div>
                 </div>
@@ -1025,22 +1072,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <span>Subtotal</span><span>{subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
               </div>
-              {/* Delivery costs static row - Free if subtotal >= 39 */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <span>Delivery costs</span>
-                {subtotal >= 39
-                  ? <span>Free</span>
-                  : <span>5,90 €</span>
-                }
+                {subtotal >= 39 ? <span>Free</span> : <span>5,90 €</span>}
               </div>
-
-              {/* Delivery method selector */}
               <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div
-                    ref={deliveryDropdownRef}
-                    style={{ position: "relative" }}
-                  >
+                  <div ref={deliveryDropdownRef} style={{ position: "relative" }}>
                     <button
                       onClick={() => setDeliveryDropdownOpen((v) => !v)}
                       style={{
@@ -1062,35 +1100,24 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       }} />
                     </button>
                     {deliveryDropdownOpen && (
-                      <div
-                        style={{
-                          position: "absolute", top: "calc(100% + 6px)", left: 90,
-                          background: "#fff", border: "1px solid #ddd", 
-                          zIndex: 1100, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: "140px",
-                        }}
-                      >
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 6px)", left: 90,
+                        background: "#fff", border: "1px solid #ddd",
+                        zIndex: 1100, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: "140px",
+                      }}>
                         {["home", "pickup"].map((opt) => (
                           <div
                             key={opt}
                             onClick={() => { setDeliveryMethod(opt); setDeliveryDropdownOpen(false); }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#111";
-                              e.currentTarget.style.color = "#fff";
-                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#111"; e.currentTarget.style.color = "#fff"; }}
                             onMouseLeave={(e) => {
-                              if (deliveryMethod === opt) {
-                                e.currentTarget.style.backgroundColor = "#f3f3f3";
-                                e.currentTarget.style.color = "#111";
-                              } else {
-                                e.currentTarget.style.backgroundColor = "#fff";
-                                e.currentTarget.style.color = "#111";
-                              }
+                              if (deliveryMethod === opt) { e.currentTarget.style.backgroundColor = "#f3f3f3"; e.currentTarget.style.color = "#111"; }
+                              else { e.currentTarget.style.backgroundColor = "#fff"; e.currentTarget.style.color = "#111"; }
                             }}
                             style={{
                               padding: "9px 14px", fontSize: "13px", cursor: "pointer",
                               background: deliveryMethod === opt ? "#f3f3f3" : "#fff",
-                              color: deliveryMethod === opt ? "#111" : "#111",
-                              fontWeight: deliveryMethod === opt ? 600 : 400,
+                              color: "#111", fontWeight: deliveryMethod === opt ? 600 : 400,
                               transition: "background 0.15s, color 0.15s",
                             }}
                           >
@@ -1100,19 +1127,15 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       </div>
                     )}
                   </div>
-                  {isFreeDelivery
-                    ? <span>Free</span>
-                    : <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>
-                  }
+                  {isFreeDelivery ? <span>Free</span> : <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>}
                 </div>
               </div>
 
-              {/* Voucher row */}
               {loggedVoucherApplied && selectedPill && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Voucher</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0",  }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0" }}>
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
                     </div>
                   </div>
@@ -1120,17 +1143,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               )}
 
-              {/* Promo row */}
               {appliedPromo && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ color: "#555" }}>Promo Code</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0",  overflow: "hidden" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", overflow: "hidden" }}>
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
                         {appliedPromo.code}
                       </span>
-                      <span style={{ display: "block", width: "1px", height: "22px", background: "rgba(255,255,255,0.25)" }} />
-                     
                     </div>
                   </div>
                   <span style={{ color: "#111", fontWeight: 500 }}>-{appliedPromo.off.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
@@ -1143,7 +1163,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               </div>
             </div>
 
-            {/* ─── CASE 3: Promo Code Accordion ─────────────────────────────────── */}
+            {/* Promo Accordion */}
             <div style={{ borderBottom: "1px solid #e5e5e5" }}>
               <button
                 onClick={() => setPromoOpen((v) => !v)}
@@ -1155,34 +1175,19 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 }}
               >
                 <span style={{ fontWeight: 500 }}>Gift card / promo code</span>
-                <span style={{
-                  fontSize: "18px", fontWeight: 300, display: "inline-block",
-                  transform: promoOpen ? "rotate(45deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s ease",
-                }}>+</span>
+                <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: promoOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
               </button>
-              <div style={{
-                maxHeight: promoOpen ? "200px" : "0px",
-                overflow: "hidden",
-                transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
-                opacity: promoOpen ? 1 : 0,
-              }}>
+              <div style={{ maxHeight: promoOpen ? "200px" : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)", opacity: promoOpen ? 1 : 0 }}>
                 <div style={{ paddingBottom: "16px" }}>
-                  <div style={{
-                    display: "flex",
-                    border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
-                     overflow: "hidden", transition: "border-color 0.15s",
-                  }}>
+                  <div style={{ display: "flex", border: `1px solid ${promoError ? "#e02424" : "#ddd"}`, overflow: "hidden", transition: "border-color 0.15s" }}>
                     <input
-                      type="text"
-                      placeholder="Enter your code"
+                      type="text" placeholder="Enter your code"
                       value={appliedPromo ? appliedPromo.code : promoInput}
                       disabled={!!appliedPromo}
                       onChange={handlePromoInputChange}
                       onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
                       style={{
-                        flex: 1, border: "none", outline: "none", padding: "11px 14px",
-                        fontSize: "13px",
+                        flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
                         color: appliedPromo ? "#aaa" : "#111",
                         background: appliedPromo ? "#f9f9f9" : "#fff",
                         cursor: appliedPromo ? "not-allowed" : "text",
@@ -1206,15 +1211,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                         display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
                       }}
                     >
-                      {promoLoading
-                        ? <ButtonSpinner color={promoHovered ? "#fff" : "#111"} />
-                        : "Apply"}
+                      {promoLoading ? <ButtonSpinner color={promoHovered ? "#fff" : "#111"} /> : "Apply"}
                     </button>
                   </div>
-
-                  {/* Error */}
                   {promoError && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
                         <circle cx="12" cy="12" r="11" fill="#e02424" />
                         <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
@@ -1222,14 +1223,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{promoError}</span>
                     </div>
                   )}
-
-                  {/* Applied pill inside accordion */}
                   {appliedPromo && (
                     <div style={{ marginTop: "10px" }}>
-                      <div style={{ display: "inline-flex", alignItems: "center", background: "#111",  overflow: "hidden" }}>
-                        <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-                          {appliedPromo.code}
-                        </span>
+                      <div style={{ display: "inline-flex", alignItems: "center", background: "#111", overflow: "hidden" }}>
+                        <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{appliedPromo.code}</span>
                         <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
                         <button onClick={handleRemovePromo} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
                           <IoClose size={13} />
@@ -1241,7 +1238,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               </div>
             </div>
 
-            {/* ─── Apply Voucher Accordion ──────────────────────────────────────── */}
+            {/* Voucher Accordion */}
             <div style={{ paddingBottom: "8px" }}>
               <button
                 onClick={() => setGiftOpen((v) => !v)}
@@ -1253,74 +1250,113 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 }}
               >
                 <span style={{ fontWeight: 500 }}>Apply Voucher</span>
-                <span style={{
-                  fontSize: "18px", fontWeight: 300, display: "inline-block",
-                  transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s ease",
-                }}>+</span>
+                <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
               </button>
-              <div style={{
-                maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px",
-                overflow: "hidden",
-                transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}>
+              <div style={{ maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>
                 {isLoggedIn ? renderLoggedVoucherContent() : renderGuestVoucherContent()}
               </div>
             </div>
-
           </div>
         )}
 
-        {/* Footer */}
-<div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
- {subtotal < freeShippingThreshold && (
-  <div style={{ padding: "14px 24px 0" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
-      <span>Complete for free shipping</span>
-      <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span> 
-    </div>
-    <div style={{ height: "4px", backgroundColor: "#e5e5e5",  overflow: "hidden", marginBottom: "14px" }}>
-      <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111",  transition: "width 0.4s ease" }} />
+        {/* ─── Footer ─────────────────────────────────────────────────────────── */}
+        {!isEmpty && (
+          <div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
+
+            
+
+            {/* Free shipping progress */}
+            {subtotal < freeShippingThreshold && (
+              <div style={{ padding: "14px 24px 0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
+                  <span>Complete for free shipping</span>
+                  <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span>
+                </div>
+                <div style={{ height: "4px", backgroundColor: "#e5e5e5", overflow: "hidden", marginBottom: "14px" }}>
+                  <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111", transition: "width 0.4s ease" }} />
+                </div>
+              </div>
+            )}
+{/* ── Upsell Products ── */}
+{upsellProducts.length > 0 && (
+  <div style={{ position: "relative", padding: "0 24px", borderBottom: "1px solid #e5e5e5" }}>
+    {/* Left Arrow */}
+    {upsellIndex > 0 && (
+      <button
+        onClick={() => setUpsellIndex(i => i - 1)}
+        style={{
+          position: "absolute", left: "0px", top: "50%", transform: "translateY(-50%)",
+          zIndex: 5, width: "22px", height: "22px",
+          background: "transparent", border: "none", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+        }}
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    )}
+    {/* Right Arrow */}
+    {upsellIndex < upsellProducts.length - 1 && (
+      <button
+        onClick={() => setUpsellIndex(i => i + 1)}
+        style={{
+          position: "absolute", right: "0px", top: "50%", transform: "translateY(-50%)",
+          zIndex: 5, width: "22px", height: "22px",
+          background: "transparent", border: "none", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+        }}
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    )}
+    {/* White card box — background lives HERE, inset by parent's padding */}
+    <div style={{ overflow: "hidden", backgroundColor: "#fff" }}>
+      <div style={{
+        display: "flex",
+        transform: `translateX(-${upsellIndex * 100}%)`,
+        transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
+      }}>
+        {upsellProducts.map((item) => (
+          <div key={item.id} style={{ minWidth: "100%" }}>
+            <UpsellCard item={item} onAdd={handleUpsellAdd} />
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 )}
-  <div style={{ padding: subtotal < freeShippingThreshold ? "0 24px 24px" : "24px 24px 24px" }}>
-    <button
-      onClick={handleCheckout}
-      disabled={checkoutLoading}
-      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = checkoutLoading ? "#333" : "#111"}
-      style={{
-        width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
-        fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-        cursor: checkoutLoading ? "default" : "pointer",  transition: "background 0.2s",
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-      }}
-    >
-      {checkoutLoading ? (
-        <>
-          <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-          <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "checkoutSpin 0.65s linear infinite" }} />
-        </>
-      ) : "Continue to checkout"}
-    </button>
-  </div>
-
-        </div>
-
+            {/* Checkout button */}
+            <div style={{marginTop:"10px", padding: subtotal < freeShippingThreshold ? "0 24px 24px" : "24px 24px 24px" }}>
+              <button
+                onClick={handleCheckout}
+                disabled={checkoutLoading}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = checkoutLoading ? "#333" : "#111"}
+                style={{
+                  width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
+                  fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                  cursor: checkoutLoading ? "default" : "pointer", transition: "background 0.2s",
+                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                }}
+              >
+                {checkoutLoading ? (
+                  <>
+                    <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+                    <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "checkoutSpin 0.65s linear infinite" }} />
+                  </>
+                ) : "Continue to checkout"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <CreateVoucherModal
         isOpen={isVoucherModalOpen}
         totalPoints={voucherPoints || 0}
-        onClose={() => {
-          setIsVoucherModalOpen(false);
-          fetchVouchers();
-        }}
+        onClose={() => { setIsVoucherModalOpen(false); fetchVouchers(); }}
       />
 
-    
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
