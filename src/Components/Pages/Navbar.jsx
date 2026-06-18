@@ -104,7 +104,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isNavHovered, setIsNavHovered] = useState(false);
-  const [hoveredLink, setHoveredLink] = useState(null);
+
 
   const desktopLangRef = useRef(null);
   const mobileLangRef = useRef(null);
@@ -207,13 +207,11 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     }, 150);
   };
 
-  const dotClass = (key) =>
-    `absolute top-6 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 ${
-      hoveredLink === key ? 'opacity-100' : 'opacity-0'
-    }`;
+  const dotClass =
+    'block w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 opacity-0 group-hover:opacity-100 mt-1';
 
   const navItemBase =
-    'relative flex flex-col items-center justify-center px-2 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none';
+    'group relative flex flex-col items-center justify-center px-2 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none self-stretch';
 
   return (
     <>
@@ -260,36 +258,34 @@ export default function Navbar({ transparent = false, announcementVisible = fals
           >
 
             {/* LEFT: Navigation Links - Desktop Only */}
-            <div className="hidden lg:flex items-stretch gap-3">
+            <div className="hidden lg:flex items-stretch gap-3 mt-2.5">
 
               {/* Our Products - Hover Mega Menu */}
               <div
                 ref={productsRef}
-                className="relative h-full"
+                className="group relative h-full"
                 onMouseEnter={() => {
                   if (productsCloseTimer.current) clearTimeout(productsCloseTimer.current);
                   setIsProductsOpen(true);
                   setIsNavHovered(true);
-                  setHoveredLink('products');
                 }}
                 onMouseLeave={() => {
                   productsCloseTimer.current = setTimeout(() => {
                     setIsProductsOpen(false);
                     setIsNavHovered(false);
-                    setHoveredLink(null);
                   }, 150);
                 }}
               >
                 <button className={navItemBase}>
                   {t('ourProducts')}
-                  <span className={dotClass('products')} />
+                  <span className={dotClass} />
                 </button>
 
                 <OurProducts
                   isOpen={isProductsOpen}
                   onClose={() => setIsProductsOpen(false)}
                   categories={homeCategories}
-                  popular={popularProducts} // ← fixed: apiData ki jagah popularProducts state
+                  popular={popularProducts}
                 />
               </div>
 
@@ -297,12 +293,12 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 <Link
                   key={link.key}
                   href={link.href}
-                  onMouseEnter={() => { setHoveredLink(link.key); setIsNavHovered(true); }}
-                  onMouseLeave={() => { setHoveredLink(null); setIsNavHovered(false); }}
+                  onMouseEnter={() => setIsNavHovered(true)}
+                  onMouseLeave={() => setIsNavHovered(false)}
                   className={navItemBase}
                 >
                   {link.text}
-                  <span className={dotClass(link.key)} />
+                  <span className={dotClass} />
                 </Link>
               ))}
             </div>
@@ -339,7 +335,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 onClick={() => setIsSearchModalOpen(true)}
                 className={navItemBase}
               >
-                <FiSearch className="w-5 h-5" strokeWidth={2.0} />
+                <FiSearch className="w-5 h-5 mt-0.5" strokeWidth={2.0} />
               </button>
 
               {/* Language Dropdown */}
@@ -374,14 +370,14 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               {/* Login / Profile */}
               {isLoggedIn ? (
                 <Link href="/my-account" className={navItemBase}>
-                  <span>PROFILE</span>
+                  <span  className='mt-0.5'>PROFILE</span>
                 </Link>
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
                   className={navItemBase}
                 >
-                  <span>LOGIN</span>
+                  <span className='mt-0.5'>LOGIN</span>
                 </button>
               )}
 
