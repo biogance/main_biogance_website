@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MEDIA_URL } from '../../API/API';
+import { MEDIA_URL, BASE_URL } from '../../API/API';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { mergeCartItem } from '../../../utils/cartStorage';
+import { getDeviceId } from '../../../utils/deviceId';
+import ModalAddToCart from '../Modal/ModalAddToCart';
+import ModalQuickView from '../Modal/ModalQuickView';
 
 export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [] }) {
   const { i18n } = useTranslation();
@@ -10,6 +16,12 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const menuRef = useRef(null);
+  const autoScrollRef = useRef(null);
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [cartHovered, setCartHovered] = useState(false);
 
   const getName = (item) => isFrench ? (item.french_name || item.name) : item.name;
 
@@ -39,6 +51,47 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
     : '';
 
   const handleDotClick = (index) => setActiveImageIndex(index);
+
+  // Auto-scroll every 3 seconds
+  useEffect(() => {
+    if (!isOpen || productImages.length <= 1) return;
+    autoScrollRef.current = setInterval(() => {
+      setActiveImageIndex(prev => (prev + 1) % productImages.length);
+    }, 3000);
+    return () => clearInterval(autoScrollRef.current);
+  }, [isOpen, productImages.length]);
+
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    if (addingToCart || !featuredProduct) return;
+    const firstProduct = featuredProduct.products?.[0];
+    if (firstProduct?.color || firstProduct?.size) {
+      setIsCartOpen(true);
+      return;
+    }
+    setAddingToCart(true);
+    try {
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const token = loginData?.data?.token;
+      const res = await axios.post(
+        `${BASE_URL}/user/cart/create`,
+        token ? { product_id: firstProduct?.id ?? featuredProduct.id, quantity: 1 } : { device_id: getDeviceId(), product_id: firstProduct?.id ?? featuredProduct.id, quantity: 1 },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      );
+      if (res.data.status === false) {
+        toast.error(res.data.action || 'Could not add to cart.');
+      } else {
+        mergeCartItem(res.data.data);
+        setIsCartOpen(true);
+      }
+    } catch {
+      toast.error('Something went wrong.');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const isSingleProduct = (featuredProduct?.products?.length ?? 1) === 1;
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -126,18 +179,21 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
       {productImages.length > 0 && (
         <div
           className="flex-shrink-0 flex flex-col mr-50 items-center justify-center gap-3 py-8 px-5"
-          style={{ width: '250px' }}
+          style={{ width: '330px' }}
         >
           <div
             className="w-full bg-[#f3f3f3] flex items-center justify-center overflow-hidden"
-            style={{ height: '250px' }}
+            style={{ height: '350px' }}
           >
             <img
               key={activeImageIndex}
               src={getImageUrl(productImages[activeImageIndex]?.media)}
               alt={`Product image ${activeImageIndex + 1}`}
-              className="w-full h-full object-contain"
-              style={{ animation: 'fadeIn 0.3s ease' }}
+              className="w-full h-full"
+              style={{
+                animation: 'fadeIn 0.3s ease',
+                objectFit: (activeImageIndex === 0 || activeImageIndex === productImages.length - 1) ? 'contain' : 'cover',
+              }}
               onError={(e) => {
                 const next = (activeImageIndex + 1) % productImages.length;
                 if (next !== activeImageIndex) setActiveImageIndex(next);
@@ -145,35 +201,52 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             />
           </div>
 
-          {productImages.length > 1 && (
-            <div className="flex items-center gap-1.5">
-              {productImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleDotClick(idx)}
-                  className="cursor-pointer transition-all duration-300 rounded-full"
-                  style={{
-                    width: idx === activeImageIndex ? '18px' : '6px',
-                    height: '6px',
-                    backgroundColor: idx === activeImageIndex ? '#111' : '#d1d5db',
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
-          {productName && (
+          {(productName || featuredProduct) && (
             <p
-              className="text-center text-gray-400 leading-snug px-1"
-              style={{
-                fontSize: '10px',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
+              className="text-left text-gray-800 leading-snug px-1 w-full"
+              style={{ fontSize: '12px', fontWeight: 500, textDecoration:"underline", lineHeight: 1.4 }}
             >
               {productName}
+              {featuredProduct && (
+                <>
+                  {' '}
+                  <button
+                    onMouseEnter={() => setCartHovered(true)}
+                    onMouseLeave={() => setCartHovered(false)}
+                    onClick={isSingleProduct ? handleAddToCart : (e) => { e.stopPropagation(); setIsQuickViewOpen(true); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      marginLeft:"5px",
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#111',
+                      textDecoration: cartHovered ? 'underline' : 'none',
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      verticalAlign: 'middle',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    {addingToCart ? (
+                      <span style={{
+                        display: 'inline-block',
+                        width: '11px',
+                        height: '11px',
+                        borderRadius: '50%',
+                        border: '1px solid #ccc',
+                        borderTopColor: '#111',
+                        animation: 'ourProductsSpin 0.65s linear infinite',
+                        flexShrink: 0,
+                      }} />
+                    ) : (isSingleProduct ? 'Add to Cart' : 'Quick View ')}
+                  </button>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -184,7 +257,24 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
           from { opacity: 0; transform: scale(0.97); }
           to   { opacity: 1; transform: scale(1); }
         }
+        @keyframes ourProductsSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
       `}</style>
+
+      <ModalAddToCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        product={featuredProduct || {}}
+      />
+      <ModalQuickView
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+        onCartOpen={() => setIsCartOpen(true)}
+        product={featuredProduct || {}}
+        fullProductData={featuredProduct?._raw || featuredProduct || {}}
+      />
     </div>
   );
 }

@@ -205,18 +205,18 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
   };
 
   // Shake animation when clicking outside (backdrop)
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      if (modalCardRef.current) {
-        modalCardRef.current.classList.add("modal-shake");
-        setIsShaking(true);
+  const triggerShake = () => {
+    if (!modalCardRef.current) return;
+    modalCardRef.current.classList.remove("modal-shake");
+    void modalCardRef.current.offsetWidth; // reflow to restart animation
+    modalCardRef.current.classList.add("modal-shake");
+    modalCardRef.current.addEventListener("animationend", () => {
+      modalCardRef.current?.classList.remove("modal-shake");
+    }, { once: true });
+  };
 
-        setTimeout(() => {
-          modalCardRef.current?.classList.remove("modal-shake");
-          setIsShaking(false);
-        }, 400);
-      }
-    }
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) triggerShake();
   };
 
   if (!isOpen) return null;
@@ -249,16 +249,16 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
             0%   { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-          /* Shake Animation - Same as Login Modal */
+          /* Shake Animation */
           @keyframes modalShake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            50% { transform: translateX(8px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
+            0%, 100% { transform: translateX(0); }
+            20%      { transform: translateX(-10px); }
+            40%      { transform: translateX(10px); }
+            60%      { transform: translateX(-6px); }
+            80%      { transform: translateX(6px); }
           }
           .modal-shake {
-            animation: modalShake 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) both;
+            animation: modalShake 0.4s ease-in-out both;
           }
           .qv-slides-track {
             display: flex; width: 100%; height: 100%;
@@ -291,27 +291,34 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
           alignItems: "center",
           justifyContent: "center",
           padding: "16px",
-          overflowY: "auto",
+          overflow: "auto",
         }}
       >
-        {/* Modal Box */}
+        {/* Shake wrapper - no overflow clip */}
         <div
           ref={modalCardRef}
+          style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: "900px",
+            flexShrink: 0,
+          }}
+        >
+        {/* Modal Box */}
+        <div
+          onClick={(e) => e.stopPropagation()}
           style={{
             position: "relative",
             backgroundColor: "#fff",
             borderRadius: "16px",
             overflow: "hidden",
             width: "100%",
-            maxWidth: "900px",
             height: "min(600px, calc(100vh - 32px))",
             display: "flex",
             flexDirection: "row",
             animation: "quickViewFadeIn 0.3s ease",
             boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
-            flexShrink: 0,
-          }}
-        >
+          }}>
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -647,6 +654,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
               </>
             )}
           </div>
+        </div>
         </div>
       </div>
     </>

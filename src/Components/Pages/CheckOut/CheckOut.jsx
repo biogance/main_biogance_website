@@ -35,7 +35,7 @@ const setVoucherState = (state) =>
   localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
-const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
+const QTY_OPTIONS = Array.from({ length: 100 }, (_, i) => String(i + 1));
 
 /* ────────────────────────────────────────────────────────────────────────
    Small UI primitives
@@ -60,6 +60,15 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       ref={wrapRef}
       style={{ position: "relative", display: "inline-block" }}
     >
+      <style>{`
+        .dropdown-menu-scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .dropdown-menu-scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
         style={{
@@ -72,9 +81,9 @@ function CustomDropdown({ options, value, onChange, disabled }) {
           cursor: disabled ? "default" : "pointer",
           display: "flex",
           alignItems: "center",
-          gap: "8px",
+          justifyContent: "center",
+          gap: "6px",
           minWidth: disabled ? "auto" : "42px",
-          justifyContent: disabled ? "flex-start" : "space-between",
           userSelect: "none",
           transition: "border-color 0.15s",
           opacity: disabled ? 0.6 : 1,
@@ -105,6 +114,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
       </div>
       {open && !disabled && (
         <div
+          className="dropdown-menu-scrollbar-hide"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
@@ -152,6 +162,7 @@ function DropItem({ label, selected, onSelect }) {
         color: hovered ? "#fff" : "#111",
         fontWeight: selected ? 600 : 400,
         transition: "background 0.15s, color 0.15s",
+        textAlign: "center",
       }}
     >
       {label}
