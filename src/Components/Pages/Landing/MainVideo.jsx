@@ -26,19 +26,9 @@ const heroSlides = [
   },
 ];
 
-const VIDEO_CACHE = "biogance-videos-v1";
-
+// Preloading removed to avoid connection throttling/range request issues in Firefox
 const preloadHeroVideos = () => {
-  if (typeof window === "undefined" || !('caches' in window)) return;
-  heroSlides
-    .filter((s) => s.type === "video")
-    .forEach(async ({ url }) => {
-      try {
-        const cache = await caches.open(VIDEO_CACHE);
-        const existing = await cache.match(url);
-        if (!existing) await cache.add(url);
-      } catch (_) {}
-    });
+  // Disabled
 };
 
 export default function HeroSection() {
@@ -47,6 +37,25 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
   const videoSectionRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const slides = heroSlides;
+  const currentSlideData = slides[currentSlide] || slides[0];
+  const isCurrentVideo = currentSlideData?.type === 'video';
+  const hasMultipleSlides = slides.length > 1;
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.warn("Autoplay was prevented, waiting for user interaction:", error);
+        });
+      }
+    }
+  }, [currentSlide, isCurrentVideo]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,13 +76,17 @@ export default function HeroSection() {
   useEffect(() => {
     const cached = localStorage.getItem('homePageData');
     if (cached) {
-      setApiData(JSON.parse(cached));
-      setIsLoading(false);
+      try {
+        setApiData(JSON.parse(cached));
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Failed to parse cached homePageData:", e);
+        localStorage.removeItem('homePageData');
+      }
     }
   }, []);
   
-  const slides = heroSlides;
-  const hasMultipleSlides = slides.length > 1;
+
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
@@ -102,8 +115,7 @@ export default function HeroSection() {
     description: t('hero.description'),
   };
 
-  const currentSlideData = slides[currentSlide] || slides[0];
-  const isCurrentVideo = currentSlideData?.type === 'video';
+
 
   // Auto-scroll functionality
   React.useEffect(() => {
@@ -142,20 +154,22 @@ export default function HeroSection() {
 
       {/* Main content with viewport height */}
       <main className="relative bg-white">
-        <div ref={videoSectionRef} className="relative w-full bg-[#f3f3f3] min-h-screen flex items-center justify-center overflow-hidden">
+        <div ref={videoSectionRef} className="relative w-full bg-[#f3f3f3] h-screen min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Image or Video */}
           {isCurrentVideo ? (
             <video
+              ref={videoRef}
               key={currentSlideData.url}
+              src={currentSlideData.url}
               className="absolute inset-0 w-full h-full object-cover"
               muted
               autoPlay
               loop
               playsInline
+              preload="auto"
               onError={(e) => console.error('Video error:', e)}
               onLoadedData={() => console.log('Video loaded successfully')}
             >
-              <source src={currentSlideData.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           ) : (

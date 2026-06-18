@@ -39,11 +39,7 @@ export default function Forgotpassword({ isOpen, onClose, onAllClose }) {
 
   const handleChange = (value) => {
     setEmail(value);
-    
-    if (submitAttempted) {
-      const validationError = validateEmail(value);
-      setError(validationError);
-    }
+    if (submitAttempted) setError('');
   };
 
   // useEffect(() => {

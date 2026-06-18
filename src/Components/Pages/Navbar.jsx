@@ -137,7 +137,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     { code: 'fr', label: 'Français', shortLabel: 'FR', currency: '€' },
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage = languages.find(lang => i18n.language && i18n.language.startsWith(lang.code)) || languages[0];
 
   const announcements = [
     "Enjoy complimentary standard delivery across France on all orders over €39.",
@@ -259,9 +259,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       <nav
         className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-150 ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible
-            ? "bg-white shadow-sm border-b border-gray-100"
-            : "bg-transparent border-b border-transparent"
-        }`}
+            ? "bg-white shadow-sm"
+            : "bg-transparent"
+        } ${
+          (isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible) && !isProductsOpen
+            ? "border-b border-gray-100"
+            : "border-b border-transparent"
+                                                              }`}
       >
         <div className="w-full mx-auto px-4 sm:px-6 h-full">
           <div
@@ -364,19 +368,30 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
                 {isLanguageDropdownOpen && (
                   <div className="absolute top-full mt-2 left-30 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer ${
-                          i18n.language === lang.code
-                            ? 'font-semibold bg-[#f3f3f3] text-black hover:bg-black hover:text-white'
-                            : 'bg-white text-black hover:bg-black hover:text-white'
-                        }`}
-                      >
-                        <span className="font-medium">{lang.label}</span>
-                      </button>
-                    ))}
+                    {languages.map((lang) => {
+                      const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
+                      return (
+                        <button
+                          key={lang.code}
+                          onClick={() => changeLanguage(lang.code)}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#111'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={(e) => {
+                            if (isActive) { e.currentTarget.style.backgroundColor = '#f3f3f3'; e.currentTarget.style.color = '#111'; }
+                            else { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.color = '#111'; }
+                          }}
+                          style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+                            padding: '9px 14px', fontSize: '13px', cursor: 'pointer',
+                            backgroundColor: isActive ? '#f3f3f3' : '#fff',
+                            color: '#111', fontWeight: isActive ? 600 : 400,
+                            border: 'none', transition: 'background-color 0.15s, color 0.15s',
+                            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                          }}
+                        >
+                          <span>{lang.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -402,7 +417,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <div style={{ height: '24px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',  paddingTop:"0.7px", paddingRight:"0.7px", marginLeft: '5px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '24px',  }}>
+                  <div style={{ height: '23px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',  paddingTop:"0.7px", paddingRight:"0.7px", marginLeft: '5px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '24px',  }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -495,19 +510,30 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
                 {isLanguageDropdownOpen && (
                   <div className="absolute top-full mt-2 left-0 bg-white text-black shadow-lg overflow-hidden z-50 min-w-[140px]">
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer ${
-                          i18n.language === lang.code
-                            ? 'font-semibold bg-[#f3f3f3] text-black hover:bg-black hover:text-white'
-                            : 'bg-white text-black hover:bg-black hover:text-white'
-                        }`}
-                      >
-                        <span className="font-medium">{lang.label}</span>
-                      </button>
-                    ))}
+                    {languages.map((lang) => {
+                      const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
+                      return (
+                        <button
+                          key={lang.code}
+                          onClick={() => changeLanguage(lang.code)}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#111'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={(e) => {
+                            if (isActive) { e.currentTarget.style.backgroundColor = '#f3f3f3'; e.currentTarget.style.color = '#111'; }
+                            else { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.color = '#111'; }
+                          }}
+                          style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+                            padding: '9px 14px', fontSize: '13px', cursor: 'pointer',
+                            backgroundColor: isActive ? '#f3f3f3' : '#fff',
+                            color: '#111', fontWeight: isActive ? 600 : 400,
+                            border: 'none', transition: 'background-color 0.15s, color 0.15s',
+                            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                          }}
+                        >
+                          <span>{lang.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

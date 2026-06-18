@@ -64,6 +64,7 @@ export default function VerificationCodeModal({
     setOtp(newOtp);
 
     if (error) setError("");
+    if (apiError) setApiError("");
 
     if (value !== "" && index < 5) {
       inputRefs.current[index + 1]?.focus();

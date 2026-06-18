@@ -95,25 +95,9 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (submitAttempted) {
-      let error = '';
-      switch (field) {
-        case 'fullName':
-          error = validateFullName(value);
-          break;
-        case 'email':
-          error = validateEmail(value);
-          break;
-        // case 'phoneNumber':
-        //   error = validatePhoneNumber(value);
-        //   break;
-        case 'password':
-          error = validatePassword(value);
-          break;
-      }
-      setErrors({ ...errors, [field]: error });
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 

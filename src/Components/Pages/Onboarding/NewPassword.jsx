@@ -58,19 +58,9 @@ export default function CreateNewPasswordModal({ isOpen, onClose, email, onAllCl
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (submitAttempted) {
-      let error = '';
-      if (field === 'password') {
-        error = validatePassword(value);
-        const confirmError = validateConfirmPassword(formData.confirmPassword, value);
-        setErrors({ ...errors, password: error, confirmPassword: confirmError });
-        return;
-      } else if (field === 'confirmPassword') {
-        error = validateConfirmPassword(value, formData.password);
-      }
-      setErrors({ ...errors, [field]: error });
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
