@@ -186,8 +186,8 @@ export default function HeroSection() {
 
           {/* Content Container */}
           <div className="relative z-10 w-full h-full flex items-center ">
-            <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 2xl:px-24">
-              <div className="max-w-3xl mt-20 -ml-16">
+            <div className="w-full px-4 sm:px-6">
+              <div className="max-w-3xl mt-20">
                 {/* Tagline */}
                 <p className="text-xs sm:text-sm md:text-base font-light mb-3 md:mb-4 tracking-wide text-black/90">
                   {heroContent.tagline}
