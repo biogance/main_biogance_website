@@ -22,7 +22,7 @@ import { getDeviceId } from '../../../utils/deviceId';
 const heroSlides = [
   {
     type: 'video',
-    url: '/demo1.mp4',
+    url: '/VIDEO.mp4',
   },
 ];
 
