@@ -368,8 +368,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:text-white hover:bg-black transition-colors cursor-pointer ${
-                          i18n.language === lang.code ? 'font-semibold' : ''
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer ${
+                          i18n.language === lang.code
+                            ? 'font-semibold bg-[#f3f3f3] text-black hover:bg-black hover:text-white'
+                            : 'bg-white text-black hover:bg-black hover:text-white'
                         }`}
                       >
                         <span className="font-medium">{lang.label}</span>
@@ -400,7 +402,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               >
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                  <div style={{ minWidth: '24px', height: '24px',   marginLeft:"5px", paddingRight:"0.5px", borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
+                  <div style={{ height: '24px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',  paddingTop:"0.7px", paddingRight:"0.7px", marginLeft: '5px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '24px',  }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -414,7 +416,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
               <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 <span className="uppercase">{t('cart') || 'Cart'}</span>
                 {cartCount > 0 ? (
-                   <div style={{ minWidth: '23px', height: '23px', padding: '0 6px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, width: cartCount.toString().length > 1 ? 'auto' : '20px' }}>
+                  <div style={{ height: '23px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px', borderRadius: '999px',  paddingTop:"0.7px", paddingRight:"0.2px", backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '23px', }}>
                     {cartCount}
                   </div>
                 ) : (
@@ -497,8 +499,10 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-black hover:bg-black hover:text-white transition-colors cursor-pointer ${
-                          i18n.language === lang.code ? 'font-semibold' : ''
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer ${
+                          i18n.language === lang.code
+                            ? 'font-semibold bg-[#f3f3f3] text-black hover:bg-black hover:text-white'
+                            : 'bg-white text-black hover:bg-black hover:text-white'
                         }`}
                       >
                         <span className="font-medium">{lang.label}</span>

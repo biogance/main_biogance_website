@@ -8,6 +8,7 @@ import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import { RiDeleteBinLine } from "react-icons/ri";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import LoginModal from "../Onboarding/Login";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
 
 const getErrorMsg = (data) => {
@@ -31,15 +32,24 @@ function CustomDropdown({ options, value, onChange, disabled }) {
 
   return (
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
+      <style>{`
+        .dropdown-menu-scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .dropdown-menu-scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
         style={{
           border: "1px solid #ddd", padding: "4px 8px",
           fontSize: "13px", background: "#fff", color: "#111",
           cursor: disabled ? "default" : "pointer",
-          display: "flex", alignItems: "center", gap: "8px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          gap: "6px",
           minWidth: disabled ? "auto" : "42px",
-          justifyContent: disabled ? "flex-start" : "space-between",
           userSelect: "none", transition: "border-color 0.15s",
           opacity: disabled ? 0.6 : 1,
         }}
@@ -57,11 +67,14 @@ function CustomDropdown({ options, value, onChange, disabled }) {
         )}
       </div>
       {open && !disabled && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
-          border: "1px solid #ddd", minWidth: "100%", zIndex: 1100,
-          maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}>
+        <div
+          className="dropdown-menu-scrollbar-hide"
+          style={{
+            position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
+            border: "1px solid #ddd", minWidth: "100%", zIndex: 1100,
+            maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
           {options.map((opt) => (
             <DropItem key={opt} label={opt} selected={opt === value} onSelect={() => { onChange(opt); setOpen(false); }} />
           ))}
@@ -82,6 +95,7 @@ function DropItem({ label, selected, onSelect }) {
         padding: "8px 12px", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap",
         background: hovered ? "#111" : "#fff", color: hovered ? "#fff" : "#111",
         fontWeight: selected ? 600 : 400, transition: "background 0.15s, color 0.15s",
+        textAlign: "center",
       }}
     >
       {label}
@@ -157,7 +171,7 @@ const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOU
 const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
-const QTY_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
+const QTY_OPTIONS = Array.from({ length: 100 }, (_, i) => String(i + 1));
 
 // ─── Upsell Product Card ──────────────────────────────────────────────────────
 function UpsellCard({ item, onAdd }) {
@@ -199,11 +213,11 @@ function UpsellCard({ item, onAdd }) {
           onMouseEnter={() => setAddHovered(true)}
           onMouseLeave={() => setAddHovered(false)}
           style={{
-            padding: "6px 14px", fontSize: "11px", fontWeight: 700,
+            padding: "6px", fontSize: "11px", fontWeight: 500,
             letterSpacing: "0.08em", textTransform: "uppercase",
-            border: "1px solid #111",
-            background: addHovered ? "#111" : "#fff",
-            color: addHovered ? "#fff" : "#111",
+            border: "1px solid #aaa",
+            background:  "#f3f3f3",
+            color: "#111",
             cursor: "pointer", transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
@@ -936,7 +950,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   display: "flex", 
   alignItems: "center", 
   justifyContent: "space-between",
-  padding: "20px 24px", 
+  padding: "20px 20px", 
   borderBottom: "1px solid #e5e5e5", 
   flexShrink: 0,
   height: "68px"   // Fixed height for better vertical centering
@@ -961,9 +975,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     {cartCount > 0 && (
       <div style={{
         height: "23px", 
-        minWidth: "23px", 
+        width: cartCount >= 100 ? "53px" : cartCount >= 10 ? "33px" : "23px",
         padding: "0 6px",
-        borderRadius: "999px", 
+        borderRadius: "50%", 
         backgroundColor: "#111",
         color: "#fff", 
         fontSize: "12px", 
@@ -981,16 +995,14 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   {/* Right Side - Close Button with same spacing */}
   <button 
-    onClick={onClose} 
+    onClick={onClose} className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
+
     style={{ 
-      background: "none", 
-      border: "none", 
-      cursor: "pointer", 
+      
       padding: "4px 0",        // Balanced padding
       display: "flex", 
       alignItems: "center", 
-      color: "#111",
-      marginRight: "-4px"      // Fine adjustment for visual balance
+      
     }}
   >
     <IoClose size={22} />       {/* Slightly bigger for better touch/visibility */}
@@ -1015,7 +1027,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             <p style={{ margin: 0, fontSize: "13px", color: "#999" }}>Start adding products.</p>
           </div>
         )}
-
         {/* Body */}
         {isRemoving && (
           <div style={{
@@ -1127,7 +1138,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       </div>
                     )}
                   </div>
-                  {isFreeDelivery ? <span>Free</span> : <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>}
+                  {isFreeDelivery ? <span>Free</span> : <span>{Number.isInteger(deliveryCost) ? deliveryCost.toFixed(2).replace(".", ",") : deliveryCost.toFixed(2).replace(".", ",")} €</span>}
                 </div>
               </div>
 
@@ -1139,7 +1150,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
                     </div>
                   </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{appliedVoucherOff.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedVoucherOff).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
                 </div>
               )}
 
@@ -1153,7 +1164,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       </span>
                     </div>
                   </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{appliedPromo.off.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedPromo.off).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
                 </div>
               )}
 
@@ -1260,95 +1271,98 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         )}
 
         {/* ─── Footer ─────────────────────────────────────────────────────────── */}
-        {!isEmpty && (
-          <div style={{ borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
+        <div style={{ paddingLeft:"15px", paddingRight:"15px", paddingBottom:"15px", borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
+          {/* Free shipping progress — always show, empty when no items */}
+          {subtotal < freeShippingThreshold && (
+            <div style={{ padding: "14px 24px 0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
+                <span>Complete for free shipping</span>
+                <span style={{ fontWeight: 600, color: "#111" }}>
+                  {isEmpty ? "0,00" : remaining.replace(".", ",")} € remaining
+                </span>
+              </div>
+              <div style={{ height: "4px", backgroundColor: "#e5e5e5", overflow: "hidden", marginBottom: "14px" }}>
+                <div style={{ height: "100%", width: isEmpty ? "0%" : `${progressPercent}%`, backgroundColor: "#111", transition: "width 0.4s ease" }} />
+              </div>
+            </div>
+          )}
 
-            
+          {/* Upsell — always show, marginTop 0 when progress bar visible, 14px when hidden */}
+          {upsellProducts.length > 0 && (
+            <div style={{
+              position: "relative", padding: "0 24px", borderBottom: "1px solid #e5e5e5",
+              marginTop: subtotal >= freeShippingThreshold ? "14px" : "0",
+            }}>
+              {upsellIndex > 0 && (
+                <button
+                  onClick={() => setUpsellIndex(i => i - 1)}
+                  style={{
+                    position: "absolute", left: "0px", top: "50%", transform: "translateY(-50%)",
+                    zIndex: 5, width: "22px", height: "22px",
+                    background: "transparent", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+                  }}
+                >
+                  <MdKeyboardArrowLeft size={20} className="text-black" />
 
-            {/* Free shipping progress */}
-            {subtotal < freeShippingThreshold && (
-              <div style={{ padding: "14px 24px 0" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
-                  <span>Complete for free shipping</span>
-                  <span style={{ fontWeight: 600, color: "#111" }}>{remaining} € remaining</span>
-                </div>
-                <div style={{ height: "4px", backgroundColor: "#e5e5e5", overflow: "hidden", marginBottom: "14px" }}>
-                  <div style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: "#111", transition: "width 0.4s ease" }} />
+                </button>
+              )}
+              {upsellIndex < upsellProducts.length - 1 && (
+                <button
+                  onClick={() => setUpsellIndex(i => i + 1)}
+                  style={{
+                    position: "absolute", right: "0px", top: "50%", transform: "translateY(-50%)",
+                    zIndex: 5, width: "22px", height: "22px",
+                    background: "transparent", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+                  }}
+                >
+<MdKeyboardArrowRight size={20} className="text-black" />
+                </button>
+              )}
+              <div style={{ overflow: "hidden", backgroundColor: "#fff" }}>
+                <div style={{
+                  display: "flex",
+                  transform: `translateX(-${upsellIndex * 100}%)`,
+                  transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
+                }}>
+                  {upsellProducts.map((item) => (
+                    <div key={item.id} style={{ minWidth: "100%" }}>
+                      <UpsellCard item={item} onAdd={handleUpsellAdd} />
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-{/* ── Upsell Products ── */}
-{upsellProducts.length > 0 && (
-  <div style={{ position: "relative", padding: "0 24px", borderBottom: "1px solid #e5e5e5" }}>
-    {/* Left Arrow */}
-    {upsellIndex > 0 && (
-      <button
-        onClick={() => setUpsellIndex(i => i - 1)}
-        style={{
-          position: "absolute", left: "0px", top: "50%", transform: "translateY(-50%)",
-          zIndex: 5, width: "22px", height: "22px",
-          background: "transparent", border: "none", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
-        }}
-      >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-    )}
-    {/* Right Arrow */}
-    {upsellIndex < upsellProducts.length - 1 && (
-      <button
-        onClick={() => setUpsellIndex(i => i + 1)}
-        style={{
-          position: "absolute", right: "0px", top: "50%", transform: "translateY(-50%)",
-          zIndex: 5, width: "22px", height: "22px",
-          background: "transparent", border: "none", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
-        }}
-      >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-    )}
-    {/* White card box — background lives HERE, inset by parent's padding */}
-    <div style={{ overflow: "hidden", backgroundColor: "#fff" }}>
-      <div style={{
-        display: "flex",
-        transform: `translateX(-${upsellIndex * 100}%)`,
-        transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
-      }}>
-        {upsellProducts.map((item) => (
-          <div key={item.id} style={{ minWidth: "100%" }}>
-            <UpsellCard item={item} onAdd={handleUpsellAdd} />
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-)}
-            {/* Checkout button */}
-            <div style={{marginTop:"10px", padding: subtotal < freeShippingThreshold ? "0 24px 24px" : "24px 24px 24px" }}>
-              <button
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = checkoutLoading ? "#333" : "#111"}
-                style={{
-                  width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
-                  fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                  cursor: checkoutLoading ? "default" : "pointer", transition: "background 0.2s",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-                }}
-              >
-                {checkoutLoading ? (
-                  <>
-                    <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-                    <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "checkoutSpin 0.65s linear infinite" }} />
-                  </>
-                ) : "Continue to checkout"}
-              </button>
             </div>
+          )}
+
+          {/* Checkout button — disabled + white bg + grey text when empty */}
+          <div style={{ padding: "24px 24px 24px" }}>
+            <button
+              onClick={isEmpty ? undefined : handleCheckout}
+              disabled={isEmpty || checkoutLoading}
+              onMouseEnter={(e) => { if (!isEmpty) e.currentTarget.style.backgroundColor = "#333"; }}
+              onMouseLeave={(e) => { if (!isEmpty) e.currentTarget.style.backgroundColor = checkoutLoading ? "#333" : "#111"; }}
+              style={{
+                width: "100%", padding: "15px", border: "none",
+                backgroundColor: isEmpty ? "#fff" : "#111",
+                color: isEmpty ? "#bbb" : "#fff",
+                fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                cursor: (isEmpty || checkoutLoading) ? "default" : "pointer",
+                transition: "background 0.2s",
+                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+              }}
+            >
+              {checkoutLoading ? (
+                <>
+                  <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+                  <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "checkoutSpin 0.65s linear infinite" }} />
+                </>
+              ) : "Continue to checkout"}
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       <CreateVoucherModal
