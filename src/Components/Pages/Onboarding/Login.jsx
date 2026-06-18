@@ -9,6 +9,8 @@ import { BASE_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
 import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
+import { auth, googleProvider, appleProvider } from '../../../utils/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 export default function LoginModal({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
@@ -166,6 +168,69 @@ useEffect(() => {
     }
   };
 
+  const handleSocialAuth = async (provider) => {
+    try {
+      setIsLoading(true);
+      setApiError('');
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const socialPassword = `Social@${user.uid.slice(0, 12)}`;
+
+      // Try register first
+      const regRes = await fetch(`${BASE_URL}/user/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          password: socialPassword,
+          device: 'web',
+          device_id: getDeviceId(),
+          fcm_token: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      const regData = await regRes.json();
+
+      if (regData.status === true) {
+        localStorage.setItem('LoginData', JSON.stringify(regData));
+        window.dispatchEvent(new Event('loginStateChange'));
+        onClose();
+        return;
+      }
+
+      // Email already exists — try login
+      const logRes = await fetch(`${BASE_URL}/user/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          password: socialPassword,
+          device: 'web',
+          device_id: getDeviceId(),
+          fcm_token: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      const logData = await logRes.json();
+
+      if (logData.status === true) {
+        localStorage.setItem('LoginData', JSON.stringify(logData));
+        window.dispatchEvent(new Event('loginStateChange'));
+        onClose();
+      } else {
+        const msg = logData.errors?.length > 0 ? logData.errors[0].message : logData.action;
+        setApiError(msg || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setApiError('Social login failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => { setIsClosing(false); onClose(); }, 250);
@@ -199,7 +264,7 @@ useEffect(() => {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-70 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+        className={`fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1200] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
         onClick={handleBackdropClick}
       >
         <div className={`w-full max-w-lg ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
@@ -344,15 +409,19 @@ useEffect(() => {
           <div className="flex justify-center gap-4 mb-6">
   <button
     type="button"
-    className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer"
+    onClick={() => handleSocialAuth(appleProvider)}
+    disabled={isLoading}
+    className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer disabled:opacity-70"
   >
-    <FaApple className="mb-0.5"   size={18} />
+    <FaApple className="mb-0.5" size={18} />
     <span className="text-sm font-medium -ml-1">Apple</span>
   </button>
 
   <button
     type="button"
-    className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+    onClick={() => handleSocialAuth(googleProvider)}
+    disabled={isLoading}
+    className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-70"
   >
     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -378,7 +447,7 @@ useEffect(() => {
         </div>
       </div>
 
-        <SignupModal isOpen={showSignup} onClose={handleSignupClose} />
+        <SignupModal isOpen={showSignup} onClose={handleSignupClose} onLoginSuccess={() => { setShowSignup(false); onClose(); }} />
         <Forgotpassword isOpen={showForgotPassword} onClose={handleForgotPasswordClose} onAllClose={() => setShowForgotPassword(false)} />
       </div>
     </>

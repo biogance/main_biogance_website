@@ -4,12 +4,15 @@ import { useRouter } from "next/navigation";
 import { parseCountry, defaultCountries } from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { FaRegUser } from "react-icons/fa";
+import LoginModal from "../Onboarding/Login";
 
 // ⚠️ Adjust these three import paths to match where Checkout.jsx actually
 // lives in your project — they're copied as-is from ModalAddToCart.jsx.
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
+import ModalPickLocation from "./ModalPickLocation";
 
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
@@ -809,7 +812,7 @@ function Section({ title, children }) {
   );
 }
 
-function ExpressPaymentBar({ onSelect }) {
+function ExpressPaymentBar({ selectedMethod, onSelect }) {
   const baseBtn = {
     flex: 1,
     display: "flex",
@@ -849,7 +852,7 @@ function ExpressPaymentBar({ onSelect }) {
         style={{
           position: "absolute",
           top: "9px",
-          left: "12%",
+          left: "8%",
           transform: "translateX(-50%)",
           margin: "10px",
           padding: "0 12px",
@@ -861,38 +864,69 @@ function ExpressPaymentBar({ onSelect }) {
           whiteSpace: "nowrap",
         }}
       >
-        Express Payment
+        Payment
       </div>
       <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
         <button
           onClick={() => onSelect("card")}
-          style={baseBtn}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#111")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+          style={{
+            ...baseBtn,
+            border: selectedMethod === "card" ? "1px solid #aaa" : "1px solid #f3f3f3",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedMethod !== "card") e.currentTarget.style.borderColor = "#aaa";
+          }}
+          onMouseLeave={(e) => {
+            if (selectedMethod !== "card") e.currentTarget.style.borderColor = "#e5e5e5";
+          }}
         >
          <img src="visa.svg" alt=""style={{width:"120px",  height:"90px"}} />
         </button>
         <button
           onClick={() => onSelect("googlepay")}
-          style={baseBtn}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#4285F4")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+          style={{
+            ...baseBtn,
+            border: selectedMethod === "googlepay" ? "1px solid #aaa" : "1px solid #f3f3f3",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedMethod !== "googlepay") e.currentTarget.style.borderColor = "#aaa";
+          }}
+          onMouseLeave={(e) => {
+            if (selectedMethod !== "googlepay") e.currentTarget.style.borderColor = "#e5e5e5";
+          }}
         >
         <img src="pay-pal.svg" alt="" style={{width:"120px",  height:"100px"}} />
         </button>
         <button
           onClick={() => onSelect("applepay")}
-          style={baseBtn}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#111")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+          style={{
+            ...baseBtn,
+            border: selectedMethod === "applepay" ? "1px solid #aaa" : "1px solid #f3f3f3",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedMethod !== "applepay") e.currentTarget.style.borderColor = "#aaa";
+          }}
+          onMouseLeave={(e) => {
+            if (selectedMethod !== "applepay") e.currentTarget.style.borderColor = "#e5e5e5";
+          }}
         >
          <img src="apple-pay.svg" alt="" style={{width:"120px", height:"80px"}} />
         </button>
         <button
           onClick={() => onSelect("paypal")}
-          style={{ ...baseBtn, color: "#003087", width:"50px", height:"50px" }}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#003087")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2e2d2d")}
+          style={{
+            ...baseBtn,
+            color: "#003087",
+            width:"50px",
+            height:"50px",
+            border: selectedMethod === "paypal" ? "1px solid #aaa" : "1px solid #f3f3f3",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedMethod !== "paypal") e.currentTarget.style.borderColor = "#aaa";
+          }}
+          onMouseLeave={(e) => {
+            if (selectedMethod !== "paypal") e.currentTarget.style.borderColor = "#e5e5e5";
+          }}
         >
          <img src="google-pay.svg" alt="" style={{width:"100px",  height:"100px"}} />
         </button>
@@ -943,7 +977,9 @@ function PaymentMethodRow({ active, onSelect, label, right, children, last }) {
 // ─── Cart item card (exactly same as ModalAddToCart.jsx) ───────────────────
 function CartItemRow({ item, index, onQtyChange, onRemove }) {
   const p = item.product || {};
-  const firstImage = "https://placehold.co/64x80/f3f3f3/999?text=IMG";
+  const firstImage = p.images?.[0]?.media
+    ? `${MEDIA_URL}${p.images[0].media}`
+    : "https://placehold.co/64x80/f3f3f3/999?text=IMG";
   const name = p.name || item.name || "";
   // size_name: real API items mein item.product.size_name ya item.size_name hota hai
   const sizeName = p.size_name || item.size_name || null;
@@ -972,7 +1008,7 @@ function CartItemRow({ item, index, onQtyChange, onRemove }) {
           width: "64px",
           height: "80px",
           flexShrink: 0,
-          backgroundColor: "#f3f3f3",
+          backgroundColor: "#E3E3E3",
           borderRadius: "0px",
           overflow: "hidden",
           display: "flex",
@@ -1138,6 +1174,9 @@ function OrderSummary({
   const [deliveryMethod, setDeliveryMethod] = useState("home");
   const [deliveryDropdownOpen, setDeliveryDropdownOpen] = useState(false);
   const deliveryDropdownRef = useRef(null);
+
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
     const handler = (e) => {
@@ -1902,7 +1941,7 @@ function OrderSummary({
   return (
     <div
       style={{
-        width: "380px",
+        width: "480px",
         flexShrink: 0,
         background: "#f3f3f3",
         borderRadius: "0px",
@@ -1912,8 +1951,8 @@ function OrderSummary({
       {/* Cart items — 3 cards visible, 4th on scroll */}
       <div
         style={{
-          maxHeight: "398px",
-          overflowY: "auto",
+          maxHeight: `${3 * 120}px`,
+          overflowY: "scroll",
           paddingRight: "6px",
           scrollbarWidth: "thin",
           scrollbarColor: "#bbb #f3f3f3",
@@ -2260,6 +2299,9 @@ function OrderSummary({
                       onClick={() => {
                         setDeliveryMethod(opt);
                         setDeliveryDropdownOpen(false);
+                        if (opt === "pickup") {
+                          setIsLocationModalOpen(true);
+                        }
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = "#111";
@@ -2411,6 +2453,78 @@ function OrderSummary({
           </div>
         )}
 
+        {deliveryMethod === "pickup" && (
+          <div
+            style={{
+              marginTop: "8px",
+              marginBottom: "12px",
+              padding: "12px 14px",
+              background: "#fff",
+              border: "1px solid #e5e5e5",
+              borderRadius: "4px",
+              fontFamily: FONT,
+              fontSize: "13px",
+            }}
+          >
+            {selectedLocation ? (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span style={{ fontWeight: 700, color: "#111" }}>{selectedLocation.name}</span>
+                  <button
+                    onClick={() => setIsLocationModalOpen(true)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#888",
+                      fontSize: "11px",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+                <div 
+                  style={{ 
+                    fontSize: "11px", 
+                    color: "#666", 
+                    lineHeight: 1.4,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }} 
+                  title={selectedLocation.address}
+                >
+                  {selectedLocation.address}
+                </div>
+                <div style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}>
+                  Lat: {selectedLocation.lat}, Lng: {selectedLocation.lng}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#888", fontStyle: "italic", fontSize: "11px" }}>No pickup location selected</span>
+                <button
+                  onClick={() => setIsLocationModalOpen(true)}
+                  style={{
+                    background: "#111",
+                    color: "#fff",
+                    border: "none",
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    borderRadius: "2px",
+                  }}
+                >
+                  Select Location
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div
           style={{
             display: "flex",
@@ -2433,6 +2547,11 @@ function OrderSummary({
         isOpen={isVoucherModalOpen}
         onClose={() => setIsVoucherModalOpen(false)}
       />
+      <ModalPickLocation
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onSelectLocation={(loc) => setSelectedLocation(loc)}
+      />
     </div>
   );
 }
@@ -2445,14 +2564,45 @@ export default function Checkout({ cartItems = [] }) {
   const router = useRouter();
   const paymentSectionRef = useRef(null);
 
-  // Contact
-  const [email, setEmail] = useState("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    try { return !!JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; }
+    catch { return false; }
+  });
+
+  const getLoginData = () => { try { return JSON.parse(localStorage.getItem("LoginData") || "null"); } catch { return null; } };
+
+  // Contact — prefill from localStorage if logged in
+  const [email, setEmail] = useState(() => getLoginData()?.data?.email || "");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [lastName, setLastName] = useState(() => getLoginData()?.data?.name || "");
+  const [phone, setPhone] = useState(() => getLoginData()?.data?.phone_number || "");
+  const [countryIso2, setCountryIso2] = useState(() => {
+    const cc = getLoginData()?.data?.country_code || "";
+    if (!cc) return "";
+    const clean = cc.replace("+", "");
+    const found = defaultCountries.find(c => parseCountry(c).dialCode === clean);
+    return found ? parseCountry(found).iso2 : "";
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      const d = getLoginData();
+      if (d?.data?.token) {
+        setIsLoggedIn(true);
+        setEmail(d.data.email || "");
+        setLastName(d.data.name || "");
+        setPhone(d.data.phone_number || "");
+        const cc = (d.data.country_code || "").replace("+", "");
+        const found = defaultCountries.find(c => parseCountry(c).dialCode === cc);
+        if (found) setCountryIso2(parseCountry(found).iso2);
+      }
+    };
+    window.addEventListener("loginStateChange", handler);
+    return () => window.removeEventListener("loginStateChange", handler);
+  }, []);
 
   // Delivery
-  const [countryIso2, setCountryIso2] = useState("");
   const [street, setStreet] = useState("");
   const [postcode, setPostcode] = useState("");
   const [region, setRegion] = useState("");
@@ -2496,81 +2646,16 @@ export default function Checkout({ cartItems = [] }) {
     });
   };
 
-  // Cart items
-  const [items, setItems] = useState(() =>
-    cartItems.length > 0
-      ? cartItems
-      : [
-          {
-            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-            size_name: "550ml",
-            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
-            price: 17.9,
-            qty: 2,
-            product: {
-              images: [
-                {
-                  media:
-                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
-                },
-              ],
-              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-              size_name: "550ml",
-            },
-          },
-          {
-            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-            size_name: "1L",
-            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
-            price: 17.9,
-            qty: 1,
-            product: {
-              images: [
-                {
-                  media:
-                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
-                },
-              ],
-              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-              size_name: "1L",
-            },
-          },
-          {
-            name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-            size_name: "30ml",
-            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
-            price: 17.9,
-            qty: 4,
-            product: {
-              images: [
-                {
-                  media:
-                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
-                },
-              ],
-              name: "Biogance Universal 2-in-1 Shampoo + Detangling Formula",
-              size_name: "30ml",
-            },
-          },
-          {
-            name: "Biogance Gliss Hair Repair Shampoo",
-            size_name: "250ml",
-            image: `${MEDIA_URL}production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png`,
-            price: 12.5,
-            qty: 1,
-            product: {
-              images: [
-                {
-                  media:
-                    "production/u1203/afHuunjW0sKm9uMEms3uO6IcApEjpoBYM0J4mHcE.png",
-                },
-              ],
-              name: "Biogance Gliss Hair Repair Shampoo",
-              size_name: "250ml",
-            },
-          },
-        ],
-  );
+  // Cart items — localStorage se real data lo, fallback dummy
+  const [items, setItems] = useState(() => {
+    if (cartItems.length > 0) return cartItems;
+    try {
+      const stored = JSON.parse(localStorage.getItem("cartData") || "null");
+      const list = stored?.cartItem || stored?.cartItems || [];
+      if (list.length > 0) return list;
+    } catch { /* silent */ }
+    return [];
+  });
 
   const handleQtyChange = (index, qty) => {
     setItems((prev) =>
@@ -2637,32 +2722,29 @@ export default function Checkout({ cartItems = [] }) {
         >
           <img src="logo.svg" alt="" style={{ height: "40px" }} />
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "13px",
-            color: "#333",
-          }}
-        >
-          <span>Have an account?</span>
-          <button
-            style={{
-              padding: "8px 16px",
-              background: "#FAFAFA",
-              border: "1px solid #F0EEEE",
-
-              fontSize: "12px",
-              fontWeight: 600,
-              color: "#111",
-              cursor: "pointer",
-              fontFamily: FONT,
-            }}
-          >
-            Sign in
-          </button>
-        </div>
+        {!isLoggedIn ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#333" }}>
+            <span>Have an account?</span>
+            <button
+              onClick={() => setIsLoginModalOpen(true)}
+              style={{
+                padding: "8px 16px", background: "#FAFAFA",
+                border: "1px solid #F0EEEE", fontSize: "12px",
+                fontWeight: 600, color: "#111", cursor: "pointer", fontFamily: FONT,
+              }}
+            >
+              Sign in
+            </button>
+          </div>
+        ) : (
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "36px", height: "36px",
+            border: "1px solid #F0EEEE", background: "#FAFAFA",
+          }}>
+            <FaRegUser size={16} color="#111" />
+          </div>
+        )}
       </div>
 
       {/* ── Main layout ── */}
@@ -2687,7 +2769,7 @@ export default function Checkout({ cartItems = [] }) {
             }}
           >
             {/* Express Payment — kept, expanded to 4 methods */}
-            <ExpressPaymentBar onSelect={handleExpressSelect} />
+            <ExpressPaymentBar selectedMethod={paymentMethod} onSelect={handleExpressSelect} />
 
             {/* Contact details */}
             <Section title="Contact Details">
@@ -2910,7 +2992,7 @@ export default function Checkout({ cartItems = [] }) {
           </div>
 
           {/* ── Right sidebar ── */}
-          <div style={{ width: "380px", flexShrink: 0, position: "sticky", top: "90px", alignSelf: "flex-start" }}>
+          <div style={{ width: "480px", flexShrink: 0, position: "sticky", top: "90px", alignSelf: "flex-start" }}>
             <OrderSummary
               items={items}
               onQtyChange={handleQtyChange}
@@ -2942,6 +3024,11 @@ export default function Checkout({ cartItems = [] }) {
           </div>
         </div>
       </div>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 }

@@ -142,7 +142,7 @@ export default function HeroSection() {
 
       {/* Main content with viewport height */}
       <main className="relative bg-white">
-        <div ref={videoSectionRef} className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+        <div ref={videoSectionRef} className="relative w-full bg-[#f3f3f3] min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Image or Video */}
           {isCurrentVideo ? (
             <video

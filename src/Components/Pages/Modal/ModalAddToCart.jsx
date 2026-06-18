@@ -7,6 +7,8 @@ import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import { RiDeleteBinLine } from "react-icons/ri";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
+import LoginModal from "../Onboarding/Login";
+
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -132,6 +134,23 @@ function AppliedPill({ code, label, onRemove }) {
   );
 }
 
+// 🔵 Small reusable spinner for Apply buttons (color flips black/white based on hover state)
+function ButtonSpinner({ color = "#111" }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: "13px",
+        height: "13px",
+        border: `2px solid ${color}`,
+        borderTopColor: "transparent",
+        borderRadius: "50%",
+        animation: "applyBtnSpin 0.6s linear infinite",
+      }}
+    />
+  );
+}
+
 const VOUCHER_KEY = "cartVoucherState";
 // FIX 1: voucherPoints bhi localStorage mein save/get karo
 const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null"); } catch { return null; } };
@@ -165,6 +184,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [guestPendingPill, setGuestPendingPill] = useState(null);
   const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
+
+  // 🔵 Login text (next to "Please login first" error) hover + modal state
+  const [guestLoginHovered, setGuestLoginHovered] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
   const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.selectedPill || "");
@@ -253,6 +276,45 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     }
   }, [isOpen]);
 
+  // 🔵 NEW: extracted, reusable, SILENT cart-list resync.
+  // Used both on modal open AND in the background after delete/qty-update API calls.
+  // It never touches `isLoading`, so it never shows a spinner — it just quietly
+  // brings localStorage + state in line with whatever the server says is true.
+  const refreshCartFromServer = async () => {
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await fetch(`${BASE_URL}/user/cart/list`, {
+        method: "POST",
+        headers: token
+          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          : { "Content-Type": "application/json" },
+        body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
+      });
+      const data = await res.json();
+      if (data.status) {
+        const normalizedData = {
+          ...data.data,
+          cartItem: (data.data.cartItem || data.data.cartItems || []).filter(Boolean),
+        };
+        saveCartData(normalizedData);
+        const items = normalizedData.cartItem;
+        setCartItems(items);
+        setCartCount(normalizedData.cart_count || 0);
+
+        // FIX 2: Agar cart bilkul empty aa jaye to voucher localStorage reset karo
+        if (items.length === 0) {
+          removeVoucherState();
+          setLoggedVoucherApplied(false);
+          setAppliedVoucherOff(0);
+          setSelectedPill(null);
+          setLoggedVoucherInput("");
+          setVoucherPoints(null);
+        }
+      }
+    } catch { /* silent */ }
+  };
+
   // Cart fetch on open
   useEffect(() => {
     if (!isOpen) return;
@@ -261,41 +323,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
       setCartCount(stored.cart_count || 0);
     }
-    const fetchLatest = async () => {
-      try {
-        const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-        const token = loginData?.data?.token;
-        const res = await fetch(`${BASE_URL}/user/cart/list`, {
-          method: "POST",
-          headers: token
-            ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
-            : { "Content-Type": "application/json" },
-          body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
-        });
-        const data = await res.json();
-        if (data.status) {
-          const normalizedData = {
-            ...data.data,
-            cartItem: (data.data.cartItem || data.data.cartItems || []).filter(Boolean),
-          };
-          saveCartData(normalizedData);
-          const items = normalizedData.cartItem;
-          setCartItems(items);
-          setCartCount(normalizedData.cart_count || 0);
-
-          // FIX 2: Agar cart bilkul empty aa jaye to voucher localStorage reset karo
-          if (items.length === 0) {
-            removeVoucherState();
-            setLoggedVoucherApplied(false);
-            setAppliedVoucherOff(0);
-            setSelectedPill(null);
-            setLoggedVoucherInput("");
-            setVoucherPoints(null);
-          }
-        }
-      } catch { /* silent */ }
-    };
-    fetchLatest();
+    refreshCartFromServer();
   }, [isOpen]);
 
   const voucherFetchedRef = useRef(false);
@@ -496,7 +524,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const isFreeDelivery = deliveryCost === 0;
   const totalWithDelivery = Math.max(0, subtotal + deliveryCost - totalDiscount).toFixed(2);
 
-  const handleCheckout = () => { window.location.href = "/checkout"; };
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = () => {
+    setCheckoutLoading(true);
+    setTimeout(() => { window.location.href = "/checkout"; }, 600);
+  };
 
   const handleRemove = async (cartId) => {
     setIsRemoving(true);
@@ -516,6 +549,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         if (msg) toast.error(msg);
         return;
       }
+      // Foran local state + localStorage update — UI turant updated data dikhaye
       const updated = cartItems.filter((item) => item.id !== cartId);
       setCartItems(updated);
       setCartCount((prev) => Math.max(0, prev - 1));
@@ -535,6 +569,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       console.error("Cart remove error:", err);
     } finally {
       setIsRemoving(false);
+      // 🔵 NEW: background resync — fire-and-forget, koi loader nahi, sirf data ko server se confirm/correct karta ha
+      refreshCartFromServer();
     }
   };
 
@@ -562,6 +598,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       }
     } catch (err) {
       console.error("Cart update error:", err);
+    } finally {
+      // 🔵 NEW: background resync — fire-and-forget, koi loader nahi
+      refreshCartFromServer();
     }
   };
 
@@ -610,12 +649,32 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
       {/* Error: please login first */}
       {guestVoucherError && (
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",  }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
-            <circle cx="12" cy="12" r="11" fill="#e02424" />
-            <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
+        <div style={{
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px",
+          marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",
+        }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <circle cx="12" cy="12" r="11" fill="#e02424" />
+              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
+          </div>
+
+          {/* Login link — opens LoginModal */}
+          <span
+            onClick={() => setIsLoginModalOpen(true)}
+            onMouseEnter={() => setGuestLoginHovered(true)}
+            onMouseLeave={() => setGuestLoginHovered(false)}
+            style={{
+              fontSize: "12px", color: "#c0392b", fontWeight: 700, cursor: "pointer",
+              textDecoration: guestLoginHovered ? "underline" : "none",
+              flexShrink: 0, whiteSpace: "nowrap", marginTop: "1px",
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            }}
+          >
+            Login
+          </span>
         </div>
       )}
 
@@ -635,10 +694,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         </span>
       </p>
 
-      {/* Login-first hint line, always visible for guests */}
-      {/* <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#111", lineHeight: 1.5, fontWeight: 500 }}>
-        If you want to add a voucher, please login first.
-      </p> */}
+     
     </div>
   );
 
@@ -686,9 +742,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               cursor: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "default" : "pointer",
               transition: "background 0.2s, color 0.2s",
               fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
             }}
           >
-            {loggedVoucherLoading ? "..." : "Apply"}
+            {loggedVoucherLoading
+              ? <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} />
+              : "Apply"}
           </button>
         </div>
 
@@ -842,7 +901,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         onClick={handleOverlayClick}
         style={{
           position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.35)",
-          zIndex: 1000, opacity: isOpen ? 1 : 0, backdropFilter: "blur(4px)",
+          zIndex: 1000, opacity: isOpen ? 1 : 0, 
           pointerEvents: isOpen ? "auto" : "none", transition: "opacity 0.35s ease",
         }}
       />
@@ -855,6 +914,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}>
+
+        {/* Global keyframes for the Apply button spinner */}
+        <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
 
         {/* Header */}
 <div style={{
@@ -1141,9 +1203,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                         cursor: (!promoInput.trim() || appliedPromo) ? "default" : "pointer",
                         transition: "background 0.2s, color 0.2s",
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
                       }}
                     >
-                      {promoLoading ? "..." : "Apply"}
+                      {promoLoading
+                        ? <ButtonSpinner color={promoHovered ? "#fff" : "#111"} />
+                        : "Apply"}
                     </button>
                   </div>
 
@@ -1222,16 +1287,23 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   <div style={{ padding: subtotal < freeShippingThreshold ? "0 24px 24px" : "24px 24px 24px" }}>
     <button
       onClick={handleCheckout}
+      disabled={checkoutLoading}
       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#111"}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = checkoutLoading ? "#333" : "#111"}
       style={{
         width: "100%", padding: "15px", backgroundColor: "#111", color: "#fff", border: "none",
         fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-        cursor: "pointer",  transition: "background 0.2s",
+        cursor: checkoutLoading ? "default" : "pointer",  transition: "background 0.2s",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
       }}
     >
-      Continue to checkout
+      {checkoutLoading ? (
+        <>
+          <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+          <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "checkoutSpin 0.65s linear infinite" }} />
+        </>
+      ) : "Continue to checkout"}
     </button>
   </div>
 
@@ -1246,6 +1318,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           setIsVoucherModalOpen(false);
           fetchVouchers();
         }}
+      />
+
+    
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </>
   );

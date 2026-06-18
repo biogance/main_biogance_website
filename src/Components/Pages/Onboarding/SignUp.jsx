@@ -6,14 +6,15 @@ import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons
 // import { PhoneInput } from 'react-international-phone';
 // import { parsePhoneNumber } from 'libphonenumber-js';
 // import 'react-international-phone/style.css';
-import DeleteAccountModal from '../MyAccount/ModalBox/DeleteMyAccount';
 import { BASE_URL } from '../../API/API';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
+import { auth, googleProvider, appleProvider } from '../../../utils/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
-export default function SignupModal({ isOpen, onClose }) {
+export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
   const { t } = useTranslation('onboarding');
   const [showPassword, setShowPassword] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -196,12 +197,81 @@ export default function SignupModal({ isOpen, onClose }) {
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
         setApiError(msg);
       } else {
-        toast.success('Account created successfully!');
-        onClose();
+        localStorage.setItem('LoginData', JSON.stringify(data));
+        window.dispatchEvent(new Event('loginStateChange'));
+       
+        if (onLoginSuccess) onLoginSuccess();
+        else onClose();
       }
     } catch (err) {
       console.error('Register error:', err);
       setApiError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialAuth = async (provider) => {
+    try {
+      setIsLoading(true);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const socialPassword = `Social@${user.uid.slice(0, 12)}`;
+
+      // Try register first
+      const regRes = await fetch(`${BASE_URL}/user/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          password: socialPassword,
+          device: 'web',
+          device_id: 'web123',
+          fcm_token: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      const regData = await regRes.json();
+
+      if (regData.status === true) {
+        localStorage.setItem('LoginData', JSON.stringify(regData));
+        window.dispatchEvent(new Event('loginStateChange'));
+       
+        if (onLoginSuccess) onLoginSuccess();
+        else onClose();
+        return;
+      }
+
+      // Email already exists — try login
+      const logRes = await fetch(`${BASE_URL}/user/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          password: socialPassword,
+          device: 'web',
+          device_id: 'web123',
+          fcm_token: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      const logData = await logRes.json();
+
+      if (logData.status === true) {
+        localStorage.setItem('LoginData', JSON.stringify(logData));
+        window.dispatchEvent(new Event('loginStateChange'));
+      
+        if (onLoginSuccess) onLoginSuccess();
+        else onClose();
+      } else {
+        const msg = logData.errors?.length > 0 ? logData.errors[0].message : logData.action;
+        setApiError(msg || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setApiError('Social login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -446,15 +516,19 @@ export default function SignupModal({ isOpen, onClose }) {
                     <div className="flex justify-center gap-4 ">
             <button
               type="button"
-              className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer"
+              onClick={() => handleSocialAuth(appleProvider)}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer disabled:opacity-70"
             >
-              <FaApple className="mb-0.5"   size={18} />
+              <FaApple className="mb-0.5" size={18} />
               <span className="text-sm font-medium -ml-1">Apple</span>
             </button>
           
             <button
               type="button"
-              className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => handleSocialAuth(googleProvider)}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-70"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
