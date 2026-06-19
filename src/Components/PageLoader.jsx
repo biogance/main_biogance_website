@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import axios from "axios";
+import { BASE_URL } from "./API/API";
+import { getDeviceId } from "../utils/deviceId";
 
 const VALID_ROUTES = [
   "/",
@@ -31,13 +34,36 @@ const VALID_ROUTES = [
   "/checkout",
 ];
 
+function callSplashApi() {
+  const loginData = localStorage.getItem("LoginData");
+  const parsedLogin = loginData ? JSON.parse(loginData) : null;
+  const payload = parsedLogin?.data?.token ? {} : { device_id: getDeviceId() };
+  const headers = parsedLogin?.data?.token ? { Authorization: `Bearer ${parsedLogin.data.token}` } : {};
+  axios
+    .post(`${BASE_URL}/web/splash`, payload, { headers })
+    .then((res) => {
+      if (res.data.status !== false) {
+        localStorage.setItem("splashData", JSON.stringify(res.data.data));
+        window.dispatchEvent(new Event("splashDataReady"));
+      }
+    })
+    .catch(() => {});
+}
+
 export default function PageLoader() {
   const [visible, setVisible] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Call splash API on every click anywhere in the app
+  useEffect(() => {
+    document.addEventListener("click", callSplashApi);
+    return () => document.removeEventListener("click", callSplashApi);
+  }, []);
+
   useEffect(() => {
     const loginData = localStorage.getItem("LoginData");
+    const parsedLogin = loginData ? JSON.parse(loginData) : null;
 
     if (!loginData) {
       const isValid = VALID_ROUTES.some(
@@ -47,6 +73,8 @@ export default function PageLoader() {
         router.replace("/");
       }
     }
+
+    callSplashApi();
 
     const hideLoader = () => setVisible(false);
 

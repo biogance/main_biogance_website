@@ -7,41 +7,52 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { mergeCartItem } from '../../../utils/cartStorage';
 import { getDeviceId } from '../../../utils/deviceId';
-import ModalAddToCart from '../Modal/ModalAddToCart';
-import ModalQuickView from '../Modal/ModalQuickView';
 
-export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [] }) {
+
+export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange }) {
   const { i18n } = useTranslation();
   const isFrench = i18n.language === 'fr';
+
+  const getName = (item) => {
+    if (!item) return '';
+    return isFrench ? (item.french_name || item.name || '') : (item.name || '');
+  };
+
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const menuRef = useRef(null);
   const autoScrollRef = useRef(null);
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  // Issue 1: Har baar open ho to first category select ho
+  useEffect(() => {
+    if (categories.length > 0) {
+      setActiveCategory(categories[0]);
+    }
+  }, [isOpen, categories]);
+
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartHovered, setCartHovered] = useState(false);
 
-  const getName = (item) => isFrench ? (item.french_name || item.name) : item.name;
-
+  // Load header_suggest_products from splashData localStorage
+  const [suggestedProduct, setSuggestedProduct] = useState(null);
   useEffect(() => {
-    if (categories.length > 0 && !activeCategory) {
-      setActiveCategory(categories[0]);
-    }
-  }, [categories]);
+    const load = () => {
+      try {
+        const cached = localStorage.getItem('splashData');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const suggested = parsed?.header_suggest_products?.[0] || null;
+          setSuggestedProduct(suggested);
+        }
+      } catch (e) {}
+    };
+    load();
+    window.addEventListener('splashDataReady', load);
+    return () => window.removeEventListener('splashDataReady', load);
+  }, []);
 
-  useEffect(() => {
-    if (isOpen && categories.length > 0 && !activeCategory) {
-      setActiveCategory(categories[0]);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (isOpen) setActiveImageIndex(0);
-  }, [isOpen]);
-
-  const featuredProduct = popular[0] || null;
+  // Use splashData suggested product instead of popular prop
+  const featuredProduct = suggestedProduct || popular[0] || null;
 
   const rawImages = featuredProduct?.products?.[0]?.images || [];
   const productImages = rawImages.filter(img => img?.media && img.media.trim() !== '');
@@ -66,7 +77,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
     if (addingToCart || !featuredProduct) return;
     const firstProduct = featuredProduct.products?.[0];
     if (firstProduct?.color || firstProduct?.size) {
-      setIsCartOpen(true);
+      onCartOpen?.(featuredProduct);
       return;
     }
     setAddingToCart(true);
@@ -82,7 +93,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         toast.error(res.data.action || 'Could not add to cart.');
       } else {
         mergeCartItem(res.data.data);
-        setIsCartOpen(true);
+        onCartOpen?.(featuredProduct);
       }
     } catch {
       toast.error('Something went wrong.');
@@ -213,7 +224,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                   <button
                     onMouseEnter={() => setCartHovered(true)}
                     onMouseLeave={() => setCartHovered(false)}
-                    onClick={isSingleProduct ? handleAddToCart : (e) => { e.stopPropagation(); setIsQuickViewOpen(true); }}
+                    onClick={isSingleProduct ? handleAddToCart : (e) => { e.stopPropagation(); onQuickViewOpen?.(featuredProduct); }}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -263,18 +274,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         }
       `}</style>
 
-      <ModalAddToCart
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        product={featuredProduct || {}}
-      />
-      <ModalQuickView
-        isOpen={isQuickViewOpen}
-        onClose={() => setIsQuickViewOpen(false)}
-        onCartOpen={() => setIsCartOpen(true)}
-        product={featuredProduct || {}}
-        fullProductData={featuredProduct?._raw || featuredProduct || {}}
-      />
+
     </div>
   );
 }

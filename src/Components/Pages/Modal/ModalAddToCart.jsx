@@ -272,7 +272,7 @@ const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.string
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
 // ─── Upsell Product Card ──────────────────────────────────────────────────────
-function UpsellCard({ item, onAdd }) {
+function UpsellCard({ item, onAdd, isAdding }) {
   const [addHovered, setAddHovered] = useState(false);
   if (!item) return null;
 
@@ -305,20 +305,28 @@ function UpsellCard({ item, onAdd }) {
           {name}
         </p>
         <button
-          onClick={() => onAdd(item)}
+          onClick={() => !isAdding && onAdd(item)}
           onMouseEnter={() => setAddHovered(true)}
           onMouseLeave={() => setAddHovered(false)}
+          disabled={isAdding}
           style={{
             padding: "6px 8px", fontSize: "11px", fontWeight: 500,
             letterSpacing: "0.08em", textTransform: "uppercase",
             border: "1px solid #ccc",
-            background: addHovered ? "#111" : "#f3f3f3",
-            color: addHovered ? "#fff" : "#111",
-            cursor: "pointer", transition: "background 0.2s, color 0.2s",
+            background: isAdding ? "#111" : addHovered ? "#111" : "#f3f3f3",
+            color: isAdding ? "#fff" : addHovered ? "#fff" : "#111",
+            cursor: isAdding ? "default" : "pointer",
+            transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", minWidth: "80px",
           }}
         >
-          Add — {price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+          {isAdding ? (
+            <>
+              <style>{`@keyframes upsellSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+              <span style={{ width: 11, height: 11, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "upsellSpin 0.6s linear infinite" }} />
+            </>
+          ) : `Add — ${price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
         </button>
       </div>
     </div>
@@ -333,6 +341,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [upsellIndex, setUpsellIndex] = useState(0);
+  const [addingUpsellId, setAddingUpsellId] = useState(null);
 
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftContentHeight, setGiftContentHeight] = useState(0);
@@ -480,22 +489,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const fetchUpsellProducts = () => {
     try {
-      const cached = localStorage.getItem("homePageData");
+      const cached = localStorage.getItem('splashData');
       if (cached) {
         const data = JSON.parse(cached);
-        const popular = data?.popular || [];
-        setUpsellProducts(popular);
-        return;
+        setUpsellProducts(data?.suggest_products || []);
       }
-      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const token = loginData?.data?.token;
-      fetch(`${BASE_URL}/web/home`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(token ? { token } : { device_id: getDeviceId() }),
-      }).then(r => r.json()).then(data => {
-        if (data.status) setUpsellProducts(data.data?.popular || []);
-      }).catch(() => {});
     } catch {}
   };
 
@@ -670,6 +668,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
   const handleUpsellAdd = async (item) => {
     const prod = item.products?.[0] || item;
+    setAddingUpsellId(item.id);
+    setIsRemoving(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const token = loginData?.data?.token;
@@ -683,8 +683,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           : { device_id: getDeviceId(), product_id: prod.id, quantity: 1 }
         ),
       });
-      refreshCartFromServer();
+      await refreshCartFromServer(true);
     } catch {}
+    finally {
+      setAddingUpsellId(null);
+      setIsRemoving(false);
+    }
   };
 
   const freeShippingThreshold = 39;
@@ -1392,7 +1396,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               position: "relative", padding: "0 24px",
               marginTop: subtotal >= freeShippingThreshold ? "14px" : "0",
             }}>
-              {upsellIndex > 0 && (
+              {upsellProducts.length > 1 && upsellIndex > 0 && (
                 <button
                   onClick={() => setUpsellIndex(i => i - 1)}
                   style={{
@@ -1405,7 +1409,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   <MdKeyboardArrowLeft size={20} className="text-black" />
                 </button>
               )}
-              {upsellIndex < upsellProducts.length - 1 && (
+              {upsellProducts.length > 1 && upsellIndex < upsellProducts.length - 1 && (
                 <button
                   onClick={() => setUpsellIndex(i => i + 1)}
                   style={{
@@ -1426,7 +1430,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 }}>
                   {upsellProducts.map((item) => (
                     <div key={item.id} style={{ minWidth: "100%" }}>
-                      <UpsellCard item={item} onAdd={handleUpsellAdd} />
+                      <UpsellCard item={item} onAdd={handleUpsellAdd} isAdding={addingUpsellId === item.id} />
                     </div>
                   ))}
                 </div>

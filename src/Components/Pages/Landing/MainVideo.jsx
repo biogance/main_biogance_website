@@ -71,7 +71,32 @@ export default function HeroSection() {
 
   useEffect(() => { preloadHeroVideos(); }, []);
   const [apiData, setApiData] = useState(null);
+  const [splashCategories, setSplashCategories] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Load splash categories from localStorage cache first
+  useEffect(() => {
+    const cached = localStorage.getItem('splashData');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setSplashCategories(parsed.categories || []);
+      } catch (e) {}
+    }
+
+    // Listen for splashDataReady (fired by PageLoader)
+    const onSplashReady = () => {
+      const updated = localStorage.getItem('splashData');
+      if (updated) {
+        try {
+          const parsed = JSON.parse(updated);
+          setSplashCategories(parsed.categories || []);
+        } catch (e) {}
+      }
+    };
+    window.addEventListener('splashDataReady', onSplashReady);
+    return () => window.removeEventListener('splashDataReady', onSplashReady);
+  }, []);
 
   useEffect(() => {
     const cached = localStorage.getItem('homePageData');
@@ -80,13 +105,10 @@ export default function HeroSection() {
         setApiData(JSON.parse(cached));
         setIsLoading(false);
       } catch (e) {
-        console.error("Failed to parse cached homePageData:", e);
         localStorage.removeItem('homePageData');
       }
     }
   }, []);
-  
-
 
   useEffect(() => {
     const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
@@ -294,7 +316,7 @@ export default function HeroSection() {
       </main>
 
       {/* Sections */}
-      <LandingCategories data={apiData} />
+      <LandingCategories data={splashCategories ? { categories: splashCategories } : apiData} />
       <LandingCards data={apiData} apiData={apiData} />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
