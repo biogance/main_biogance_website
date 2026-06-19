@@ -1187,7 +1187,22 @@ function OrderSummary({
   const deliveryDropdownRef = useRef(null);
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(() => {
+    try {
+      const saved = localStorage.getItem("checkoutPickupLocation");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Persist selected pickup location to localStorage whenever it changes
+  const handleSelectLocation = (loc) => {
+    setSelectedLocation(loc);
+    try {
+      localStorage.setItem("checkoutPickupLocation", JSON.stringify(loc));
+    } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -1950,19 +1965,24 @@ function OrderSummary({
   };
 
   return (
-    <div
-      style={{
-        width: "480px",
-        flexShrink: 0,
-        background: "#f3f3f3",
-        borderRadius: "0px",
-        padding: "20px 26px 26px",
-      }}
-    >
+     <div
+    style={{
+      width: "480px",
+      flexShrink: 0,
+      flex: 1,
+      minHeight: 0,        // ← ZARURI hai flex scroll ke liye
+      overflowY: "auto",   // ← poora summary scroll hoga
+      background: "#f3f3f3",
+      borderRadius: "0px",
+      padding: "20px 26px 26px",
+      scrollbarWidth: "thin",
+      scrollbarColor: "#bbb #f3f3f3",
+    }}
+  >
       {/* Cart items — 3 cards visible, 4th on scroll */}
       <div
         style={{
-          maxHeight: `${3 * 120}px`,
+           maxHeight: "480px", 
           overflowY: "scroll",
           paddingRight: "6px",
           scrollbarWidth: "thin",
@@ -2311,7 +2331,10 @@ function OrderSummary({
                         setDeliveryMethod(opt);
                         setDeliveryDropdownOpen(false);
                         if (opt === "pickup") {
-                          setIsLocationModalOpen(true);
+                          // Only open modal if no saved location exists
+                          if (!selectedLocation) {
+                            setIsLocationModalOpen(true);
+                          }
                         }
                       }}
                       onMouseEnter={(e) => {
@@ -2561,7 +2584,7 @@ function OrderSummary({
       <ModalPickLocation
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
-        onSelectLocation={(loc) => setSelectedLocation(loc)}
+        onSelectLocation={handleSelectLocation}
       />
     </div>
   );
@@ -2724,7 +2747,7 @@ export default function Checkout({ cartItems = [] }) {
           flexShrink: 0,
           position: "sticky",
           top: 0,
-          zIndex: 100,
+          zIndex: 10,
         }}
       >
         <div
@@ -3002,37 +3025,45 @@ export default function Checkout({ cartItems = [] }) {
             </button>
           </div>
 
-          {/* ── Right sidebar ── */}
-          <div style={{ width: "480px", flexShrink: 0, position: "sticky", top: "90px", alignSelf: "flex-start" }}>
-            <OrderSummary
-              items={items}
-              onQtyChange={handleQtyChange}
-              onRemoveItem={handleRemoveItem}
-              subtotal={subtotal}
-              totalUnits={totalUnits}
-            />
-            <button
-              style={{
-                width: "100%",
-                marginTop: "12px",
-                padding: "15px",
-                backgroundColor: "#111",
-                color: "#fff",
-                border: "none",
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                cursor: "pointer",
-                borderRadius: "2px",
-                fontFamily: FONT,
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
-            >
-              Confirm Order
-            </button>
-          </div>
+          <div style={{ 
+  width: "480px", 
+  flexShrink: 0, 
+  position: "sticky", 
+  top: "80px",
+ maxHeight: "calc(100vh - 80px - 40px)", 
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+}}>
+  <OrderSummary
+    items={items}
+    onQtyChange={handleQtyChange}
+    onRemoveItem={handleRemoveItem}
+    subtotal={subtotal}
+    totalUnits={totalUnits}
+  />
+  <button
+    style={{
+      flexShrink: 0,
+      width: "100%",
+      padding: "15px",
+      backgroundColor: "#111",
+      color: "#fff",
+      border: "none",
+      fontSize: "12px",
+      fontWeight: 700,
+      letterSpacing: "0.1em",
+      cursor: "pointer",
+      borderRadius: "2px",
+      fontFamily: FONT,
+      transition: "background 0.2s",
+    }}
+    onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
+    onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
+  >
+    Confirm Order
+  </button>
+</div>
         </div>
       </div>
 

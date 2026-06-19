@@ -213,7 +213,7 @@ function UpsellCard({ item, onAdd }) {
           onMouseEnter={() => setAddHovered(true)}
           onMouseLeave={() => setAddHovered(false)}
           style={{
-            padding: "6px", fontSize: "11px", fontWeight: 500,
+            padding: "6px 8px", fontSize: "11px", fontWeight: 500,
             letterSpacing: "0.08em", textTransform: "uppercase",
             border: "1px solid #aaa",
             background:  "#f3f3f3",

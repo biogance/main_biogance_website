@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { IoClose, IoLocationOutline, IoSearch } from "react-icons/io5";
 
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -87,6 +88,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
 
   if (!isOpen) return null;
 
+
   // Filter locations based on search query
   const filteredLocations = PICKUP_LOCATIONS.filter(
     (loc) =>
@@ -94,7 +96,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
       loc.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
+  return ReactDOM.createPortal(
     <div
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -107,9 +109,9 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
         alignItems: "center",
         justifyContent: "center",
         padding: "16px",
-        zIndex: 2000,
+        zIndex: 99999,
         fontFamily: FONT,
-        backdropFilter: "blur(2px)",
+      
         transition: "opacity 0.25s ease-in-out",
       }}
     >
@@ -118,7 +120,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
           backgroundColor: "#fff",
           width: "100%",
           maxWidth: "540px",
-          borderRadius: "8px",
+         
           boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
           display: "flex",
           flexDirection: "column",
@@ -169,7 +171,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
               display: "flex",
               alignItems: "center",
               border: "1.5px solid #ddd",
-              borderRadius: "6px",
+             
               padding: "0 14px",
               backgroundColor: "#fcfcfc",
               transition: "border-color 0.2s",
@@ -224,7 +226,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
                       alignItems: "center",
                       gap: "14px",
                       padding: "14px 16px",
-                      borderRadius: "6px",
+                     
                       border: "1px solid #eee",
                       cursor: "pointer",
                       backgroundColor: isHovered ? "#f9f9f9" : "#fff",
@@ -237,7 +239,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
                       style={{
                         width: "36px",
                         height: "36px",
-                        borderRadius: "50%",
+                       
                         backgroundColor: isHovered ? "#111" : "#f5f5f5",
                         color: isHovered ? "#fff" : "#111",
                         display: "flex",
@@ -297,6 +299,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
