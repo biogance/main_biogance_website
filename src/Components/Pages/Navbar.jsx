@@ -1,18 +1,18 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
+import { usePathname, useRouter } from 'next/navigation';
+import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { IoClose } from 'react-icons/io5';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
 import LoginModal from './Onboarding/Login';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 
-import { getDeviceId } from '../../utils/deviceId';
-import { BASE_URL } from '../API/API';
 import { getCartData } from '../../utils/cartStorage';
 import ModalAddToCart from './Modal/ModalAddToCart';
+import ModalQuickView from './Modal/ModalQuickView';
 
 const logoImage = '/logo.svg';
 
@@ -32,12 +32,16 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
 export default function Navbar({ transparent = false, announcementVisible = false, isVideoVisible = true }) {
   const { t, i18n } = useTranslation('navbar');
   const pathname = usePathname();
+  const router = useRouter();
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [homeCategories, setHomeCategories] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [cartProduct, setCartProduct] = useState(null);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
 
   const productsRef = useRef(null);
   const productsCloseTimer = useRef(null);
@@ -46,35 +50,41 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     const readCount = () => {
       const data = getCartData();
       setCartCount(data?.cart_count || 0);
+      // Also sync from splashData
+      const splash = localStorage.getItem('splashData');
+      if (splash) {
+        try {
+          const parsed = JSON.parse(splash);
+          if (parsed?.cart_count !== undefined) {
+            setCartCount(parsed.cart_count);
+          }
+        } catch (e) {}
+      }
     };
     readCount();
     window.addEventListener('storage', readCount);
-    return () => window.removeEventListener('storage', readCount);
+    window.addEventListener('splashDataReady', readCount);
+    return () => {
+      window.removeEventListener('storage', readCount);
+      window.removeEventListener('splashDataReady', readCount);
+    };
   }, []);
 
   useEffect(() => {
-    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
-    const payload = loginData?.data?.token
-      ? { token: loginData.data.token }
-      : { device_id: getDeviceId() };
-    fetch(`${BASE_URL}/web/home`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status) {
-          setHomeCategories(data.data.categories || []);
-          setPopularProducts(data.data.popular || []);
-        } else {
-          const msg = data.errors?.length > 0
-            ? data.errors[0].message
-            : data.action || data.action_message;
-          if (msg) console.error(msg);
-        }
-      })
-      .catch(() => {});
+    const loadFromSplash = () => {
+      const cached = localStorage.getItem('splashData');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setHomeCategories(parsed.categories || []);
+          setPopularProducts(parsed.popular || []);
+          if (parsed.cart_count !== undefined) setCartCount(parsed.cart_count);
+        } catch (e) {}
+      }
+    };
+    loadFromSplash();
+    window.addEventListener('splashDataReady', loadFromSplash);
+    return () => window.removeEventListener('splashDataReady', loadFromSplash);
   }, []);
 
   React.useEffect(() => {
@@ -139,21 +149,53 @@ export default function Navbar({ transparent = false, announcementVisible = fals
 
   const currentLanguage = languages.find(lang => i18n.language && i18n.language.startsWith(lang.code)) || languages[0];
 
-  const announcements = [
-    "Enjoy complimentary standard delivery across France on all orders over €39.",
-    "New arrivals just dropped — explore our latest skincare collection.",
-    "Earn loyalty points on every order. Join Biogance Rewards today.",
-  ];
-
+  const [headers, setHeaders] = useState([]);
   const [annIndex, setAnnIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState(1);
   const [annPhase, setAnnPhase] = useState('idle');
   const [annPaused, setAnnPaused] = useState(false);
+  const [textModal, setTextModal] = useState(null);
+  const [textModalOpen, setTextModalOpen] = useState(false);
+
+  const closeTextModal = () => {
+    setTextModalOpen(false);
+    setTimeout(() => setTextModal(null), 400);
+  };
+
+  const handleHeaderClick = (header) => {
+    if (header.type === 'no_action') return;
+    if (header.type === 'bundle') {
+      const slug = header.bundle?.english_seo_keyboard || header.bundle?.english_seo_keyword || '';
+      if (slug) { router.push(`/product/${slug}`); }
+    } else if (header.type === 'text') {
+      const htmlItems = Array.isArray(header.text_contents) ? header.text_contents : [header.text_contents || ''];
+      setTextModal({ title: header.title, htmlItems, activeIndex: 0 });
+      setTimeout(() => setTextModalOpen(true), 10);
+    }
+  };
+
+  // Load headers from splashData
+  useEffect(() => {
+    const load = () => {
+      const cached = localStorage.getItem('splashData');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed?.headers?.length) setHeaders(parsed.headers);
+        } catch (e) {}
+      }
+    };
+    load();
+    window.addEventListener('splashDataReady', load);
+    return () => window.removeEventListener('splashDataReady', load);
+  }, []);
+
+  const activeHeaders = headers;
 
   useEffect(() => {
     if (annPaused) return;
     const interval = setInterval(() => {
-      const next = (annIndex + 1) % announcements.length;
+      const next = (annIndex + 1) % activeHeaders.length;
       setNextIndex(next);
       setAnnPhase('exit');
       setTimeout(() => {
@@ -162,7 +204,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
       }, 550);
     }, 4000);
     return () => clearInterval(interval);
-  }, [annIndex, annPaused]);
+  }, [annIndex, annPaused, activeHeaders.length]);
 
   const currentStyle = {
     transform: annPhase === 'exit' ? 'translateY(-120%)' : 'translateY(0)',
@@ -212,7 +254,13 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current);
     setIsNavHovered(true);
   };
+useEffect(() => {
+  document.body.style.overflow = textModalOpen ? "hidden" : "";
 
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [textModalOpen]);
   const handleNavMouseLeave = () => {
     navLeaveTimer.current = setTimeout(() => {
       setIsNavHovered(false);
@@ -230,22 +278,115 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     <>
       <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
         <div className="relative h-full overflow-hidden">
-          <p
-            style={currentStyle}
-            className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
-          >
-            <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[annIndex]}</span>
-            <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-          </p>
-          <p
-            style={nextStyle}
-            className="absolute inset-0 flex items-center justify-center cursor-pointer font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
-          >
-            <span className="hover:underline" onMouseEnter={() => setAnnPaused(true)} onMouseLeave={() => setAnnPaused(false)}>{announcements[nextIndex]}</span>
-            <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-          </p>
+          {[annIndex, nextIndex].map((idx, pos) => {
+            const h = activeHeaders[idx] || activeHeaders[0];
+            if (!h) return null;
+            const isNoAction = h.type === 'no_action';
+            const isClickable = h.type === 'bundle' || h.type === 'text';
+            return (
+              <p
+                key={pos}
+                style={pos === 0 ? currentStyle : nextStyle}
+                className="absolute inset-0 flex items-center justify-center font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+              >
+                <span
+                  onMouseEnter={() => setAnnPaused(true)}
+                  onMouseLeave={() => setAnnPaused(false)}
+                  onClick={() => handleHeaderClick(h)}
+                  style={{ cursor: isClickable ? 'pointer' : 'default', textDecoration: 'none' }}
+                  onMouseOver={isClickable ? (e) => { e.currentTarget.style.textDecoration = 'underline'; } : undefined}
+                  onMouseOut={isClickable ? (e) => { e.currentTarget.style.textDecoration = 'none'; } : undefined}
+                >
+                  {h.title}
+                </span>
+                {h.is_icon && <FaPlus className="inline mb-0.5 ml-1 shrink-0" />}
+              </p>
+            );
+          })}
         </div>
       </div>
+
+      {/* Text Modal — left side slide-in */}
+      {textModal && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={closeTextModal}
+            style={{
+              position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)',
+              zIndex: 9998,
+              opacity: textModalOpen ? 1 : 0,
+              pointerEvents: textModalOpen ? 'auto' : 'none',
+              transition: 'opacity 0.35s ease',
+            }}
+          />
+          {/* Slide-in panel */}
+          <div style={{
+            position: 'fixed', top: 0, left: 0, bottom: 0, width: '100%', maxWidth: '480px',
+            backgroundColor: '#111', zIndex: 9999, display: 'flex', flexDirection: 'column',
+            transform: textModalOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+           
+           
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255, 255, 255, 0.15)', flexShrink: 0, height: '68px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{textModal.title}</span>
+              <button onClick={closeTextModal}   className=" text-white hover: z-10 cursor-pointer transition-all duration-300 hover:rotate-90" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
+                <IoClose size={22} />
+              </button>
+            </div>
+           <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+              <div
+  key={textModal.activeIndex}
+  className="ann-html-content"
+  style={{
+    fontSize: '13px', lineHeight: 1.7,
+    animation: 'slideContent 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+  }}
+                dangerouslySetInnerHTML={{ __html: textModal.htmlItems[textModal.activeIndex] }}
+              />
+             <style>{`
+  .ann-html-content * { color: #fff !important; background-color: transparent !important; }
+  @keyframes slideContent {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+`}</style>
+            </div>
+            {textModal.htmlItems.length > 1 && (
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', flexShrink: 0 }}>
+                <button
+                  onClick={() => setTextModal(prev => ({ ...prev, activeIndex: (prev.activeIndex - 1 + prev.htmlItems.length) % prev.htmlItems.length }))}
+                  style={{ position: 'absolute', left: '16px', background: 'none', border: '1px solid #fff', borderRadius: 0, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+                >
+                  <FiChevronLeft size={16} />
+                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {textModal.htmlItems.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setTextModal(prev => ({ ...prev, activeIndex: i }))}
+                      style={{
+                        width: i === textModal.activeIndex ? '20px' : '8px',
+                        height: '8px', borderRadius: '9999px',
+                        backgroundColor: i === textModal.activeIndex ? '#fff' : 'rgba(255,255,255,0.35)',
+                        border: 'none', cursor: 'pointer', padding: 0,
+                        transition: 'all 0.3s ease',
+                      }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => setTextModal(prev => ({ ...prev, activeIndex: (prev.activeIndex + 1) % prev.htmlItems.length }))}
+                  style={{ position: 'absolute', right: '16px', background: 'none', border: '1px solid #fff', borderRadius: 0, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+                >
+                  <FiChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Backdrop overlay */}
       <div
@@ -302,6 +443,8 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                   onClose={() => setIsProductsOpen(false)}
                   categories={homeCategories}
                   popular={popularProducts}
+                  onCartOpen={(product) => { setCartProduct(product); setIsCartOpen(true); }}
+                  onQuickViewOpen={(product) => { setQuickViewProduct(product); setIsQuickViewOpen(true); }}
                 />
               </div>
 
@@ -566,7 +709,14 @@ export default function Navbar({ transparent = false, announcementVisible = fals
         </div>
       </nav>
 
-      <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} product={cartProduct || {}} />
+      <ModalQuickView
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+        onCartOpen={() => { setIsQuickViewOpen(false); setIsCartOpen(true); }}
+        product={quickViewProduct || {}}
+        fullProductData={quickViewProduct?._raw || quickViewProduct || {}}
+      />
 
       <SearchModal
         isOpen={isSearchModalOpen}

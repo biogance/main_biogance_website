@@ -428,27 +428,15 @@ export default function FilterProducts() {
   // }, []);
 
   useEffect(() => {
-    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    const payload = {};
-
-    if (loginData?.data?.token) {
-      payload.token = loginData.data.token;
-    } else {
-      payload.device_id = getDeviceId();
-    }
-
-    axios.post(`${BASE_URL}/web/home`, payload)
-      .then((res) => {
-        if (res.data.status === false) {
-          toast.error(res.data.action || "Unable to load products.");
-          return;
-        }
-        // localStorage.setItem("homePageData", JSON.stringify(res.data.data));
-        setApiData(res.data.data);
-      })
-      .catch((err) => {
-        console.error("FilterProducts API Error:", err);
-      });
+    const loadFromSplash = () => {
+      const cached = localStorage.getItem('splashData');
+      if (cached) {
+        try { setApiData(JSON.parse(cached)); } catch (e) {}
+      }
+    };
+    loadFromSplash();
+    window.addEventListener('splashDataReady', loadFromSplash);
+    return () => window.removeEventListener('splashDataReady', loadFromSplash);
   }, []);
 
   const apiProducts = apiData?.popular || [];
