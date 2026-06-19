@@ -422,7 +422,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       const list = data.data?.vouchers?.data || data.data?.data;
       if (data.status) {
         setVoucherPills(list || []);
-        const totalPoints = data.data?.total_point !== undefined ? Number(data.data.total_point) : 0;
+        const totalPoints = data.data?.loyalty_points !== undefined ? Number(data.data.loyalty_points) : 0;
         setVoucherPoints(totalPoints);
         const saved = getVoucherState();
         setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
@@ -518,6 +518,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       } else {
         setLoggedVoucherApplied(true);
         setVoucherState({ applied: true, selectedPill: codeToApply, input: codeToApply, off, voucherPoints: point });
+        fetchVouchers();
       }
     } catch {
       setLoggedVoucherError("Something went wrong.");
@@ -533,6 +534,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setAppliedVoucherOff(0);
     setVoucherPoints(null);
     removeVoucherState();
+    fetchVouchers();
   };
 
   const handlePromoInputChange = (e) => {
@@ -569,6 +571,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     setAppliedPromo(null);
     setPromoError(null);
     setPromoInput("");
+    fetchVouchers();
   };
 
   const handleUpsellAdd = async (item) => {
@@ -805,6 +808,16 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </p>
         )}
 
+        {loggedVoucherError && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <circle cx="12" cy="12" r="11" fill="#e02424" />
+              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+          </div>
+        )}
+
         {!loggedVoucherApplied && hasVouchers && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", alignItems: "center" }}>
             {voucherPills.map((pill) => {
@@ -891,16 +904,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               Learn More
             </span>
           </p>
-        )}
-
-        {loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
-              <circle cx="12" cy="12" r="11" fill="#e02424" />
-              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
-          </div>
         )}
 
         {loggedVoucherApplied && selectedPill && (
@@ -1367,7 +1370,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
       <CreateVoucherModal
         isOpen={isVoucherModalOpen}
-        totalPoints={voucherPoints || 0}
+        loyaltyPoints={voucherPoints || 0}
         onClose={() => { setIsVoucherModalOpen(false); fetchVouchers(); }}
       />
 

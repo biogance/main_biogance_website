@@ -5,7 +5,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
 import { BASE_URL } from "../../../API/API";
 
-export default function CreateVoucherModal({ isOpen, onClose, totalPoints = 0 }) {
+export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 }) {
     const { t } = useTranslation("myaccount");
     const [selectedPoints, setSelectedPoints] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -17,8 +17,8 @@ export default function CreateVoucherModal({ isOpen, onClose, totalPoints = 0 })
     const [redeemError, setRedeemError] = useState(null);
 
     const minimumPoints = 10;
-    const userBalance = totalPoints;
-    const maxVoucherValue = Math.floor(totalPoints / 10);
+    const userBalance = loyaltyPoints;
+    const maxVoucherValue = Math.floor(loyaltyPoints / 10);
 
     // Generate dropdown: 1€, 2€, ... maxVoucherValue€ → each option = value*10 points
     const pointsOptions = Array.from({ length: maxVoucherValue }, (_, i) => {
@@ -117,7 +117,7 @@ export default function CreateVoucherModal({ isOpen, onClose, totalPoints = 0 })
                     }
                 }}
             >
-              <div className="bg-white  shadow-2xl w-full max-w-4xl p-8 ">
+              <div className="bg-white  shadow-2xl w-full max-w-2xl p-8 ">
                 <h2 className="text-xl text-black font-semibold mb-3">{t('createVoucher.title')}</h2>
                 
                 <div className="mb-6">
@@ -196,9 +196,14 @@ export default function CreateVoucherModal({ isOpen, onClose, totalPoints = 0 })
                   <button
                     onClick={handleRedeem}
                     disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints || redeemLoading}
-                    className="flex-1 px-6 py-3 cursor-pointer bg-black text-white  font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 py-3 cursor-pointer bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {redeemLoading ? "..." : t('createVoucher.redeem')}
+                    {redeemLoading ? (
+                      <>
+                        <style>{`@keyframes redeemSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+                        <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "redeemSpin 0.6s linear infinite" }} />
+                      </>
+                    ) : t('createVoucher.redeem')}
                   </button>
                 </div>
               </div>
