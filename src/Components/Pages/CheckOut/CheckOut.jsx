@@ -1132,14 +1132,13 @@ function OrderSummary({
   ];
 
   // Auth check
-  const isLoggedIn = (() => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
     try {
       const d = JSON.parse(localStorage.getItem("LoginData") || "null");
-      return !!d?.data?.token;
-    } catch {
-      return false;
-    }
-  })();
+      setIsLoggedIn(!!d?.data?.token);
+    } catch { /* silent */ }
+  }, []);
 
   // ─── CASE 1: Guest Voucher States ────────────────────────────────────────
   const [guestVoucherInput, setGuestVoucherInput] = useState("");
@@ -1151,28 +1150,17 @@ function OrderSummary({
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
 
   // ─── CASE 2: Logged-in Voucher States ────────────────────────────────────
-  const [loggedVoucherInput, setLoggedVoucherInput] = useState(
-    () => getVoucherState()?.selectedPill || "",
-  );
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState("");
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
   const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
-  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(
-    () => getVoucherState()?.applied || false,
-  );
-  const [appliedVoucherOff, setAppliedVoucherOff] = useState(
-    () => getVoucherState()?.off || 0,
-  );
-  const [selectedPill, setSelectedPill] = useState(
-    () => getVoucherState()?.selectedPill || null,
-  );
+  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(false);
+  const [appliedVoucherOff, setAppliedVoucherOff] = useState(0);
+  const [selectedPill, setSelectedPill] = useState(null);
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
-  const [voucherPoints, setVoucherPoints] = useState(() => {
-    const saved = getVoucherState();
-    return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
-  });
+  const [voucherPoints, setVoucherPoints] = useState(null);
 
   // ─── CASE 3: Promo Code States ────────────────────────────────────────────
   const [promoInput, setPromoInput] = useState("");
@@ -1187,14 +1175,13 @@ function OrderSummary({
   const deliveryDropdownRef = useRef(null);
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(() => {
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("checkoutPickupLocation");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+      if (saved) setSelectedLocation(JSON.parse(saved));
+    } catch { /* silent */ }
+  }, []);
 
   // Persist selected pickup location to localStorage whenever it changes
   const handleSelectLocation = (loc) => {
@@ -2599,25 +2586,29 @@ export default function Checkout({ cartItems = [] }) {
   const paymentSectionRef = useRef(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try { return !!JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; }
-    catch { return false; }
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const getLoginData = () => { try { return JSON.parse(localStorage.getItem("LoginData") || "null"); } catch { return null; } };
 
   // Contact — prefill from localStorage if logged in
-  const [email, setEmail] = useState(() => getLoginData()?.data?.email || "");
+  const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState(() => getLoginData()?.data?.name || "");
-  const [phone, setPhone] = useState(() => getLoginData()?.data?.phone_number || "");
-  const [countryIso2, setCountryIso2] = useState(() => {
-    const cc = getLoginData()?.data?.country_code || "";
-    if (!cc) return "";
-    const clean = cc.replace("+", "");
-    const found = defaultCountries.find(c => parseCountry(c).dialCode === clean);
-    return found ? parseCountry(found).iso2 : "";
-  });
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [countryIso2, setCountryIso2] = useState("");
+
+  useEffect(() => {
+    const d = getLoginData();
+    if (d?.data?.token) {
+      setIsLoggedIn(true);
+      setEmail(d.data.email || "");
+      setLastName(d.data.name || "");
+      setPhone(d.data.phone_number || "");
+      const cc = (d.data.country_code || "").replace("+", "");
+      const found = defaultCountries.find(c => parseCountry(c).dialCode === cc);
+      if (found) setCountryIso2(parseCountry(found).iso2);
+    }
+  }, []);
 
   useEffect(() => {
     const handler = () => {
@@ -2681,15 +2672,16 @@ export default function Checkout({ cartItems = [] }) {
   };
 
   // Cart items — localStorage se real data lo, fallback dummy
-  const [items, setItems] = useState(() => {
-    if (cartItems.length > 0) return cartItems;
+  const [items, setItems] = useState(cartItems);
+
+  useEffect(() => {
+    if (cartItems.length > 0) return;
     try {
       const stored = JSON.parse(localStorage.getItem("cartData") || "null");
       const list = stored?.cartItem || stored?.cartItems || [];
-      if (list.length > 0) return list;
+      if (list.length > 0) setItems(list);
     } catch { /* silent */ }
-    return [];
-  });
+  }, []);
 
   const handleQtyChange = (index, qty) => {
     setItems((prev) =>
