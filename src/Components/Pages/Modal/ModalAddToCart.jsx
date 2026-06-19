@@ -18,7 +18,117 @@ const getErrorMsg = (data) => {
   return null;
 };
 
-function CustomDropdown({ options, value, onChange, disabled }) {
+// ─── Chevron Icons ────────────────────────────────────────────────────────────
+const ChevronDown = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+const ChevronUp = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+);
+
+// ─── New Quantity Dropdown ────────────────────────────────────────────────────
+function CustomDropdown({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [windowStart, setWindowStart] = useState(1);
+  const dropdownRef = useRef(null);
+  const MAX = 100;
+  const WINDOW = 10;
+
+  const selectedQty = parseInt(value) || 1;
+  const windowEnd = Math.min(windowStart + WINDOW - 1, MAX);
+  const numbers = Array.from({ length: windowEnd - windowStart + 1 }, (_, i) => windowStart + i);
+
+  const openDropdown = () => {
+    // Center window around selected value
+    const idealStart = Math.max(1, Math.min(selectedQty - 4, MAX - WINDOW + 1));
+    setWindowStart(idealStart);
+    setIsOpen(true);
+  };
+
+  const handleSelect = (num) => {
+    onChange(String(num));
+    setIsOpen(false);
+  };
+
+  const slideDown = () => {
+    setWindowStart((prev) => Math.min(prev + WINDOW, MAX - WINDOW + 1));
+  };
+
+  const slideUp = () => {
+    setWindowStart((prev) => Math.max(1, prev - WINDOW));
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="relative inline-block" ref={dropdownRef}>
+      <button
+        onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
+        className="flex items-center gap-1 border border-gray-200 px-1.5 py-1 text-sm text-gray-800 cursor-pointer hover:border-gray-400 transition-colors min-w-10"
+      >
+        <span className="font-medium">{selectedQty}</span>
+        <span className={`ml-auto text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>
+          <ChevronDown />
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+6px)] left-0 bg-white border border-gray-200 shadow-md z-50 min-w-10 overflow-hidden">
+          {/* Up arrow — only show if not at top */}
+          {windowStart > 1 && (
+            <button
+              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              onMouseEnter={slideUp}
+              onClick={slideUp}
+            >
+              <ChevronUp />
+            </button>
+          )}
+
+          <ul>
+            {numbers.map((num) => (
+              <li
+                key={num}
+                onClick={() => handleSelect(num)}
+                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
+                  num === selectedQty ? "font-medium text-black" : "text-gray-800"
+                }`}
+              >
+                {num}
+              </li>
+            ))}
+          </ul>
+
+          {/* Down arrow — only show if not at bottom */}
+          {windowEnd < MAX && (
+            <button
+              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              onMouseEnter={slideDown}
+              onClick={slideDown}
+            >
+              <ChevronDown />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Size Dropdown (unchanged — only for size, not qty) ───────────────────────
+function SizeDropdown({ options, value, onChange, disabled }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -33,13 +143,8 @@ function CustomDropdown({ options, value, onChange, disabled }) {
   return (
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
       <style>{`
-        .dropdown-menu-scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .dropdown-menu-scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .dropdown-menu-scrollbar-hide::-webkit-scrollbar { display: none; }
+        .dropdown-menu-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
@@ -48,8 +153,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
           fontSize: "13px", background: "#fff", color: "#111",
           cursor: disabled ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          gap: "6px",
-          minWidth: disabled ? "auto" : "42px",
+          gap: "6px", minWidth: disabled ? "auto" : "42px",
           userSelect: "none", transition: "border-color 0.15s",
           opacity: disabled ? 0.6 : 1,
         }}
@@ -76,7 +180,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
           }}
         >
           {options.map((opt) => (
-            <DropItem key={opt} label={opt} selected={opt === value} onSelect={() => { onChange(opt); setOpen(false); }} />
+            <SizeDropItem key={opt} label={opt} selected={opt === value} onSelect={() => { onChange(opt); setOpen(false); }} />
           ))}
         </div>
       )}
@@ -84,7 +188,7 @@ function CustomDropdown({ options, value, onChange, disabled }) {
   );
 }
 
-function DropItem({ label, selected, onSelect }) {
+function SizeDropItem({ label, selected, onSelect }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -107,8 +211,7 @@ function AppliedPill({ code, label, onRemove }) {
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: "0",
-      border: "1px solid #ccc", overflow: "hidden",
-      background: "#fff",
+      border: "1px solid #ccc", overflow: "hidden", background: "#fff",
     }}>
       <span style={{
         padding: "5px 10px", fontSize: "12px", fontWeight: 600,
@@ -153,12 +256,9 @@ function ButtonSpinner({ color = "#111" }) {
       <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
       <span
         style={{
-          display: "inline-block",
-          width: "13px",
-          height: "13px",
+          display: "inline-block", width: "13px", height: "13px",
           border: `2px solid ${color === "#fff" ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.15)"}`,
-          borderTopColor: color,
-          borderRadius: "50%",
+          borderTopColor: color, borderRadius: "50%",
           animation: "applyBtnSpin 0.6s linear infinite",
         }}
       />
@@ -170,8 +270,6 @@ const VOUCHER_KEY = "cartVoucherState";
 const getVoucherState = () => { try { return JSON.parse(localStorage.getItem(VOUCHER_KEY) || "null"); } catch { return null; } };
 const setVoucherState = (state) => localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
-
-const QTY_OPTIONS = Array.from({ length: 100 }, (_, i) => String(i + 1));
 
 // ─── Upsell Product Card ──────────────────────────────────────────────────────
 function UpsellCard({ item, onAdd }) {
@@ -187,19 +285,17 @@ function UpsellCard({ item, onAdd }) {
   const name = item.name || "";
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "#fff" }}>
-      {/* Image */}
+    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "4px 12px 4px 4px", backgroundColor: "#fff" }}>
       <div style={{
         width: "64px", height: "72px", flexShrink: 0,
-        backgroundColor: "#f3f3f3",
-        overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+        backgroundColor: "#f3f3f3", overflow: "hidden",
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         {imageUrl
           ? <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : <div style={{ width: "36px", height: "48px", backgroundColor: "#ddd" }} />
         }
       </div>
-      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
           margin: "0 0 8px", fontSize: "12px", fontWeight: 600, color: "#111",
@@ -215,9 +311,9 @@ function UpsellCard({ item, onAdd }) {
           style={{
             padding: "6px 8px", fontSize: "11px", fontWeight: 500,
             letterSpacing: "0.08em", textTransform: "uppercase",
-            border: "1px solid #aaa",
-            background:  "#f3f3f3",
-            color: "#111",
+            border: "1px solid #ccc",
+            background: addHovered ? "#111" : "#f3f3f3",
+            color: addHovered ? "#fff" : "#111",
             cursor: "pointer", transition: "background 0.2s, color 0.2s",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
@@ -235,7 +331,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Upsell products state
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [upsellIndex, setUpsellIndex] = useState(0);
 
@@ -383,7 +478,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
     fetchUpsellProducts();
   }, [isOpen]);
 
-  // Fetch upsell products — localStorage se pehle, phir API
   const fetchUpsellProducts = () => {
     try {
       const cached = localStorage.getItem("homePageData");
@@ -601,7 +695,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   }, 0);
   const remaining = Math.max(0, freeShippingThreshold - subtotal).toFixed(2);
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-  const totalDiscount = (loggedVoucherApplied ? appliedVoucherOff : 0) + (appliedPromo ? appliedPromo.off : 0);
+  const promoDiscount = appliedPromo ? (subtotal * appliedPromo.off) / 100 : 0;
+  const totalDiscount = (loggedVoucherApplied ? appliedVoucherOff : 0) + promoDiscount;
 
   const getDeliveryCost = (method, total) => {
     if (total < 39) return method === "pickup" ? 5.90 : 6.90;
@@ -691,6 +786,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
           }}
         />
+        
         <button
           onClick={handleGuestApply}
           disabled={!guestVoucherInput.trim()}
@@ -712,32 +808,43 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       </div>
 
       {guestVoucherError && (
-        <div style={{
-          display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px",
-          marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6",
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
-              <circle cx="12" cy="12" r="11" fill="#e02424" />
-              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{guestVoucherError}</span>
-          </div>
-          <span
-            onClick={() => setIsLoginModalOpen(true)}
-            onMouseEnter={() => setGuestLoginHovered(true)}
-            onMouseLeave={() => setGuestLoginHovered(false)}
-            style={{
-              fontSize: "12px", color: "#c0392b", fontWeight: 700, cursor: "pointer",
-              textDecoration: guestLoginHovered ? "underline" : "none",
-              flexShrink: 0, whiteSpace: "nowrap", marginTop: "1px",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            }}
-          >
-            Login
-          </span>
-        </div>
-      )}
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "10px",
+    padding: "10px 12px",
+    background: "#fdecec",
+    border: "1px solid #f5c6c6",
+  }}>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="11" fill="#e02424" />
+      <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+    <span style={{
+      fontSize: "12px",
+      color: "#c0392b",
+      lineHeight: 1.4,
+      flex: 1,
+    }}>
+      {guestVoucherError}{" "}
+      <span
+        onClick={() => setIsLoginModalOpen(true)}
+        onMouseEnter={() => setGuestLoginHovered(true)}
+        onMouseLeave={() => setGuestLoginHovered(false)}
+        style={{
+          fontSize: "12px",
+          color: "#c0392b",
+          fontWeight: 700,
+          cursor: "pointer",
+          textDecoration: guestLoginHovered ? "underline" : "none",
+        }}
+      >
+        Login
+      </span>
+    </span>
+  </div>
+)}
 
       <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
         You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
@@ -745,7 +852,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           onClick={() => { onClose(); router.push("/loyalty"); }}
           onMouseEnter={() => setLearnMoreHovered(true)}
           onMouseLeave={() => setLearnMoreHovered(false)}
-          style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }}
+          style={{ color: "#111", cursor: "pointer", fontWeight: 600, textDecoration: learnMoreHovered ? "underline" : "none" }}
         >
           Learn More
         </span>
@@ -764,23 +871,26 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           overflow: "hidden", transition: "border-color 0.15s",
         }}>
           <input
-            type="text" placeholder="Enter Voucher code"
-            value={loggedVoucherInput} disabled={loggedVoucherApplied}
-            onChange={(e) => {
-              setLoggedVoucherInput(e.target.value);
-              if (loggedVoucherError) setLoggedVoucherError(null);
-              const match = voucherPills.find(p => p.name === e.target.value);
-              if (match) setSelectedPill(match.name); else setSelectedPill(null);
-            }}
-            onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
-            style={{
-              flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-              color: loggedVoucherApplied ? "#aaa" : "#111",
-              background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
-              cursor: loggedVoucherApplied ? "not-allowed" : "text",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            }}
-          />
+  type="text"
+  placeholder="Enter Voucher code"
+  value={loggedVoucherInput}
+  disabled={loggedVoucherApplied}
+  onChange={(e) => {
+    setLoggedVoucherInput(e.target.value);
+    if (loggedVoucherError) setLoggedVoucherError(null);
+    const match = voucherPills.find(p => p.name === e.target.value);
+    if (match) setSelectedPill(match.name); else setSelectedPill(null);
+  }}
+  onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+  title={loggedVoucherApplied ? "You already added voucher code" : ""}
+  style={{
+    flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+    color: loggedVoucherApplied ? "#aaa" : "#111",
+    background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
+    cursor: loggedVoucherApplied ? "not-allowed" : "text",
+    fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  }}
+/>
           <button
             onClick={handleLoggedApply}
             disabled={(!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied || loggedVoucherLoading}
@@ -858,8 +968,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   padding: "7px 14px", fontSize: "12px", fontWeight: 700, letterSpacing: "0.04em",
-                  background: createMoreHovered ? "#222" : "#000", color: "#fff",
-                  border: "none", cursor: "pointer", transition: "background 0.2s",
+                  background: createMoreHovered ? "#222" : "#f3f3f3", color: createMoreHovered ? "#fff" : "#111",
+                  border: "1px solid #ccc", cursor: "pointer", transition: "background 0.2s",
                   fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", whiteSpace: "nowrap",
                 }}
               >
@@ -899,7 +1009,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               onClick={() => { onClose(); router.push("/loyalty"); }}
               onMouseEnter={() => setLearnMoreHovered(true)}
               onMouseLeave={() => setLearnMoreHovered(false)}
-              style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }}
+              style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }} 
             >
               Learn More
             </span>
@@ -915,6 +1025,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
               <button
                 onClick={handleLoggedRemoveVoucher}
+                title="Remove voucher code"
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
               >
                 <IoClose size={13} />
@@ -948,69 +1059,37 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}>
 
-       {/* Header */}
-<div style={{
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: "space-between",
-  padding: "20px 20px", 
-  borderBottom: "1px solid #e5e5e5", 
-  flexShrink: 0,
-  height: "68px"   // Fixed height for better vertical centering
-}}>
-  
-  {/* Left Side - Your Cart (with badge) */}
-  <div style={{ 
-    display: "flex", 
-    alignItems: "center", 
-    gap: "10px" 
-  }}>
-    <span style={{ 
-      fontSize: "13px", 
-      fontWeight: 600, 
-      color: "#111", 
-      letterSpacing: "0.08em", 
-      textTransform: "uppercase" 
-    }}>
-      Your Cart
-    </span>
-    
-    {cartCount > 0 && (
-      <div style={{
-        height: "23px", 
-        width: cartCount >= 100 ? "53px" : cartCount >= 10 ? "33px" : "23px",
-        padding: "0 6px",
-        borderRadius: "50%", 
-        backgroundColor: "#111",
-        color: "#fff", 
-        fontSize: "12px", 
-        fontWeight: 600,
-        boxSizing: "border-box",
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        lineHeight: 1,
-      }}>
-        {cartCount}
-      </div>
-    )}
-  </div>
-
-  {/* Right Side - Close Button with same spacing */}
-  <button 
-    onClick={onClose} className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
-
-    style={{ 
-      
-      padding: "4px 0",        // Balanced padding
-      display: "flex", 
-      alignItems: "center", 
-      
-    }}
-  >
-    <IoClose size={22} />       {/* Slightly bigger for better touch/visibility */}
-  </button>
-</div>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 20px", borderBottom: "1px solid #e5e5e5", flexShrink: 0,
+          height: "68px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              Your Cart
+            </span>
+            {cartCount > 0 && (
+              <div style={{
+                height: "23px",
+                width: cartCount >= 100 ? "53px" : cartCount >= 10 ? "33px" : "23px",
+                padding: "0 6px", borderRadius: "50%", backgroundColor: "#111",
+                color: "#fff", fontSize: "12px", fontWeight: 600,
+                boxSizing: "border-box", display: "flex", alignItems: "center",
+                justifyContent: "center", lineHeight: 1,
+              }}>
+                {cartCount}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
+            style={{ padding: "4px 0", display: "flex", alignItems: "center" }}
+          >
+            <IoClose size={22} />
+          </button>
+        </div>
 
         {/* Loading */}
         {isLoading && (
@@ -1030,7 +1109,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             <p style={{ margin: 0, fontSize: "13px", color: "#999" }}>Start adding products.</p>
           </div>
         )}
-        {/* Body */}
+
+        {/* Removing overlay */}
         {isRemoving && (
           <div style={{
             position: "absolute", inset: 0, zIndex: 10,
@@ -1043,6 +1123,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
+        {/* Body */}
         {!isLoading && !isEmpty && (
           <div style={{
             flex: 1, overflowY: "auto", padding: "0 24px",
@@ -1065,9 +1146,19 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 600, color: "#111", overflow: "hidden" }}>{name}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <CustomDropdown options={QTY_OPTIONS} value={String(item.quantity)} onChange={(val) => handleQtyChange(item.id, val)} />
+                      {/* ✅ NEW quantity dropdown — replaces old CustomDropdown for qty */}
+                      <CustomDropdown
+                        value={String(item.quantity)}
+                        onChange={(val) => handleQtyChange(item.id, val)}
+                      />
+                      {/* Size dropdown (old style, unchanged) */}
                       {sizeOptions.length > 0 && (
-                        <CustomDropdown options={sizeOptions} value={sizeOptions[0]} onChange={() => {}} disabled={isSingleSize} />
+                        <SizeDropdown
+                          options={sizeOptions}
+                          value={sizeOptions[0]}
+                          onChange={() => {}}
+                          disabled={isSingleSize}
+                        />
                       )}
                       <button onClick={() => handleRemove(item.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#888", display: "flex", alignItems: "center" }} title="Remove item">
                         <RiDeleteBinLine className="hover:text-gray-600" />
@@ -1086,8 +1177,33 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <span>Subtotal</span><span>{subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
               </div>
+                {appliedPromo && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#555" }}>Promo Code</span>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", overflow: "hidden" }}>
+                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                        {appliedPromo.code}
+                      </span>
+                    </div>
+                  </div>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{promoDiscount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                </div>
+              )}
+
+              {loggedVoucherApplied && selectedPill && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#555" }}>Voucher</span>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0" }}>
+                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
+                    </div>
+                  </div>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedVoucherOff).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                </div>
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
-                <span>Delivery costs</span>
+                <span>Delivery Costs</span>
                 {subtotal >= 39 ? <span>Free</span> : <span>5,90 €</span>}
               </div>
               <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
@@ -1145,31 +1261,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               </div>
 
-              {loggedVoucherApplied && selectedPill && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: "#555" }}>Voucher</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0" }}>
-                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
-                    </div>
-                  </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedVoucherOff).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
-                </div>
-              )}
+              
 
-              {appliedPromo && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: "#555" }}>Promo Code</span>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", overflow: "hidden" }}>
-                      <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-                        {appliedPromo.code}
-                      </span>
-                    </div>
-                  </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedPromo.off).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
-                </div>
-              )}
+            
 
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
                 <span>Estimated total</span>
@@ -1194,20 +1288,24 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               <div style={{ maxHeight: promoOpen ? "200px" : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)", opacity: promoOpen ? 1 : 0 }}>
                 <div style={{ paddingBottom: "16px" }}>
                   <div style={{ display: "flex", border: `1px solid ${promoError ? "#e02424" : "#ddd"}`, overflow: "hidden", transition: "border-color 0.15s" }}>
-                    <input
-                      type="text" placeholder="Enter your code"
-                      value={appliedPromo ? appliedPromo.code : promoInput}
-                      disabled={!!appliedPromo}
-                      onChange={handlePromoInputChange}
-                      onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
-                      style={{
-                        flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-                        color: appliedPromo ? "#aaa" : "#111",
-                        background: appliedPromo ? "#f9f9f9" : "#fff",
-                        cursor: appliedPromo ? "not-allowed" : "text",
-                        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                      }}
-                    />
+                    <div style={{ position: "relative", flex: 1 }}>
+  <input
+    type="text" placeholder="Enter your code"
+    value={appliedPromo ? appliedPromo.code : promoInput}
+    disabled={!!appliedPromo}
+    onChange={handlePromoInputChange}
+    onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
+    title={appliedPromo ? "You already added promo code" : ""}
+    style={{
+      width: "100%",
+      border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+      color: appliedPromo ? "#aaa" : "#111",
+      background: appliedPromo ? "#f9f9f9" : "#fff",
+      cursor: appliedPromo ? "not-allowed" : "text",
+      fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    }}
+  />
+</div>
                     <button
                       onClick={handlePromoApply}
                       disabled={!promoInput.trim() || !!appliedPromo || promoLoading}
@@ -1242,7 +1340,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       <div style={{ display: "inline-flex", alignItems: "center", background: "#111", overflow: "hidden" }}>
                         <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{appliedPromo.code}</span>
                         <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
-                        <button onClick={handleRemovePromo} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+                        <button onClick={handleRemovePromo} title="Remove promo code" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
                           <IoClose size={13} />
                         </button>
                       </div>
@@ -1273,9 +1371,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           </div>
         )}
 
-        {/* ─── Footer ─────────────────────────────────────────────────────────── */}
-        <div style={{ paddingLeft:"15px", paddingRight:"15px", paddingBottom:"15px", borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
-          {/* Free shipping progress — always show, empty when no items */}
+        {/* Footer */}
+        <div style={{ paddingLeft: "15px", paddingRight: "15px", paddingBottom: "15px", borderTop: "1px solid #e5e5e5", backgroundColor: "#f3f3f3", flexShrink: 0 }}>
           {subtotal < freeShippingThreshold && (
             <div style={{ padding: "14px 24px 0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
@@ -1290,10 +1387,9 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             </div>
           )}
 
-          {/* Upsell — always show, marginTop 0 when progress bar visible, 14px when hidden */}
           {upsellProducts.length > 0 && (
             <div style={{
-              position: "relative", padding: "0 24px", borderBottom: "1px solid #e5e5e5",
+              position: "relative", padding: "0 24px",
               marginTop: subtotal >= freeShippingThreshold ? "14px" : "0",
             }}>
               {upsellIndex > 0 && (
@@ -1307,7 +1403,6 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                   }}
                 >
                   <MdKeyboardArrowLeft size={20} className="text-black" />
-
                 </button>
               )}
               {upsellIndex < upsellProducts.length - 1 && (
@@ -1320,7 +1415,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                     display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
                   }}
                 >
-<MdKeyboardArrowRight size={20} className="text-black" />
+                  <MdKeyboardArrowRight size={20} className="text-black" />
                 </button>
               )}
               <div style={{ overflow: "hidden", backgroundColor: "#fff" }}>
@@ -1339,8 +1434,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             </div>
           )}
 
-          {/* Checkout button — disabled + white bg + grey text when empty */}
-          <div style={{ padding: "24px 24px 24px" }}>
+          <div style={{ padding: "24px 24px 24px", marginBottom: "-12px", marginTop: "-10px" }}>
             <button
               onClick={isEmpty ? undefined : handleCheckout}
               disabled={isEmpty || checkoutLoading}

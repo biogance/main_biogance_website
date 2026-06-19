@@ -367,7 +367,7 @@ export default function Navbar({ transparent = false, announcementVisible = fals
                 </button>
 
                 {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-30 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
+                  <div className="absolute top-full mt-2 left-13 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
                     {languages.map((lang) => {
                       const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
                       return (
