@@ -60,9 +60,9 @@ const Spinner = styled.div`
 
 // Loading Product Item Component
 const LoadingProductItem = () => (
-  <div className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors">
+  <div className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3  transition-colors">
     {/* Image area with spinner */}
-    <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+    <div className="w-22 h-22 bg-gray-100  flex items-center justify-center flex-shrink-0 overflow-hidden">
       <Spinner />
     </div>
     
@@ -122,7 +122,7 @@ const SearchTags = ({ items, label, onSelect }) => (
             type="button"
             onClick={() => onSelect?.(item)}
             title={item}
-            className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300  text-gray-700 text-sm hover:bg-gray-200 transition-colors"
           >
             {displayText}
           </button>
@@ -156,8 +156,8 @@ const ProductItem = ({ product, onNavigate }) => {
   return (
     <div
       onClick={() => onNavigate(slug || product.id)}
-      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 rounded-lg transition-colors cursor-pointer">
-      <div className="w-22 h-22 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3  transition-colors cursor-pointer">
+      <div className="w-22 h-22 bg-gray-100  flex items-center justify-center flex-shrink-0 overflow-hidden">
         {imageUrl ? (
           <ImageWithFallback
             src={imageUrl}
@@ -165,7 +165,7 @@ const ProductItem = ({ product, onNavigate }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-100 rounded-lg" />
+          <div className="w-full h-full bg-gray-100 " />
         )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center">

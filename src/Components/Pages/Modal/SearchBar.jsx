@@ -173,7 +173,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
     <div
       ref={suggestionsRef}
       onScroll={handleSuggestionsScroll}
-      className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1 rounded-lg shadow-lg z-20 overflow-y-auto max-h-72"
+      className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-20 overflow-y-auto max-h-72"
     >
       {suggestions.map((s, i) => (
         <div
@@ -226,7 +226,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
               onKeyDown={handleKeyDown}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               placeholder={t("searchPlaceholder")}
-              className="w-full border border-gray-300 text-gray-700 rounded-l-lg px-4 py-3.5 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
+              className="w-full border border-gray-300 text-gray-700  px-4 py-3.5 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
             />
             {suggestionsList}
           </div>
@@ -239,7 +239,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
             </button>
             <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1 rounded-lg shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
                 {categories.map((category, index) => (
                   <div
                     key={index}
@@ -252,7 +252,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
               </div>
             )}
           </div>
-          <SearchButton className="rounded-r-lg px-8 py-3.5" />
+          <SearchButton className=" px-8 py-3.5" />
         </div>
 
         {/* Mobile Layout */}
@@ -268,23 +268,23 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
                   suggestions.length > 0 && setShowSuggestions(true)
                 }
                 placeholder={t("searchPlaceholder")}
-                className="w-full border border-gray-300 text-gray-700 rounded-l-lg px-3 py-3 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
+                className="w-full border border-gray-300 text-gray-700  px-3 py-3 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
               />
               {suggestionsList}
             </div>
-            <SearchButton className="rounded-r-lg px-6 py-3" />
+            <SearchButton className=" px-6 py-3" />
           </div>
 
           <div className="relative w-full" ref={mobileDropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full appearance-none cursor-pointer border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400 transition-colors text-left"
+              className="w-full appearance-none cursor-pointer border border-gray-300  px-4 py-3 pr-10 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400 transition-colors text-left"
             >
               {selectedCategory?.label || t("selectCategory")}
             </button>
             <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1 rounded-lg shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
                 {categories.map((category, index) => (
                   <div
                     key={index}
