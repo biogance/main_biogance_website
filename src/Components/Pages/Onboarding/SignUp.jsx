@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
-import { auth, googleProvider, appleProvider } from '../../../utils/firebase';
+import { getFirebaseAuth, getGoogleProvider, getAppleProvider } from '../../../utils/firebase';
 import { signInWithPopup } from 'firebase/auth';
 
 export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
@@ -198,7 +198,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
   const handleSocialAuth = async (provider) => {
     try {
       setIsLoading(true);
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(getFirebaseAuth(), provider);
       const user = result.user;
       const socialPassword = `Social@${user.uid.slice(0, 12)}`;
 
@@ -500,7 +500,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
                     <div className="flex justify-center gap-4 ">
             <button
               type="button"
-              onClick={() => handleSocialAuth(appleProvider)}
+              onClick={() => handleSocialAuth(getAppleProvider())}
               disabled={isLoading}
               className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors text-black cursor-pointer disabled:opacity-70"
             >
@@ -510,7 +510,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
           
             <button
               type="button"
-              onClick={() => handleSocialAuth(googleProvider)}
+              onClick={() => handleSocialAuth(getGoogleProvider())}
               disabled={isLoading}
               className="flex items-center gap-2 px-5 h-10 bg-white border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-70"
             >
