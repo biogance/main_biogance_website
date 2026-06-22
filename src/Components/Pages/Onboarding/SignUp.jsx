@@ -7,6 +7,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineClose } from 'react-icons
 // import { parsePhoneNumber } from 'libphonenumber-js';
 // import 'react-international-phone/style.css';
 import { BASE_URL } from '../../API/API';
+import { callSplashApi } from '../../PageLoader';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FaApple } from 'react-icons/fa';
@@ -182,6 +183,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
         setApiError(msg);
       } else {
         localStorage.setItem('LoginData', JSON.stringify(data));
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
        
         if (onLoginSuccess) onLoginSuccess();
@@ -220,6 +222,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
 
       if (regData.status === true) {
         localStorage.setItem('LoginData', JSON.stringify(regData));
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
        
         if (onLoginSuccess) onLoginSuccess();
@@ -244,6 +247,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
 
       if (logData.status === true) {
         localStorage.setItem('LoginData', JSON.stringify(logData));
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
       
         if (onLoginSuccess) onLoginSuccess();

@@ -34,7 +34,7 @@ const VALID_ROUTES = [
   "/checkout",
 ];
 
-function callSplashApi() {
+export function callSplashApi() {
   const loginData = localStorage.getItem("LoginData");
   const parsedLogin = loginData ? JSON.parse(loginData) : null;
   const payload = parsedLogin?.data?.token ? {} : { device_id: getDeviceId() };
