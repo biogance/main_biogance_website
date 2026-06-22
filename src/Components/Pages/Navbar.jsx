@@ -29,7 +29,7 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
   );
 };
 
-export default function Navbar({ transparent = false, announcementVisible = false, isVideoVisible = true }) {
+export default function Navbar({ transparent = false, announcementVisible = false, isVideoVisible = true, bgWhite = false }) {
   const { t, i18n } = useTranslation('navbar');
   const pathname = usePathname();
   const router = useRouter();
@@ -399,11 +399,11 @@ useEffect(() => {
 
       <nav
         className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-150 ${
-          isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible
+          isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible || bgWhite
             ? "bg-white shadow-sm"
             : "bg-transparent"
         } ${
-          (isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible) && !isProductsOpen
+          (isNavHovered || isProductsOpen || isMobileMenuOpen || !isVideoVisible || bgWhite) && !isProductsOpen
             ? "border-b border-gray-100"
             : "border-b border-transparent"
                                                               }`}

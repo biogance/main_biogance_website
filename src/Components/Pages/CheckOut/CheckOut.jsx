@@ -7,15 +7,40 @@ import { RiDeleteBinLine } from "react-icons/ri";
 import { FaRegUser } from "react-icons/fa";
 import LoginModal from "../Onboarding/Login";
 import toast from "react-hot-toast";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
 
-// ⚠️ Adjust these three import paths to match where Checkout.jsx actually
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+// Adjust these three import paths to match where Checkout.jsx actually
 // lives in your project — they're copied as-is from ModalAddToCart.jsx.
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import ModalPickLocation from "./ModalPickLocation";
+function usePaymentVisibility() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
 
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const ios = /iPhone|iPad|iPod/i.test(ua);
+    const android = /Android/i.test(ua);
+    const mobile = window.innerWidth < 1024;
+
+    setIsMobile(mobile);
+    setIsIOS(ios);
+    setIsAndroid(android);
+
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return { isMobile, isIOS, isAndroid };
+}
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 const getErrorMsg = (data) => {
@@ -827,39 +852,12 @@ function AppleIcon({ color = "#111", size = 14 }) {
   );
 }
 
-function CardNumberField({ value, onChange }) {
-  const [focused, setFocused] = useState(false);
-  const floated = focused || value !== "";
-  return (
-    <div style={{ position: "relative", padding: floated ? "18px 14px 6px" : "14px 14px", transition: "padding 0.15s" }}>
-      <label style={{
-        position: "absolute", left: "52px",
-        top: floated ? "6px" : "50%",
-        transform: floated ? "none" : "translateY(-50%)",
-        fontSize: floated ? "10px" : "14px",
-        color: focused ? "#111" : "#999",
-        transition: "all 0.15s ease", pointerEvents: "none", fontFamily: FONT, lineHeight: 1,
-      }}>
-        Card number
-      </label>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <svg width="34" height="22" viewBox="0 0 38 24" style={{ border: "1px solid #e5e5e5", borderRadius: "3px", flexShrink: 0 }}>
-          <rect width="38" height="24" fill="#fff" rx="3" />
-          <circle cx="14" cy="12" r="7" fill="#eb001b" opacity="0.9" />
-          <circle cx="24" cy="12" r="7" fill="#f79e1b" opacity="0.9" />
-          <ellipse cx="19" cy="12" rx="3" ry="7" fill="#ff5f00" opacity="0.85" />
-        </svg>
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          style={{ flex: 1, border: "none", outline: "none", fontSize: "14px", color: "#111", background: "transparent", fontFamily: FONT, padding: 0 }}
-        />
-      </div>
-    </div>
-  );
-}
+const stripeElementStyle = {
+  style: {
+    base: { fontSize: "14px", color: "#111", "::placeholder": { color: "#aaa" }, fontFamily: FONT },
+    invalid: { color: "#e02424" },
+  },
+};
 
 /* ────────────────────────────────────────────────────────────────────────
    Layout building blocks (unchanged)
@@ -891,122 +889,57 @@ function Section({ title, children }) {
 }
 
 function ExpressPaymentBar({ selectedMethod, onSelect }) {
+  const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
+
   const baseBtn = {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "6px",
-    width:"50px",
-     height:"50px",
-    padding: "13px 10px",
-  backgroundColor:"#fff",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: 700,
-    fontFamily: FONT,
-    color: "#111",
+    flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+    gap: "6px", width: "50px", height: "50px", padding: "13px 10px",
+    backgroundColor: "#fff", cursor: "pointer", fontSize: "13px",
+    fontWeight: 700, fontFamily: FONT, color: "#111",
     transition: "border-color 0.2s, background 0.2s",
   };
 
+  const btnBorder = (method) => ({
+    border: selectedMethod === method ? "1px solid #aaa" : "1px solid #f3f3f3",
+  });
+
+  const hoverHandlers = (method) => ({
+    onMouseEnter: (e) => { if (selectedMethod !== method) e.currentTarget.style.borderColor = "#aaa"; },
+    onMouseLeave: (e) => { if (selectedMethod !== method) e.currentTarget.style.borderColor = "#e5e5e5"; },
+  });
+
   return (
-    <div
-      style={{
-        position: "relative",
-        backgroundColor: "#f3f3f3",
-        padding: "26px 30px 24px",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: "9px",
-          left: "8%",
-          transform: "translateX(-50%)",
-          margin: "10px",
-          padding: "0 12px",
-          fontSize: "17px",
-          fontWeight: 700,
-          color: "#111",
-          fontFamily: FONT,
-          whiteSpace: "nowrap",
-        }}
-      >
+    <div style={{ position: "relative", backgroundColor: "#f3f3f3", padding: "26px 30px 24px" }}>
+      <div style={{
+        position: "absolute", top: "9px", left: "8%", transform: "translateX(-50%)",
+        margin: "10px", padding: "0 12px", fontSize: "17px", fontWeight: 700,
+        color: "#111", fontFamily: FONT, whiteSpace: "nowrap",
+      }}>
         Payment
       </div>
       <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
-        <button
-          onClick={() => onSelect("card")}
-          style={{
-            ...baseBtn,
-            border: selectedMethod === "card" ? "1px solid #aaa" : "1px solid #f3f3f3",
-          }}
-          onMouseEnter={(e) => {
-            if (selectedMethod !== "card") e.currentTarget.style.borderColor = "#aaa";
-          }}
-          onMouseLeave={(e) => {
-            if (selectedMethod !== "card") e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
-        >
-         <img src="visa.svg" alt=""style={{width:"120px",  height:"90px"}} />
+
+        <button onClick={() => onSelect("card")} style={{ ...baseBtn, ...btnBorder("card") }} {...hoverHandlers("card")}>
+          <img src="visa.svg" alt="" style={{ width: "120px", height: "90px" }} />
         </button>
-        <button
-          onClick={() => onSelect("googlepay")}
-          style={{
-            ...baseBtn,
-            border: selectedMethod === "googlepay" ? "1px solid #aaa" : "1px solid #f3f3f3",
-          }}
-          onMouseEnter={(e) => {
-            if (selectedMethod !== "googlepay") e.currentTarget.style.borderColor = "#aaa";
-          }}
-          onMouseLeave={(e) => {
-            if (selectedMethod !== "googlepay") e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
-        >
-        <img src="pay-pal.svg" alt="" style={{width:"120px",  height:"100px"}} />
+
+        <button onClick={() => onSelect("paypal")} style={{ ...baseBtn, color: "#003087", width: "50px", height: "50px", ...btnBorder("paypal") }} {...hoverHandlers("paypal")}>
+           <img src="google-pay.svg" alt="" style={{ width: "100px", height: "100px" }} />
         </button>
-        <button
-          onClick={() => onSelect("applepay")}
-          style={{
-            ...baseBtn,
-            border: selectedMethod === "applepay" ? "1px solid #aaa" : "1px solid #f3f3f3",
-          }}
-          onMouseEnter={(e) => {
-            if (selectedMethod !== "applepay") e.currentTarget.style.borderColor = "#aaa";
-          }}
-          onMouseLeave={(e) => {
-            if (selectedMethod !== "applepay") e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
-        >
-         <img src="apple-pay.svg" alt="" style={{width:"120px", height:"80px"}} />
-        </button>
-        <button
-          onClick={() => onSelect("paypal")}
-          style={{
-            ...baseBtn,
-            color: "#003087",
-            width:"50px",
-            height:"50px",
-            border: selectedMethod === "paypal" ? "1px solid #aaa" : "1px solid #f3f3f3",
-          }}
-          onMouseEnter={(e) => {
-            if (selectedMethod !== "paypal") e.currentTarget.style.borderColor = "#aaa";
-          }}
-          onMouseLeave={(e) => {
-            if (selectedMethod !== "paypal") e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
-        >
-         <img src="google-pay.svg" alt="" style={{width:"100px",  height:"100px"}} />
-        </button>
+
+        {isMobile && isAndroid && (
+          <button onClick={() => onSelect("googlepay")} style={{ ...baseBtn, ...btnBorder("googlepay") }} {...hoverHandlers("googlepay")}>
+          
+                 <img src="pay-pal.svg" alt="" style={{ width: "120px", height: "100px" }} />
+          </button>
+         )} 
+
+        {isMobile && isIOS && (
+          <button onClick={() => onSelect("applepay")} style={{ ...baseBtn, ...btnBorder("applepay") }} {...hoverHandlers("applepay")}>
+            <img src="apple-pay.svg" alt="" style={{ width: "120px", height: "80px" }} />
+          </button>
+        )}
+
       </div>
     </div>
   );
@@ -1266,6 +1199,7 @@ function OrderSummary({
   subtotal,
   totalUnits,
   isRemoving,
+  onSummaryStateChange,
 }) {
   const router = useRouter();
   const [currentShipping, setCurrentShipping] = useState(0);
@@ -1570,6 +1504,20 @@ function OrderSummary({
   const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
   const isFreeDelivery = deliveryCost === 0;
   const total = Math.max(0, subtotal + deliveryCost - totalDiscount);
+
+  // Expose summary state to parent Checkout
+  useEffect(() => {
+    if (onSummaryStateChange) {
+      onSummaryStateChange({
+        deliveryMethod,
+        selectedLocation,
+        deliveryCost,
+        total,
+        appliedPromo,
+        appliedVoucherCode: loggedVoucherApplied ? selectedPill : null,
+      });
+    }
+  }, [deliveryMethod, selectedLocation, deliveryCost, total, appliedPromo, loggedVoucherApplied, selectedPill]);
 
   // CHANGE 3: Guest Voucher Render — exact copy from ModalAddToCart ────
   const renderGuestVoucherContent = () => (
@@ -2325,11 +2273,19 @@ function OrderSummary({
   );
 }
 
+export default function CheckoutWithStripe(props) {
+  return (
+    <Elements stripe={stripePromise}>
+      <Checkout {...props} />
+    </Elements>
+  );
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    Checkout — main component
    ──────────────────────────────────────────────────────────────────────── */
 
-export default function Checkout({ cartItems = [] }) {
+function Checkout({ cartItems = [] }) {
   const router = useRouter();
   const paymentSectionRef = useRef(null);
 
@@ -2399,6 +2355,17 @@ export default function Checkout({ cartItems = [] }) {
       const cc = (d.data.country_code || "").replace("+", "");
       const found = defaultCountries.find(c => parseCountry(c).dialCode === cc);
       if (found) setCountryIso2(parseCountry(found).iso2);
+    } else {
+      // Not logged in — ensure fields are empty
+      setEmail("");
+      setLastName("");
+      setPhone("");
+      setCountryIso2("");
+      setStreet("");
+      setPostcode("");
+      setCity("");
+      setRegion("");
+      setDeliveryCountryIso2("");
     }
     prefillFromSplash();
   }, []);
@@ -2441,9 +2408,22 @@ export default function Checkout({ cartItems = [] }) {
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+
+  // Summary state lifted from OrderSummary
+  const [summaryState, setSummaryState] = useState({
+    deliveryMethod: "home",
+    selectedLocation: null,
+    deliveryCost: 0,
+    total: 0,
+    appliedPromo: null,
+    appliedVoucherCode: null,
+  });
+
+const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
+  const stripe = useStripe();
+  const elements = useElements();
 
   useEffect(() => {
     if (useDifferentBilling) {
@@ -2463,10 +2443,181 @@ export default function Checkout({ cartItems = [] }) {
 
   const handleExpressSelect = (method) => {
     setPaymentMethod(method);
-    paymentSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handlePlaceOrder = async () => {
+    if (paymentMethod !== "card" || !stripe || !elements) return;
+    setIsSubmitting(true);
+    setPaymentError(null);
+    try {
+      let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      let token = loginData?.data?.token;
+
+      // Step 0: Guest user — verify/create account before payment
+      if (!token) {
+        const dialCode = (() => {
+          const c = defaultCountries.find(c => parseCountry(c).iso2 === (countryIso2 || "fr"));
+          return c ? `+${parseCountry(c).dialCode}` : "";
+        })();
+        const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: lastName,
+            email,
+            country_code: dialCode,
+            phone: dialCode,
+            phone_number: phone,
+            device: "web",
+            device_id: "123",
+            fcm_token: "web123",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
+        });
+        const verifyData = await verifyRes.json();
+
+        if (!verifyData.status) {
+          // Show login modal, stop payment
+          setIsSubmitting(false);
+          setIsLoginModalOpen(true);
+          return;
+        }
+
+        // Save LoginData so user is logged in
+        localStorage.setItem("LoginData", JSON.stringify(verifyData));
+        window.dispatchEvent(new Event("loginStateChange"));
+        loginData = verifyData;
+        token = verifyData?.data?.token;
+        setIsLoggedIn(true);
+      }
+
+      // Step 1: Create Stripe PaymentMethod
+      const cardEl = elements.getElement(CardNumberElement);
+      const { error: methodError, paymentMethod: pm } = await stripe.createPaymentMethod({
+        type: "card",
+        card: cardEl,
+        billing_details: { name: lastName, email },
+      });
+      if (methodError) {
+        setPaymentError(methodError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 2: Create Payment Intent
+      const intentRes = await fetch(`${BASE_URL}/user/payment/create/intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ amount: Math.round(summaryState.total * 100), payment_method: "card" }),
+      });
+      const intentData = await intentRes.json();
+      if (!intentData.status) {
+        setPaymentError(getErrorMsg(intentData) || "Failed to create payment intent.");
+        setIsSubmitting(false);
+        return;
+      }
+      const clientSecret = intentData.data?.client_secret;
+      if (!clientSecret) {
+        setPaymentError("Invalid payment intent response.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 3: Confirm Card Payment
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: pm.id,
+      });
+      if (confirmError) {
+        setPaymentError(confirmError.message);
+        setIsSubmitting(false);
+        return;
+      }
+      if (paymentIntent.status !== "succeeded") {
+        setPaymentError("Payment was not completed. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 4: Place Order API
+      const dialCode = (() => {
+        const c = defaultCountries.find(c => parseCountry(c).iso2 === (countryIso2 || "fr"));
+        return c ? `+${parseCountry(c).dialCode}` : "";
+      })();
+      const deliveryCountryName = (() => {
+        const c = defaultCountries.find(c => parseCountry(c).iso2 === deliveryCountryIso2);
+        return c ? parseCountry(c).name : deliveryCountryIso2;
+      })();
+      const billingCountryName = (() => {
+        const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
+        const c = defaultCountries.find(c => parseCountry(c).iso2 === iso);
+        return c ? parseCountry(c).name : iso;
+      })();
+      const cartIds = items.map(i => i.id).join(",");
+      const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
+      const deliveryCostValue = summaryState.deliveryCost === 0 ? 0 : summaryState.deliveryCost;
+
+      const orderBody = {
+        full_name: lastName,
+        email,
+        country_code: dialCode,
+        phone: dialCode,
+        phone_number: phone,
+        delivery_address_full: street,
+        delivery_address_country: deliveryCountryName,
+        delivery_address_city: city,
+        delivery_address_postal_code: postcode,
+        delivery_address_type: "null",
+        invoice_address_full: useDifferentBilling ? billingStreet : street,
+        invoice_address_country: billingCountryName,
+        invoice_address_city: useDifferentBilling ? billingCity : city,
+        invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
+        invoice_address_type: "null",
+        is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
+        payment_method: "card",
+        payment_status: "paid",
+        taxAmount: 0,
+        shippingCost: deliveryCostValue,
+        totalAmount: summaryState.total,
+        subtotal,
+        payment_id: paymentIntent.id,
+        voucher: summaryState.appliedVoucherCode || "",
+        promo_code: summaryState.appliedPromo?.code || "",
+        cartIds,
+        is_pickup: isPickup,
+        delivery_cost: deliveryCostValue,
+        ...(isPickup === 1 && summaryState.selectedLocation ? {
+          pickup_name: summaryState.selectedLocation.name,
+          pickup_address: summaryState.selectedLocation.address,
+        } : {}),
+      };
+
+      const orderRes = await fetch(`${BASE_URL}/user/order/place`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(orderBody),
+      });
+      const orderData = await orderRes.json();
+      if (!orderData.status) {
+        setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
+        setIsSubmitting(false);
+        toast.error(getErrorMsg(orderData) || "Order placement failed.")
+        return;
+      }
+
+    
+      router.push("/track-order");
+    } catch (err) {
+      console.error(err);
+      setPaymentError("An unexpected error occurred.");
+    }
+    setIsSubmitting(false);
   };
 
   // Cart items — localStorage se real data lo, fallback dummy
@@ -2866,28 +3017,43 @@ export default function Checkout({ cartItems = [] }) {
                     right={<CardBrandIcons />}
                   >
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "4px" }}>
-                      <div style={{ border: "1px solid #ddd", borderRadius: "3px", background: "#fff", overflow: "hidden" }}>
-                        <CardNumberField value={cardNumber} onChange={setCardNumber} />
+                      <div style={{ border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
+                        <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>Card number</label>
+                        <CardNumberElement options={stripeElementStyle} />
                       </div>
                       <div style={{ display: "flex", gap: "10px" }}>
-                        <FieldBox label="Expiration date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ flex: 1 }} />
-                        <FieldBox label="CVC/CVV" value={cvc} onChange={(e) => setCvc(e.target.value)} style={{ flex: 1 }} />
+                        <div style={{ flex: 1, border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
+                          <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>Expiration date</label>
+                          <CardExpiryElement options={stripeElementStyle} />
+                        </div>
+                        <div style={{ flex: 1, border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
+                          <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>CVC/CVV</label>
+                          <CardCvcElement options={stripeElementStyle} />
+                        </div>
                       </div>
+                      {paymentError && (
+                        <p style={{ margin: 0, fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
+                      )}
                     </div>
                   </PaymentMethodRow>
 
-                  <PaymentMethodRow
-                    active={paymentMethod === "googlepay"}
-                    onSelect={() => setPaymentMethod("googlepay")}
-                    label="Google Pay"
-                    right={<GooglePayBadge />}
-                  />
-                  <PaymentMethodRow
-                    active={paymentMethod === "applepay"}
-                    onSelect={() => setPaymentMethod("applepay")}
-                    label="Apple Pay"
-                    right={<ApplePayBadge />}
-                  />
+                {isMobile && isAndroid && (
+  <PaymentMethodRow
+    active={paymentMethod === "googlepay"}
+    onSelect={() => setPaymentMethod("googlepay")}
+    label="Google Pay"
+    right={<GooglePayBadge />}
+  />
+)}
+
+{isMobile && isIOS && (
+  <PaymentMethodRow
+    active={paymentMethod === "applepay"}
+    onSelect={() => setPaymentMethod("applepay")}
+    label="Apple Pay"
+    right={<ApplePayBadge />}
+  />
+)}
                   <PaymentMethodRow
                     last
                     active={paymentMethod === "paypal"}
@@ -2938,13 +3104,35 @@ export default function Checkout({ cartItems = [] }) {
             </div>
 
             {/* Left: Place Order button */}
-            <button
-              style={placeOrderBtnStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
-            >
-              Confirm Order
-            </button>
+          <button
+  onClick={handlePlaceOrder}
+  disabled={isSubmitting}
+  style={{
+    ...placeOrderBtnStyle,
+    opacity: isSubmitting ? 0.75 : 1,
+    cursor: isSubmitting ? "not-allowed" : "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+  }}
+  onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
+  onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
+>
+  {isSubmitting ? (
+    <>
+      <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
+      <span style={{
+        display: "inline-block", width: "14px", height: "14px",
+        border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
+        borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
+      }} />
+      Processing…
+    </>
+  ) : (
+    `Order — ${summaryState.total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
+  )}
+</button>
           </div>
 
           <div
@@ -2968,29 +3156,48 @@ export default function Checkout({ cartItems = [] }) {
               subtotal={subtotal}
               totalUnits={totalUnits}
               isRemoving={isRemoving}
+              onSummaryStateChange={setSummaryState}
             />
-            <button
-              style={{
-                flexShrink: 0,
-                width: "100%",
-                padding: "13px",
-                backgroundColor: "#111",
-                color: "#fff",
-                border: "none",
-                fontSize: "11.5px",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                cursor: "pointer",
-                borderRadius: "2px",
-                fontFamily: FONT,
-                transition: "background 0.2s",
-                textTransform: "uppercase",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#111")}
-            >
-              Confirm Order
-            </button>
+           <button
+  onClick={handlePlaceOrder}
+  disabled={isSubmitting}
+  style={{
+    flexShrink: 0,
+    width: "100%",
+    padding: "13px",
+    backgroundColor: "#111",
+    color: "#fff",
+    border: "none",
+    fontSize: "11.5px",
+    fontWeight: 700,
+    letterSpacing: "0.1em",
+    cursor: isSubmitting ? "not-allowed" : "pointer",
+    borderRadius: "2px",
+    fontFamily: FONT,
+    transition: "background 0.2s",
+    textTransform: "uppercase",
+    opacity: isSubmitting ? 0.75 : 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+  }}
+  onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
+  onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
+>
+  {isSubmitting ? (
+    <>
+      <span style={{
+        display: "inline-block", width: "13px", height: "13px",
+        border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
+        borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
+      }} />
+      Processing…
+    </>
+  ) : (
+    `Order — ${summaryState.total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
+  )}
+</button>
           </div>
         </div>
       </div>
