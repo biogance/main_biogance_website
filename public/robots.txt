@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /_next/static/
+Disallow: /api/
+
+Sitemap: https://website-dev.biogance.com/sitemap.xml
