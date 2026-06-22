@@ -29,8 +29,54 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on AWS Amplify
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project is configured for deployment on [AWS Amplify](https://aws.amazon.com/amplify/).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Prerequisites
+
+- Node.js 20 (specified in `.nvmrc`)
+- AWS account with Amplify access
+
+### Environment Variables
+
+Add the following environment variables in the Amplify Console under **Environment variables**:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API key |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | Firebase measurement ID |
+
+Optional variables:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_BASE_URL` | API base URL (defaults to `https://api.biogance.com/endpoint`) |
+| `NEXT_PUBLIC_MEDIA_URL` | Media/CDN base URL (defaults to `https://d18f57oyxifcsh.cloudfront.net/`) |
+
+See `.env.example` for a template.
+
+### Deployment Steps
+
+1. Push this repository to your Git provider (GitHub, GitLab, Bitbucket, etc.).
+2. In the [Amplify Console](https://console.aws.amazon.com/amplify/home), choose **Create new app**.
+3. Connect your repository and select the branch to deploy.
+4. Amplify will automatically detect `amplify.yml` and run:
+   - `npm ci`
+   - `npm run build`
+5. Once the build completes, Amplify will provide a deployment URL.
+
+### Build Configuration
+
+The build is configured in `amplify.yml`:
+
+- Uses Node.js 20
+- Runs `npm ci` during the pre-build phase
+- Runs `npm run build` during the build phase
+- Deploys the `.next` output directory
+- Caches `node_modules` and `.next/cache` for faster subsequent builds

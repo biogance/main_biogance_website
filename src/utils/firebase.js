@@ -11,9 +11,31 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-const appleProvider = new OAuthProvider('apple.com');
+let app;
+let authInstance;
+let googleProviderInstance;
+let appleProviderInstance;
 
-export { auth, googleProvider, appleProvider };
+function ensureInitialized() {
+  if (authInstance) return;
+
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  authInstance = getAuth(app);
+  googleProviderInstance = new GoogleAuthProvider();
+  appleProviderInstance = new OAuthProvider('apple.com');
+}
+
+export function getFirebaseAuth() {
+  ensureInitialized();
+  return authInstance;
+}
+
+export function getGoogleProvider() {
+  ensureInitialized();
+  return googleProviderInstance;
+}
+
+export function getAppleProvider() {
+  ensureInitialized();
+  return appleProviderInstance;
+}

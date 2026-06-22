@@ -14,6 +14,8 @@ const nextConfig = {
       },
     ],
   },
+  // AWS Amplify expects the Next.js build output in `.next`
+  distDir: '.next',
 };
 
 export default nextConfig;
