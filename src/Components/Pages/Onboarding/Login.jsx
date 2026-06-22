@@ -7,6 +7,7 @@ import Forgotpassword from './ForgetPassword';
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
+import { callSplashApi } from '../../PageLoader';
 import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
 import { auth, googleProvider, appleProvider } from '../../../utils/firebase';
@@ -150,6 +151,7 @@ useEffect(() => {
         } else {
           localStorage.removeItem('rememberMe');
         }
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();
       }
@@ -187,6 +189,7 @@ useEffect(() => {
 
       if (regData.status === true) {
         localStorage.setItem('LoginData', JSON.stringify(regData));
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();
         return;
@@ -209,6 +212,7 @@ useEffect(() => {
 
       if (logData.status === true) {
         localStorage.setItem('LoginData', JSON.stringify(logData));
+        callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();
       } else {
