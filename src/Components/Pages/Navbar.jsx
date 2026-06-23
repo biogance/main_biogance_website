@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiSearch, FiUser, FiHeart, FiChevronDown, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiChevronRight as FiArrowRight } from 'react-icons/fi';
 import { IoClose } from 'react-icons/io5';
 import { SearchModal } from './Modal/SearchModal';
 import OurProducts from './Products/OurProducts';
@@ -255,12 +255,12 @@ export default function Navbar({ transparent = false, announcementVisible = fals
     setIsNavHovered(true);
   };
 useEffect(() => {
-  document.body.style.overflow = textModalOpen ? "hidden" : "";
+  document.body.style.overflow = (textModalOpen || isMobileMenuOpen) ? "hidden" : "";
 
   return () => {
     document.body.style.overflow = "";
   };
-}, [textModalOpen]);
+}, [textModalOpen, isMobileMenuOpen]);
   const handleNavMouseLeave = () => {
     navLeaveTimer.current = setTimeout(() => {
       setIsNavHovered(false);
@@ -357,7 +357,7 @@ useEffect(() => {
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', flexShrink: 0 }}>
                 <button
                   onClick={() => setTextModal(prev => ({ ...prev, activeIndex: (prev.activeIndex - 1 + prev.htmlItems.length) % prev.htmlItems.length }))}
-                  style={{ position: 'absolute', left: '16px', background: 'none', border: '1px solid #fff', borderRadius: 0, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+                  style={{ position: 'absolute', left: '16px', background: 'none', border: '1px solid #fff', borderRadius: "50%", color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
                 >
                   <FiChevronLeft size={16} />
                 </button>
@@ -378,7 +378,7 @@ useEffect(() => {
                 </div>
                 <button
                   onClick={() => setTextModal(prev => ({ ...prev, activeIndex: (prev.activeIndex + 1) % prev.htmlItems.length }))}
-                  style={{ position: 'absolute', right: '16px', background: 'none', border: '1px solid #fff', borderRadius: 0, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+                  style={{ position: 'absolute', right: '16px', background: 'none', border: '1px solid #fff', borderRadius: "50%", color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
                 >
                   <FiChevronRight size={16} />
                 </button>
@@ -388,7 +388,7 @@ useEffect(() => {
         </>
       )}
 
-      {/* Backdrop overlay */}
+      {/* Backdrop overlay (desktop products mega-menu only) */}
       <div
         className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -462,8 +462,8 @@ useEffect(() => {
               ))}
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="flex items-center lg:hidden">
+            {/* Mobile Menu Button + Search - Mobile Only */}
+            <div className="flex items-center gap-1 lg:hidden">
               <button
                 onClick={handleMobileMenuToggle}
                 className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
@@ -474,6 +474,12 @@ useEffect(() => {
                   <FiMenu className="w-6 h-6 cursor-pointer" />
                 )}
               </button>
+              <button
+                onClick={() => setIsSearchModalOpen(true)}
+                className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
+              >
+                <FiSearch className="w-5 h-5 cursor-pointer" strokeWidth={2.0} />
+              </button>
             </div>
 
             {/* CENTER: Logo */}
@@ -482,7 +488,7 @@ useEffect(() => {
                 <ImageWithFallback
                   src={logoImage}
                   alt="Biogance Logo"
-                  className="h-10 sm:h-10"
+                  className="h-7 sm:h-10"
                 />
               </Link>
             </div>
@@ -590,8 +596,7 @@ useEffect(() => {
 
             {/* Mobile right icons */}
             <div className="flex lg:hidden items-center justify-end">
-              <button onClick={() => setIsCartOpen(true)} className="relative flex items-center gap-2 p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
-                <span className="uppercase">{t('cart') || 'Cart'}</span>
+              <button onClick={() => setIsCartOpen(true)} className="relative flex items-center p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer">
                 {cartCount > 0 ? (
                   <div style={{ height: '23px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px', borderRadius: '999px',  paddingTop:"0.7px", paddingRight:"0.2px", backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '23px', }}>
                     {cartCount}
@@ -604,129 +609,100 @@ useEffect(() => {
 
           </div>
         </div>
+      </nav>
 
-        {/* Mobile Menu */}
+      {/* Mobile Menu — full screen left slide-in modal */}
+      <>
+        {/* Backdrop */}
         <div
-          className={`lg:hidden bg-white border-t border-gray-200 transition-all duration-500 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          onClick={handleMobileMenuToggle}
+          className="lg:hidden"
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)',
+            zIndex: 9998,
+            opacity: isMobileMenuOpen ? 1 : 0,
+            pointerEvents: isMobileMenuOpen ? 'auto' : 'none',
+            transition: 'opacity 0.35s ease',
+          }}
+        />
+        {/* Slide-in panel */}
+        <div
+          className="lg:hidden"
+          style={{
+            position: 'fixed', top: 0, left: 0, bottom: 0, width: '100%',
+            backgroundColor: '#fff', zIndex: 9999, display: 'flex', flexDirection: 'column',
+            transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
         >
-          <div
-            className={`px-4 py-4 space-y-4 transform transition-all duration-500 ease-in-out ${
-              isMobileMenuOpen ? 'translate-y-0' : '-translate-y-6'
-            }`}
-          >
-            <div>
-              <button
-                onClick={toggleProductsModal}
-                className="flex items-center justify-between w-full py-2 text-[#1C1C1C] font-[400] hover:bg-gray-50 px-2 transition-all duration-200"
-              >
-                <div className="flex items-center space-x-2">
-                  <img src="/Menu.svg" className="w-5 h-5" alt="Menu" />
-                  <span>{t('ourProducts')}</span>
-                </div>
-                <FiChevronDown
-                  className={`w-4 h-4 transition-transform duration-400 ease-in-out ${
-                    isProductsOpen ? 'rotate-180' : 'rotate-0'
-                  }`}
-                />
-              </button>
+          {/* Header with close icon top-right */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '16px 20px', flexShrink: 0, height: '60px' }}>
+            <button
+              onClick={handleMobileMenuToggle}
+              className="text-[#1C1C1C] cursor-pointer transition-all duration-300 hover:rotate-90"
+              style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center' }}
+            >
+              <IoClose size={26} />
+            </button>
+          </div>
 
-              <div
-                className={`overflow-hidden transition-all duration-400 ease-in-out ${
-                  isProductsOpen ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
-                }`}
-              >
-                <div
-                  className={`pl-7 pt-2 space-y-2 transform transition-all duration-400 ease-in-out ${
-                    isProductsOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
-                  }`}
+          {/* Scrollable content */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {homeCategories.map((cat) => {
+              const label = i18n.language && i18n.language.startsWith('fr')
+                ? (cat.french_name || cat.name)
+                : cat.name;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    handleMobileMenuToggle();
+                    toggleProductsModal();
+                  }}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left border-b border-gray-100 active:bg-gray-50 transition-colors duration-150"
+                  style={{ background: 'none', border: 'none', borderBottom: '1px solid #f0f0f0' }}
                 >
-                  <img src="/france.svg" alt="France" className="w-8 h-6" />
-                </div>
-              </div>
-            </div>
+                  <span className="text-[15px] font-semibold text-[#1C1C1C]">{label}</span>
+                  <FiChevronRight className="w-4 h-4 text-[#1C1C1C] flex-shrink-0" />
+                </button>
+              );
+            })}
 
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.key}
                 href={link.href}
-                className="block py-2 text-[#1C1C1C] font-[400] hover:text-gray-600 hover:bg-gray-50 px-2 transition-all duration-200"
+                onClick={handleMobileMenuToggle}
+                className="w-full flex items-center justify-between px-5 py-4 text-left border-b border-gray-100 active:bg-gray-50 transition-colors duration-150"
               >
-                {link.text}
-              </a>
+                <span className="text-[15px] font-semibold text-[#1C1C1C]">{link.text}</span>
+                <FiChevronRight className="w-4 h-4 text-[#1C1C1C] flex-shrink-0" />
+              </Link>
             ))}
 
-            <div className="pt-4 border-t border-gray-200 flex items-center space-x-3">
-              {/* Language Dropdown - Mobile */}
-              <div className="relative" ref={mobileLangRef}>
-                <button
-                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center gap-1 p-2 cursor-pointer text-[14px] border border-[#E8E8E8] font-[400] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
-                >
-                  <span>{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
-                  <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
-                    isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
-                  }`} />
-                </button>
-
-                {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-0 bg-white text-black shadow-lg overflow-hidden z-50 min-w-[140px]">
-                    {languages.map((lang) => {
-                      const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
-                      return (
-                        <button
-                          key={lang.code}
-                          onClick={() => changeLanguage(lang.code)}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#111'; e.currentTarget.style.color = '#fff'; }}
-                          onMouseLeave={(e) => {
-                            if (isActive) { e.currentTarget.style.backgroundColor = '#f3f3f3'; e.currentTarget.style.color = '#111'; }
-                            else { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.color = '#111'; }
-                          }}
-                          style={{
-                            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-                            padding: '9px 14px', fontSize: '13px', cursor: 'pointer',
-                            backgroundColor: isActive ? '#f3f3f3' : '#fff',
-                            color: '#111', fontWeight: isActive ? 600 : 400,
-                            border: 'none', transition: 'background-color 0.15s, color 0.15s',
-                            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          }}
-                        >
-                          <span>{lang.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
+            {isLoggedIn ? (
+              <Link
+                href="/my-account"
+                onClick={handleMobileMenuToggle}
+                className="w-full flex items-center px-5 py-4 text-left"
               >
-                <FiSearch className="w-5 h-5" strokeWidth={2.5} />
-              </button>
-
-              {isLoggedIn ? (
-                <Link href="/my-account" className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200">
-                  <FiUser className="w-5 h-5" />
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="p-2 border border-[#E8E8E8] text-[#1C1C1C] hover:bg-gray-50 transition-all duration-200"
-                >
-                  <FiUser className="w-5 h-5" />
-                </button>
-              )}
-
-              <Link href="/wishlist" className="p-2 border border-[#E8E8E8] text-[#1C11C1C] hover:bg-gray-50 transition-all duration-200">
-                <FiHeart className="w-5 h-5" />
+                <span className="text-[15px] font-semibold text-[#1C1C1C] uppercase">{t('profile') || 'Profile'}</span>
               </Link>
-            </div>
+            ) : (
+              <button
+                onClick={() => {
+                  handleMobileMenuToggle();
+                  setIsLoginModalOpen(true);
+                }}
+                className="w-full flex items-center px-5 py-4 text-left"
+                style={{ background: 'none', border: 'none' }}
+              >
+                <span className="text-[15px] font-semibold text-[#1C1C1C] uppercase">{t('login') || 'Login'}</span>
+              </button>
+            )}
           </div>
         </div>
-      </nav>
+      </>
 
       <ModalAddToCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} product={cartProduct || {}} />
       <ModalQuickView

@@ -7,7 +7,7 @@ import { MdWaves } from "react-icons/md";
 import { MEDIA_URL } from "@/Components/API/API";
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200  animate-pulse ${className}`} />
 );
 
 export default function ProductExpertAdvice({ apiProduct }) {
@@ -114,7 +114,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
                 />
 
                 {!imageLoading && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out bg-white rounded-md px-5 py-4 shadow-lg flex items-center justify-between gap-3 z-20">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out bg-white  px-5 py-4 shadow-lg flex items-center justify-between gap-3 z-20">
                     <div className="flex items-center gap-3">
                       <MdWaves size={20} className="bg-gray-200 text-[#808080] p-1" />
                       <span className="text-[14px] text-[#1C1C1C] font-medium line-clamp-1">
@@ -162,7 +162,7 @@ export default function ProductExpertAdvice({ apiProduct }) {
                 {remainingBlogs.length > 0 && (
                   <button
                     onClick={() => openModal()}
-                    className="mt-8 w-fit bg-[#1C1C1C] text-white text-[13px] font-medium px-6 py-2.5 rounded-md hover:bg-[#333] transition-colors cursor-pointer"
+                    className="mt-8 w-fit bg-[#1C1C1C] text-white text-[13px] font-medium px-6 py-2.5  hover:bg-[#333] transition-colors cursor-pointer"
                   >
                     {t("seeMore")}
                   </button>
@@ -175,9 +175,9 @@ export default function ProductExpertAdvice({ apiProduct }) {
 
       {isLoaded && isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white w-full max-w-[560px]  overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
 
-            {/* ✅ Sirf yeh header fixed rahega - shrink-0 */}
+            {/* Sirf yeh header fixed rahega - shrink-0 */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
               <h3 className="text-[20px] font-bold text-[#1C1C1C]">{t("rating")}</h3>
               <button
@@ -188,11 +188,11 @@ export default function ProductExpertAdvice({ apiProduct }) {
               </button>
             </div>
 
-            {/* ✅ Banner + blogs dono ab scroll area ke andar hain */}
+            {/* Banner + blogs dono ab scroll area ke andar hain */}
             <div className="px-4 pb-6 flex flex-col overflow-y-auto">
 
               {/* Banner - scroll hoga header ke saath nahi */}
-              <div className="mb-4 bg-[#FBF7EE] rounded-xl px-5 py-3 flex items-center justify-between">
+              <div className="mb-4 bg-[#FBF7EE]  px-5 py-3 flex items-center justify-between">
                 <p className="text-[14px] text-[#1C1C1C] leading-snug max-w-[55%]">
                   {t("getReliableAdvice")}
                 </p>

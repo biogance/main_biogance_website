@@ -7,7 +7,7 @@ import { MEDIA_URL } from "@/Components/API/API";
 const isVideoUrl = (url) => /\.(mp4|webm|ogg|mov)$/i.test(url);
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200  animate-pulse ${className}`} />
 );
 
 export default function AboutProduct({ apiProduct }) {

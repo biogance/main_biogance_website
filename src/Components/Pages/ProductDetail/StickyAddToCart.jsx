@@ -68,7 +68,7 @@ export default function StickyAddToCart({
         {/* RIGHT: Quantity + Add to Cart */}
         <div className="w-full flex items-center justify-between gap-2 sm:gap-3 lg:flex-1 lg:justify-end">
           {/* Quantity */}
-          <div className="flex items-center border border-[#E8E8E8] rounded-md overflow-hidden shrink-0">
+          <div className="flex items-center border border-[#E8E8E8] overflow-hidden shrink-0">
             <button
               onClick={() => onQuantityChange((q) => Math.max(1, q - 1))}
               disabled={quantity === 1}
@@ -95,7 +95,7 @@ export default function StickyAddToCart({
           <button
             onClick={handleClick}
             disabled={loading}
-            className="flex-1 lg:flex-none bg-[#1C1C1C] text-white text-[11px] sm:text-[12px] lg:text-[13px] font-semibold px-3 sm:px-4 lg:px-6 h-[36px] sm:h-[38px] rounded-lg hover:bg-[#333] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center"
+            className="flex-1 lg:flex-none bg-[#1C1C1C] text-white text-[11px] sm:text-[12px] lg:text-[13px] font-semibold px-3 sm:px-4 lg:px-6 h-[36px] sm:h-[38px] hover:bg-[#333] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center"
           >
             {loading ? (
               <>

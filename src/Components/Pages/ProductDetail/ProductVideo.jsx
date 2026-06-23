@@ -5,7 +5,7 @@ import { RiDoubleQuotesL, RiDoubleQuotesR } from "react-icons/ri";
 
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200 animate-pulse ${className}`} />
 );
 
 const getYouTubeEmbedUrl = (url) => {
