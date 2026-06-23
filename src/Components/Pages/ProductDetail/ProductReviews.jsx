@@ -8,7 +8,7 @@ import ProductLoadMore from "./ProductLoadMore";
 import { MEDIA_URL } from "@/Components/API/API";
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200  animate-pulse ${className}`} />
 );
 
 const getReviews = (t) => [
@@ -146,7 +146,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
             {!isLoading && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] rounded-lg px-4 py-2 cursor-pointer"
+                className="flex items-center gap-1.5 bg-[#F3F3F3] text-sm font-medium text-[#1C1C1C] px-4 py-2 cursor-pointer"
               >
                 <span className="text-lg leading-none">+</span> {t("addReview")}
               </button>
@@ -200,7 +200,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={() => setIsLoadMoreOpen(true)}
-                    className="px-8 py-2.5 bg-black border border-[#C0C0C0] rounded-lg text-sm font-medium text-white cursor-pointer"
+                    className="px-8 py-2.5 bg-black border border-[#C0C0C0]  text-sm font-medium text-white cursor-pointer"
                   >
                     {t("loadMore")}
                   </button>

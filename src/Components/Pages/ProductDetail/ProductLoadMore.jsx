@@ -149,7 +149,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
           border-left-color: transparent;
           width: 36px;
           height: 36px;
-          border-radius: 50%;
+
           animation: spin89345 1s linear infinite;
         }
         @keyframes spin89345 {
@@ -224,7 +224,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
           .plm-shell {
             width: 100%;
             max-height: 100dvh;
-            border-radius: 16px 16px 0 0;
+           
             margin-bottom: 0;
           }
           .plm-backdrop {
@@ -280,7 +280,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
           onClick={(e) => e.stopPropagation()}
           style={{
             background: "#fff",
-            borderRadius: 20,
+           
             boxShadow: "0 20px 80px rgba(0,0,0,0.25)",
             display: "flex",
             position: "relative",
@@ -403,7 +403,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               <div
                 style={{
                   background: "#E1E1E1",
-                  borderRadius: 12,
+               
                   height: 220,
                   overflow: "hidden",
                   position: "relative",
@@ -419,7 +419,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               <div
                 style={{
                   border: "1px solid #E8E8E8",
-                  borderRadius: 14,
+                
                   padding: "16px 18px 18px",
                 }}
               >
@@ -553,7 +553,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
             <div
               style={{
                 border: "1px solid #E8E8E8",
-                borderRadius: 14,
+              
                 overflow: "hidden",
                 background: "#fff",
               }}
@@ -669,7 +669,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
                 background: "#1C1C1C",
                 color: "#fff",
                 border: "none",
-                borderRadius: 8,
+           
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: "pointer",

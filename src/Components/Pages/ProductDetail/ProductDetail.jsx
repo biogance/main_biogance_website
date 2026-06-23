@@ -85,7 +85,7 @@ const formatProductForCard = (product) => {
 };
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200 animate-pulse ${className}`} />
 );
 
 export default function ProductDetail() {
@@ -122,6 +122,7 @@ export default function ProductDetail() {
   const [isFetchingProduct, setIsFetchingProduct] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartBtnLoading, setCartBtnLoading] = useState(false);
+  const [navBgWhite, setNavBgWhite] = useState(false);
 
   const handleOpenCart = async () => {
     if (cartBtnLoading) return;
@@ -336,6 +337,17 @@ export default function ProductDetail() {
     return () => window.removeEventListener("scroll", check);
   });
 
+  // ─── First section bottom touch → navbar bg white ────────────────────────────
+  useEffect(() => {
+    if (!firstSectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setNavBgWhite(!entry.isIntersecting),
+      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
+    );
+    observer.observe(firstSectionRef.current);
+    return () => observer.disconnect();
+  }, [apiProduct]);
+
   // ─── When any modal opens → force navbar non-transparent ────────────────────
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -464,7 +476,7 @@ export default function ProductDetail() {
         }}
       />
 
-      <Navbar transparent={isTransparent} />
+      <Navbar transparent={isTransparent} bgWhite={navBgWhite} />
 
       <div
         ref={firstSectionRef}
@@ -765,7 +777,7 @@ export default function ProductDetail() {
                         <button
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
-                          className={`px-5 py-2 cursor-pointer rounded-xl text-sm font-medium border ${
+                          className={`px-5 py-2 cursor-pointer  text-sm font-medium border ${
                             selectedVolume === size
                               ? "bg-black border-gray-800 text-white ring-1 ring-black"
                               : "bg-white text-[#1C1C1C] border-[#E8E8E8] hover:bg-gray-50"
@@ -791,7 +803,7 @@ export default function ProductDetail() {
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           title={color}
-                          className={`px-5 py-2 cursor-pointer rounded-lg text-sm font-medium border transition-all duration-200 ${
+                          className={`px-5 py-2 cursor-pointer  text-sm font-medium border transition-all duration-200 ${
                             selectedColor === color
                               ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
                               : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
@@ -810,11 +822,11 @@ export default function ProductDetail() {
                   <p className="text-md font-semibold text-[#1C1C1C] whitespace-nowrap">
                     {t("quantity")}
                   </p>
-                  <div className="flex items-center gap-2 border border-[#E8E8E8] rounded-md">
+                  <div className="flex items-center gap-2 border border-[#E8E8E8]">
                     <button
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity === 1}
-                      className={`w-10 h-10 rounded-md border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
+                      className={`w-10 h-10 border border-[#E8E8E8] bg-[#f7f6f7] flex items-center justify-center transition-all duration-200 text-lg font-medium ${
                         quantity === 1
                           ? "cursor-not-allowed text-[#aaa]"
                           : "cursor-pointer hover:bg-[#e6e6e6] text-[#1C1C1C]"
@@ -827,7 +839,7 @@ export default function ProductDetail() {
                     </span>
                     <button
                       onClick={() => setQuantity((q) => q + 1)}
-                      className="w-10 h-10 rounded-md bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
+                      className="w-10 h-10 bg-[#f7f6f7] flex items-center justify-center cursor-pointer hover:bg-[#e6e6e6] transition-all duration-200 text-black text-lg font-medium"
                     >
                       <FaPlus size={13} />
                     </button>
@@ -837,7 +849,7 @@ export default function ProductDetail() {
                     id="add-to-cart-btn"
                     onClick={handleOpenCart}
                     disabled={cartBtnLoading}
-                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
+                    className="flex-1 bg-black text-white cursor-pointer text-sm font-semibold py-3.5  hover:bg-gray-800 transition-colors flex items-center justify-center"
                   >
                     {cartBtnLoading ? (
                       <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin89345 0.75s linear infinite" }} />
@@ -847,7 +859,7 @@ export default function ProductDetail() {
                   </button>
                   <button
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`w-12 h-12 rounded-lg cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                    className={`w-12 h-12  cursor-pointer border flex items-center justify-center transition-all duration-200 ${
                       isWishlisted
                         ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
                         : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"
@@ -937,7 +949,7 @@ export default function ProductDetail() {
       {isLoaded &&
         (apiProduct?.video_link || apiProduct?.french_video_link) && (
           <div className="py-4 lg:py-12 px-6 lg:px-14">
-          <div className="max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
+          <div className="max-w-7xl mx-auto  overflow-hidden shadow-lg">
               <ProductVideo
                 videoLink={apiProduct?.video_link}
                 frenchVideoLink={apiProduct?.french_video_link}

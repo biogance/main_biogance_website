@@ -53,7 +53,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",
-          borderRadius: "20px",
+        
           width: "100%",
           maxWidth: "420px",
           padding: "40px 32px 32px 32px",
@@ -136,7 +136,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
           rows={4}
           style={{
             width: "100%",
-            borderRadius: "10px",
+          
             border: "1px solid #DEDEDE",
             padding: "12px 14px",
             fontSize: "0.93rem",
@@ -160,7 +160,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "10px",
+          
             background: !rating || !feedback.trim() ? "#888" : "#1C1C1C",
             color: "#fff",
             fontWeight: "600",

@@ -24,7 +24,7 @@ const StarRating = ({ rating }) => (
 );
 
 const ShimmerLoader = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-gray-200 animate-pulse ${className}`} />
 );
 
 const buildSlides = (rawProduct) => {
@@ -273,7 +273,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
           }
           .qv-right-panel::-webkit-scrollbar { width: 4px; }
           .qv-right-panel::-webkit-scrollbar-track { background: transparent; }
-          .qv-right-panel::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 4px; }
+          .qv-right-panel::-webkit-scrollbar-thumb { background: #d0d0d0;}
         `,
         }}
       />
@@ -310,7 +310,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
           style={{
             position: "relative",
             backgroundColor: "#fff",
-            borderRadius: "16px",
+          
             overflow: "hidden",
             width: "100%",
             height: "min(600px, calc(100vh - 32px))",
@@ -471,7 +471,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                     : rawBundleData?.product_label || "";
                   return label ? (
                     <div style={{ marginBottom: "12px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 600, color: "#1C1C1C", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f3f3f3", padding: "4px 10px", borderRadius: "6px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "#1C1C1C", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f3f3f3", padding: "4px 10px",  }}>
                         {label}
                       </span>
                     </div>
@@ -532,7 +532,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                           key={size}
                           onClick={() => handleVolumeSelect(size)}
                           style={{
-                            padding: "7px 18px", borderRadius: "8px", fontSize: "13px", fontWeight: 500,
+                            padding: "7px 18px", fontSize: "13px", fontWeight: 500,
                             cursor: "pointer",
                             border: selectedVolume === size ? "1.5px solid #1C1C1C" : "1.5px solid #E8E8E8",
                             backgroundColor: selectedVolume === size ? "#1C1C1C" : "#fff",
@@ -558,7 +558,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                           key={color}
                           onClick={() => handleColorSelect(color)}
                           style={{
-                            padding: "8px 20px", borderRadius: "8px", fontSize: "13px", fontWeight: 500,
+                            padding: "8px 20px",  fontSize: "13px", fontWeight: 500,
                             cursor: "pointer",
                             border: selectedColor === color ? "1.5px solid #1C1C1C" : "1.5px solid #A8A8A8",
                             backgroundColor: selectedColor === color ? "#F0F0F0" : "#fff",
@@ -582,7 +582,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                 <div style={{ marginBottom: "14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <p style={{ fontSize: "14px", fontWeight: 600, color: "#1C1C1C", whiteSpace: "nowrap", margin: 0 }}>{t("quantity")}</p>
-                    <div style={{ display: "flex", alignItems: "center", border: "1px solid #E8E8E8", borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", border: "1px solid #E8E8E8",  overflow: "hidden", flexShrink: 0 }}>
                       <button
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         disabled={quantity === 1}
@@ -627,7 +627,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                         }
                       }}
                       disabled={addingToCart}
-                      style={{ flex: 1, backgroundColor: "#1C1C1C", color: "#fff", border: "none", borderRadius: "8px", height: "40px", fontSize: "13px", fontWeight: 600, cursor: addingToCart ? "not-allowed" : "pointer", letterSpacing: "0.03em", transition: "background-color 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      style={{ flex: 1, backgroundColor: "#1C1C1C", color: "#fff", border: "none",  height: "40px", fontSize: "13px", fontWeight: 600, cursor: addingToCart ? "not-allowed" : "pointer", letterSpacing: "0.03em", transition: "background-color 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }}
                       onMouseEnter={(e) => { if (!addingToCart) e.currentTarget.style.backgroundColor = "#333"; }}
                       onMouseLeave={(e) => { if (!addingToCart) e.currentTarget.style.backgroundColor = "#1C1C1C"; }}
                     >

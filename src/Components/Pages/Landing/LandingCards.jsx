@@ -200,7 +200,7 @@ export const LandingCards = ({
   }, [isHovered, videoUrl]);
 
   // CHANGE 3: title ke pehle 3 letters
-  const shortTitle = displayName ? displayName.slice(0, 22) : "";
+  const shortTitle = displayName ? displayName.slice(0, 30) : "";
   const price = safeProduct.price ?? 0;
 
   return (
@@ -225,21 +225,21 @@ export const LandingCards = ({
         {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
         {index === 0 && (
       // Replace karo:
-<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 z-10`}>
             New
           </div>
         )}
 
         {index === 1 && (
         // Replace karo:
-<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
+<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1  z-10`}>
             Best
           </div>
         )}
 
         {index === 2 && (
           // Replace karo:
-          <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10`}>
+          <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 z-10`}>
             -20%
           </div>
         )}
@@ -262,7 +262,7 @@ export const LandingCards = ({
             ? safeProduct.french_product_label
             : safeProduct.product_label || "";
           return label ? (
-            <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1 rounded-md z-10">
+            <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1  z-10">
               {label}
             </div>
           ) : null;
@@ -502,7 +502,7 @@ export const LandingCards = ({
           backgroundColor: "white",
           color: "black",
           border: "none",
-          borderRadius: "4px",
+         
           transition: "background-color 0.2s ease, color 0.2s ease",
         }}
         onMouseEnter={(e) => {
