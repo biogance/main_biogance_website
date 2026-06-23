@@ -709,7 +709,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   };
   const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
   const isFreeDelivery = deliveryCost === 0;
-  const totalWithDelivery = Math.max(0, subtotal + deliveryCost - totalDiscount).toFixed(2);
+  const deliveryCostsCharge = subtotal >= 39 ? 0 : 5.90;
+  const totalWithDelivery = Math.max(0, subtotal + deliveryCostsCharge + deliveryCost - totalDiscount).toFixed(2);
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
@@ -1074,16 +1075,27 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               Your Cart
             </span>
             {cartCount > 0 && (
-              <div style={{
-                height: "23px",
-                width: cartCount >= 100 ? "53px" : cartCount >= 10 ? "33px" : "23px",
-                padding: "0 6px", borderRadius: "50%", backgroundColor: "#111",
-                color: "#fff", fontSize: "12px", fontWeight: 600,
-                boxSizing: "border-box", display: "flex", alignItems: "center",
-                justifyContent: "center", lineHeight: 1,
-              }}>
-                {cartCount}
-              </div>
+              <div
+        style={{
+          height: '23px',
+          width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',
+          paddingTop: '0.7px',
+          paddingRight: '0.7px',
+          marginLeft: '5px',
+          borderRadius: '999px',
+          backgroundColor: '#111',
+          color: '#fff',
+          fontSize: '12px',
+          fontWeight: 600,
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          lineHeight: '24px',
+        }}
+      >
+        {cartCount}
+      </div>
             )}
           </div>
           <button
