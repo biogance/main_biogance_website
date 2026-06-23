@@ -1070,7 +1070,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
           padding: "20px 20px", borderBottom: "1px solid #e5e5e5", flexShrink: 0,
           height: "68px"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
             <span style={{ fontSize: "13px", fontWeight: 600, color: "#111", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Your Cart
             </span>
