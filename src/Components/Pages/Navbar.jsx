@@ -488,86 +488,105 @@ useEffect(() => {
             </div>
 
             {/* RIGHT: Icons */}
-            <div className="hidden lg:flex items-stretch justify-end gap-5">
+            
+<div className="hidden lg:flex items-center justify-end gap-10 h-full">
 
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className={navItemBase}
-              >
-                <FiSearch className="w-5 h-5 mt-0.5" strokeWidth={2.0} />
-              </button>
+  <button
+    onClick={() => setIsSearchModalOpen(true)}
+    className="flex items-center justify-center h-full text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+  >
+    <FiSearch className="w-5 h-5" strokeWidth={2.0} />
+  </button>
 
-              {/* Language Dropdown */}
-              <div className="relative" ref={desktopLangRef}>
-                <button
-                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className={`${navItemBase} flex-row gap-1`}
-                >
-                  <span className="text-[14px]">{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
-                  <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
-                    isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
-                  }`} />
-                </button>
+  {/* Language Dropdown */}
+  <div className="relative flex items-center h-full" ref={desktopLangRef}>
+    <button
+      onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+      className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+    >
+      <span className="text-[14px]">{currentLanguage.shortLabel}/{currentLanguage.currency}</span>
+      <FiChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+        isLanguageDropdownOpen ? 'rotate-180' : 'rotate-0'
+      }`} />
+    </button>
 
-                {isLanguageDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-13 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
-                    {languages.map((lang) => {
-                      const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
-                      return (
-                        <button
-                          key={lang.code}
-                          onClick={() => changeLanguage(lang.code)}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#111'; e.currentTarget.style.color = '#fff'; }}
-                          onMouseLeave={(e) => {
-                            if (isActive) { e.currentTarget.style.backgroundColor = '#f3f3f3'; e.currentTarget.style.color = '#111'; }
-                            else { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.color = '#111'; }
-                          }}
-                          style={{
-                            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-                            padding: '9px 14px', fontSize: '13px', cursor: 'pointer',
-                            backgroundColor: isActive ? '#f3f3f3' : '#fff',
-                            color: '#111', fontWeight: isActive ? 600 : 400,
-                            border: 'none', transition: 'background-color 0.15s, color 0.15s',
-                            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          }}
-                        >
-                          <span>{lang.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+    {isLanguageDropdownOpen && (
+      <div className="absolute top-full -mt-3 left-13 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
+        {languages.map((lang) => {
+          const isActive = !!(i18n.language && i18n.language.startsWith(lang.code));
+          return (
+            <button
+              key={lang.code}
+              onClick={() => changeLanguage(lang.code)}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#111'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={(e) => {
+                if (isActive) { e.currentTarget.style.backgroundColor = '#f3f3f3'; e.currentTarget.style.color = '#111'; }
+                else { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.color = '#111'; }
+              }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '9px 14px', fontSize: '13px', cursor: 'pointer',
+                backgroundColor: isActive ? '#f3f3f3' : '#fff',
+                color: '#111', fontWeight: isActive ? 600 : 400,
+                border: 'none', transition: 'background-color 0.15s, color 0.15s',
+                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              }}
+            >
+              <span>{lang.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    )}
+  </div>
 
-              {/* Login / Profile */}
-              {isLoggedIn ? (
-                <Link href="/my-account" className={navItemBase}>
-                  <span className='mt-0.5'>PROFILE</span>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className={navItemBase}
-                >
-                  <span className='mt-0.5'>LOGIN</span>
-                </button>
-              )}
+  {/* Login / Profile */}
+  {isLoggedIn ? (
+    <Link href="/my-account" className="flex items-center h-full text-sm font-[500] text-[#1C1C1C]">
+      <span>PROFILE</span>
+    </Link>
+  ) : (
+    <button
+      onClick={() => setIsLoginModalOpen(true)}
+      className="flex items-center h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+    >
+      <span>LOGIN</span>
+    </button>
+  )}
 
-              {/* Cart */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className={`${navItemBase} flex-row gap-1`}
-              >
-                <span className="uppercase">{t('cart') || 'Cart'}</span>
-                {cartCount > 0 ? (
-                  <div style={{ height: '23px', width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',  paddingTop:"0.7px", paddingRight:"0.7px", marginLeft: '5px', borderRadius: '999px', backgroundColor: '#111', color: '#fff', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '24px',  }}>
-                    {cartCount}
-                  </div>
-                ) : (
-                  <span className="bg-black w-2 h-2 rounded-full" />
-                )}
-              </button>
-            </div>
+  {/* Cart */}
+  <button
+    onClick={() => setIsCartOpen(true)}
+    className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+  >
+    <span className="uppercase">{t('cart') || 'Cart'}</span>
+    {cartCount > 0 ? (
+      <div
+        style={{
+          height: '23px',
+          width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',
+          paddingTop: '0.7px',
+          paddingRight: '0.7px',
+          marginLeft: '5px',
+          borderRadius: '999px',
+          backgroundColor: '#111',
+          color: '#fff',
+          fontSize: '12px',
+          fontWeight: 600,
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          lineHeight: '24px',
+        }}
+      >
+        {cartCount}
+      </div>
+    ) : (
+      <span className="bg-black w-2 h-2 rounded-full" />
+    )}
+  </button>
+</div>
 
             {/* Mobile right icons */}
             <div className="flex lg:hidden items-center justify-end">

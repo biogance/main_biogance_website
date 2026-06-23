@@ -514,7 +514,7 @@ export default function ProductDetail() {
                         useContain ? {} : { padding: 0, position: "relative" }
                       }
                     >
-                      // Replace karo:
+                      
 {slide.type === "video" ? (
   <div className="relative w-full h-full">
     <video

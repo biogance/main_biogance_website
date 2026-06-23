@@ -1074,8 +1074,8 @@ function CartItemRow({ item, index, onQtyChange, onRemove }) {
   const sizeOptions = sizeName ? [sizeName] : [];
   const isSingleSize = true;
   const unitPrice =
-    item.original_price ||
     parseFloat(String(item.price ?? "0").replace(",", ".")) ||
+    item.original_price ||
     0;
   const qty = item.quantity ?? item.qty ?? 1;
   const itemTotal = (unitPrice * qty).toFixed(2);
@@ -1503,7 +1503,8 @@ function OrderSummary({
   };
   const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
   const isFreeDelivery = deliveryCost === 0;
-  const total = Math.max(0, subtotal + deliveryCost - totalDiscount);
+  const deliveryCostsCharge = subtotal >= freeShippingThreshold ? 0 : 5.90;
+  const total = Math.max(0, subtotal + deliveryCostsCharge + deliveryCost - totalDiscount);
 
   // Expose summary state to parent Checkout
   useEffect(() => {
@@ -2611,6 +2612,19 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
         return;
       }
 
+      // Save order details to localStorage before redirecting
+      try {
+        const orderSummary = {
+          ...(orderData.data?.order || {}),
+          paymentInfo: {
+            brand: pm?.card?.brand || "visa",
+            last4: pm?.card?.last4 || "4221",
+          }
+        };
+        localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
+      } catch (e) {
+        console.error("Failed to save lastPlacedOrder", e);
+      }
     
       router.push("/track-order");
     } catch (err) {
@@ -2719,8 +2733,8 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
   const totalUnits = items.reduce((s, i) => s + (i.quantity ?? i.qty ?? 0), 0);
   const subtotal = items.reduce((s, i) => {
     const price =
-      i.original_price ||
       parseFloat(String(i.price ?? "0").replace(",", ".")) ||
+      i.original_price ||
       0;
     const qty = i.quantity ?? i.qty ?? 0;
     return s + price * qty;
