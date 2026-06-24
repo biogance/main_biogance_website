@@ -9,7 +9,7 @@ import { mergeCartItem } from '../../../utils/cartStorage';
 import { getDeviceId } from '../../../utils/deviceId';
 
 
-export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange }) {
+export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange, isMobileModal = false }) {
   const { i18n } = useTranslation();
   const isFrench = i18n.language === 'fr';
 
@@ -113,6 +113,145 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   const universes = (activeCategory?.sub_categories || []).filter(s => s.type === 'universe');
 
   if (!isOpen) return null;
+
+  // ── MOBILE MODAL ────────────────────────────────────────────────────────────
+  if (isMobileModal) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 10000,
+          }}
+        />
+        {/* Slide-up panel */}
+        <div
+          style={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: '60px',
+            backgroundColor: '#fff',
+            zIndex: 10001,
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            animation: 'mobileProductsSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both',
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 20px',
+              borderBottom: '1px solid #f0f0f0',
+              flexShrink: 0,
+              position: 'sticky',
+              top: 0,
+              backgroundColor: '#fff',
+              zIndex: 1,
+            }}
+          >
+            <span style={{ fontSize: '15px', fontWeight: 700, color: '#1C1C1C', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Our Products
+            </span>
+            <button
+              onClick={onClose}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Category Tabs */}
+          <div
+            style={{
+              display: 'flex',
+              overflowX: 'auto',
+              borderBottom: '1px solid #f0f0f0',
+              flexShrink: 0,
+              scrollbarWidth: 'none',
+            }}
+          >
+            {categories.map((cat) => {
+              const isActive = activeCategory?.id === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat)}
+                  style={{
+                    flexShrink: 0,
+                    padding: '10px 16px',
+                    fontSize: '12px',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#1C1C1C' : '#888',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: isActive ? '2px solid #1C1C1C' : '2px solid transparent',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {getName(cat)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Universes & Families */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 32px' }}>
+            {universes.length === 0 ? (
+              <p style={{ color: '#aaa', fontSize: '13px' }}>No products found.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {universes.map((universe) => {
+                  const families = (universe.sub_categories || []).filter(s => s.type === 'family');
+                  return (
+                    <div key={universe.id}>
+                      <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#1C1C1C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+                        {getName(universe)}
+                      </h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {families.map((fam) => (
+                          <div
+                            key={fam.id}
+                            style={{ fontSize: '13px', color: '#555', padding: '2px 0', cursor: 'pointer' }}
+                            onClick={onClose}
+                          >
+                            {getName(fam)}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+        <style>{`
+          @keyframes mobileProductsSlideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to   { transform: translateY(0);   opacity: 1; }
+          }
+        `}</style>
+      </>
+    );
+  }
+  // ── END MOBILE MODAL ─────────────────────────────────────────────────────────
 
   return (
     <div

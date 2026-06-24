@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { parseCountry, defaultCountries } from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -8,9 +9,18 @@ import { FaRegUser } from "react-icons/fa";
 import LoginModal from "../Onboarding/Login";
 import toast from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from "@stripe/react-stripe-js";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+);
 
 // Adjust these three import paths to match where Checkout.jsx actually
 // lives in your project — they're copied as-is from ModalAddToCart.jsx.
@@ -50,6 +60,19 @@ const getErrorMsg = (data) => {
   return null;
 };
 
+// Always normalize any number-like value (comma string, dot string, or number)
+// to a clean JS float before sending to any API.
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
+
+// Format price for UI display: EN = dot, FR = comma
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
 const VOUCHER_KEY = "cartVoucherState";
 const getVoucherState = () => {
   try {
@@ -68,12 +91,30 @@ const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
 // ─── Chevron Icons ────────────────────────────────────────────────────────────
 const ChevronDown = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="6 9 12 15 18 9" />
   </svg>
 );
 const ChevronUp = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="18 15 12 9 6 15" />
   </svg>
 );
@@ -87,7 +128,10 @@ function CustomDropdown({ value, onChange }) {
 
   const selectedQty = parseInt(value) || 1;
   const windowEnd = Math.min(windowStart + WINDOW - 1, MAX);
-  const numbers = Array.from({ length: windowEnd - windowStart + 1 }, (_, i) => windowStart + i);
+  const numbers = Array.from(
+    { length: windowEnd - windowStart + 1 },
+    (_, i) => windowStart + i,
+  );
 
   const openDropdown = () => {
     const idealStart = Math.max(1, Math.min(selectedQty - 4, MAX - WINDOW + 1));
@@ -125,7 +169,9 @@ function CustomDropdown({ value, onChange }) {
         className="flex items-center gap-1 border border-gray-200 px-1.5 py-1 text-sm text-gray-800 cursor-pointer hover:border-gray-400 transition-colors min-w-10"
       >
         <span className="font-medium">{selectedQty}</span>
-        <span className={`ml-auto text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>
+        <span
+          className={`ml-auto text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        >
           <ChevronDown />
         </span>
       </button>
@@ -148,7 +194,9 @@ function CustomDropdown({ value, onChange }) {
                 key={num}
                 onClick={() => handleSelect(num)}
                 className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
-                  num === selectedQty ? "font-medium text-black" : "text-gray-800"
+                  num === selectedQty
+                    ? "font-medium text-black"
+                    : "text-gray-800"
                 }`}
               >
                 {num}
@@ -178,14 +226,18 @@ function SizeDropdown({ options, value, onChange, disabled }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
+    <div
+      ref={wrapRef}
+      style={{ position: "relative", display: "inline-block" }}
+    >
       <style>{`
         .dropdown-menu-scrollbar-hide::-webkit-scrollbar { display: none; }
         .dropdown-menu-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -193,38 +245,71 @@ function SizeDropdown({ options, value, onChange, disabled }) {
       <div
         onClick={() => !disabled && setOpen((v) => !v)}
         style={{
-          border: "1px solid #ddd", padding: "4px 8px",
-          fontSize: "13px", background: "#fff", color: "#111",
+          border: "1px solid #ddd",
+          padding: "4px 8px",
+          fontSize: "13px",
+          background: "#fff",
+          color: "#111",
           cursor: disabled ? "default" : "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          gap: "6px", minWidth: disabled ? "auto" : "42px",
-          userSelect: "none", transition: "border-color 0.15s",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "6px",
+          minWidth: disabled ? "auto" : "42px",
+          userSelect: "none",
+          transition: "border-color 0.15s",
           opacity: disabled ? 0.6 : 1,
         }}
-        onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#999"; }}
-        onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.borderColor = "#ddd"; }}
+        onMouseEnter={(e) => {
+          if (!disabled) e.currentTarget.style.borderColor = "#999";
+        }}
+        onMouseLeave={(e) => {
+          if (!disabled) e.currentTarget.style.borderColor = "#ddd";
+        }}
       >
         <span>{value}</span>
         {!disabled && (
-          <span style={{
-            display: "inline-block", width: 0, height: 0,
-            borderLeft: "4px solid transparent", borderRight: "4px solid transparent",
-            borderTop: "5px solid #555", flexShrink: 0,
-            transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s",
-          }} />
+          <span
+            style={{
+              display: "inline-block",
+              width: 0,
+              height: 0,
+              borderLeft: "4px solid transparent",
+              borderRight: "4px solid transparent",
+              borderTop: "5px solid #555",
+              flexShrink: 0,
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          />
         )}
       </div>
       {open && !disabled && (
         <div
           className="dropdown-menu-scrollbar-hide"
           style={{
-            position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff",
-            border: "1px solid #ddd", minWidth: "100%", zIndex: 1100,
-            maxHeight: "calc(10 * 33px)", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            background: "#fff",
+            border: "1px solid #ddd",
+            minWidth: "100%",
+            zIndex: 1100,
+            maxHeight: "calc(10 * 33px)",
+            overflowY: "auto",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           }}
         >
           {options.map((opt) => (
-            <SizeDropItem key={opt} label={opt} selected={opt === value} onSelect={() => { onChange(opt); setOpen(false); }} />
+            <SizeDropItem
+              key={opt}
+              label={opt}
+              selected={opt === value}
+              onSelect={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+            />
           ))}
         </div>
       )}
@@ -240,9 +325,14 @@ function SizeDropItem({ label, selected, onSelect }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        padding: "8px 12px", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap",
-        background: hovered ? "#111" : "#fff", color: hovered ? "#fff" : "#111",
-        fontWeight: selected ? 600 : 400, transition: "background 0.15s, color 0.15s",
+        padding: "8px 12px",
+        fontSize: "13px",
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        background: hovered ? "#111" : "#fff",
+        color: hovered ? "#fff" : "#111",
+        fontWeight: selected ? 600 : 400,
+        transition: "background 0.15s, color 0.15s",
         textAlign: "center",
       }}
     >
@@ -260,9 +350,12 @@ function ButtonSpinner({ color = "#111" }) {
       <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
       <span
         style={{
-          display: "inline-block", width: "13px", height: "13px",
+          display: "inline-block",
+          width: "13px",
+          height: "13px",
           border: `2px solid ${color === "#fff" ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.15)"}`,
-          borderTopColor: color, borderRadius: "50%",
+          borderTopColor: color,
+          borderRadius: "50%",
           animation: "applyBtnSpin 0.6s linear infinite",
         }}
       />
@@ -796,7 +889,7 @@ function GooglePayBadge() {
         fontFamily: FONT,
       }}
     >
-     <img src="GPAY.svg" alt="" />
+      <img src="GPAY.svg" alt="" />
     </div>
   );
 }
@@ -854,7 +947,12 @@ function AppleIcon({ color = "#111", size = 14 }) {
 
 const stripeElementStyle = {
   style: {
-    base: { fontSize: "14px", color: "#111", "::placeholder": { color: "#aaa" }, fontFamily: FONT },
+    base: {
+      fontSize: "14px",
+      color: "#111",
+      "::placeholder": { color: "#aaa" },
+      fontFamily: FONT,
+    },
     invalid: { color: "#e02424" },
   },
 };
@@ -892,10 +990,20 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
   const baseBtn = {
-    flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-    gap: "6px", width: "50px", height: "50px", padding: "13px 10px",
-    backgroundColor: "#fff", cursor: "pointer", fontSize: "13px",
-    fontWeight: 700, fontFamily: FONT, color: "#111",
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    width: "50px",
+    height: "50px",
+    padding: "13px 10px",
+    backgroundColor: "#fff",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+    fontFamily: FONT,
+    color: "#111",
     transition: "border-color 0.2s, background 0.2s",
   };
 
@@ -904,42 +1012,98 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
   });
 
   const hoverHandlers = (method) => ({
-    onMouseEnter: (e) => { if (selectedMethod !== method) e.currentTarget.style.borderColor = "#aaa"; },
-    onMouseLeave: (e) => { if (selectedMethod !== method) e.currentTarget.style.borderColor = "#e5e5e5"; },
+    onMouseEnter: (e) => {
+      if (selectedMethod !== method) e.currentTarget.style.borderColor = "#aaa";
+    },
+    onMouseLeave: (e) => {
+      if (selectedMethod !== method)
+        e.currentTarget.style.borderColor = "#e5e5e5";
+    },
   });
 
   return (
-    <div style={{ position: "relative", backgroundColor: "#f3f3f3", padding: "26px 30px 24px" }}>
-      <div style={{
-        position: "absolute", top: "9px", left: "8%", transform: "translateX(-50%)",
-        margin: "10px", padding: "0 12px", fontSize: "17px", fontWeight: 700,
-        color: "#111", fontFamily: FONT, whiteSpace: "nowrap",
-      }}>
+    <div
+      style={{
+        position: "relative",
+        backgroundColor: "#f3f3f3",
+        padding: "26px 30px 24px",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: "9px",
+          left: "8%",
+          transform: "translateX(-50%)",
+          margin: "10px",
+          padding: "0 12px",
+          fontSize: "17px",
+          fontWeight: 700,
+          color: "#111",
+          fontFamily: FONT,
+          whiteSpace: "nowrap",
+        }}
+      >
         Payment
       </div>
       <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
-
-        <button onClick={() => onSelect("card")} style={{ ...baseBtn, ...btnBorder("card") }} {...hoverHandlers("card")}>
-          <img src="visa.svg" alt="" style={{ width: "120px", height: "90px" }} />
+        <button
+          onClick={() => onSelect("card")}
+          style={{ ...baseBtn, ...btnBorder("card") }}
+          {...hoverHandlers("card")}
+        >
+          <img
+            src="visa.svg"
+            alt=""
+            style={{ width: "120px", height: "90px" }}
+          />
         </button>
 
-        <button onClick={() => onSelect("paypal")} style={{ ...baseBtn, color: "#003087", width: "50px", height: "50px", ...btnBorder("paypal") }} {...hoverHandlers("paypal")}>
-           <img src="google-pay.svg" alt="" style={{ width: "100px", height: "100px" }} />
+        <button
+          onClick={() => onSelect("paypal")}
+          style={{
+            ...baseBtn,
+            color: "#003087",
+            width: "50px",
+            height: "50px",
+            ...btnBorder("paypal"),
+          }}
+          {...hoverHandlers("paypal")}
+        >
+          <img
+            src="google-pay.svg"
+            alt=""
+            style={{ width: "100px", height: "100px" }}
+          />
         </button>
 
         {isMobile && isAndroid && (
-          <button onClick={() => onSelect("googlepay")} style={{ ...baseBtn, ...btnBorder("googlepay") }} {...hoverHandlers("googlepay")}>
-          
-                 <img src="pay-pal.svg" alt="" style={{ width: "120px", height: "100px" }} />
-          </button>
-         )} 
-
-        {isMobile && isIOS && (
-          <button onClick={() => onSelect("applepay")} style={{ ...baseBtn, ...btnBorder("applepay") }} {...hoverHandlers("applepay")}>
-            <img src="apple-pay.svg" alt="" style={{ width: "120px", height: "80px" }} />
+          <button
+            onClick={() => onSelect("googlepay")}
+            style={{ ...baseBtn, ...btnBorder("googlepay") }}
+            {...hoverHandlers("googlepay")}
+          >
+            <img
+              src="pay-pal.svg"
+              alt=""
+              style={{ width: "120px", height: "100px" }}
+            />
           </button>
         )}
 
+        {isMobile && isIOS && (
+          <button
+            onClick={() => onSelect("applepay")}
+            style={{ ...baseBtn, ...btnBorder("applepay") }}
+            {...hoverHandlers("applepay")}
+          >
+            <img
+              src="apple-pay.svg"
+              alt=""
+              style={{ width: "120px", height: "80px" }}
+            />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1012,7 +1176,10 @@ function CartScrollArea({ children, maxHeight }) {
     el.addEventListener("scroll", updateThumb);
     const ro = new ResizeObserver(updateThumb);
     ro.observe(el);
-    return () => { el.removeEventListener("scroll", updateThumb); ro.disconnect(); };
+    return () => {
+      el.removeEventListener("scroll", updateThumb);
+      ro.disconnect();
+    };
   }, [children]);
 
   const onThumbMouseDown = (e) => {
@@ -1027,18 +1194,37 @@ function CartScrollArea({ children, maxHeight }) {
       const scrollRatio = el.scrollHeight / el.clientHeight;
       el.scrollTop = dragStartScrollTop.current + delta * scrollRatio;
     };
-    const onUp = () => { isDragging.current = false; };
+    const onUp = () => {
+      isDragging.current = false;
+    };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp, { once: true });
   };
 
   return (
     <div style={{ position: "relative", display: "flex", maxHeight }}>
-      <div ref={scrollRef} className="cart-items-scroll" style={{ flex: 1, maxHeight, overflowY: needsScroll ? "scroll" : "visible" }}>
+      <div
+        ref={scrollRef}
+        className="cart-items-scroll"
+        style={{
+          flex: 1,
+          maxHeight,
+          overflowY: needsScroll ? "scroll" : "visible",
+           paddingRight: needsScroll ? "10px" : "0",  
+        }}
+      >
         {children}
       </div>
       {needsScroll && (
-        <div style={{ width: "5px", flexShrink: 0, background: "#e5e5e5", borderRadius: "3px", position: "relative" }}>
+        <div
+          style={{
+            width: "5px",
+            flexShrink: 0,
+            background: "#e5e5e5",
+            borderRadius: "3px",
+            position: "relative",
+          }}
+        >
           <div
             ref={thumbRef}
             onMouseDown={onThumbMouseDown}
@@ -1052,8 +1238,8 @@ function CartScrollArea({ children, maxHeight }) {
               cursor: "pointer",
               transition: "background 0.15s",
             }}
-            onMouseEnter={e => e.currentTarget.style.background = "#666"}
-            onMouseLeave={e => e.currentTarget.style.background = "#999"}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#666")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#999")}
           />
         </div>
       )}
@@ -1064,7 +1250,7 @@ function CartScrollArea({ children, maxHeight }) {
 /* ────────────────────────────────────────────────────────────────────────
    ✅ CHANGE 2: CartItemRow — now uses new CustomDropdown + API calls
    ──────────────────────────────────────────────────────────────────────── */
-function CartItemRow({ item, index, onQtyChange, onRemove }) {
+function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
   const p = item.product || {};
   const firstImage = p.images?.[0]?.media
     ? `${MEDIA_URL}${p.images[0].media}`
@@ -1110,7 +1296,16 @@ function CartItemRow({ item, index, onQtyChange, onRemove }) {
         />
       </div>
 
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", height: "75px", justifyContent: "space-between" }}>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          height: "75px",
+          justifyContent: "space-between",
+        }}
+      >
         <p
           style={{
             margin: 0,
@@ -1182,10 +1377,7 @@ function CartItemRow({ item, index, onQtyChange, onRemove }) {
           fontFamily: FONT,
         }}
       >
-        {parseFloat(itemTotal).toLocaleString("fr-FR", {
-          minimumFractionDigits: 2,
-        })}{" "}
-        €
+        {formatPrice(itemTotal, lang)} €
       </div>
     </div>
   );
@@ -1200,6 +1392,9 @@ function OrderSummary({
   totalUnits,
   isRemoving,
   onSummaryStateChange,
+  lang,
+  onPlaceOrder,
+  isSubmitting,
 }) {
   const router = useRouter();
   const [currentShipping, setCurrentShipping] = useState(0);
@@ -1224,7 +1419,9 @@ function OrderSummary({
     try {
       const d = JSON.parse(localStorage.getItem("LoginData") || "null");
       setIsLoggedIn(!!d?.data?.token);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, []);
 
   // ─── CHANGE 3 & 4: Voucher + Promo states — exact copy from ModalAddToCart ───
@@ -1239,13 +1436,21 @@ function OrderSummary({
   const [learnMoreHovered, setLearnMoreHovered] = useState(false);
 
   // Logged-in voucher
-  const [loggedVoucherInput, setLoggedVoucherInput] = useState(() => getVoucherState()?.selectedPill || "");
+  const [loggedVoucherInput, setLoggedVoucherInput] = useState(
+    () => getVoucherState()?.selectedPill || "",
+  );
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
   const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
-  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(() => getVoucherState()?.applied || false);
-  const [appliedVoucherOff, setAppliedVoucherOff] = useState(() => getVoucherState()?.off || 0);
-  const [selectedPill, setSelectedPill] = useState(() => getVoucherState()?.selectedPill || null);
+  const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(
+    () => getVoucherState()?.applied || false,
+  );
+  const [appliedVoucherOff, setAppliedVoucherOff] = useState(
+    () => getVoucherState()?.off || 0,
+  );
+  const [selectedPill, setSelectedPill] = useState(
+    () => getVoucherState()?.selectedPill || null,
+  );
   const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
@@ -1280,14 +1485,18 @@ function OrderSummary({
     try {
       const saved = localStorage.getItem("checkoutPickupLocation");
       if (saved) setSelectedLocation(JSON.parse(saved));
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, []);
 
   const handleSelectLocation = (loc) => {
     setSelectedLocation(loc);
     try {
       localStorage.setItem("checkoutPickupLocation", JSON.stringify(loc));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   useEffect(() => {
@@ -1308,8 +1517,13 @@ function OrderSummary({
       setGiftContentHeight(giftContentRef.current.scrollHeight);
     }
   }, [
-    giftOpen, selectedPill, loggedVoucherApplied, loggedVoucherError,
-    voucherPills, voucherPoints, guestVoucherError,
+    giftOpen,
+    selectedPill,
+    loggedVoucherApplied,
+    loggedVoucherError,
+    voucherPills,
+    voucherPoints,
+    guestVoucherError,
   ]);
 
   // Voucher state sync on mount — same as ModalAddToCart
@@ -1320,7 +1534,8 @@ function OrderSummary({
       setAppliedVoucherOff(saved.off || 0);
       setSelectedPill(saved.selectedPill || null);
       setLoggedVoucherInput(saved.selectedPill || "");
-      if (saved.voucherPoints !== undefined) setVoucherPoints(saved.voucherPoints);
+      if (saved.voucherPoints !== undefined)
+        setVoucherPoints(saved.voucherPoints);
     } else {
       setLoggedVoucherApplied(false);
       setAppliedVoucherOff(0);
@@ -1352,18 +1567,25 @@ function OrderSummary({
         headers: token
           ? { Authorization: `Bearer ${token}` }
           : { "Content-Type": "application/json" },
-        ...(token ? {} : { body: JSON.stringify({ device_id: getDeviceId() }) }),
+        ...(token
+          ? {}
+          : { body: JSON.stringify({ device_id: getDeviceId() }) }),
       });
       const data = await res.json();
       const list = data.data?.vouchers?.data || data.data?.data;
       if (data.status) {
         setVoucherPills(list || []);
-        const totalPoints = data.data?.loyalty_points !== undefined ? Number(data.data.loyalty_points) : 0;
+        const totalPoints =
+          data.data?.loyalty_points !== undefined
+            ? Number(data.data.loyalty_points)
+            : 0;
         setVoucherPoints(totalPoints);
         const saved = getVoucherState();
         setVoucherState({ ...(saved || {}), voucherPoints: totalPoints });
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   useEffect(() => {
@@ -1390,7 +1612,11 @@ function OrderSummary({
     setSelectedPill(code);
     setLoggedVoucherInput(code);
     setLoggedVoucherError(null);
-    setVoucherState({ ...getVoucherState(), selectedPill: code, applied: false });
+    setVoucherState({
+      ...getVoucherState(),
+      selectedPill: code,
+      applied: false,
+    });
   };
 
   const handlePillRemove = () => {
@@ -1412,9 +1638,16 @@ function OrderSummary({
       const res = await fetch(`${BASE_URL}/user/order/check/voucher`, {
         method: "POST",
         headers: token
-          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          ? {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
-        body: JSON.stringify(token ? { name: codeToApply } : { name: codeToApply, device_id: getDeviceId() }),
+        body: JSON.stringify(
+          token
+            ? { name: codeToApply }
+            : { name: codeToApply, device_id: getDeviceId() },
+        ),
       });
       const data = await res.json();
       if (data.status === false) {
@@ -1429,10 +1662,22 @@ function OrderSummary({
       if (point === 0) {
         setSelectedPill(null);
         setLoggedVoucherInput("");
-        setVoucherState({ applied: false, selectedPill: null, input: "", off: 0, voucherPoints: 0 });
+        setVoucherState({
+          applied: false,
+          selectedPill: null,
+          input: "",
+          off: 0,
+          voucherPoints: 0,
+        });
       } else {
         setLoggedVoucherApplied(true);
-        setVoucherState({ applied: true, selectedPill: codeToApply, input: codeToApply, off, voucherPoints: point });
+        setVoucherState({
+          applied: true,
+          selectedPill: codeToApply,
+          input: codeToApply,
+          off,
+          voucherPoints: point,
+        });
         fetchVouchers();
       }
     } catch {
@@ -1494,7 +1739,8 @@ function OrderSummary({
   // Delivery & totals
   const freeShippingThreshold = 39;
   const promoDiscount = appliedPromo ? (subtotal * appliedPromo.off) / 100 : 0;
-  const totalDiscount = (loggedVoucherApplied ? appliedVoucherOff : 0) + promoDiscount;
+  const totalDiscount =
+    (loggedVoucherApplied ? appliedVoucherOff : 0) + promoDiscount;
 
   const getDeliveryCost = (method, total) => {
     if (total < 39) return method === "pickup" ? 5.9 : 6.9;
@@ -1503,8 +1749,11 @@ function OrderSummary({
   };
   const deliveryCost = getDeliveryCost(deliveryMethod, subtotal);
   const isFreeDelivery = deliveryCost === 0;
-  const deliveryCostsCharge = subtotal >= freeShippingThreshold ? 0 : 5.90;
-  const total = Math.max(0, subtotal + deliveryCostsCharge + deliveryCost - totalDiscount);
+  const deliveryCostsCharge = subtotal >= freeShippingThreshold ? 0 : 5.9;
+  const total = Math.max(
+    0,
+    subtotal + deliveryCostsCharge + deliveryCost - totalDiscount,
+  );
 
   // Expose summary state to parent Checkout
   useEffect(() => {
@@ -1518,38 +1767,72 @@ function OrderSummary({
         appliedVoucherCode: loggedVoucherApplied ? selectedPill : null,
       });
     }
-  }, [deliveryMethod, selectedLocation, deliveryCost, total, appliedPromo, loggedVoucherApplied, selectedPill]);
+  }, [
+    deliveryMethod,
+    selectedLocation,
+    deliveryCost,
+    total,
+    appliedPromo,
+    loggedVoucherApplied,
+    selectedPill,
+  ]);
 
   // CHANGE 3: Guest Voucher Render — exact copy from ModalAddToCart ────
   const renderGuestVoucherContent = () => (
     <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-      <div style={{
-        display: "flex",
-        border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
-        overflow: "hidden", transition: "border-color 0.15s",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
+          overflow: "hidden",
+          transition: "border-color 0.15s",
+        }}
+      >
         <input
-          type="text" placeholder="Enter Voucher code"
+          type="text"
+          placeholder="Enter Voucher code"
           value={guestVoucherInput}
           onChange={handleGuestInputChange}
-          onKeyDown={(e) => { if (e.key === "Enter") handleGuestApply(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleGuestApply();
+          }}
           style={{
-            flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
-            color: "#111", background: "#fff", cursor: "text",
+            flex: 1,
+            border: "none",
+            outline: "none",
+            padding: "11px 14px",
+            fontSize: "13px",
+            color: "#111",
+            background: "#fff",
+            cursor: "text",
             fontFamily: FONT,
           }}
         />
         <button
           onClick={handleGuestApply}
           disabled={!guestVoucherInput.trim()}
-          onMouseEnter={() => { if (guestVoucherInput.trim()) setGuestApplyHovered(true); }}
+          onMouseEnter={() => {
+            if (guestVoucherInput.trim()) setGuestApplyHovered(true);
+          }}
           onMouseLeave={() => setGuestApplyHovered(false)}
           style={{
-            border: "none", borderLeft: "1px solid #ddd",
-            background: !guestVoucherInput.trim() ? "#f3f3f3" : guestApplyHovered ? "#111" : "transparent",
-            color: !guestVoucherInput.trim() ? "#aaa" : guestApplyHovered ? "#fff" : "#111",
-            padding: "11px 18px", fontSize: "12px", fontWeight: 700,
-            letterSpacing: "0.1em", textTransform: "uppercase",
+            border: "none",
+            borderLeft: "1px solid #ddd",
+            background: !guestVoucherInput.trim()
+              ? "#f3f3f3"
+              : guestApplyHovered
+                ? "#111"
+                : "transparent",
+            color: !guestVoucherInput.trim()
+              ? "#aaa"
+              : guestApplyHovered
+                ? "#fff"
+                : "#111",
+            padding: "11px 18px",
+            fontSize: "12px",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
             cursor: !guestVoucherInput.trim() ? "default" : "pointer",
             transition: "background 0.2s, color 0.2s",
             fontFamily: FONT,
@@ -1560,25 +1843,40 @@ function OrderSummary({
       </div>
 
       {guestVoucherError && (
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginTop: "10px",
-          padding: "10px 12px",
-          background: "#fdecec",
-          border: "1px solid #f5c6c6",
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginTop: "10px",
+            padding: "10px 12px",
+            background: "#fdecec",
+            border: "1px solid #f5c6c6",
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            style={{ flexShrink: 0 }}
+          >
             <circle cx="12" cy="12" r="11" fill="#e02424" />
-            <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            <path
+              d="M8 8l8 8M16 8l-8 8"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
-          <span style={{
-            fontSize: "12px",
-            color: "#c0392b",
-            lineHeight: 1.4,
-            flex: 1,
-          }}>
+          <span
+            style={{
+              fontSize: "12px",
+              color: "#c0392b",
+              lineHeight: 1.4,
+              flex: 1,
+            }}
+          >
             {guestVoucherError}{" "}
             <span
               onClick={() => setIsLoginModalOpen(true)}
@@ -1598,12 +1896,26 @@ function OrderSummary({
         </div>
       )}
 
-      <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
-        You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
+      <p
+        style={{
+          margin: "10px 0 0",
+          fontSize: "12px",
+          color: "#888",
+          lineHeight: 1.5,
+        }}
+      >
+        You don't have any vouchers or reward points yet. Points are earned
+        automatically with every purchase, redeem them for discounts on your
+        next order.{" "}
         <span
           onMouseEnter={() => setLearnMoreHovered(true)}
           onMouseLeave={() => setLearnMoreHovered(false)}
-          style={{ color: "#111", cursor: "pointer", fontWeight: 600, textDecoration: learnMoreHovered ? "underline" : "none" }}
+          style={{
+            color: "#111",
+            cursor: "pointer",
+            fontWeight: 600,
+            textDecoration: learnMoreHovered ? "underline" : "none",
+          }}
         >
           Learn More
         </span>
@@ -1618,10 +1930,14 @@ function OrderSummary({
 
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-        <div style={{
-          display: "flex", border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-          overflow: "hidden", transition: "border-color 0.15s",
-        }}>
+        <div
+          style={{
+            display: "flex",
+            border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
+            overflow: "hidden",
+            transition: "border-color 0.15s",
+          }}
+        >
           <input
             type="text"
             placeholder="Enter Voucher code"
@@ -1630,13 +1946,20 @@ function OrderSummary({
             onChange={(e) => {
               setLoggedVoucherInput(e.target.value);
               if (loggedVoucherError) setLoggedVoucherError(null);
-              const match = voucherPills.find(p => p.name === e.target.value);
-              if (match) setSelectedPill(match.name); else setSelectedPill(null);
+              const match = voucherPills.find((p) => p.name === e.target.value);
+              if (match) setSelectedPill(match.name);
+              else setSelectedPill(null);
             }}
-            onKeyDown={(e) => { if (e.key === "Enter") handleLoggedApply(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleLoggedApply();
+            }}
             title={loggedVoucherApplied ? "You already added voucher code" : ""}
             style={{
-              flex: 1, border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+              flex: 1,
+              border: "none",
+              outline: "none",
+              padding: "11px 14px",
+              fontSize: "13px",
               color: loggedVoucherApplied ? "#aaa" : "#111",
               background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
               cursor: loggedVoucherApplied ? "not-allowed" : "text",
@@ -1645,65 +1968,176 @@ function OrderSummary({
           />
           <button
             onClick={handleLoggedApply}
-            disabled={(!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied || loggedVoucherLoading}
-            onMouseEnter={() => { if ((selectedPill || loggedVoucherInput.trim()) && !loggedVoucherApplied) setLoggedApplyHovered(true); }}
+            disabled={
+              (!selectedPill && !loggedVoucherInput.trim()) ||
+              loggedVoucherApplied ||
+              loggedVoucherLoading
+            }
+            onMouseEnter={() => {
+              if (
+                (selectedPill || loggedVoucherInput.trim()) &&
+                !loggedVoucherApplied
+              )
+                setLoggedApplyHovered(true);
+            }}
             onMouseLeave={() => setLoggedApplyHovered(false)}
             style={{
-              border: "none", borderLeft: "1px solid #ddd",
-              background: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#f3f3f3" : loggedApplyHovered ? "#111" : "transparent",
-              color: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "#aaa" : loggedApplyHovered ? "#fff" : "#111",
-              padding: "11px 18px", fontSize: "12px", fontWeight: 700,
-              letterSpacing: "0.1em", textTransform: "uppercase",
-              cursor: ((!selectedPill && !loggedVoucherInput.trim()) || loggedVoucherApplied) ? "default" : "pointer",
+              border: "none",
+              borderLeft: "1px solid #ddd",
+              background:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "#f3f3f3"
+                  : loggedApplyHovered
+                    ? "#111"
+                    : "transparent",
+              color:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "#aaa"
+                  : loggedApplyHovered
+                    ? "#fff"
+                    : "#111",
+              padding: "11px 18px",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor:
+                (!selectedPill && !loggedVoucherInput.trim()) ||
+                loggedVoucherApplied
+                  ? "default"
+                  : "pointer",
               transition: "background 0.2s, color 0.2s",
               fontFamily: FONT,
-              display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "56px",
             }}
           >
-            {loggedVoucherLoading ? <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} /> : "Apply"}
+            {loggedVoucherLoading ? (
+              <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} />
+            ) : (
+              "Apply"
+            )}
           </button>
         </div>
 
-        {selectedPill && !loggedVoucherApplied && voucherPills.some(p => p.name === selectedPill) && (
-          <p style={{ margin: "10px 0 6px", fontSize: "12px", color: "#555", lineHeight: 1.5 }}>
-            Voucher code added. Click Apply to redeem it.
-          </p>
-        )}
+        {selectedPill &&
+          !loggedVoucherApplied &&
+          voucherPills.some((p) => p.name === selectedPill) && (
+            <p
+              style={{
+                margin: "10px 0 6px",
+                fontSize: "12px",
+                color: "#555",
+                lineHeight: 1.5,
+              }}
+            >
+              Voucher code added. Click Apply to redeem it.
+            </p>
+          )}
 
         {loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
+              marginTop: "10px",
+              padding: "10px 12px",
+              background: "#fdecec",
+              border: "1px solid #f5c6c6",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              style={{ flexShrink: 0, marginTop: "1px" }}
+            >
               <circle cx="12" cy="12" r="11" fill="#e02424" />
-              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+              <path
+                d="M8 8l8 8M16 8l-8 8"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
-            <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{loggedVoucherError}</span>
+            <span
+              style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}
+            >
+              {loggedVoucherError}
+            </span>
           </div>
         )}
 
         {!loggedVoucherApplied && hasVouchers && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "12px",
+              alignItems: "center",
+            }}
+          >
             {voucherPills.map((pill) => {
               const code = pill.name;
               const isSelected = selectedPill === code;
               return (
                 <div
-                  key={pill.id} onClick={() => handlePillClick(code)}
+                  key={pill.id}
+                  onClick={() => handlePillClick(code)}
                   style={{
-                    display: "inline-flex", alignItems: "center",
-                    border: "1px solid #ccc", overflow: "hidden",
-                    cursor: "pointer", background: isSelected ? "#111" : "#fff",
-                    transition: "background 0.15s", userSelect: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    border: "1px solid #ccc",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    background: isSelected ? "#111" : "#fff",
+                    transition: "background 0.15s",
+                    userSelect: "none",
                   }}
                 >
-                  <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: isSelected ? "#fff" : "#111", fontFamily: FONT }}>
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: isSelected ? "#fff" : "#111",
+                      fontFamily: FONT,
+                    }}
+                  >
                     {code}
                   </span>
                   {isSelected && (
                     <>
-                      <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.3)" }} />
+                      <span
+                        style={{
+                          display: "block",
+                          width: "1px",
+                          height: "28px",
+                          background: "rgba(255,255,255,0.3)",
+                        }}
+                      />
                       <button
-                        onClick={(e) => { e.stopPropagation(); handlePillRemove(); }}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePillRemove();
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "6px 10px",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#fff",
+                        }}
                       >
                         <IoClose size={13} />
                       </button>
@@ -1712,17 +2146,26 @@ function OrderSummary({
                 </div>
               );
             })}
-            {hasPoints && (
+{hasPoints && voucherPoints >= 10 && (
               <button
                 onClick={() => setIsVoucherModalOpen(true)}
                 onMouseEnter={() => setCreateMoreHovered(true)}
                 onMouseLeave={() => setCreateMoreHovered(false)}
                 style={{
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  padding: "7px 14px", fontSize: "12px", fontWeight: 700, letterSpacing: "0.04em",
-                  background: createMoreHovered ? "#222" : "#f3f3f3", color: createMoreHovered ? "#fff" : "#111",
-                  border: "1px solid #ccc", cursor: "pointer", transition: "background 0.2s",
-                  fontFamily: FONT, whiteSpace: "nowrap",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "7px 14px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  background: createMoreHovered ? "#222" : "#f3f3f3",
+                  color: createMoreHovered ? "#fff" : "#111",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                  fontFamily: FONT,
+                  whiteSpace: "nowrap",
                 }}
               >
                 Create More Voucher
@@ -1731,53 +2174,127 @@ function OrderSummary({
           </div>
         )}
 
-        {!loggedVoucherApplied && !hasVouchers && hasPoints && !loggedVoucherError && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px", gap: "12px" }}>
-            <p style={{ margin: 0, fontSize: "13px", color: "#111", lineHeight: 1.5 }}>
-              You have <strong>{voucherPoints} points</strong> — redeem for a <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
-            </p>
-            <button
-              onMouseEnter={() => setRedeemHovered(true)}
-              onMouseLeave={() => setRedeemHovered(false)}
-              onClick={() => setIsVoucherModalOpen(true)}
+        {!loggedVoucherApplied &&
+          !hasVouchers &&
+          hasPoints &&
+          !loggedVoucherError && (
+            <div
               style={{
-                flexShrink: 0, marginLeft: "12px",
-                padding: "8px 16px", fontSize: "12px", fontWeight: 700,
-                letterSpacing: "0.08em", textTransform: "uppercase",
-                background: redeemHovered ? "#333" : "#111", color: "#fff",
-                border: "none", cursor: "pointer", transition: "background 0.2s",
-                fontFamily: FONT,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: "12px",
+                gap: "12px",
               }}
             >
-              Redeem
-            </button>
-          </div>
-        )}
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "13px",
+                  color: "#111",
+                  lineHeight: 1.5,
+                }}
+              >
+                You have <strong>{voucherPoints} points</strong> — redeem for a{" "}
+                <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
+              </p>
+              <button
+                onMouseEnter={() => setRedeemHovered(true)}
+                onMouseLeave={() => setRedeemHovered(false)}
+                onClick={() => setIsVoucherModalOpen(true)}
+                style={{
+                  flexShrink: 0,
+                  marginLeft: "12px",
+                  padding: "8px 16px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  background: redeemHovered ? "#333" : "#111",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                  fontFamily: FONT,
+                }}
+              >
+                Redeem
+              </button>
+            </div>
+          )}
 
-        {!selectedPill && !loggedVoucherError && !loggedVoucherApplied && !hasVouchers && !hasPoints && (
-          <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
-            You don't have any vouchers or reward points yet. Points are earned automatically with every purchase, redeem them for discounts on your next order.{" "}
-            <span
-              onMouseEnter={() => setLearnMoreHovered(true)}
-              onMouseLeave={() => setLearnMoreHovered(false)}
-              style={{ color: "#111", cursor: "pointer", textDecoration: learnMoreHovered ? "underline" : "none" }}
+        {!selectedPill &&
+          !loggedVoucherError &&
+          !loggedVoucherApplied &&
+          !hasVouchers &&
+          !hasPoints && (
+            <p
+              style={{
+                margin: "10px 0 0",
+                fontSize: "12px",
+                color: "#888",
+                lineHeight: 1.5,
+              }}
             >
-              Learn More
-            </span>
-          </p>
-        )}
+              You don't have any vouchers or reward points yet. Points are
+              earned automatically with every purchase, redeem them for
+              discounts on your next order.{" "}
+              <span
+                onMouseEnter={() => setLearnMoreHovered(true)}
+                onMouseLeave={() => setLearnMoreHovered(false)}
+                style={{
+                  color: "#111",
+                  cursor: "pointer",
+                  textDecoration: learnMoreHovered ? "underline" : "none",
+                }}
+              >
+                Learn More
+              </span>
+            </p>
+          )}
 
         {loggedVoucherApplied && selectedPill && (
           <div style={{ marginTop: "10px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", background: "#111", overflow: "hidden" }}>
-              <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: FONT }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "#111",
+                overflow: "hidden",
+              }}
+            >
+              <span
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: FONT,
+                }}
+              >
                 {selectedPill}
               </span>
-              <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
+              <span
+                style={{
+                  display: "block",
+                  width: "1px",
+                  height: "28px",
+                  background: "rgba(255,255,255,0.25)",
+                }}
+              />
               <button
                 onClick={handleLoggedRemoveVoucher}
                 title="Remove voucher code"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 10px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#fff",
+                }}
               >
                 <IoClose size={13} />
               </button>
@@ -1794,16 +2311,17 @@ function OrderSummary({
         width: "100%",
         flex: "0 1 auto",
         minHeight: 0,
+        maxHeight: "calc(100vh - 80px - 32px)",
         overflowY: "auto",
         background: "#f3f3f3",
         borderRadius: "0px",
-        padding: "20px 26px 26px",
+        padding: "20px 26px 20px",
         scrollbarWidth: "thin",
         scrollbarColor: "#bbb #f3f3f3",
         position: "relative",
       }}
     >
-      {/*CHANGE 2: Removing/loading overlay — exact same as ModalAddToCart */}
+      {/* Removing/loading overlay */}
       {isRemoving && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 10,
@@ -1816,18 +2334,47 @@ function OrderSummary({
         </div>
       )}
 
-      {/* Cart items — 3 cards visible, 4th on scroll */}
-      <CartScrollArea maxHeight="330px">
-        {items.map((item, idx) => (
-          <CartItemRow
-            key={idx}
-            item={item}
-            index={idx}
-            onQtyChange={onQtyChange}
-            onRemove={onRemoveItem}
-          />
-        ))}
-      </CartScrollArea>
+      {/* ── Order button — moved to top ── */}
+      <button
+        onClick={() => onPlaceOrder && onPlaceOrder()}
+        disabled={isSubmitting}
+        style={{
+          width: "100%",
+          padding: "13px",
+          backgroundColor: "#111",
+          color: "#fff",
+          border: "none",
+          fontSize: "11.5px",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          cursor: isSubmitting ? "not-allowed" : "pointer",
+          borderRadius: "2px",
+          fontFamily: FONT,
+          transition: "background 0.2s",
+          textTransform: "uppercase",
+          opacity: isSubmitting ? 0.75 : 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          marginBottom: "16px",
+        }}
+        onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
+        onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
+      >
+        {isSubmitting ? (
+          <>
+            <span style={{
+              display: "inline-block", width: "13px", height: "13px",
+              border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
+              borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
+            }} />
+            Processing…
+          </>
+        ) : (
+          `Order — ${formatPrice(total, lang)} €`
+        )}
+      </button>
 
       {/* Shipping carousel */}
       <div
@@ -1890,7 +2437,7 @@ function OrderSummary({
         </div>
       </div>
 
-      {/*CHANGE 4: Promo Code Accordion — exact same structure/design as ModalAddToCart */}
+      {/* Promo Code Accordion */}
       <div style={{ borderBottom: "1px solid #e5e5e5" }}>
         <button
           onClick={() => setPromoOpen((v) => !v)}
@@ -1969,7 +2516,7 @@ function OrderSummary({
         </div>
       </div>
 
-      {/* CHANGE 3: Voucher Accordion — exact same structure/design as ModalAddToCart */}
+      {/* Voucher Accordion */}
       <div style={{ paddingBottom: "8px" }}>
         <button
           onClick={() => setGiftOpen((v) => !v)}
@@ -1988,8 +2535,8 @@ function OrderSummary({
         </div>
       </div>
 
-      {/* Totals */}
-      <div style={{ padding: "16px 0", borderTop:"1px solid #e5e5e5" }}>
+      {/* Totals / Price section */}
+      <div style={{ padding: "16px 0", borderTop: "1px solid #e5e5e5", borderBottom: "1px solid #e5e5e5" }}>
         <div
           style={{
             display: "flex",
@@ -2001,12 +2548,9 @@ function OrderSummary({
           }}
         >
           <span>Products ({totalUnits})</span>
-          <span>
-            {subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-          </span>
+          <span>{formatPrice(subtotal, lang)} €</span>
         </div>
 
-        {/* CHANGE 4: Promo discount row — same as ModalAddToCart */}
         {appliedPromo && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -2017,11 +2561,10 @@ function OrderSummary({
                 </span>
               </div>
             </div>
-            <span style={{ color: "#111", fontWeight: 500 }}>-{promoDiscount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+            <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(promoDiscount, lang)} €</span>
           </div>
         )}
 
-        {/* ✅ CHANGE 3: Voucher discount row — same as ModalAddToCart */}
         {loggedVoucherApplied && selectedPill && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -2030,11 +2573,10 @@ function OrderSummary({
                 <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: FONT }}>{selectedPill}</span>
               </div>
             </div>
-            <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedVoucherOff).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+            <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(appliedVoucherOff, lang)} €</span>
           </div>
         )}
 
-        {/* Delivery costs static row */}
         <div
           style={{
             display: "flex",
@@ -2049,11 +2591,10 @@ function OrderSummary({
           {subtotal >= freeShippingThreshold ? (
             <span>Free</span>
           ) : (
-            <span>5,90 €</span>
+            <span>{formatPrice(5.90, lang)} €</span>
           )}
         </div>
 
-        {/* Delivery method selector */}
         <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
           <div
             style={{
@@ -2077,12 +2618,8 @@ function OrderSummary({
                   color: "#555",
                   fontFamily: FONT,
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#111";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#555";
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#111"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; }}
               >
                 <span>
                   {deliveryMethod === "home" ? "Home Delivery" : "Pickup Point"}
@@ -2096,9 +2633,7 @@ function OrderSummary({
                     borderRight: "4px solid transparent",
                     borderTop: "5px solid #555",
                     flexShrink: 0,
-                    transform: deliveryDropdownOpen
-                      ? "rotate(180deg)"
-                      : "rotate(0deg)",
+                    transform: deliveryDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
                     transition: "transform 0.2s",
                   }}
                 />
@@ -2161,7 +2696,7 @@ function OrderSummary({
             {isFreeDelivery ? (
               <span>Free</span>
             ) : (
-              <span>{deliveryCost.toFixed(2).replace(".", ",")} €</span>
+              <span>{formatPrice(deliveryCost, lang)} €</span>
             )}
           </div>
         </div>
@@ -2250,10 +2785,24 @@ function OrderSummary({
           }}
         >
           <span>Total</span>
-          <span>
-            {total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-          </span>
+          <span>{formatPrice(total, lang)} €</span>
         </div>
+      </div>
+
+      {/* ── Cart items — moved to bottom. 3 cards visible, 4th+ on scroll ── */}
+      <div style={{ paddingTop: "8px" }}>
+        <CartScrollArea maxHeight="330px">
+          {items.map((item, idx) => (
+            <CartItemRow
+              key={idx}
+              item={item}
+              index={idx}
+              onQtyChange={onQtyChange}
+              onRemove={onRemoveItem}
+              lang={lang}
+            />
+          ))}
+        </CartScrollArea>
       </div>
 
       <CreateVoucherModal
@@ -2274,6 +2823,7 @@ function OrderSummary({
   );
 }
 
+
 export default function CheckoutWithStripe(props) {
   return (
     <Elements stripe={stripePromise}>
@@ -2288,6 +2838,8 @@ export default function CheckoutWithStripe(props) {
 
 function Checkout({ cartItems = [] }) {
   const router = useRouter();
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
   const paymentSectionRef = useRef(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -2296,7 +2848,13 @@ function Checkout({ cartItems = [] }) {
   // ✅ CHANGE 2: isRemoving state for cart API calls
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const getLoginData = () => { try { return JSON.parse(localStorage.getItem("LoginData") || "null"); } catch { return null; } };
+  const getLoginData = () => {
+    try {
+      return JSON.parse(localStorage.getItem("LoginData") || "null");
+    } catch {
+      return null;
+    }
+  };
 
   // Contact — prefill from localStorage if logged in
   const [email, setEmail] = useState("");
@@ -2314,11 +2872,11 @@ function Checkout({ cartItems = [] }) {
 
       setEmail(user.email || "");
       setLastName(user.name || "");
-      setPhone(user.phone_number || "");
+      setPhone(user.phone || "");
       if (user.phone) {
         const matched = defaultCountries
-          .map(c => parseCountry(c))
-          .filter(c => user.phone.startsWith("+" + c.dialCode))
+          .map((c) => parseCountry(c))
+          .filter((c) => user.phone.startsWith("+" + c.dialCode))
           .sort((a, b) => b.dialCode.length - a.dialCode.length)[0];
         if (matched) setCountryIso2(matched.iso2);
       }
@@ -2328,7 +2886,9 @@ function Checkout({ cartItems = [] }) {
         setStreet(addr.full_address || "");
         setPostcode(addr.postal_code || "");
         setCity(addr.city || "");
-        const foundByIso2 = defaultCountries.find(c => parseCountry(c).iso2 === (addr.country || "").toLowerCase());
+        const foundByIso2 = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === (addr.country || "").toLowerCase(),
+        );
         if (foundByIso2) setDeliveryCountryIso2(parseCountry(foundByIso2).iso2);
       }
 
@@ -2339,11 +2899,15 @@ function Checkout({ cartItems = [] }) {
         setBillingCity(bill.city || "");
         const countryVal = (bill.country || "").toLowerCase();
         const foundBill =
-          defaultCountries.find(c => parseCountry(c).iso2 === countryVal) ||
-          defaultCountries.find(c => parseCountry(c).name.toLowerCase() === countryVal);
+          defaultCountries.find((c) => parseCountry(c).iso2 === countryVal) ||
+          defaultCountries.find(
+            (c) => parseCountry(c).name.toLowerCase() === countryVal,
+          );
         if (foundBill) setBillingCountryIso2(parseCountry(foundBill).iso2);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   useEffect(() => {
@@ -2354,7 +2918,9 @@ function Checkout({ cartItems = [] }) {
       setLastName(d.data.name || "");
       setPhone(d.data.phone_number || "");
       const cc = (d.data.country_code || "").replace("+", "");
-      const found = defaultCountries.find(c => parseCountry(c).dialCode === cc);
+      const found = defaultCountries.find(
+        (c) => parseCountry(c).dialCode === cc,
+      );
       if (found) setCountryIso2(parseCountry(found).iso2);
     } else {
       // Not logged in — ensure fields are empty
@@ -2380,7 +2946,9 @@ function Checkout({ cartItems = [] }) {
         setLastName(d.data.name || "");
         setPhone(d.data.phone_number || "");
         const cc = (d.data.country_code || "").replace("+", "");
-        const found = defaultCountries.find(c => parseCountry(c).dialCode === cc);
+        const found = defaultCountries.find(
+          (c) => parseCountry(c).dialCode === cc,
+        );
         if (found) setCountryIso2(parseCountry(found).iso2);
       }
       prefillFromSplash();
@@ -2411,6 +2979,7 @@ function Checkout({ cartItems = [] }) {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+  const [formError, setFormError] = useState(null);
 
   // Summary state lifted from OrderSummary
   const [summaryState, setSummaryState] = useState({
@@ -2422,7 +2991,7 @@ function Checkout({ cartItems = [] }) {
     appliedVoucherCode: null,
   });
 
-const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
+  const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
   const stripe = useStripe();
   const elements = useElements();
 
@@ -2444,11 +3013,53 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
   const handleExpressSelect = (method) => {
     setPaymentMethod(method);
-    paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    paymentSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const handlePlaceOrder = async () => {
     if (paymentMethod !== "card" || !stripe || !elements) return;
+
+    // Validate required delivery fields
+    if (!deliveryCountryIso2) {
+      setFormError("Please select a country for the delivery address.");
+      return;
+    }
+    if (!street.trim()) {
+      setFormError("Please enter the full address for delivery.");
+      return;
+    }
+    if (!postcode.trim()) {
+      setFormError("Please enter the postcode for the delivery address.");
+      return;
+    }
+    if (!city.trim()) {
+      setFormError("Please enter the town/city for the delivery address.");
+      return;
+    }
+    // Validate required billing fields if different billing is used
+    if (useDifferentBilling) {
+      if (!billingCountryIso2) {
+        setFormError("Please select a country for the invoice address.");
+        return;
+      }
+      if (!billingStreet.trim()) {
+        setFormError("Please enter the full address for the invoice address.");
+        return;
+      }
+      if (!billingPostcode.trim()) {
+        setFormError("Please enter the postcode for the invoice address.");
+        return;
+      }
+      if (!billingCity.trim()) {
+        setFormError("Please enter the town/city for the invoice address.");
+        return;
+      }
+    }
+
+    setFormError(null);
     setIsSubmitting(true);
     setPaymentError(null);
     try {
@@ -2458,7 +3069,9 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       // Step 0: Guest user — verify/create account before payment
       if (!token) {
         const dialCode = (() => {
-          const c = defaultCountries.find(c => parseCountry(c).iso2 === (countryIso2 || "fr"));
+          const c = defaultCountries.find(
+            (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
+          );
           return c ? `+${parseCountry(c).dialCode}` : "";
         })();
         const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
@@ -2495,11 +3108,12 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
       // Step 1: Create Stripe PaymentMethod
       const cardEl = elements.getElement(CardNumberElement);
-      const { error: methodError, paymentMethod: pm } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardEl,
-        billing_details: { name: lastName, email },
-      });
+      const { error: methodError, paymentMethod: pm } =
+        await stripe.createPaymentMethod({
+          type: "card",
+          card: cardEl,
+          billing_details: { name: lastName, email },
+        });
       if (methodError) {
         setPaymentError(methodError.message);
         setIsSubmitting(false);
@@ -2513,11 +3127,16 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ amount: Math.round(summaryState.total * 100), payment_method: "card" }),
+        body: JSON.stringify({
+          amount: toCleanAmount(summaryState.total),
+          payment_method: "card",
+        }),
       });
       const intentData = await intentRes.json();
       if (!intentData.status) {
-        setPaymentError(getErrorMsg(intentData) || "Failed to create payment intent.");
+        setPaymentError(
+          getErrorMsg(intentData) || "Failed to create payment intent.",
+        );
         setIsSubmitting(false);
         return;
       }
@@ -2529,9 +3148,10 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       }
 
       // Step 3: Confirm Card Payment
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: pm.id,
-      });
+      const { error: confirmError, paymentIntent } =
+        await stripe.confirmCardPayment(clientSecret, {
+          payment_method: pm.id,
+        });
       if (confirmError) {
         setPaymentError(confirmError.message);
         setIsSubmitting(false);
@@ -2545,21 +3165,28 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
       // Step 4: Place Order API
       const dialCode = (() => {
-        const c = defaultCountries.find(c => parseCountry(c).iso2 === (countryIso2 || "fr"));
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
+        );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
       const deliveryCountryName = (() => {
-        const c = defaultCountries.find(c => parseCountry(c).iso2 === deliveryCountryIso2);
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === deliveryCountryIso2,
+        );
         return c ? parseCountry(c).name : deliveryCountryIso2;
       })();
       const billingCountryName = (() => {
-        const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
-        const c = defaultCountries.find(c => parseCountry(c).iso2 === iso);
+        const iso = useDifferentBilling
+          ? billingCountryIso2
+          : deliveryCountryIso2;
+        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
         return c ? parseCountry(c).name : iso;
       })();
-      const cartIds = items.map(i => i.id).join(",");
+      const cartIds = items.map((i) => i.id).join(",");
       const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
-      const deliveryCostValue = summaryState.deliveryCost === 0 ? 0 : summaryState.deliveryCost;
+      const deliveryCostValue =
+        summaryState.deliveryCost === 0 ? 0 : summaryState.deliveryCost;
 
       const orderBody = {
         full_name: lastName,
@@ -2571,29 +3198,35 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
         delivery_address_country: deliveryCountryName,
         delivery_address_city: city,
         delivery_address_postal_code: postcode,
-        delivery_address_type: "null",
+        delivery_address_type: "delivery_address",
         invoice_address_full: useDifferentBilling ? billingStreet : street,
         invoice_address_country: billingCountryName,
         invoice_address_city: useDifferentBilling ? billingCity : city,
-        invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
-        invoice_address_type: "null",
+        invoice_address_postal_code: useDifferentBilling
+          ? billingPostcode
+          : postcode,
+        invoice_address_type: "invoice_address",
         is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
         payment_method: "card",
         payment_status: "paid",
+        invoice_state: useDifferentBilling ? billingRegion : region,
+        delivery_state: region,
         taxAmount: 0,
-        shippingCost: deliveryCostValue,
-        totalAmount: summaryState.total,
-        subtotal,
+        shippingCost: toCleanAmount(deliveryCostValue),
+        totalAmount: toCleanAmount(summaryState.total),
+        subtotal: toCleanAmount(subtotal),
         payment_id: paymentIntent.id,
         voucher: summaryState.appliedVoucherCode || "",
         promo_code: summaryState.appliedPromo?.code || "",
         cartIds,
         is_pickup: isPickup,
         delivery_cost: deliveryCostValue,
-        ...(isPickup === 1 && summaryState.selectedLocation ? {
-          pickup_name: summaryState.selectedLocation.name,
-          pickup_address: summaryState.selectedLocation.address,
-        } : {}),
+        ...(isPickup === 1 && summaryState.selectedLocation
+          ? {
+              pickup_name: summaryState.selectedLocation.name,
+              pickup_address: summaryState.selectedLocation.address,
+            }
+          : {}),
       };
 
       const orderRes = await fetch(`${BASE_URL}/user/order/place`, {
@@ -2608,7 +3241,7 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       if (!orderData.status) {
         setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
         setIsSubmitting(false);
-        toast.error(getErrorMsg(orderData) || "Order placement failed.")
+        toast.error(getErrorMsg(orderData) || "Order placement failed.");
         return;
       }
 
@@ -2618,14 +3251,14 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
           ...(orderData.data?.order || {}),
           paymentInfo: {
             brand: pm?.card?.brand || "visa",
-            last4: pm?.card?.last4 || "4221",
-          }
+            last4: pm?.card?.last4 || "",
+          },
         };
         localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
       } catch (e) {
         console.error("Failed to save lastPlacedOrder", e);
       }
-    
+
       router.push("/track-order");
     } catch (err) {
       console.error(err);
@@ -2643,7 +3276,9 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       const stored = JSON.parse(localStorage.getItem("cartData") || "null");
       const list = stored?.cartItem || stored?.cartItems || [];
       if (list.length > 0) setItems(list);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, []);
 
   // ✅ CHANGE 2: refreshCartFromServer — same as ModalAddToCart
@@ -2654,7 +3289,10 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       const res = await fetch(`${BASE_URL}/user/cart/list`, {
         method: "POST",
         headers: token
-          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          ? {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
       });
@@ -2662,12 +3300,15 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       if (data.status) {
         const normalizedData = {
           ...data.data,
-          cartItem: (data.data.cartItem || data.data.cartItems || []).filter(Boolean),
+          cartItem: (data.data.cartItem || data.data.cartItems || []).filter(
+            Boolean,
+          ),
         };
         saveCartData(normalizedData);
         setItems(normalizedData.cartItem);
       }
-    } catch { } finally {
+    } catch {
+    } finally {
       if (stopLoader) setIsRemoving(false);
     }
   };
@@ -2681,12 +3322,15 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       const res = await fetch(`${BASE_URL}/user/cart/update/quantity`, {
         method: "POST",
         headers: token
-          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          ? {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token
             ? { quantity: qty, cartId }
-            : { device_id: getDeviceId(), quantity: qty, cartId }
+            : { device_id: getDeviceId(), quantity: qty, cartId },
         ),
       });
       const data = await res.json();
@@ -2712,9 +3356,14 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
       const res = await fetch(`${BASE_URL}/user/cart/remove`, {
         method: "POST",
         headers: token
-          ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+          ? {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
-        body: JSON.stringify(token ? { cartId } : { device_id: getDeviceId(), cartId }),
+        body: JSON.stringify(
+          token ? { cartId } : { device_id: getDeviceId(), cartId },
+        ),
       });
       const data = await res.json();
       if (data.status === false) {
@@ -2785,17 +3434,17 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
           gap: 32px;
           align-items: flex-start;
         }
-        .checkout-sidebar-container {
-          width: 480px;
-          flex-shrink: 0;
-          position: sticky;
-          top: 80px;
-          max-height: calc(100vh - 80px - 80px);
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding-bottom: 24px;
-        }
+       .checkout-sidebar-container {
+  width: 480px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  max-height: calc(100vh - 80px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
         .cart-items-scroll {
           overflow-y: scroll;
           scrollbar-width: none;
@@ -2843,25 +3492,46 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
           <img src="logo.svg" alt="" style={{ height: "40px" }} />
         </div>
         {!isLoggedIn ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#333" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              fontSize: "13px",
+              color: "#333",
+            }}
+          >
             <span>Have an account?</span>
             <button
               onClick={() => setIsLoginModalOpen(true)}
               style={{
-                padding: "8px 16px", background: "#FAFAFA",
-                border: "1px solid #F0EEEE", fontSize: "12px",
-                fontWeight: 600, color: "#111", cursor: "pointer", fontFamily: FONT,
+                padding: "8px 16px",
+                background: "#FAFAFA",
+                border: "1px solid #F0EEEE",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#111",
+                cursor: "pointer",
+                fontFamily: FONT,
               }}
             >
               Sign in
             </button>
           </div>
         ) : (
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            width: "36px", height: "36px",
-            border: "1px solid #F0EEEE", background: "#FAFAFA",
-          }}>
+          <div
+            onClick={() => router.push("/my-account")}
+            style={{
+              display: "flex",
+              cursor: "pointer",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "36px",
+              height: "36px",
+              border: "1px solid #F0EEEE",
+              background: "#FAFAFA",
+            }}
+          >
             <FaRegUser size={16} color="#111" />
           </div>
         )}
@@ -2891,7 +3561,10 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
             }}
           >
             {/* Express Payment */}
-            <ExpressPaymentBar selectedMethod={paymentMethod} onSelect={handleExpressSelect} />
+            <ExpressPaymentBar
+              selectedMethod={paymentMethod}
+              onSelect={handleExpressSelect}
+            />
 
             {/* Contact details */}
             <Section title="Contact Details">
@@ -3030,44 +3703,113 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
                     label="Credit card"
                     right={<CardBrandIcons />}
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "4px" }}>
-                      <div style={{ border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
-                        <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>Card number</label>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "10px",
+                        paddingTop: "4px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          background: "#fff",
+                          padding: "14px",
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: "10px",
+                            color: "#999",
+                            display: "block",
+                            marginBottom: "6px",
+                            fontFamily: FONT,
+                          }}
+                        >
+                          Card number
+                        </label>
                         <CardNumberElement options={stripeElementStyle} />
                       </div>
                       <div style={{ display: "flex", gap: "10px" }}>
-                        <div style={{ flex: 1, border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
-                          <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>Expiration date</label>
+                        <div
+                          style={{
+                            flex: 1,
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                            background: "#fff",
+                            padding: "14px",
+                          }}
+                        >
+                          <label
+                            style={{
+                              fontSize: "10px",
+                              color: "#999",
+                              display: "block",
+                              marginBottom: "6px",
+                              fontFamily: FONT,
+                            }}
+                          >
+                            Expiration date
+                          </label>
                           <CardExpiryElement options={stripeElementStyle} />
                         </div>
-                        <div style={{ flex: 1, border: "1px solid #ddd", borderRadius: "3px", background: "#fff", padding: "14px" }}>
-                          <label style={{ fontSize: "10px", color: "#999", display: "block", marginBottom: "6px", fontFamily: FONT }}>CVC/CVV</label>
+                        <div
+                          style={{
+                            flex: 1,
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                            background: "#fff",
+                            padding: "14px",
+                          }}
+                        >
+                          <label
+                            style={{
+                              fontSize: "10px",
+                              color: "#999",
+                              display: "block",
+                              marginBottom: "6px",
+                              fontFamily: FONT,
+                            }}
+                          >
+                            CVC/CVV
+                          </label>
                           <CardCvcElement options={stripeElementStyle} />
                         </div>
                       </div>
                       {paymentError && (
-                        <p style={{ margin: 0, fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "12px",
+                            color: "#e02424",
+                            fontFamily: FONT,
+                          }}
+                        >
+                          {paymentError}
+                        </p>
                       )}
                     </div>
                   </PaymentMethodRow>
 
-                {isMobile && isAndroid && (
-  <PaymentMethodRow
-    active={paymentMethod === "googlepay"}
-    onSelect={() => setPaymentMethod("googlepay")}
-    label="Google Pay"
-    right={<GooglePayBadge />}
-  />
-)}
+                  {isMobile && isAndroid && (
+                    <PaymentMethodRow
+                      active={paymentMethod === "googlepay"}
+                      onSelect={() => setPaymentMethod("googlepay")}
+                      label="Google Pay"
+                      right={<GooglePayBadge />}
+                    />
+                  )}
 
-{isMobile && isIOS && (
-  <PaymentMethodRow
-    active={paymentMethod === "applepay"}
-    onSelect={() => setPaymentMethod("applepay")}
-    label="Apple Pay"
-    right={<ApplePayBadge />}
-  />
-)}
+                  {isMobile && isIOS && (
+                    <PaymentMethodRow
+                      active={paymentMethod === "applepay"}
+                      onSelect={() => setPaymentMethod("applepay")}
+                      label="Apple Pay"
+                      right={<ApplePayBadge />}
+                    />
+                  )}
                   <PaymentMethodRow
                     last
                     active={paymentMethod === "paypal"}
@@ -3118,35 +3860,51 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
             </div>
 
             {/* Left: Place Order button */}
-          <button
-  onClick={handlePlaceOrder}
-  disabled={isSubmitting}
-  style={{
-    ...placeOrderBtnStyle,
-    opacity: isSubmitting ? 0.75 : 1,
-    cursor: isSubmitting ? "not-allowed" : "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "10px",
-  }}
-  onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
-  onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
->
-  {isSubmitting ? (
-    <>
-      <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
-      <span style={{
-        display: "inline-block", width: "14px", height: "14px",
-        border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
-        borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
-      }} />
-      Processing…
-    </>
-  ) : (
-    `Order — ${summaryState.total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
-  )}
-</button>
+            {formError && (
+              <p style={{ margin: 0, fontSize: "12px", color: "#e02424", fontFamily: FONT }}>
+                {formError}
+              </p>
+            )}
+            <button
+              onClick={handlePlaceOrder}
+              disabled={isSubmitting}
+              style={{
+                ...placeOrderBtnStyle,
+                opacity: isSubmitting ? 0.75 : 1,
+                cursor: isSubmitting ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) e.currentTarget.style.background = "#333";
+              }}
+              onMouseLeave={(e) => {
+                if (!isSubmitting) e.currentTarget.style.background = "#111";
+              }}
+            >
+              {isSubmitting ? (
+                <>
+                  <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "14px",
+                      height: "14px",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "confirmBtnSpin 0.65s linear infinite",
+                      flexShrink: 0,
+                    }}
+                  />
+                  Processing…
+                </>
+              ) : (
+                `Order — ${formatPrice(summaryState.total, lang)} €`
+              )}
+            </button>
           </div>
 
           <div
@@ -3156,62 +3914,76 @@ const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
               flexShrink: 0,
               position: "sticky",
               top: "80px",
-              maxHeight: "calc(100vh - 80px - 80px)",
+              alignSelf: "flex-start",
+              maxHeight: "calc(100vh - 80px)",
+              overflow: "hidden",
               display: "flex",
               flexDirection: "column",
-              gap: "12px",
-              paddingBottom: "24px",
             }}
           >
-            <OrderSummary
-              items={items}
-              onQtyChange={handleQtyChange}
-              onRemoveItem={handleRemoveItem}
-              subtotal={subtotal}
-              totalUnits={totalUnits}
-              isRemoving={isRemoving}
-              onSummaryStateChange={setSummaryState}
-            />
-           <button
-  onClick={handlePlaceOrder}
-  disabled={isSubmitting}
-  style={{
-    flexShrink: 0,
-    width: "100%",
-    padding: "13px",
-    backgroundColor: "#111",
-    color: "#fff",
-    border: "none",
-    fontSize: "11.5px",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    cursor: isSubmitting ? "not-allowed" : "pointer",
-    borderRadius: "2px",
-    fontFamily: FONT,
-    transition: "background 0.2s",
-    textTransform: "uppercase",
-    opacity: isSubmitting ? 0.75 : 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "10px",
-  }}
-  onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
-  onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
->
-  {isSubmitting ? (
-    <>
-      <span style={{
-        display: "inline-block", width: "13px", height: "13px",
-        border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
-        borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
-      }} />
-      Processing…
-    </>
-  ) : (
-    `Order — ${summaryState.total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
-  )}
-</button>
+          <OrderSummary
+  items={items}
+  onQtyChange={handleQtyChange}
+  onRemoveItem={handleRemoveItem}
+  subtotal={subtotal}
+  totalUnits={totalUnits}
+  isRemoving={isRemoving}
+  onSummaryStateChange={setSummaryState}
+  lang={lang}
+  onPlaceOrder={handlePlaceOrder}
+  isSubmitting={isSubmitting}
+/>
+            {/* <button
+              onClick={handlePlaceOrder}
+              disabled={isSubmitting}
+              style={{
+                flexShrink: 0,
+                width: "100%",
+                padding: "13px",
+                backgroundColor: "#111",
+                color: "#fff",
+                border: "none",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                cursor: isSubmitting ? "not-allowed" : "pointer",
+                borderRadius: "2px",
+                fontFamily: FONT,
+                transition: "background 0.2s",
+                textTransform: "uppercase",
+                opacity: isSubmitting ? 0.75 : 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) e.currentTarget.style.background = "#333";
+              }}
+              onMouseLeave={(e) => {
+                if (!isSubmitting) e.currentTarget.style.background = "#111";
+              }}
+            >
+              {isSubmitting ? (
+                <>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "13px",
+                      height: "13px",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "confirmBtnSpin 0.65s linear infinite",
+                      flexShrink: 0,
+                    }}
+                  />
+                  Processing…
+                </>
+              ) : (
+                `Order — ${formatPrice(summaryState.total, lang)} €`
+              )}
+            </button> */}
           </div>
         </div>
       </div>

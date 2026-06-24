@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
@@ -10,6 +11,16 @@ import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import LoginModal from "../Onboarding/Login";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
+
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -273,6 +284,8 @@ const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
 // ─── Upsell Product Card ──────────────────────────────────────────────────────
 function UpsellCard({ item, onAdd, isAdding }) {
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
   const [addHovered, setAddHovered] = useState(false);
   if (!item) return null;
 
@@ -283,7 +296,6 @@ function UpsellCard({ item, onAdd, isAdding }) {
 
   const price = parseFloat(String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", ".")) || 0;
   const name = item.name || "";
-
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "4px 12px 4px 4px", backgroundColor: "#fff" }}>
       <div style={{
@@ -326,7 +338,7 @@ function UpsellCard({ item, onAdd, isAdding }) {
               <style>{`@keyframes upsellSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
               <span style={{ width: 11, height: 11, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "upsellSpin 0.6s linear infinite" }} />
             </>
-          ) : `Add — ${price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
+          ) : `Add — ${formatPrice(price, lang)} €`}
         </button>
       </div>
     </div>
@@ -334,6 +346,8 @@ function UpsellCard({ item, onAdd, isAdding }) {
 }
 
 export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
   const [cartItems, setCartItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -868,6 +882,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const renderLoggedVoucherContent = () => {
     const hasVouchers = voucherPills.length > 0;
     const hasPoints = voucherPoints !== null && voucherPoints > 0;
+    const canCreateMoreVoucher = voucherPills.length >= 10 && hasPoints;
 
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
@@ -965,7 +980,8 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                 </div>
               );
             })}
-            {hasPoints && (
+           {canCreateMoreVoucher && (
+
               <button
                 onClick={() => setIsVoucherModalOpen(true)}
                 onMouseEnter={() => setCreateMoreHovered(true)}
@@ -1079,8 +1095,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
         style={{
           height: '23px',
           width: cartCount >= 100 ? '53px' : cartCount >= 10 ? '33px' : '23px',
-          paddingTop: '0.7px',
-          paddingRight: '0.7px',
+     
           marginLeft: '5px',
           borderRadius: '999px',
           backgroundColor: '#111',
@@ -1182,7 +1197,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                     </div>
                   </div>
                   <div style={{ fontSize: "13px", marginTop: "65px", color: "#555", flexShrink: 0 }}>
-                    {parseFloat(itemTotal).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                    {formatPrice(itemTotal, lang)} €
                   </div>
                 </div>
               );
@@ -1191,7 +1206,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             {/* Order Summary */}
             <div style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
-                <span>Subtotal</span><span>{subtotal.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                <span>Subtotal</span><span>{formatPrice(subtotal, lang)} €</span>
               </div>
                 {appliedPromo && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
@@ -1203,7 +1218,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       </span>
                     </div>
                   </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{promoDiscount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(promoDiscount, lang)} €</span>
                 </div>
               )}
 
@@ -1215,12 +1230,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selectedPill}</span>
                     </div>
                   </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>-{Number(appliedVoucherOff).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                  <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(appliedVoucherOff, lang)} €</span>
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <span>Delivery Costs</span>
-                {subtotal >= 39 ? <span>Free</span> : <span>5,90 €</span>}
+                {subtotal >= 39 ? <span>Free</span> : <span>{formatPrice(5.90, lang)} €</span>}
               </div>
               <div style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1273,7 +1288,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
                       </div>
                     )}
                   </div>
-                  {isFreeDelivery ? <span>Free</span> : <span>{Number.isInteger(deliveryCost) ? deliveryCost.toFixed(2).replace(".", ",") : deliveryCost.toFixed(2).replace(".", ",")} €</span>}
+                  {isFreeDelivery ? <span>Free</span> : <span>{formatPrice(deliveryCost, lang)} €</span>}
                 </div>
               </div>
 
@@ -1283,7 +1298,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
 
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "14px", fontWeight: 700, color: "#111" }}>
                 <span>Estimated total</span>
-                <span>{parseFloat(totalWithDelivery).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                <span>{formatPrice(totalWithDelivery, lang)} €</span>
               </div>
             </div>
 
@@ -1394,7 +1409,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#555", marginBottom: "7px" }}>
                 <span>Complete for free shipping</span>
                 <span style={{ fontWeight: 600, color: "#111" }}>
-                  {isEmpty ? "0,00" : remaining.replace(".", ",")} € remaining
+                  {formatPrice(isEmpty ? 0 : remaining, lang)} € remaining
                 </span>
               </div>
               <div style={{ height: "4px", backgroundColor: "#e5e5e5", overflow: "hidden", marginBottom: "14px" }}>

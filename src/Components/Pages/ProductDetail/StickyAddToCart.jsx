@@ -3,6 +3,15 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaPlus, FaMinus } from "react-icons/fa";
 
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
 export default function StickyAddToCart({
   price = "16.0",
   selectedVolume,
@@ -14,7 +23,7 @@ export default function StickyAddToCart({
   onQuantityChange,
   onAddToCart,
 }) {
-  const { t } = useTranslation("stickyaddtocart");
+ const { t, i18n } = useTranslation("stickyaddtocart");
   const [loading, setLoading] = useState(false);
 
   const handleClick = () => {
@@ -103,7 +112,7 @@ export default function StickyAddToCart({
                 <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "stickySpin 0.75s linear infinite" }} />
               </>
             ) : (
-              <>{t("addToCart")} – €{price}</>
+            <>{t("addToCart")} – {formatPrice(price, i18n.language)} €</>
             )}
           </button>
         </div>

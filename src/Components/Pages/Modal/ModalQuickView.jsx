@@ -49,6 +49,16 @@ const buildSlides = (rawProduct) => {
   ];
 };
 
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
+
 export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, fullProductData }) {
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
@@ -634,7 +644,7 @@ export default function ModalQuickView({ isOpen, onClose, onCartOpen, product, f
                       {addingToCart ? (
                         <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin89345 0.75s linear infinite" }} />
                       ) : (
-                        <>{t("addToCart")} – €{displayPrice}</>
+                        <>{t("addToCart")} – {formatPrice(displayPrice, language)} €</>
                       )}
                     </button>
                   </div>

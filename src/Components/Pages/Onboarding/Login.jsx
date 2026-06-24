@@ -169,55 +169,32 @@ useEffect(() => {
       setApiError('');
       const result = await signInWithPopup(getFirebaseAuth(), provider);
       const user = result.user;
-      const socialPassword = `Social@${user.uid.slice(0, 12)}`;
+      const platform = provider.providerId?.includes('google') ? 'google' : 'apple';
 
-      // Try register first
-      const regRes = await fetch(`${BASE_URL}/user/auth/register`, {
+      const res = await fetch(`${BASE_URL}/user/auth/social/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: user.displayName || user.email.split('@')[0],
-          email: user.email,
-          password: socialPassword,
+          name: user.displayName || user.email?.split('@')[0] || '',
+          email: user.email || '',
+          platform,
+          platform_id: user.uid,
           device: 'web',
-          device_id: getDeviceId(),
-          fcm_token: null,
+          device_id: 'web123',
+          fcm_token: 'web123',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
-      const regData = await regRes.json();
+      const data = await res.json();
 
-      if (regData.status === true) {
-        localStorage.setItem('LoginData', JSON.stringify(regData));
-        callSplashApi();
-        window.dispatchEvent(new Event('loginStateChange'));
-        onClose();
-        return;
-      }
-
-      // Email already exists — try login
-      const logRes = await fetch(`${BASE_URL}/user/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          password: socialPassword,
-          device: 'web',
-          device_id: getDeviceId(),
-          fcm_token: null,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }),
-      });
-      const logData = await logRes.json();
-
-      if (logData.status === true) {
-        localStorage.setItem('LoginData', JSON.stringify(logData));
+      if (data.status === true) {
+        localStorage.setItem('LoginData', JSON.stringify(data));
         callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();
       } else {
-        const msg = logData.errors?.length > 0 ? logData.errors[0].message : logData.action;
-        setApiError(msg || 'Login failed. Please try again.');
+        const msg = data.errors?.length > 0 ? data.errors[0].message : data.action;
+        setApiError(msg || 'Social login failed. Please try again.');
       }
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {

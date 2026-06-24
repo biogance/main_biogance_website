@@ -19,9 +19,10 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
     const minimumPoints = 10;
     const userBalance = loyaltyPoints;
     const maxVoucherValue = Math.floor(loyaltyPoints / 10);
+    const maxRedeemable = Math.floor(maxVoucherValue / 10) * 10;
 
-    // Generate dropdown: 1€, 2€, ... maxVoucherValue€ → each option = value*10 points
-    const pointsOptions = Array.from({ length: maxVoucherValue }, (_, i) => {
+    // Generate dropdown: 10, 20, 30 ... maxRedeemable points
+    const pointsOptions = Array.from({ length: maxRedeemable / 10 }, (_, i) => {
       const pts = (i + 1) * 10;
       return { value: String(pts), label: t('createVoucher.pointsOption', { points: pts }) };
     });
@@ -150,18 +151,18 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
                     </button>
                     
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300  shadow-lg z-10 overflow-hidden">
-                        {pointsOptions.map((option) => (
-                          <div
-                            key={option.value}
-                            onClick={() => handleSelectOption(option.value)}
-                            className="px-4 py-3 cursor-pointer text-gray-700 hover:bg-black hover:text-white transition-colors"
-                          >
-                            {option.label}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 shadow-lg z-10 max-h-60 overflow-y-auto">
+    {pointsOptions.map((option) => (
+      <div
+        key={option.value}
+        onClick={() => handleSelectOption(option.value)}
+        className="px-4 py-3 cursor-pointer text-gray-700 hover:bg-black hover:text-white transition-colors"
+      >
+        {option.label}
+      </div>
+    ))}
+  </div>
+)}
                   </div>
                   
                   {showError && (
