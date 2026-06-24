@@ -41,6 +41,21 @@ function formatDeliveryDate(raw) {
   }
 }
 
+// Calculate estimated delivery: order_date + 3 to 4 days
+function getEstimatedDelivery(orderDate) {
+  if (!orderDate) return null;
+  try {
+    const from = new Date(orderDate.replace(" ", "T"));
+    const to = new Date(orderDate.replace(" ", "T"));
+    from.setDate(from.getDate() + 3);
+    to.setDate(to.getDate() + 4);
+    const opts = { day: "numeric", month: "long", year: "numeric" };
+    return `${from.toLocaleDateString("en-GB", opts)} – ${to.toLocaleDateString("en-GB", opts)}`;
+  } catch {
+    return null;
+  }
+}
+
 // Format order_date for step label e.g. "Today, 10:34 AM"
 function formatOrderTime(raw) {
   if (!raw) return "";
@@ -217,7 +232,7 @@ function TrackOrder() {
           <p className="text-xs font-semibold text-gray-900 whitespace-nowrap">
             {orderSummary?.delivery_date
               ? formatDeliveryDate(orderSummary.delivery_date)
-              : "*****"}
+              : getEstimatedDelivery(orderSummary?.order_date) || "—"}
           </p>
         </div>
  
@@ -692,7 +707,7 @@ function TrackOrder() {
     {/* CTA */}
     <a
 
-      href="https://your-google-review-link.com"
+      href="https://search.google.com/local/reviews?placeid=ChIJd1q6Z-InBkgRBAHsb2wiK4M"
       target="_blank"
       rel="noopener noreferrer"
       

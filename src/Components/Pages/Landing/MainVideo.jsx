@@ -206,22 +206,23 @@ export default function HeroSection() {
           {/* Dark Overlay */}
           {/* <div className="absolute inset-0 bg-black/40"></div> */}
 
-          {/* Content Container */}
-          <div className="relative z-10 w-full h-full flex items-center ">
+       {/* Content Container */}
+      <div className="relative z-10 w-full h-full flex items-start pt-30 sm:pt-28 md:items-center md:pt-0">
             <div className="w-full px-4 sm:px-6">
-              <div className="max-w-3xl mt-20">
+              <div className="max-w-3xl mt-0 md:mt-20 text-center md:text-left mx-auto md:mx-0">
+                
                 {/* Tagline */}
-                <p className="text-xs sm:text-sm md:text-base font-light mb-3 md:mb-4 tracking-wide text-black/90">
+                <p className="text-[11px] sm:text-sm md:text-base font-light mb-2 md:mb-4 tracking-wide text-black/90">
                   {heroContent.tagline}
                 </p>
 
                 {/* Main Heading */}
-                <h1 className="text-7xl sm:text-2xl md:text-7xl lg:text-6xl xl:text-7xl font-semibold leading-tight mb-4 md:mb-6 text-black">
+                <h1 className="text-2xl sm:text-3xl md:text-7xl lg:text-6xl xl:text-7xl font-semibold leading-tight mb-2 md:mb-6 text-black">
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-xl leading-relaxed text-black/90">
+                <p className="text-xs sm:text-base md:text-lg mb-4 md:mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed text-black/90">
                   {heroContent.description}
                 </p>
 

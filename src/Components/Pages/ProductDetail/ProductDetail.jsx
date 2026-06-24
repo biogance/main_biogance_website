@@ -32,6 +32,16 @@ import ModalAddToCart from "../Modal/ModalAddToCart";
 import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
 
 
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
+
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => {
@@ -854,7 +864,7 @@ export default function ProductDetail() {
                     {cartBtnLoading ? (
                       <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin89345 0.75s linear infinite" }} />
                     ) : (
-                      <>{t("addToCart")} – {displayPrice} €</>
+                      <>{t("addToCart")} – {formatPrice(displayPrice, language)} €</>
                     )}
                   </button>
                   <button
