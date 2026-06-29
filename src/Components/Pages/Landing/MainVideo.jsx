@@ -26,6 +26,44 @@ const heroSlides = [
   },
 ];
 
+// Global cache variable to store the video blob URL so it plays instantly on SPA page navigation
+let globalVideoBlobUrl = null;
+
+// Initialize cache check immediately on script load (client-side only)
+if (typeof window !== 'undefined' && 'caches' in window) {
+  const videoUrl = '/VIDEO.mp4';
+  const cacheName = 'biogance-video-cache';
+
+  caches.open(cacheName).then(async (cache) => {
+    try {
+      const cachedResponse = await cache.match(videoUrl);
+      if (cachedResponse) {
+        console.log('[Module Load] Serving video from browser Cache Storage.');
+        const blob = await cachedResponse.blob();
+        globalVideoBlobUrl = URL.createObjectURL(blob);
+        window.dispatchEvent(new CustomEvent('biogance-video-blob-ready', { detail: globalVideoBlobUrl }));
+      } else {
+        console.log('[Module Load] Video not cached. Fetching in background...');
+        fetch(videoUrl)
+          .then(async (response) => {
+            if (response.ok) {
+              await cache.put(videoUrl, response.clone());
+              const blob = await response.blob();
+              globalVideoBlobUrl = URL.createObjectURL(blob);
+              window.dispatchEvent(new CustomEvent('biogance-video-blob-ready', { detail: globalVideoBlobUrl }));
+              console.log('[Module Load] Video cached successfully.');
+            }
+          })
+          .catch((err) => {
+            console.error('[Module Load] Background fetch failed:', err);
+          });
+      }
+    } catch (err) {
+      console.error('[Module Load] Cache open/match error:', err);
+    }
+  });
+}
+
 // Preloading removed to avoid connection throttling/range request issues in Firefox
 const preloadHeroVideos = () => {
   // Disabled
@@ -39,8 +77,32 @@ export default function HeroSection() {
   const videoSectionRef = useRef(null);
   const videoRef = useRef(null);
 
+  // Initialize state with the global blob URL if it is already loaded
+  const [videoSrc, setVideoSrc] = useState(globalVideoBlobUrl || '/VIDEO.mp4');
+
+  useEffect(() => {
+    if (globalVideoBlobUrl) {
+      setVideoSrc(globalVideoBlobUrl);
+      return;
+    }
+
+    const handleBlobReady = (e) => {
+      // If the video is already loaded or playing, do not switch the URL mid-playback to avoid restarts
+      if (videoRef.current && videoRef.current.readyState >= 3) {
+        return;
+      }
+      setVideoSrc(e.detail);
+    };
+
+    window.addEventListener('biogance-video-blob-ready', handleBlobReady);
+    return () => {
+      window.removeEventListener('biogance-video-blob-ready', handleBlobReady);
+    };
+  }, []);
+
   const slides = heroSlides;
   const currentSlideData = slides[currentSlide] || slides[0];
+  const videoDisplaySrc = currentSlideData?.url === '/VIDEO.mp4' ? videoSrc : currentSlideData?.url;
   const isCurrentVideo = currentSlideData?.type === 'video';
   const hasMultipleSlides = slides.length > 1;
 
@@ -55,7 +117,7 @@ export default function HeroSection() {
         });
       }
     }
-  }, [currentSlide, isCurrentVideo]);
+  }, [currentSlide, isCurrentVideo, videoDisplaySrc]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -181,8 +243,8 @@ export default function HeroSection() {
           {isCurrentVideo ? (
             <video
               ref={videoRef}
-              key={currentSlideData.url}
-              src={currentSlideData.url}
+              key={videoDisplaySrc}
+              src={videoDisplaySrc}
               className="absolute inset-0 w-full h-full object-cover"
               muted
               autoPlay

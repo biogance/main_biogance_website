@@ -45,11 +45,23 @@ export default function AboutProduct({ apiProduct }) {
       title: t("ingredients"),
       content: apiProduct?.bundle_ingredients?.length
         ? apiProduct.bundle_ingredients
-            .map((b) =>
-              language === "fr"
+            .map((b) => {
+              const name = (language === "fr"
                 ? (b.ingredient?.french_name || b.ingredient?.name)
-                : (b.ingredient?.name)
-            )
+                : (b.ingredient?.name))?.trim();
+              const desc = (language === "fr"
+                ? (b.ingredient?.french_description || b.ingredient?.description)
+                : (b.ingredient?.description))?.trim();
+
+              if (name && desc) {
+                return (
+                  <>
+                    <strong className="font-semibold text-[#1C1C1C]">{name}:</strong> {desc}
+                  </>
+                );
+              }
+              return name || null;
+            })
             .filter(Boolean)
         : [t("noData")],
       isList: true,

@@ -17,6 +17,7 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
+import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -1256,7 +1257,7 @@ function CartScrollArea({ children, maxHeight }) {
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   ✅ CHANGE 2: CartItemRow — now uses new CustomDropdown + API calls
+   CHANGE 2: CartItemRow — now uses new CustomDropdown + API calls
    ──────────────────────────────────────────────────────────────────────── */
 function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
   const p = item.product || {};
@@ -2317,15 +2318,9 @@ function OrderSummary({
     <div
       style={{
         width: "100%",
-        flex: "0 1 auto",
-        minHeight: 0,
-        maxHeight: "calc(100vh - 80px - 32px)",
-        overflowY: "auto",
         background: "#f3f3f3",
         borderRadius: "0px",
         padding: "20px 26px 20px",
-        scrollbarWidth: "thin",
-        scrollbarColor: "#bbb #f3f3f3",
         position: "relative",
       }}
     >
@@ -3107,9 +3102,18 @@ function OrderSummary({
 
 export default function CheckoutWithStripe(props) {
   return (
-    <Elements stripe={stripePromise}>
-      <Checkout {...props} />
-    </Elements>
+    <PayPalScriptProvider
+      options={{
+        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "AeWBw6O7gyyHyeTYXU23P6lwrvAgZtVGU057C8ZoOpKuvdRGZxoSGlpYcohePC3093v_p20idGzj-7mo",
+        currency: "EUR",
+        intent: "capture",
+        components: "buttons",
+      }}
+    >
+      <Elements stripe={stripePromise}>
+        <Checkout {...props} />
+      </Elements>
+    </PayPalScriptProvider>
   );
 }
 
@@ -3139,39 +3143,38 @@ function Checkout({ cartItems = [] }) {
   };
 
   const handleSelectAddress = (address) => {
-    if (activeAddressTab === "delivery") {
-      setStreet(address.full_address || "");
-      setCity(address.city || "");
-      setPostcode(address.postal_code || "");
-      if (address.country) {
-        const found = defaultCountries.find(
-          (c) =>
-            parseCountry(c).name.toLowerCase() ===
-              address.country.toLowerCase() ||
-            parseCountry(c).iso2.toLowerCase() ===
-              address.country.toLowerCase(),
-        );
-        if (found) {
-          setDeliveryCountryIso2(parseCountry(found).iso2);
-        }
+    try {
+      let splash = JSON.parse(localStorage.getItem("splashData") || "null");
+      if (!splash) {
+        splash = { user: {} };
       }
-    } else {
-      setBillingStreet(address.full_address || "");
-      setBillingCity(address.city || "");
-      setBillingPostcode(address.postal_code || "");
-      if (address.country) {
-        const found = defaultCountries.find(
-          (c) =>
-            parseCountry(c).name.toLowerCase() ===
-              address.country.toLowerCase() ||
-            parseCountry(c).iso2.toLowerCase() ===
-              address.country.toLowerCase(),
-        );
-        if (found) {
-          setBillingCountryIso2(parseCountry(found).iso2);
-        }
+      if (!splash.user) {
+        splash.user = {};
       }
+
+      if (activeAddressTab === "delivery") {
+        splash.user.delivery_address = {
+          ...splash.user.delivery_address,
+          full_address: address.full_address || "",
+          postal_code: address.postal_code || "",
+          city: address.city || "",
+          country: address.country || "",
+        };
+      } else {
+        splash.user.invoice_address = {
+          ...splash.user.invoice_address,
+          full_address: address.full_address || "",
+          postal_code: address.postal_code || "",
+          city: address.city || "",
+          country: address.country || "",
+        };
+      }
+      localStorage.setItem("splashData", JSON.stringify(splash));
+    } catch (e) {
+      console.error("Error updating splashData", e);
     }
+
+    prefillFromSplash();
   };
 
   const getLoginData = () => {
@@ -3356,6 +3359,131 @@ function Checkout({ cartItems = [] }) {
       behavior: "smooth",
       block: "start",
     });
+  };
+
+  const handlePayPalApprove = async (ppData) => {
+    setIsSubmitting(true);
+    setPaymentError(null);
+    try {
+      let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      let token = loginData?.data?.token;
+
+      // Guest user — verify/create account
+      if (!token) {
+        const dialCode = (() => {
+          const c = defaultCountries.find(
+            (c) => parseCountry(c).iso2 === (countryIso2 || "fr")
+          );
+          return c ? `+${parseCountry(c).dialCode}` : "";
+        })();
+        const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: lastName, email,
+            country_code: dialCode, phone: dialCode,
+            phone_number: phone, device: "web",
+            device_id: "123", fcm_token: "web123",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyData.status) {
+          setIsSubmitting(false);
+          setIsLoginModalOpen(true);
+          return;
+        }
+        localStorage.setItem("LoginData", JSON.stringify(verifyData));
+        window.dispatchEvent(new Event("loginStateChange"));
+        loginData = verifyData;
+        token = verifyData?.data?.token;
+        setIsLoggedIn(true);
+      }
+
+      // Step 1: Capture payment — direct Biogance backend call
+      const captureRes = await fetch(`${BASE_URL}/user/payment/paypal/order/capture/${ppData.orderID}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!captureRes.ok) throw new Error("Payment capture failed");
+
+      // Step 2: Place order
+      const dialCode = (() => {
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === (countryIso2 || "fr")
+        );
+        return c ? `+${parseCountry(c).dialCode}` : "";
+      })();
+      const deliveryCountryName = (() => {
+        const c = defaultCountries.find((c) => parseCountry(c).iso2 === deliveryCountryIso2);
+        return c ? parseCountry(c).name : deliveryCountryIso2;
+      })();
+      const billingCountryName = (() => {
+        const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
+        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
+        return c ? parseCountry(c).name : iso;
+      })();
+      const cartIds = items.map((i) => i.id).join(",");
+      const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
+      const paymentId = `${ppData.orderID}-${ppData.payerID}`;
+
+      // Step 2: Place order — direct Biogance backend call
+      const placeRes = await fetch(`${BASE_URL}/user/order/place`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          full_name: lastName, email,
+          country_code: dialCode, phone: dialCode, phone_number: phone,
+          delivery_address_full: street,
+          delivery_address_country: deliveryCountryName,
+          delivery_address_city: city,
+          delivery_address_postal_code: postcode,
+          delivery_address_type: "delivery_address",
+          delivery_address_state: region,
+          invoice_address_full: useDifferentBilling ? billingStreet : street,
+          invoice_address_country: billingCountryName,
+          invoice_address_city: useDifferentBilling ? billingCity : city,
+          invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
+          invoice_address_type: "invoice_address",
+          invoice_address_state: useDifferentBilling ? billingRegion : region,
+          is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
+          payment_status: "Confirmed",
+          payment_method: "Paypal",
+          taxAmount: 0,
+          shippingCost: toCleanAmount(summaryState.deliveryCost),
+          totalAmount: toCleanAmount(summaryState.total),
+          subtotal: toCleanAmount(subtotal),
+          payment_id: paymentId,
+          voucher: summaryState.appliedVoucherCode || "",
+          promo_code: summaryState.appliedPromo?.code || "",
+          cartIds,
+          is_pickup: isPickup,
+          delivery_cost: summaryState.deliveryCost,
+          ...(isPickup === 1 && summaryState.selectedLocation
+            ? {
+                pickup_name: summaryState.selectedLocation.name,
+                pickup_address: summaryState.selectedLocation.address,
+              }
+            : {}),
+        }),
+      });
+      const placeData = await placeRes.json();
+      if (!placeRes.ok) throw new Error(placeData.action ?? placeData.error ?? "Failed to place order");
+
+      try {
+        localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
+      } catch {}
+
+      router.push("/track-order");
+    } catch (err) {
+      console.error(err);
+      setPaymentError(err.message || "PayPal payment failed. Please try again.");
+      toast.error(err.message || "PayPal payment failed.");
+      setIsSubmitting(false);
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -3599,11 +3727,13 @@ function Checkout({ cartItems = [] }) {
       }
 
       router.push("/track-order");
+      // Note: setIsSubmitting(false) is NOT called on success —
+      // the button stays in loading state until the component unmounts after redirect.
     } catch (err) {
       console.error(err);
       setPaymentError("An unexpected error occurred.");
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   // Cart items — localStorage se real data lo, fallback dummy
@@ -3793,9 +3923,14 @@ function Checkout({ cartItems = [] }) {
           top: 80px;
           align-self: flex-start;
           max-height: calc(100vh - 80px);
-          overflow: hidden;
+          overflow-y: auto;
           display: flex;
           flex-direction: column;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .checkout-sidebar-container::-webkit-scrollbar {
+          display: none;
         }
         .cart-items-scroll {
           overflow-y: scroll;
@@ -4225,7 +4360,33 @@ function Checkout({ cartItems = [] }) {
                     onSelect={() => setPaymentMethod("paypal")}
                     label="PayPal"
                     right={<PayPalBadge />}
-                  />
+                  >
+                    <div style={{ paddingTop: "8px" }}>
+                      <PayPalButtons
+                        style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 40 }}
+                        createOrder={async () => {
+                          let token;
+                          try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch {}
+                          if (!token) { setIsLoginModalOpen(true); throw new Error("Login required"); }
+                          const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({ amount: toCleanAmount(summaryState.total), env: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok || !data?.data?.order_id) throw new Error(data.action || data.error || "Could not create PayPal order");
+                          return data.data.order_id;
+                        }}
+                        onApprove={handlePayPalApprove}
+                        onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
+                        onCancel={() => setPaymentError("Payment cancelled.")}
+                        forceReRender={[summaryState.total]}
+                      />
+                      {paymentMethod === "paypal" && paymentError && (
+                        <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
+                      )}
+                    </div>
+                  </PaymentMethodRow>
                 </div>
               </Section>
             </div>
@@ -4333,7 +4494,8 @@ function Checkout({ cartItems = [] }) {
               top: "80px",
               alignSelf: "flex-start",
               maxHeight: "calc(100vh - 80px)",
-              overflow: "hidden",
+              overflowY: "auto",
+              scrollbarWidth: "none",
               display: "flex",
               flexDirection: "column",
             }}

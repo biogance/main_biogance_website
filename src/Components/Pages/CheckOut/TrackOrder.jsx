@@ -74,6 +74,32 @@ function TrackOrder() {
   const [orderSummary, setOrderSummary] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Intercept back button — always redirect to / synchronously
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let redirecting = false;
+
+    // Push sentinel so back button fires popstate instead of leaving
+    window.history.pushState({ sentinel: true }, "", window.location.href);
+
+    const handlePopState = () => {
+      if (redirecting) {
+        // Already redirecting — push another sentinel to block this click too
+        window.history.pushState({ sentinel: true }, "", window.location.href);
+        return;
+      }
+      redirecting = true;
+      // Synchronous full-page replace to / — no async gap for other clicks to slip through
+      window.location.replace("/");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   // Load from localStorage on first mount
   useEffect(() => {
     try {
