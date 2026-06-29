@@ -446,7 +446,7 @@ export const LandingCards = ({
           backgroundColor: "white",
           color: "black",
           border: "none",
-          borderRadius: "4px",
+       
           transition: "background-color 0.2s ease, color 0.2s ease",
         }}
         onMouseEnter={(e) => {

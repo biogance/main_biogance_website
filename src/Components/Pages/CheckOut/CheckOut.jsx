@@ -29,6 +29,7 @@ import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import ModalPickLocation from "./ModalPickLocation";
+import ModalChangeAddress from "./ModalChangeAddress";
 function usePaymentVisibility() {
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -86,7 +87,7 @@ const setVoucherState = (state) =>
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
 /* ────────────────────────────────────────────────────────────────────────
-   ✅ CHANGE 1: CustomDropdown — same windowed design as ModalAddToCart.jsx
+   CHANGE 1: CustomDropdown — same windowed design as ModalAddToCart.jsx
    ──────────────────────────────────────────────────────────────────────── */
 
 // ─── Chevron Icons ────────────────────────────────────────────────────────────
@@ -961,7 +962,7 @@ const stripeElementStyle = {
    Layout building blocks (unchanged)
    ──────────────────────────────────────────────────────────────────────── */
 
-function Section({ title, children }) {
+function Section({ title, action, children }) {
   return (
     <div
       style={{
@@ -970,17 +971,27 @@ function Section({ title, children }) {
         padding: "26px 30px",
       }}
     >
-      <h2
+      <div
         style={{
-          margin: "0 0 18px",
-          fontSize: "17px",
-          fontWeight: 700,
-          color: "#111",
-          fontFamily: FONT,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "18px",
         }}
       >
-        {title}
-      </h2>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "17px",
+            fontWeight: 700,
+            color: "#111",
+            fontFamily: FONT,
+          }}
+        >
+          {title}
+        </h2>
+        {action}
+      </div>
       {children}
     </div>
   );
@@ -995,7 +1006,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
     alignItems: "center",
     justifyContent: "center",
     gap: "6px",
-    width: "50px",
+    width: "100%",
     height: "50px",
     padding: "13px 10px",
     backgroundColor: "#fff",
@@ -1024,29 +1035,23 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
   return (
     <div
       style={{
-        position: "relative",
-        backgroundColor: "#f3f3f3",
+        background: "#f3f3f3",
+        borderRadius: "2px",
         padding: "26px 30px 24px",
       }}
     >
-      <div
+      <h2
         style={{
-          position: "absolute",
-          top: "9px",
-          left: "8%",
-          transform: "translateX(-50%)",
-          margin: "10px",
-          padding: "0 12px",
+          margin: "0 0 18px",
           fontSize: "17px",
           fontWeight: 700,
           color: "#111",
           fontFamily: FONT,
-          whiteSpace: "nowrap",
         }}
       >
         Payment
-      </div>
-      <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
+      </h2>
+      <div style={{ display: "flex", gap: "10px" }}>
         <button
           onClick={() => onSelect("card")}
           style={{ ...baseBtn, ...btnBorder("card") }}
@@ -1055,7 +1060,8 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
           <img
             src="visa.svg"
             alt=""
-            style={{ width: "120px", height: "90px" }}
+            className="express-pay-btn-img"
+            style={{ width: "120px", height: "90px", objectFit: "contain" }}
           />
         </button>
 
@@ -1064,7 +1070,6 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
           style={{
             ...baseBtn,
             color: "#003087",
-            width: "50px",
             height: "50px",
             ...btnBorder("paypal"),
           }}
@@ -1073,7 +1078,8 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
           <img
             src="google-pay.svg"
             alt=""
-            style={{ width: "100px", height: "100px" }}
+            className="express-pay-btn-img"
+            style={{ width: "100px", height: "100px", objectFit: "contain" }}
           />
         </button>
 
@@ -1086,7 +1092,8 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
             <img
               src="pay-pal.svg"
               alt=""
-              style={{ width: "120px", height: "100px" }}
+              className="express-pay-btn-img"
+              style={{ width: "120px", height: "100px", objectFit: "contain" }}
             />
           </button>
         )}
@@ -1100,7 +1107,8 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
             <img
               src="apple-pay.svg"
               alt=""
-              style={{ width: "120px", height: "80px" }}
+              className="express-pay-btn-img"
+              style={{ width: "120px", height: "80px", objectFit: "contain" }}
             />
           </button>
         )}
@@ -1210,7 +1218,7 @@ function CartScrollArea({ children, maxHeight }) {
           flex: 1,
           maxHeight,
           overflowY: needsScroll ? "scroll" : "visible",
-           paddingRight: needsScroll ? "10px" : "0",  
+          paddingRight: needsScroll ? "10px" : "0",
         }}
       >
         {children}
@@ -2146,7 +2154,7 @@ function OrderSummary({
                 </div>
               );
             })}
-{hasPoints && voucherPoints >= 10 && (
+            {hasPoints && voucherPoints >= 10 && (
               <button
                 onClick={() => setIsVoucherModalOpen(true)}
                 onMouseEnter={() => setCreateMoreHovered(true)}
@@ -2323,19 +2331,35 @@ function OrderSummary({
     >
       {/* Removing/loading overlay */}
       {isRemoving && (
-        <div style={{
-          position: "absolute", inset: 0, zIndex: 10,
-          backgroundColor: "rgba(255,255,255,0.6)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          pointerEvents: "all",
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 10,
+            backgroundColor: "rgba(255,255,255,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "all",
+          }}
+        >
           <style>{`@keyframes panelSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-          <div style={{ width: 32, height: 32, border: "3px solid #ddd", borderTopColor: "#111", borderRadius: "50%", animation: "panelSpin 0.75s linear infinite" }} />
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              border: "3px solid #ddd",
+              borderTopColor: "#111",
+              borderRadius: "50%",
+              animation: "panelSpin 0.75s linear infinite",
+            }}
+          />
         </div>
       )}
 
       {/* ── Order button — moved to top ── */}
       <button
+        className="checkout-right-order-btn"
         onClick={() => onPlaceOrder && onPlaceOrder()}
         disabled={isSubmitting}
         style={{
@@ -2359,16 +2383,27 @@ function OrderSummary({
           gap: "10px",
           marginBottom: "16px",
         }}
-        onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#333"; }}
-        onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.background = "#111"; }}
+        onMouseEnter={(e) => {
+          if (!isSubmitting) e.currentTarget.style.background = "#333";
+        }}
+        onMouseLeave={(e) => {
+          if (!isSubmitting) e.currentTarget.style.background = "#111";
+        }}
       >
         {isSubmitting ? (
           <>
-            <span style={{
-              display: "inline-block", width: "13px", height: "13px",
-              border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
-              borderRadius: "50%", animation: "confirmBtnSpin 0.65s linear infinite", flexShrink: 0,
-            }} />
+            <span
+              style={{
+                display: "inline-block",
+                width: "13px",
+                height: "13px",
+                border: "2px solid rgba(255,255,255,0.3)",
+                borderTopColor: "#fff",
+                borderRadius: "50%",
+                animation: "confirmBtnSpin 0.65s linear infinite",
+                flexShrink: 0,
+              }}
+            />
             Processing…
           </>
         ) : (
@@ -2442,29 +2477,66 @@ function OrderSummary({
         <button
           onClick={() => setPromoOpen((v) => !v)}
           style={{
-            width: "100%", background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "16px 0", fontSize: "13px", color: "#111",
+            width: "100%",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 0",
+            fontSize: "13px",
+            color: "#111",
             fontFamily: FONT,
           }}
         >
           <span style={{ fontWeight: 500 }}>Gift card / promo code</span>
-          <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: promoOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: 300,
+              display: "inline-block",
+              transform: promoOpen ? "rotate(45deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            +
+          </span>
         </button>
-        <div style={{ maxHeight: promoOpen ? "200px" : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)", opacity: promoOpen ? 1 : 0 }}>
+        <div
+          style={{
+            maxHeight: promoOpen ? "200px" : "0px",
+            overflow: "hidden",
+            transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
+            opacity: promoOpen ? 1 : 0,
+          }}
+        >
           <div style={{ paddingBottom: "16px" }}>
-            <div style={{ display: "flex", border: `1px solid ${promoError ? "#e02424" : "#ddd"}`, overflow: "hidden", transition: "border-color 0.15s" }}>
+            <div
+              style={{
+                display: "flex",
+                border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
+                overflow: "hidden",
+                transition: "border-color 0.15s",
+              }}
+            >
               <div style={{ position: "relative", flex: 1 }}>
                 <input
-                  type="text" placeholder="Enter your code"
+                  type="text"
+                  placeholder="Enter your code"
                   value={appliedPromo ? appliedPromo.code : promoInput}
                   disabled={!!appliedPromo}
                   onChange={handlePromoInputChange}
-                  onKeyDown={(e) => { if (e.key === "Enter") handlePromoApply(); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handlePromoApply();
+                  }}
                   title={appliedPromo ? "You already added promo code" : ""}
                   style={{
                     width: "100%",
-                    border: "none", outline: "none", padding: "11px 14px", fontSize: "13px",
+                    border: "none",
+                    outline: "none",
+                    padding: "11px 14px",
+                    fontSize: "13px",
                     color: appliedPromo ? "#aaa" : "#111",
                     background: appliedPromo ? "#f9f9f9" : "#fff",
                     cursor: appliedPromo ? "not-allowed" : "text",
@@ -2475,38 +2547,128 @@ function OrderSummary({
               <button
                 onClick={handlePromoApply}
                 disabled={!promoInput.trim() || !!appliedPromo || promoLoading}
-                onMouseEnter={() => { if (promoInput.trim() && !appliedPromo) setPromoHovered(true); }}
+                onMouseEnter={() => {
+                  if (promoInput.trim() && !appliedPromo) setPromoHovered(true);
+                }}
                 onMouseLeave={() => setPromoHovered(false)}
                 style={{
-                  border: "none", borderLeft: "1px solid #ddd",
-                  background: (!promoInput.trim() || appliedPromo) ? "#f3f3f3" : promoHovered ? "#111" : "transparent",
-                  color: (!promoInput.trim() || appliedPromo) ? "#aaa" : promoHovered ? "#fff" : "#111",
-                  padding: "11px 18px", fontSize: "12px", fontWeight: 700,
-                  letterSpacing: "0.1em", textTransform: "uppercase",
-                  cursor: (!promoInput.trim() || appliedPromo) ? "default" : "pointer",
+                  border: "none",
+                  borderLeft: "1px solid #ddd",
+                  background:
+                    !promoInput.trim() || appliedPromo
+                      ? "#f3f3f3"
+                      : promoHovered
+                        ? "#111"
+                        : "transparent",
+                  color:
+                    !promoInput.trim() || appliedPromo
+                      ? "#aaa"
+                      : promoHovered
+                        ? "#fff"
+                        : "#111",
+                  padding: "11px 18px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  cursor:
+                    !promoInput.trim() || appliedPromo ? "default" : "pointer",
                   transition: "background 0.2s, color 0.2s",
                   fontFamily: FONT,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "56px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: "56px",
                 }}
               >
-                {promoLoading ? <ButtonSpinner color={promoHovered ? "#fff" : "#111"} /> : "Apply"}
+                {promoLoading ? (
+                  <ButtonSpinner color={promoHovered ? "#fff" : "#111"} />
+                ) : (
+                  "Apply"
+                )}
               </button>
             </div>
             {promoError && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "10px", padding: "10px 12px", background: "#fdecec", border: "1px solid #f5c6c6" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                  marginTop: "10px",
+                  padding: "10px 12px",
+                  background: "#fdecec",
+                  border: "1px solid #f5c6c6",
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  style={{ flexShrink: 0, marginTop: "1px" }}
+                >
                   <circle cx="12" cy="12" r="11" fill="#e02424" />
-                  <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                  <path
+                    d="M8 8l8 8M16 8l-8 8"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
                 </svg>
-                <span style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}>{promoError}</span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#c0392b",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {promoError}
+                </span>
               </div>
             )}
             {appliedPromo && (
               <div style={{ marginTop: "10px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", background: "#111", overflow: "hidden" }}>
-                  <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: FONT }}>{appliedPromo.code}</span>
-                  <span style={{ display: "block", width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
-                  <button onClick={handleRemovePromo} title="Remove promo code" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    background: "#111",
+                    overflow: "hidden",
+                  }}
+                >
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#fff",
+                      fontFamily: FONT,
+                    }}
+                  >
+                    {appliedPromo.code}
+                  </span>
+                  <span
+                    style={{
+                      display: "block",
+                      width: "1px",
+                      height: "28px",
+                      background: "rgba(255,255,255,0.25)",
+                    }}
+                  />
+                  <button
+                    onClick={handleRemovePromo}
+                    title="Remove promo code"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "6px 10px",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#fff",
+                    }}
+                  >
                     <IoClose size={13} />
                   </button>
                 </div>
@@ -2521,22 +2683,53 @@ function OrderSummary({
         <button
           onClick={() => setGiftOpen((v) => !v)}
           style={{
-            width: "100%", background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "16px 0", fontSize: "13px", color: "#111",
+            width: "100%",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 0",
+            fontSize: "13px",
+            color: "#111",
             fontFamily: FONT,
           }}
         >
           <span style={{ fontWeight: 500 }}>Apply Voucher</span>
-          <span style={{ fontSize: "18px", fontWeight: 300, display: "inline-block", transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>+</span>
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: 300,
+              display: "inline-block",
+              transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            +
+          </span>
         </button>
-        <div style={{ maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-          {isLoggedIn ? renderLoggedVoucherContent() : renderGuestVoucherContent()}
+        <div
+          style={{
+            maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px",
+            overflow: "hidden",
+            transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          {isLoggedIn
+            ? renderLoggedVoucherContent()
+            : renderGuestVoucherContent()}
         </div>
       </div>
 
       {/* Totals / Price section */}
-      <div style={{ padding: "16px 0", borderTop: "1px solid #e5e5e5", borderBottom: "1px solid #e5e5e5" }}>
+      <div
+        style={{
+          padding: "16px 0",
+          borderTop: "1px solid #e5e5e5",
+          borderBottom: "1px solid #e5e5e5",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -2552,28 +2745,80 @@ function OrderSummary({
         </div>
 
         {appliedPromo && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "6px",
+              fontSize: "13px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ color: "#555" }}>Promo Code</span>
-              <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0", overflow: "hidden" }}>
-                <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", letterSpacing: "0.04em", fontFamily: FONT }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "#f0f0f0",
+                  overflow: "hidden",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#111",
+                    letterSpacing: "0.04em",
+                    fontFamily: FONT,
+                  }}
+                >
                   {appliedPromo.code}
                 </span>
               </div>
             </div>
-            <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(promoDiscount, lang)} €</span>
+            <span style={{ color: "#111", fontWeight: 500 }}>
+              -{formatPrice(promoDiscount, lang)} €
+            </span>
           </div>
         )}
 
         {loggedVoucherApplied && selectedPill && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", fontSize: "13px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "6px",
+              fontSize: "13px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ color: "#555" }}>Voucher</span>
-              <div style={{ display: "inline-flex", alignItems: "center", background: "#f0f0f0" }}>
-                <span style={{ padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#111", fontFamily: FONT }}>{selectedPill}</span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "#f0f0f0",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#111",
+                    fontFamily: FONT,
+                  }}
+                >
+                  {selectedPill}
+                </span>
               </div>
             </div>
-            <span style={{ color: "#111", fontWeight: 500 }}>-{formatPrice(appliedVoucherOff, lang)} €</span>
+            <span style={{ color: "#111", fontWeight: 500 }}>
+              -{formatPrice(appliedVoucherOff, lang)} €
+            </span>
           </div>
         )}
 
@@ -2591,7 +2836,7 @@ function OrderSummary({
           {subtotal >= freeShippingThreshold ? (
             <span>Free</span>
           ) : (
-            <span>{formatPrice(5.90, lang)} €</span>
+            <span>{formatPrice(5.9, lang)} €</span>
           )}
         </div>
 
@@ -2618,8 +2863,12 @@ function OrderSummary({
                   color: "#555",
                   fontFamily: FONT,
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#111"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#111";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#555";
+                }}
               >
                 <span>
                   {deliveryMethod === "home" ? "Home Delivery" : "Pickup Point"}
@@ -2633,7 +2882,9 @@ function OrderSummary({
                     borderRight: "4px solid transparent",
                     borderTop: "5px solid #555",
                     flexShrink: 0,
-                    transform: deliveryDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transform: deliveryDropdownOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
                     transition: "transform 0.2s",
                   }}
                 />
@@ -2716,8 +2967,17 @@ function OrderSummary({
           >
             {selectedLocation ? (
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                  <span style={{ fontWeight: 700, color: "#111" }}>{selectedLocation.name}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span style={{ fontWeight: 700, color: "#111" }}>
+                    {selectedLocation.name}
+                  </span>
                   <button
                     onClick={() => setIsLocationModalOpen(true)}
                     style={{
@@ -2740,19 +3000,35 @@ function OrderSummary({
                     lineHeight: 1.4,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
+                    whiteSpace: "nowrap",
                   }}
                   title={selectedLocation.address}
                 >
                   {selectedLocation.address}
                 </div>
-                <div style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}>
+                <div
+                  style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}
+                >
                   Lat: {selectedLocation.lat}, Lng: {selectedLocation.lng}
                 </div>
               </div>
             ) : (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "#888", fontStyle: "italic", fontSize: "11px" }}>No pickup location selected</span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span
+                  style={{
+                    color: "#888",
+                    fontStyle: "italic",
+                    fontSize: "11px",
+                  }}
+                >
+                  No pickup location selected
+                </span>
                 <button
                   onClick={() => setIsLocationModalOpen(true)}
                   style={{
@@ -2790,7 +3066,10 @@ function OrderSummary({
       </div>
 
       {/* ── Cart items — moved to bottom. 3 cards visible, 4th+ on scroll ── */}
-      <div style={{ paddingTop: "8px" }}>
+      <div
+        className="checkout-right-cart-items-section"
+        style={{ paddingTop: "8px" }}
+      >
         <CartScrollArea maxHeight="330px">
           {items.map((item, idx) => (
             <CartItemRow
@@ -2808,7 +3087,10 @@ function OrderSummary({
       <CreateVoucherModal
         isOpen={isVoucherModalOpen}
         loyaltyPoints={voucherPoints || 0}
-        onClose={() => { setIsVoucherModalOpen(false); fetchVouchers(); }}
+        onClose={() => {
+          setIsVoucherModalOpen(false);
+          fetchVouchers();
+        }}
       />
       <ModalPickLocation
         isOpen={isLocationModalOpen}
@@ -2822,7 +3104,6 @@ function OrderSummary({
     </div>
   );
 }
-
 
 export default function CheckoutWithStripe(props) {
   return (
@@ -2847,6 +3128,51 @@ function Checkout({ cartItems = [] }) {
 
   // ✅ CHANGE 2: isRemoving state for cart API calls
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // States for Address Change
+  const [isChangeAddressOpen, setIsChangeAddressOpen] = useState(false);
+  const [activeAddressTab, setActiveAddressTab] = useState("delivery");
+
+  const handleOpenChangeAddress = (tab) => {
+    setActiveAddressTab(tab);
+    setIsChangeAddressOpen(true);
+  };
+
+  const handleSelectAddress = (address) => {
+    if (activeAddressTab === "delivery") {
+      setStreet(address.full_address || "");
+      setCity(address.city || "");
+      setPostcode(address.postal_code || "");
+      if (address.country) {
+        const found = defaultCountries.find(
+          (c) =>
+            parseCountry(c).name.toLowerCase() ===
+              address.country.toLowerCase() ||
+            parseCountry(c).iso2.toLowerCase() ===
+              address.country.toLowerCase(),
+        );
+        if (found) {
+          setDeliveryCountryIso2(parseCountry(found).iso2);
+        }
+      }
+    } else {
+      setBillingStreet(address.full_address || "");
+      setBillingCity(address.city || "");
+      setBillingPostcode(address.postal_code || "");
+      if (address.country) {
+        const found = defaultCountries.find(
+          (c) =>
+            parseCountry(c).name.toLowerCase() ===
+              address.country.toLowerCase() ||
+            parseCountry(c).iso2.toLowerCase() ===
+              address.country.toLowerCase(),
+        );
+        if (found) {
+          setBillingCountryIso2(parseCountry(found).iso2);
+        }
+      }
+    }
+  };
 
   const getLoginData = () => {
     try {
@@ -2990,6 +3316,19 @@ function Checkout({ cartItems = [] }) {
     appliedPromo: null,
     appliedVoucherCode: null,
   });
+
+  const hasDeliveryData = !!(
+    street.trim() ||
+    city.trim() ||
+    postcode.trim() ||
+    deliveryCountryIso2
+  );
+  const hasBillingData = !!(
+    billingStreet.trim() ||
+    billingCity.trim() ||
+    billingPostcode.trim() ||
+    billingCountryIso2
+  );
 
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
   const stripe = useStripe();
@@ -3209,8 +3548,8 @@ function Checkout({ cartItems = [] }) {
         is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
         payment_method: "card",
         payment_status: "paid",
-        invoice_state: useDifferentBilling ? billingRegion : region,
-        delivery_state: region,
+        invoice_address_state: useDifferentBilling ? billingRegion : region,
+        delivery_address_state: region,
         taxAmount: 0,
         shippingCost: toCleanAmount(deliveryCostValue),
         totalAmount: toCleanAmount(summaryState.total),
@@ -3281,7 +3620,7 @@ function Checkout({ cartItems = [] }) {
     }
   }, []);
 
-  // ✅ CHANGE 2: refreshCartFromServer — same as ModalAddToCart
+  // CHANGE 2: refreshCartFromServer — same as ModalAddToCart
   const refreshCartFromServer = async (stopLoader = false) => {
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -3434,17 +3773,30 @@ function Checkout({ cartItems = [] }) {
           gap: 32px;
           align-items: flex-start;
         }
-       .checkout-sidebar-container {
-  width: 480px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 80px;
-  align-self: flex-start;
-  max-height: calc(100vh - 80px);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+        .checkout-left-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
+        }
+        .checkout-left-button-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
+        }
+        .checkout-sidebar-container {
+          width: 480px;
+          flex-shrink: 0;
+          position: sticky;
+          top: 80px;
+          align-self: flex-start;
+          max-height: calc(100vh - 80px);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
         .cart-items-scroll {
           overflow-y: scroll;
           scrollbar-width: none;
@@ -3460,12 +3812,33 @@ function Checkout({ cartItems = [] }) {
             flex-direction: column !important;
             padding: 20px 16px !important;
             gap: 24px !important;
+            align-items: stretch !important;
+          }
+          .checkout-left-column {
+            display: contents !important;
           }
           .checkout-sidebar-container {
             width: 100% !important;
             max-height: none !important;
             position: static !important;
+            padding-bottom: 0px !important;
+            order: 2 !important;
+          }
+          .checkout-left-button-wrapper {
+            order: 3 !important;
             padding-bottom: 40px !important;
+          }
+          .checkout-right-order-btn {
+            display: none !important;
+          }
+          .checkout-right-cart-items-section {
+            display: none !important;
+          }
+          .express-pay-btn-img {
+            // width: auto !important;
+            // height: auto !important;
+            // max-width: 100% !important;
+            // max-height: 100% !important;
           }
         }
       `}</style>
@@ -3551,15 +3924,7 @@ function Checkout({ cartItems = [] }) {
           }}
         >
           {/* ── Left column ── */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              width: "100%",
-            }}
-          >
+          <div className="checkout-left-column">
             {/* Express Payment */}
             <ExpressPaymentBar
               selectedMethod={paymentMethod}
@@ -3599,7 +3964,29 @@ function Checkout({ cartItems = [] }) {
             </Section>
 
             {/* Delivery */}
-            <Section title="Delivery">
+            <Section
+              title="Delivery"
+              action={
+                hasDeliveryData && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenChangeAddress("delivery")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#111",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontFamily: FONT,
+                    }}
+                  >
+                    Change Address
+                  </button>
+                )
+              }
+            >
               <div
                 style={{
                   display: "flex",
@@ -3646,7 +4033,29 @@ function Checkout({ cartItems = [] }) {
 
             {/* Billing address — only visible when checkbox checked */}
             {useDifferentBilling && (
-              <Section title="Billing Address">
+              <Section
+                title="Billing Address"
+                action={
+                  hasBillingData && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenChangeAddress("invoice")}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#111",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        fontFamily: FONT,
+                      }}
+                    >
+                      Change Address
+                    </button>
+                  )
+                }
+              >
                 <div
                   style={{
                     display: "flex",
@@ -3818,93 +4227,101 @@ function Checkout({ cartItems = [] }) {
                     right={<PayPalBadge />}
                   />
                 </div>
-
-                <p
-                  style={{
-                    fontSize: "12.5px",
-                    color: "#888",
-                    margin: "16px 0 8px",
-                    lineHeight: 1.6,
-                    fontFamily: FONT,
-                  }}
-                >
-                  Your payment is processed securely through Stripe and your
-                  card details are never stored on our servers. All transactions
-                  are encrypted end-to-end.
-                </p>
-                <p
-                  style={{
-                    fontSize: "12.5px",
-                    color: "#888",
-                    margin: 0,
-                    lineHeight: 1.6,
-                    fontFamily: FONT,
-                  }}
-                >
-                  We respect your privacy. Your personal information is only
-                  used to deliver your order, nothing more, nothing less. Read
-                  our{" "}
-                  <a
-                    href="#"
-                    style={{
-                      color: "#111",
-                      fontWeight: 600,
-                      textDecoration: "underline",
-                    }}
-                  >
-                    privacy policy
-                  </a>{" "}
-                  to learn more.
-                </p>
               </Section>
             </div>
 
             {/* Left: Place Order button */}
-            {formError && (
-              <p style={{ margin: 0, fontSize: "12px", color: "#e02424", fontFamily: FONT }}>
-                {formError}
-              </p>
-            )}
-            <button
-              onClick={handlePlaceOrder}
-              disabled={isSubmitting}
-              style={{
-                ...placeOrderBtnStyle,
-                opacity: isSubmitting ? 0.75 : 1,
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "10px",
-              }}
-              onMouseEnter={(e) => {
-                if (!isSubmitting) e.currentTarget.style.background = "#333";
-              }}
-              onMouseLeave={(e) => {
-                if (!isSubmitting) e.currentTarget.style.background = "#111";
-              }}
-            >
-              {isSubmitting ? (
-                <>
-                  <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "14px",
-                      height: "14px",
-                      border: "2px solid rgba(255,255,255,0.3)",
-                      borderTopColor: "#fff",
-                      borderRadius: "50%",
-                      animation: "confirmBtnSpin 0.65s linear infinite",
-                      flexShrink: 0,
-                    }}
-                  />
-                  Processing…
-                </>
-              ) : (
-                `Order — ${formatPrice(summaryState.total, lang)} €`
+            <div className="checkout-left-button-wrapper">
+              {formError && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12px",
+                    color: "#e02424",
+                    fontFamily: FONT,
+                  }}
+                >
+                  {formError}
+                </p>
               )}
-            </button>
+              <button
+                onClick={handlePlaceOrder}
+                disabled={isSubmitting}
+                style={{
+                  ...placeOrderBtnStyle,
+                  opacity: isSubmitting ? 0.75 : 1,
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.background = "#333";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.background = "#111";
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "14px",
+                        height: "14px",
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        borderTopColor: "#fff",
+                        borderRadius: "50%",
+                        animation: "confirmBtnSpin 0.65s linear infinite",
+                        flexShrink: 0,
+                      }}
+                    />
+                    Processing…
+                  </>
+                ) : (
+                  `Order — ${formatPrice(summaryState.total, lang)} €`
+                )}
+              </button>
+
+              <p
+                style={{
+                  fontSize: "12.5px",
+                  color: "#888",
+                  margin: "16px 0 8px",
+                  lineHeight: 1.6,
+                  fontFamily: FONT,
+                }}
+              >
+                Your payment is processed securely through Stripe and your card
+                details are never stored on our servers. All transactions are
+                encrypted end-to-end.
+              </p>
+              <p
+                style={{
+                  fontSize: "12.5px",
+                  color: "#888",
+                  margin: 0,
+                  lineHeight: 1.6,
+                  fontFamily: FONT,
+                }}
+              >
+                We respect your privacy. Your personal information is only used
+                to deliver your order, nothing more, nothing less. Read our{" "}
+                <a
+                  href="#"
+                  style={{
+                    color: "#111",
+                    fontWeight: 600,
+                    textDecoration: "underline",
+                  }}
+                >
+                  privacy policy
+                </a>{" "}
+                to learn more.
+              </p>
+            </div>
           </div>
 
           <div
@@ -3921,18 +4338,18 @@ function Checkout({ cartItems = [] }) {
               flexDirection: "column",
             }}
           >
-          <OrderSummary
-  items={items}
-  onQtyChange={handleQtyChange}
-  onRemoveItem={handleRemoveItem}
-  subtotal={subtotal}
-  totalUnits={totalUnits}
-  isRemoving={isRemoving}
-  onSummaryStateChange={setSummaryState}
-  lang={lang}
-  onPlaceOrder={handlePlaceOrder}
-  isSubmitting={isSubmitting}
-/>
+            <OrderSummary
+              items={items}
+              onQtyChange={handleQtyChange}
+              onRemoveItem={handleRemoveItem}
+              subtotal={subtotal}
+              totalUnits={totalUnits}
+              isRemoving={isRemoving}
+              onSummaryStateChange={setSummaryState}
+              lang={lang}
+              onPlaceOrder={handlePlaceOrder}
+              isSubmitting={isSubmitting}
+            />
             {/* <button
               onClick={handlePlaceOrder}
               disabled={isSubmitting}
@@ -3991,6 +4408,13 @@ function Checkout({ cartItems = [] }) {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+      />
+
+      <ModalChangeAddress
+        isOpen={isChangeAddressOpen}
+        onClose={() => setIsChangeAddressOpen(false)}
+        onSelect={handleSelectAddress}
+        activeTab={activeAddressTab}
       />
     </div>
   );
