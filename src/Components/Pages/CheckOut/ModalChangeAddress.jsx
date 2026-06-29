@@ -22,7 +22,6 @@ export default function ModalChangeAddress({
   const [addresses, setAddresses] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
 
   const [isAddNewOpen, setIsAddNewOpen] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -141,7 +140,7 @@ export default function ModalChangeAddress({
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
     const token = loginData?.data?.token;
     const body = {
-      id: addressId,
+     
       ...(!token && { device_id: getDeviceId() }),
     };
     const headers = token
@@ -149,7 +148,6 @@ export default function ModalChangeAddress({
       : {};
 
     try {
-      setIsSaving(true);
       const res = await axios.post(`${BASE_URL}/user/address/default`, body, {
         headers,
       });
@@ -167,8 +165,6 @@ export default function ModalChangeAddress({
     } catch (err) {
       console.error(err);
       toast.error("Failed to set default address");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -485,34 +481,31 @@ export default function ModalChangeAddress({
             Cancel
           </button>
           <button
-       
-            disabled={addresses.length === 0 || isSaving}
+            onClick={handleSaveSelection}
+            disabled={addresses.length === 0}
             style={{
               flex: 1,
               padding: "12px",
               border: "none",
-              backgroundColor:
-                addresses.length === 0 || isSaving ? "#9CA3AF" : "#111",
+              backgroundColor: addresses.length === 0 ? "#9CA3AF" : "#111",
               color: "#fff",
               fontSize: "14px",
               fontWeight: 600,
-              cursor:
-                addresses.length === 0 || isSaving ? "not-allowed" : "pointer",
+              cursor: addresses.length === 0 ? "not-allowed" : "pointer",
               transition: "background 0.2s",
-              opacity: isSaving ? 0.85 : 1,
             }}
             onMouseEnter={(e) => {
-              if (addresses.length > 0 && !isSaving) {
+              if (addresses.length > 0) {
                 e.currentTarget.style.backgroundColor = "#333";
               }
             }}
             onMouseLeave={(e) => {
-              if (addresses.length > 0 && !isSaving) {
+              if (addresses.length > 0) {
                 e.currentTarget.style.backgroundColor = "#111";
               }
             }}
           >
-            {isSaving ? "Saving..." : "Save"}
+            Save
           </button>
         </div>
       </div>
