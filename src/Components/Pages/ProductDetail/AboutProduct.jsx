@@ -44,20 +44,42 @@ export default function AboutProduct({ apiProduct }) {
     {
       title: t("ingredients"),
       content: apiProduct?.bundle_ingredients?.length
-        ? apiProduct.bundle_ingredients.map((b) => language === "fr" ? (b.ingredient?.french_description || b.ingredient?.description) : (b.ingredient?.description)).filter(Boolean)
+        ? apiProduct.bundle_ingredients
+            .map((b) =>
+              language === "fr"
+                ? (b.ingredient?.french_name || b.ingredient?.name)
+                : (b.ingredient?.name)
+            )
+            .filter(Boolean)
         : [t("noData")],
       isList: true,
     },
     {
       title: t("ourSingularity"),
       content: apiProduct?.our_singularities?.length
-        ? apiProduct.our_singularities.map((s) => language === "fr" ? (s.french_description || s.description || s.french_name || s.name) : (s.description || s.name)).filter(Boolean).join(" ")
+        ? (apiProduct.our_singularities
+            .map((s) => {
+              const target = s?.category || s;
+              return language === "fr"
+                ? (target.french_description || target.description || target.french_name || target.name)
+                : (target.description || target.name);
+            })
+            .filter(Boolean)
+            .join(" ") || t("noData"))
         : t("noData"),
     },
     {
       title: t("ourCommitments"),
       content: apiProduct?.our_commitments?.length
-        ? apiProduct.our_commitments.map((c) => language === "fr" ? (c.french_description || c.description || c.french_name || c.name) : (c.description || c.name)).filter(Boolean).join(" ")
+        ? (apiProduct.our_commitments
+            .map((c) => {
+              const target = c?.category || c;
+              return language === "fr"
+                ? (target.french_description || target.description || target.french_name || target.name)
+                : (target.description || target.name);
+            })
+            .filter(Boolean)
+            .join(" ") || t("noData"))
         : t("noData"),
     },
     {

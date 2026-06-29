@@ -649,7 +649,7 @@ export default function Navbar({
               </button>
               <button
                 onClick={() => setIsSearchModalOpen(true)}
-                className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
+                className="p-2 text-black hover:text-gray-900 transition-transform active:scale-90 duration-200"
               >
                 <FiSearch
                   className="w-5 h-5 cursor-pointer"
@@ -784,8 +784,7 @@ export default function Navbar({
                           : cartCount >= 10
                             ? "33px"
                             : "23px",
-                      paddingTop: "0.7px",
-                      paddingRight: "0.7px",
+                      
                       marginLeft: "5px",
                       borderRadius: "999px",
                       backgroundColor: "#111",
@@ -824,8 +823,8 @@ export default function Navbar({
                             ? "33px"
                             : "23px",
                       borderRadius: "999px",
-                      paddingTop: "0.7px",
-                      paddingRight: "0.2px",
+                      // paddingTop: "0.7px",
+                      // paddingRight: "0.2px",
                       backgroundColor: "#111",
                       color: "#fff",
                       fontSize: "12px",
