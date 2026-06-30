@@ -3310,6 +3310,10 @@ function Checkout({ cartItems = [] }) {
   const [paymentError, setPaymentError] = useState(null);
   const [formError, setFormError] = useState(null);
 
+  // Apple Pay — paymentRequest ref
+  const applePayPrRef = useRef(null);
+  const [applePayReady, setApplePayReady] = useState(false);
+
   // Summary state lifted from OrderSummary
   const [summaryState, setSummaryState] = useState({
     deliveryMethod: "home",
@@ -3336,6 +3340,32 @@ function Checkout({ cartItems = [] }) {
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
   const stripe = useStripe();
   const elements = useElements();
+
+  // ── Apple Pay availability check ──────────────────────────────────
+  useEffect(() => {
+    if (!stripe || !summaryState.total) return;
+
+    const amount = toCleanAmount(summaryState.total);
+    if (amount <= 0) return;
+
+    const pr = stripe.paymentRequest({
+      country: "FR",
+      currency: "eur",
+      total: {
+        label: "Biogance",
+        amount: amount,
+      },
+      requestPayerName: false,
+      requestPayerEmail: false,
+    });
+
+    pr.canMakePayment().then((result) => {
+      if (result?.applePay) {
+        applePayPrRef.current = pr;
+        setApplePayReady(true);
+      }
+    });
+  }, [stripe, summaryState.total]);
 
   useEffect(() => {
     if (useDifferentBilling) {
@@ -3488,7 +3518,211 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
+  // ── Apple Pay handler ────────────────────────────────────────────
+  const handleApplePayOrder = async () => {
+    if (!stripe || !applePayPrRef.current) {
+      toast.error("Apple Pay is not available.");
+      return;
+    }
+
+    // Validate delivery fields first
+    if (!deliveryCountryIso2) { setFormError("Please select a country for the delivery address."); return; }
+    if (!street.trim())       { setFormError("Please enter the full address for delivery."); return; }
+    if (!postcode.trim())     { setFormError("Please enter the postcode for the delivery address."); return; }
+    if (!city.trim())         { setFormError("Please enter the town/city for the delivery address."); return; }
+    if (useDifferentBilling) {
+      if (!billingCountryIso2)    { setFormError("Please select a country for the invoice address."); return; }
+      if (!billingStreet.trim())  { setFormError("Please enter the full address for the invoice address."); return; }
+      if (!billingPostcode.trim()){ setFormError("Please enter the postcode for the invoice address."); return; }
+      if (!billingCity.trim())    { setFormError("Please enter the town/city for the invoice address."); return; }
+    }
+
+    setFormError(null);
+    setIsSubmitting(true);
+    setPaymentError(null);
+
+    // Update amount in paymentRequest before showing sheet
+    applePayPrRef.current.update({
+      total: { label: "Biogance", amount: toCleanAmount(summaryState.total) },
+    });
+
+    let paymentIntentId = "";
+
+    // Listen for paymentmethod event (fires after Face ID / Touch ID confirm)
+    applePayPrRef.current.off("paymentmethod"); // remove old listeners
+    applePayPrRef.current.on("paymentmethod", async (event) => {
+      try {
+        // Ensure user is logged in
+        let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+        let token = loginData?.data?.token;
+
+        if (!token) {
+          const dialCode = (() => {
+            const c = defaultCountries.find((c) => parseCountry(c).iso2 === (countryIso2 || "fr"));
+            return c ? `+${parseCountry(c).dialCode}` : "";
+          })();
+          const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: lastName, email,
+              country_code: dialCode, phone: dialCode,
+              phone_number: phone, device: "web",
+              device_id: "123", fcm_token: "web123",
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (!verifyData.status) {
+            event.complete("fail");
+            setIsSubmitting(false);
+            setIsLoginModalOpen(true);
+            return;
+          }
+          localStorage.setItem("LoginData", JSON.stringify(verifyData));
+          window.dispatchEvent(new Event("loginStateChange"));
+          loginData = verifyData;
+          token = verifyData?.data?.token;
+          setIsLoggedIn(true);
+        }
+
+        // Step 1: Create Payment Intent
+        const intentRes = await fetch(`${BASE_URL}/user/payment/create/intent`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: toCleanAmount(summaryState.total),
+            payment_method: "card",
+          }),
+        });
+        const intentData = await intentRes.json();
+
+        if (!intentData.status || !intentData.data?.client_secret) {
+          event.complete("fail");
+          setPaymentError(getErrorMsg(intentData) || "Payment setup failed. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        paymentIntentId = intentData.data.payment_intent_id;
+
+        // Step 2: Confirm payment with Apple Pay token
+        const { error: stripeError } = await stripe.confirmCardPayment(
+          intentData.data.client_secret,
+          { payment_method: event.paymentMethod.id },
+          { handleActions: false }
+        );
+
+        if (stripeError) {
+          event.complete("fail");
+          setPaymentError(stripeError.message ?? "Payment failed.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Show checkmark on Apple Pay sheet
+        event.complete("success");
+
+        // Step 3: Place Order
+        const dialCode = (() => {
+          const c = defaultCountries.find((c) => parseCountry(c).iso2 === (countryIso2 || "fr"));
+          return c ? `+${parseCountry(c).dialCode}` : "";
+        })();
+        const deliveryCountryName = (() => {
+          const c = defaultCountries.find((c) => parseCountry(c).iso2 === deliveryCountryIso2);
+          return c ? parseCountry(c).name : deliveryCountryIso2;
+        })();
+        const billingCountryName = (() => {
+          const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
+          const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
+          return c ? parseCountry(c).name : iso;
+        })();
+        const cartIds = items.map((i) => i.id).join(",");
+        const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
+
+        const orderRes = await fetch(`${BASE_URL}/user/order/place`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            full_name:                      lastName,
+            email,
+            country_code:                   dialCode,
+            phone:                          dialCode,
+            phone_number:                   phone,
+            delivery_address_full:          street,
+            delivery_address_country:       deliveryCountryName,
+            delivery_address_city:          city,
+            delivery_address_postal_code:   postcode,
+            delivery_address_type:          "delivery_address",
+            delivery_address_state:         region,
+            invoice_address_full:           useDifferentBilling ? billingStreet   : street,
+            invoice_address_country:        billingCountryName,
+            invoice_address_city:           useDifferentBilling ? billingCity     : city,
+            invoice_address_postal_code:    useDifferentBilling ? billingPostcode : postcode,
+            invoice_address_type:           "invoice_address",
+            invoice_address_state:          useDifferentBilling ? billingRegion   : region,
+            is_invoice_same_as_delivery:    useDifferentBilling ? 1 : 0,
+            payment_status:                 "Confirmed",
+            payment_method:                 "Apple Pay",
+            taxAmount:                      0,
+            shippingCost:                   toCleanAmount(summaryState.deliveryCost),
+            totalAmount:                    toCleanAmount(summaryState.total),
+            subtotal:                       toCleanAmount(subtotal),
+            payment_id:                     paymentIntentId,
+            voucher:                        summaryState.appliedVoucherCode || "",
+            promo_code:                     summaryState.appliedPromo?.code || "",
+            cartIds,
+            is_pickup:                      isPickup,
+            delivery_cost:                  summaryState.deliveryCost,
+            ...(isPickup === 1 && summaryState.selectedLocation
+              ? {
+                  pickup_name:    summaryState.selectedLocation.name,
+                  pickup_address: summaryState.selectedLocation.address,
+                }
+              : {}),
+          }),
+        });
+
+        const orderData = await orderRes.json();
+        setIsSubmitting(false);
+
+        if (!orderData.status) {
+          setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
+          toast.error(getErrorMsg(orderData) || "Order placement failed.");
+          return;
+        }
+
+        try {
+          localStorage.setItem("lastPlacedOrder", JSON.stringify(orderData.data?.order || orderData.data || {}));
+        } catch {}
+
+        router.push("/track-order");
+
+      } catch (err) {
+        event.complete("fail");
+        setIsSubmitting(false);
+        setPaymentError(err.message || "Something went wrong.");
+        toast.error(err.message || "Apple Pay payment failed.");
+      }
+    });
+
+    // Open Apple Pay sheet
+    applePayPrRef.current.show();
+  };
+
   const handlePlaceOrder = async () => {
+    // Route to Apple Pay handler if that method is selected
+    if (paymentMethod === "applepay") {
+      await handleApplePayOrder();
+      return;
+    }
+
     if (paymentMethod !== "card" || !stripe || !elements) return;
 
     // Validate required delivery fields
@@ -4348,7 +4582,7 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {isMobile && isIOS && (
+                  {applePayReady && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
