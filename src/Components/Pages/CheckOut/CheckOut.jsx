@@ -3405,7 +3405,9 @@ function Checkout({ cartItems = [] }) {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!captureRes.ok) throw new Error("Payment capture failed");
+      const captureData = await captureRes.json();
+      if (!captureRes.ok || !captureData?.status)
+        throw new Error(captureData?.action || captureData?.error || "Payment capture failed");
 
       // Step 2: Place order
       const dialCode = (() => {
