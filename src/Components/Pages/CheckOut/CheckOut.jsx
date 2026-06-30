@@ -3345,7 +3345,7 @@ function Checkout({ cartItems = [] }) {
   useEffect(() => {
     if (!stripe || !summaryState.total) return;
 
-    const amount = toCleanAmount(summaryState.total);
+    const amount = Math.round(toCleanAmount(summaryState.total) * 100);
     if (amount <= 0) return;
 
     const pr = stripe.paymentRequest({
@@ -3353,7 +3353,7 @@ function Checkout({ cartItems = [] }) {
       currency: "eur",
       total: {
         label: "Biogance",
-        amount: amount,
+        amount: amount, // cents mein integer — Stripe web SDK requirement
       },
       requestPayerName: false,
       requestPayerEmail: false,
@@ -3541,9 +3541,9 @@ function Checkout({ cartItems = [] }) {
     setIsSubmitting(true);
     setPaymentError(null);
 
-    // Update amount in paymentRequest before showing sheet
+    // Update amount in paymentRequest before showing sheet (cents mein)
     applePayPrRef.current.update({
-      total: { label: "Biogance", amount: toCleanAmount(summaryState.total) },
+      total: { label: "Biogance", amount: Math.round(toCleanAmount(summaryState.total) * 100) },
     });
 
     let paymentIntentId = "";
