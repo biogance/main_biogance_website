@@ -3359,9 +3359,9 @@ function Checkout({ cartItems = [] }) {
       requestPayerEmail: false,
     });
 
+    applePayPrRef.current = pr;
     pr.canMakePayment().then((result) => {
       if (result?.applePay) {
-        applePayPrRef.current = pr;
         setApplePayReady(true);
       }
     });
@@ -4582,7 +4582,7 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {applePayReady && (
+                  {(applePayReady || (isMobile && isIOS)) && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
