@@ -49,6 +49,7 @@ export default function Navbar({
   announcementVisible = false,
   isVideoVisible = true,
   bgWhite = false,
+  scrolledBlur = false,
 }) {
   const { t, i18n } = useTranslation("navbar");
   const pathname = usePathname();
@@ -557,12 +558,12 @@ export default function Navbar({
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-150 ${
-          isNavHovered ||
-          isProductsOpen ||
-          isMobileMenuOpen ||
-          !isVideoVisible ||
-          bgWhite
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-all duration-300 ${
+          isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
+            ? "bg-white shadow-sm"
+            : !isVideoVisible && scrolledBlur
+            ? "bg-white/60 backdrop-blur-xs shadow-sm"
+            : !isVideoVisible
             ? "bg-white shadow-sm"
             : "bg-transparent"
         } ${

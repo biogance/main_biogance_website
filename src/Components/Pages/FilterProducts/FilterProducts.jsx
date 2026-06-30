@@ -901,7 +901,7 @@ export default function FilterProducts() {
 
   return (
     <div className="min-h-screen mt-30 bg-white text-stone-900">
-      <Navbar isVideoVisible={!isHeaderTouchingNav} />
+      <Navbar isVideoVisible={!isHeaderTouchingNav} scrolledBlur={true} />
 
       <style dangerouslySetInnerHTML={{
         __html: `
