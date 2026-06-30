@@ -38,7 +38,15 @@ function usePaymentVisibility() {
 
   useEffect(() => {
     const ua = navigator.userAgent || "";
-    const ios = /iPhone|iPad|iPod/i.test(ua);
+    const platform = navigator.platform || "";
+
+    // Detect iOS: covers Safari, Chrome (CriOS), Firefox (FxiOS), Edge (EdgiOS),
+    // Google App, and iPad in desktop mode (reports MacIntel but has multi-touch).
+    const ios =
+      /iPhone|iPad|iPod/i.test(ua) ||
+      /iPhone|iPad|iPod/i.test(platform) ||
+      (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
     const android = /Android/i.test(ua);
     const mobile = window.innerWidth < 1024;
 
@@ -1099,7 +1107,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
           </button>
         )}
 
-        {isMobile && isIOS && (
+        {isIOS && (
           <button
             onClick={() => onSelect("applepay")}
             style={{ ...baseBtn, ...btnBorder("applepay") }}
@@ -3521,7 +3529,10 @@ function Checkout({ cartItems = [] }) {
   // ── Apple Pay handler ────────────────────────────────────────────
   const handleApplePayOrder = async () => {
     if (!stripe || !applePayPrRef.current) {
-      toast.error("Apple Pay is not available.");
+      toast.error(
+        "Apple Pay requires Safari on iOS. Please open this page in Safari to use Apple Pay.",
+        { duration: 5000 }
+      );
       return;
     }
 
@@ -4582,7 +4593,7 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {(applePayReady || (isMobile && isIOS)) && (
+                  {(applePayReady || isIOS) && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
