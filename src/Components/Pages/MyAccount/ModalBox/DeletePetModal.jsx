@@ -1,15 +1,39 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { BASE_URL } from "../../../API/API";
 
 export default function DeletePetModal({
   isOpen,
   onClose,
-  onConfirm,
+  onSuccess,
+  petId,
   petName = "this pet",
 }) {
-  const { t } = useTranslation("myaccount"); // or whatever namespace you use
+  const { t } = useTranslation("myaccount");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const getToken = () => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      return splashData?.user?.token || localStorage.getItem('token') || '';
+    } catch { return ''; }
+  };
+
+  const handleConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await fetch(`${BASE_URL}/user/pet/delete/${petId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      onSuccess?.();
+    } catch (e) {
+      console.error('Delete pet error:', e);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -39,7 +63,7 @@ export default function DeletePetModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-white  shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 pt-8 pb-7 text-center">
@@ -58,23 +82,24 @@ export default function DeletePetModal({
           <div className="flex flex-col gap-4 justify-center">
             <button
               type="button"
-              onClick={onConfirm}
+              onClick={handleConfirm}
+              disabled={isDeleting}
               className={`
-                px-8 py-3.5 rounded-xl font-medium text-white
+                px-8 py-3.5  font-medium text-white
                 bg-[#D00416] hover:bg-red-700 active:bg-red-800
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2
-                active:scale-[0.98] shadow-sm
+                active:scale-[0.98] shadow-sm disabled:opacity-70 disabled:cursor-not-allowed
               `}
             >
-              {t("deletePet.confirmButton")}
+              {isDeleting ? 'Deleting...' : t("deletePet.confirmButton")}
             </button>
 
             <button
               type="button"
               onClick={onClose}
               className={`
-                px-8 py-3.5 rounded-xl font-medium text-gray-800
+                px-8 py-3.5  font-medium text-gray-800
                 border border-gray-300 hover:bg-gray-100 active:bg-gray-300
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-gray-400/50

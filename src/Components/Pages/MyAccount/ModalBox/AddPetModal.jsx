@@ -5,6 +5,7 @@ import { PiPawPrint } from 'react-icons/pi';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
+import { BASE_URL, MEDIA_URL } from '../../../API/API';
 
 // ── Single Select Custom Dropdown ───────────────────────────────────────────
 const CustomDropdown = ({ label, options, value, onChange, placeholder = "", insideModal = false }) => {
@@ -26,7 +27,7 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "", ins
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between px-4 py-3
-          bg-gray-50 border border-gray-200 rounded-lg text-left cursor-pointer
+          bg-gray-50 border border-gray-200  text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
           ${isOpen ? 'border-gray-400 shadow-sm' : 'hover:border-gray-300'}
@@ -50,7 +51,7 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "", ins
           />
           <div
             ref={dropdownRef}
-            className="absolute mt-1 w-full max-h-[280px] overflow-auto bg-white rounded-lg shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
+            className="absolute mt-1 w-full max-h-[280px] overflow-auto bg-white  shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
             style={{ zIndex: insideModal ? 50 : 20 }}
           >
             {options.map((option) => (
@@ -103,7 +104,7 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between px-4 py-3
-          bg-gray-50 border border-gray-200 rounded-lg text-left cursor-pointer
+          bg-gray-50 border border-gray-200  text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
           ${isOpen ? 'border-gray-400 shadow-sm' : 'hover:border-gray-300'}
@@ -117,7 +118,7 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
         <>
           <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
           <div
-            className="fixed z-20 max-h-[160px] overflow-auto bg-white rounded-xl shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
+            className="fixed z-20 max-h-[160px] overflow-auto bg-white  shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
             style={{
               top: buttonRef.current?.getBoundingClientRect().bottom + 4 + 'px',
               left: Math.max(8, Math.min(
@@ -137,7 +138,7 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
                   onClick={() => toggleOption(option.value)}
                   className={`group w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 cursor-pointer ${isSelected ? 'bg-gray-100' : 'hover:bg-black hover:text-white'}`}
                 >
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected ? 'bg-black border-black' : 'border-gray-300 bg-white group-hover:border-gray-200'}`}>
+                  <div className={`w-5 h-5  border flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected ? 'bg-black border-black' : 'border-gray-300 bg-white group-hover:border-gray-200'}`}>
                     {isSelected && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                   </div>
                   <span className={`transition-colors duration-200 ${isSelected ? 'font-medium text-black' : 'text-black group-hover:text-white'}`}>
@@ -268,7 +269,7 @@ const AgePicker = ({ value, onChange }) => {
           placeholder={t('addPet.selectBirthdate')}
           value={value ? t('addPet.yearsOld', { years: calculateAge(value) }) : ''}
           onClick={() => setIsOpen(true)}
-          className="w-full px-4 text-black py-3 pr-10 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+          className="w-full px-4 text-black py-3 pr-10 bg-gray-50 border border-gray-200  cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
         />
         <IoCalendarOutline className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
       </div>
@@ -278,7 +279,7 @@ const AgePicker = ({ value, onChange }) => {
           <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
 
           <div
-            className="fixed z-30 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5 w-[90vw] md:w-[340px] max-h-[90vh] overflow-y-auto"
+            className="fixed z-30 bg-white  shadow-2xl border border-gray-200 p-5 w-[90vw] md:w-[340px] max-h-[90vh] overflow-y-auto"
             style={{
               top: window.innerWidth < 768 
                 ? '50%' 
@@ -342,7 +343,7 @@ const AgePicker = ({ value, onChange }) => {
                       type="button"
                       onClick={() => handleDayClick(day)}
                       className={`
-                        w-full p-2 text-sm rounded-lg transition-colors cursor-pointer
+                        w-full p-2 text-sm transition-colors cursor-pointer
                         ${selected 
                           ? 'bg-black text-white font-medium' 
                           : 'hover:bg-black hover:text-white text-gray-700'}
@@ -359,7 +360,7 @@ const AgePicker = ({ value, onChange }) => {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 border cursor-pointer border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                className="flex-1 py-3 border cursor-pointer border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors font-medium"
               >
                 {t('addPet.cancel')}
               </button>
@@ -367,7 +368,7 @@ const AgePicker = ({ value, onChange }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selectedDate}
-                className={`flex-1 py-3 cursor-pointer rounded-xl font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                className={`flex-1 py-3 cursor-pointer font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
               >
                 {t('addPet.apply')}
               </button>
@@ -380,9 +381,11 @@ const AgePicker = ({ value, onChange }) => {
 };
 
 // ── Main AddPetModal ────────────────────────────────────────────────────────
-export function AddPetModal({ isOpen, onClose, onAddPet }) {
+export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   const { t } = useTranslation("myaccount");
-  const [formData, setFormData] = useState({
+  const isEditMode = !!petToEdit;
+
+  const emptyForm = {
     name: '',
     category: '',
     breed: '',
@@ -390,10 +393,42 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
     gender: '',
     weight: '',
     specialNeeds: [],
-    image: null
-  });
+    image: null,
+    imageFile: null
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+
+  useEffect(() => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      const cats = splashData?.categories || [];
+      setCategoryOptions(cats.map(c => ({ value: c.id, label: c.name })));
+    } catch { setCategoryOptions([]); }
+  }, []);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (isOpen && petToEdit) {
+      setFormData({
+        name: petToEdit.name || '',
+        category: petToEdit.category_id || '',
+        breed: petToEdit.breed || '',
+        age: petToEdit.age || '',
+        gender: petToEdit.gender || '',
+        weight: petToEdit.weight || '',
+        specialNeeds: petToEdit.special_need ? petToEdit.special_need.split(',').map(s => s.trim()).filter(Boolean) : [],
+        image: petToEdit.profile_picture ? `${MEDIA_URL}${petToEdit.profile_picture}` : null,
+        imageFile: null
+      });
+    } else if (isOpen && !petToEdit) {
+      setFormData(emptyForm);
+    }
+  }, [isOpen, petToEdit]);
 
   useEffect(() => {
     if (isOpen || isSuccessModalOpen || showImagePreview) {
@@ -413,9 +448,49 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
     }
   }, [isOpen, isSuccessModalOpen, showImagePreview]);
 
-  const handleSubmit = () => {
-    onAddPet(formData);
-    setIsSuccessModalOpen(true);
+  const getToken = () => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      return splashData?.user?.token || localStorage.getItem('token') || '';
+    } catch { return ''; }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const body = new FormData();
+      if (isEditMode) body.append('pet_id', petToEdit.id);
+      body.append('category_id', formData.category);
+      body.append('breed', formData.breed);
+      body.append('name', formData.name);
+      body.append('age', formData.age);
+      body.append('gender', formData.gender);
+      body.append('weight', formData.weight);
+      if (formData.specialNeeds.length > 0) body.append('special_need', formData.specialNeeds.join(','));
+      if (formData.imageFile) body.append('profile_picture', formData.imageFile);
+
+      const endpoint = isEditMode ? `${BASE_URL}/user/pet/edit` : `${BASE_URL}/user/pet/create`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body
+      });
+      const data = await res.json();
+      if (res.ok || data?.status) {
+        if (isEditMode) {
+          onSuccess?.();
+          onClose();
+        } else {
+          setIsSuccessModalOpen(true);
+        }
+      } else {
+        console.error('Pet save failed:', data);
+      }
+    } catch (e) {
+      console.error('Pet save error:', e);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -426,7 +501,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => handleChange('image', reader.result);
+      reader.onloadend = () => setFormData(prev => ({ ...prev, image: reader.result, imageFile: file }));
       reader.readAsDataURL(file);
     }
   };
@@ -434,25 +509,16 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
   const handleUploadClick = () => document.getElementById('pet-image-upload').click();
 
   const handleRemoveImage = () => {
-    handleChange('image', null);
+    setFormData(prev => ({ ...prev, image: null, imageFile: null }));
     setShowImagePreview(false);
     document.getElementById('pet-image-upload').value = '';
   };
 
   const handleImageClick = () => {
-    if (formData.image) {
-      setShowImagePreview(true);
-    }
+    if (formData.image) setShowImagePreview(true);
   };
 
   if (!isOpen) return null;
-
-  const categoryOptions = [
-    { value: 'dog', label: t('addPet.categories.dog') },
-    { value: 'cat', label: t('addPet.categories.cat') },
-    { value: 'bird', label: t('addPet.categories.bird') },
-    { value: 'other', label: t('addPet.categories.other') },
-  ];
 
   const genderOptions = [
     { value: 'male', label: t('addPet.genders.male') },
@@ -499,8 +565,10 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
       gender: '',
       weight: '',
       specialNeeds: [],
-      image: null
+      image: null,
+      imageFile: null
     });
+    onSuccess?.();
     onClose();
   };
 
@@ -510,7 +578,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
       {!isSuccessModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="
-            bg-white rounded-2xl sm:rounded-3xl 
+            bg-white  
             w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl 
             h-[90vh] sm:h-auto 
             flex flex-col 
@@ -523,7 +591,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
               bg-white shrink-0
             ">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                {t('addPet.title')}
+                {isEditMode ? 'Edit Pet' : t('addPet.title')}
               </h2>
             </div>
 
@@ -550,7 +618,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                       <button 
                         type="button" 
                         onClick={handleUploadClick} 
-                        className="text-sm border cursor-pointer border-gray-300 px-5 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                        className="text-sm border cursor-pointer border-gray-300 px-5 py-2 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                       >
                         {t('addPet.updateImage')}
                       </button>
@@ -566,7 +634,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                     <button 
                       type="button" 
                       onClick={handleUploadClick} 
-                      className="text-sm border cursor-pointer border-gray-300 px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                      className="text-sm border cursor-pointer border-gray-300 px-6 py-2 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                     >
                       {t('addPet.uploadImage')}
                     </button>
@@ -591,7 +659,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
                         placeholder={t('addPet.petNamePlaceholder')}
                         value={formData.name}
                         onChange={(e) => handleChange('name', e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                        className="w-full px-4 py-3 text-black bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
                       />
                     </div>
 
@@ -655,15 +723,19 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
             ">
               <button
                 onClick={onClose}
-                className="flex-1 px-6 py-3 cursor-pointer border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1"
+                className="flex-1 px-6 py-3 cursor-pointer border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1"
               >
                 {t('addPet.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex-1 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium order-1 sm:order-2"
+                disabled={isSubmitting}
+                className="flex-1 px-6 py-3 cursor-pointer bg-black text-white hover:bg-gray-900 transition-colors font-medium order-1 sm:order-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {t('addPet.addPetButton')}
+                {isSubmitting
+                  ? (isEditMode ? 'Updating...' : 'Adding...')
+                  : (isEditMode ? 'Update Pet' : t('addPet.addPetButton'))
+                }
               </button>
             </div>
           </div>
@@ -686,7 +758,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
             <img 
               src={formData.image} 
               alt="Pet Preview" 
-              className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg"
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
@@ -696,7 +768,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
       {/* Success Modal */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
+          <div className="bg-white shadow-2xl w-full max-w-xl p-8">
             <div className="flex justify-center mb-6">
               <img src="successpet.svg" alt="" />
             </div>
@@ -714,7 +786,7 @@ export function AddPetModal({ isOpen, onClose, onAddPet }) {
 
             <button
               onClick={handleCloseAll}
-              className="w-full px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="w-full px-6 py-3 bg-black text-white font-medium hover:bg-gray-800 transition-colors"
             >
               {t('addPet.success.okay')}
             </button>

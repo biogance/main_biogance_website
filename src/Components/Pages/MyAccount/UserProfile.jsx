@@ -220,7 +220,7 @@ export default function UserProfile() {
                                     <>
                                         {imageLoading && (
                                             <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                                                <div className="w-8 h-8 border-3 border-black border-t-transparent  animate-spin" />
+                                               <div className="w-8 h-8 border-3 border-black border-t-transparent rounded-full animate-spin" />
                                             </div>
                                         )}
                                         <img
