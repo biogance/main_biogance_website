@@ -5,7 +5,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
 import { BASE_URL } from "../../../API/API";
 
-export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 }) {
+export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0, onRedeemSuccess }) {
     const { t } = useTranslation("myaccount");
     const [selectedPoints, setSelectedPoints] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,12 +18,11 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
 
     const minimumPoints = 10;
     const userBalance = loyaltyPoints;
-    const maxVoucherValue = Math.floor(loyaltyPoints / 10);
-    const maxRedeemable = Math.floor(maxVoucherValue / 10) * 10;
+    const maxOptions = Math.floor(loyaltyPoints / 10);
 
-    // Generate dropdown: 10, 20, 30 ... maxRedeemable points
-    const pointsOptions = Array.from({ length: maxRedeemable / 10 }, (_, i) => {
-      const pts = (i + 1) * 10;
+    // Generate dropdown: 10, 20, 30 ... maxOptions (not *10)
+    const pointsOptions = Array.from({ length: maxOptions }, (_, i) => {
+      const pts = (i + 1);
       return { value: String(pts), label: t('createVoucher.pointsOption', { points: pts }) };
     });
 
@@ -32,8 +31,7 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
         setRedeemLoading(true);
         setRedeemError(null);
         try {
-            const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-            const token = loginData?.data?.token;
+            const token = JSON.parse(localStorage.getItem('splashData') || '{}')?.user?.token;
             const res = await fetch(`${BASE_URL}/user/voucher/create`, {
                 method: "POST",
                 headers: {
@@ -53,6 +51,7 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
             setDiscountAmount(points / 10);
             setVoucherCode(data.data?.name || data.data?.code || '');
             setIsSuccessModalOpen(true);
+            onRedeemSuccess?.();
         } catch {
             setRedeemError("Something went wrong.");
         }
@@ -203,6 +202,7 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0 
                       <>
                         <style>{`@keyframes redeemSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
                         <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "redeemSpin 0.6s linear infinite" }} />
+                        {t('createVoucher.redeeming') || 'Redeeming...'}
                       </>
                     ) : t('createVoucher.redeem')}
                   </button>
