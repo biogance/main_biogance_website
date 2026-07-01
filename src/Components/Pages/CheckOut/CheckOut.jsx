@@ -3223,9 +3223,10 @@ function Checkout({ cartItems = [] }) {
         setStreet(addr.full_address || "");
         setPostcode(addr.postal_code || "");
         setCity(addr.city || "");
-        const foundByIso2 = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === (addr.country || "").toLowerCase(),
-        );
+        const countryVal = (addr.country || "").toLowerCase();
+        const foundByIso2 =
+          defaultCountries.find((c) => parseCountry(c).iso2 === countryVal) ||
+          defaultCountries.find((c) => parseCountry(c).name.toLowerCase() === countryVal);
         if (foundByIso2) setDeliveryCountryIso2(parseCountry(foundByIso2).iso2);
       }
 
@@ -3381,10 +3382,20 @@ function Checkout({ cartItems = [] }) {
 
     pr.canMakePayment()
       .then((result) => {
-        console.log("[ApplePay] canMakePayment result:", result, {
+        const debugInfo = {
           hostname: typeof window !== "undefined" ? window.location.hostname : null,
           protocol: typeof window !== "undefined" ? window.location.protocol : null,
-        });
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        };
+        console.log("[ApplePay] canMakePayment result:", result, debugInfo);
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+          window.alert(
+            `[ApplePay] canMakePayment result: ${JSON.stringify(result)}\n` +
+              `hostname: ${debugInfo.hostname}\n` +
+              `protocol: ${debugInfo.protocol}\n` +
+              `userAgent: ${debugInfo.userAgent}`
+          );
+        }
         // Only set ready for Apple Pay — ignore 'link' (Stripe Link) to prevent
         // Link payment sheet from opening instead of Apple Pay sheet
         if (result?.applePay) {
@@ -3393,6 +3404,9 @@ function Checkout({ cartItems = [] }) {
       })
       .catch((err) => {
         console.error("[ApplePay] canMakePayment error:", err);
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+          window.alert(`[ApplePay] canMakePayment error: ${err?.message || err}`);
+        }
       });
   }, [stripe]);
 

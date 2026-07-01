@@ -195,16 +195,25 @@ export default function Address() {
 
   const handleSaveAddress = () => handleCloseModal(true);
 
-  const handleSetDefault = async (id) => {
-    setSelectedAddress(id);
+  const handleSetDefault = async (address) => {
+    setSelectedAddress(address.id);
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
     const token = loginData?.data?.token;
-    const body = { address_id: id, ...(!token && { device_id: getDeviceId() }) };
+    const body = {
+      address_id: address.id,
+      main_type: activeTab === "invoice" ? "invoice" : "delivery",
+      type: address.type,
+      full_address: address.full_address,
+      country: address.country,
+      city: address.city,
+      postal_code: address.postal_code,
+      is_default: 1,
+      ...(!token && { device_id: getDeviceId() }),
+    };
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     try {
-      const res = await axios.post(`${BASE_URL}/user/address/default`, body, { headers });
-      
+      const res = await axios.post(`${BASE_URL}/user/address/edit`, body, { headers });
       if (res.data.status === false) {
         toast.error(getApiErrorMessage(res.data));
       }
@@ -293,15 +302,15 @@ export default function Address() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <button 
-                          onClick={() => handleSetDefault(address.id)} 
+                          onClick={() => handleSetDefault(address)} 
                           className="relative w-5 h-5 flex-shrink-0 mt-0.5"
                         >
                           <div className="w-5 h-5 cursor-pointer border-2 border-gray-400 flex items-center justify-center">
-                            {selectedAddress === address.id && <div className="w-3 h-3 bg-gray-900 rounded-full" />}
+                            {(selectedAddress === address.id || address.is_default == 1) && <div className="w-3 h-3 bg-gray-900 rounded-full" />}
                           </div>
                         </button>
                         <h3 
-                          onClick={() => handleSetDefault(address.id)} 
+                          onClick={() => handleSetDefault(address)} 
                           className="font-semibold text-gray-900 cursor-pointer"
                         >
                           {address.type}

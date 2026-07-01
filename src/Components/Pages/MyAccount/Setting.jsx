@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { BASE_URL } from '../../API/API';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { FiLock, FiEye, FiEyeOff, FiMail, FiTrash2 } from 'react-icons/fi';
 import { MdLockOutline } from 'react-icons/md';
@@ -112,13 +114,17 @@ export default function Settings() {
     });
   };
 
-  const validatePasswords = () => {
-    const newErrors = {
-      current: '',
-      new: '',
-      confirm: ''
-    };
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  const getToken = () => {
+    try {
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || '{}');
+      return loginData?.data?.token || loginData?.token || '';
+    } catch { return ''; }
+  };
+
+  const validatePasswords = () => {
+    const newErrors = { current: '', new: '', confirm: '' };
     let isValid = true;
 
     if (!passwords.current) {
@@ -132,27 +138,16 @@ export default function Settings() {
     if (!passwords.new) {
       newErrors.new = t('settings.updatePassword.errors.newRequired');
       isValid = false;
-    } else if (passwords.new === passwords.current) {
-      newErrors.new = t('settings.updatePassword.errors.newMustDiffer');
+    } else if (passwords.new.length < 6) {
+      newErrors.new = 'Password must be at least 6 characters';
       isValid = false;
-    } else if (passwords.new.length < 8) {
-      newErrors.new = t('settings.updatePassword.errors.passwordRequirements');
-      isValid = false;
-    } else {
-      const hasNumber = /\d/.test(passwords.new);
-      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(passwords.new);
-
-      if (!hasNumber || !hasSpecial) {
-        newErrors.new = t('settings.updatePassword.errors.passwordRequirements');
-        isValid = false;
-      }
     }
 
     if (!passwords.confirm) {
       newErrors.confirm = t('settings.updatePassword.errors.confirmRequired');
       isValid = false;
     } else if (passwords.new !== passwords.confirm) {
-      newErrors.confirm = t('settings.updatePassword.errors.passwordRequirements');
+      newErrors.confirm = 'New password and confirm password do not match';
       isValid = false;
     }
 
@@ -160,11 +155,36 @@ export default function Settings() {
     return isValid;
   };
 
-  const handleUpdatePassword = () => {
-    if (validatePasswords()) {
-      console.log('Password validation passed. Updating password...');
-    } else {
-      console.log('Password validation failed');
+  const handleUpdatePassword = async () => {
+    if (!validatePasswords()) return;
+    setIsUpdating(true);
+    try {
+      const res = await fetch(`${BASE_URL}/user/auth/change/password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          old_password: passwords.current,
+          new_password: passwords.new,
+        }),
+      });
+      const data = await res.json();
+      const decodeHtml = (str) => str?.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'") || '';
+      if (data?.status === true || data?.status === 'true') {
+        setPasswords({ current: '', new: '', confirm: '' });
+        toast.success(decodeHtml(data?.action) || 'Password updated successfully');
+      } else {
+        const errMsg = decodeHtml(data?.action) || decodeHtml(data?.message) || 'Failed to update password';
+        toast.error(errMsg);
+        setErrors(prev => ({ ...prev, current: errMsg }));
+      }
+    } catch (e) {
+      toast.error('Something went wrong. Please try again.');
+      setErrors(prev => ({ ...prev, current: 'Something went wrong. Please try again.' }));
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -301,9 +321,10 @@ export default function Settings() {
             </button>
             <button
               onClick={handleUpdatePassword}
-              className="px-6 py-3 cursor-pointer bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              disabled={isUpdating}
+              className="px-6 py-3 cursor-pointer bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {t('settings.updatePassword.updatePassword')}
+              {isUpdating ? 'Updating...' : t('settings.updatePassword.updatePassword')}
             </button>
           </div>
         </div>
