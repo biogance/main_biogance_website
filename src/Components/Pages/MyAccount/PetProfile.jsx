@@ -1,17 +1,19 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiX } from 'react-icons/fi';
 import { TbPencil } from 'react-icons/tb';
+import { PiPawPrint } from 'react-icons/pi';
 import DeletePetModal from './ModalBox/DeletePetModal';
 import { AddPetModal } from './ModalBox/AddPetModal';
+import { BASE_URL, MEDIA_URL } from '../../API/API';
 
 
 
 // Shimmer Card Component for Pet Cards
 const PetCardShimmer = () => (
-  <div className="bg-white rounded-xl p-4 border border-gray-200">
+  <div className="bg-white  p-4 border border-gray-200">
     <div className="-mx-4 px-4 pb-4 mb-6 border-b border-gray-100">
       <div className="flex items-start gap-4">
         {/* Image Shimmer - Now properly circular and responsive */}
@@ -136,21 +138,26 @@ const PetCardShimmer = () => (
 
 // Progressive Image Loader Component
 const ProgressiveImage = ({ src, alt, className }) => {
-  const [loadingState, setLoadingState] = useState('shimmer');
+  const [loadingState, setLoadingState] = useState(src ? 'shimmer' : 'placeholder');
 
   useEffect(() => {
+    if (!src) { setLoadingState('placeholder'); return; }
+    setLoadingState('shimmer');
     const shimmerTimer = setTimeout(() => {
       setLoadingState('spinner');
-      
-      const spinnerTimer = setTimeout(() => {
-        setLoadingState('loaded');
-      }, 2000);
-
+      const spinnerTimer = setTimeout(() => setLoadingState('loaded'), 2000);
       return () => clearTimeout(spinnerTimer);
     }, 1000);
-
     return () => clearTimeout(shimmerTimer);
   }, [src]);
+
+  if (loadingState === 'placeholder') {
+    return (
+      <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-50 border border-gray-200 shadow-md flex items-center justify-center">
+        <PiPawPrint className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex-shrink-0">
@@ -164,19 +171,13 @@ const ProgressiveImage = ({ src, alt, className }) => {
           }}
         />
       )}
-      
       {loadingState === 'spinner' && (
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-100 flex items-center justify-center border shadow-md border-gray-200 p-1">
           <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-gray-900 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
-      
       {loadingState === 'loaded' && (
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-        />
+        <img src={src} alt={alt} className={className} />
       )}
     </div>
   );
@@ -184,11 +185,11 @@ const ProgressiveImage = ({ src, alt, className }) => {
 
 function PetCard({ pet, onEdit, onDelete, t }) {
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-200">
+    <div className="bg-white  p-4 border border-gray-200">
       <div className="-mx-4 px-4 pb-4 mb-6 border-b border-gray-100">
         <div className="flex items-start gap-4">
           <ProgressiveImage
-            src={pet.image}
+            src={pet.profile_picture ? `${MEDIA_URL}${pet.profile_picture}` : ''}
             alt={pet.name}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border shadow-md border-gray-200 p-1"
           />
@@ -199,14 +200,14 @@ function PetCard({ pet, onEdit, onDelete, t }) {
           <div className="flex items-center gap-1">
             <button
               onClick={onEdit}
-              className="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 cursor-pointer hover:bg-gray-100 transition-colors"
               aria-label="Edit pet"
             >
               <TbPencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
             <button
               onClick={onDelete}
-              className="p-2 cursor-pointer hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 cursor-pointer hover:bg-red-50  transition-colors"
               aria-label="Delete pet"
             >
               <FiTrash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -230,7 +231,9 @@ function PetCard({ pet, onEdit, onDelete, t }) {
         </div>
         <div className="flex justify-between items-start">
           <span className="text-gray-600 text-sm sm:text-base">{t('petProfile.petDetails.specialNeeds')}</span>
-          <span className="text-gray-900 text-right max-w-[60%] text-sm sm:text-base">{pet.specialNeeds}</span>
+          <span className="text-gray-900 text-right max-w-[60%] text-sm sm:text-base">
+            {pet.special_need || pet.specialNeeds || '—'}
+          </span>
         </div>
       </div>
     </div>
@@ -239,54 +242,40 @@ function PetCard({ pet, onEdit, onDelete, t }) {
 
 export default function PetProfile() {
   const { t } = useTranslation('myaccount');
-  const [pets, setPets] = useState([
-    {
-      id: 1,
-      name: 'Scooby',
-      breed: 'Labrador',
-      age: '2.5 years',
-      gender: 'Male',
-      weight: '2.9 kg',
-      specialNeeds: 'Sensitive skin, Joint care',
-      image: 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=400&h=400&fit=crop'
-    },
-    {
-      id: 2,
-      name: 'Bella',
-      breed: 'Beagle',
-      age: '3 years',
-      gender: 'Female',
-      weight: '9.5 kg',
-      specialNeeds: 'Allergies, Regular exercise',
-      image: 'https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=400&h=400&fit=crop'
-    },
-    {
-      id: 3,
-      name: 'Max',
-      breed: 'German Shepherd',
-      age: '4 years',
-      gender: 'Male',
-      weight: '30 kg',
-      specialNeeds: 'Anxiety, Training required',
-      image: 'https://images.unsplash.com/photo-1568572933382-74d440642117?w=400&h=400&fit=crop'
-    }
-  ]);
-
+  const [pets, setPets] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [petToDelete, setPetToDelete] = useState(null);
-  const [loadingState, setLoadingState] = useState('shimmer');
+  const [petToEdit, setPetToEdit] = useState(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoadingState('loaded');
-    }, 1000);
+  const getToken = () => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      return splashData?.user?.token || localStorage.getItem('token') || '';
+    } catch { return ''; }
+  };
 
-    return () => clearTimeout(timer);
+  const fetchPets = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/user/pet/list`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      setPets(data?.data || data?.pets || []);
+    } catch (e) {
+      console.error('Failed to fetch pets:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const handleEdit = (petId) => {
-    console.log('Edit pet:', petId);
+  useEffect(() => { fetchPets(); }, [fetchPets]);
+
+  const handleEdit = (pet) => {
+    setPetToEdit(pet);
+    setIsModalOpen(true);
   };
 
   const handleDelete = (pet) => {
@@ -294,21 +283,9 @@ export default function PetProfile() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (petToDelete) {
-      setPets(pets.filter(pet => pet.id !== petToDelete.id));
-      setPetToDelete(null);
-      setIsDeleteModalOpen(false);
-    }
-  };
-
   const handleAddPet = () => {
+    setPetToEdit(null);
     setIsModalOpen(true);
-  };
-
-  const handleAddPetSubmit = (newPet) => {
-    const petWithId = { ...newPet, id: pets.length + 1 };
-    setPets([...pets, petWithId]);
   };
 
   return (
@@ -326,7 +303,7 @@ export default function PetProfile() {
 
       <div className="min-h-screen">
         <div className="max-w-10xl mx-auto px-4 sm:px-6 py-8">
-          <div className="bg-white rounded-xl p-4 sm:p-8">
+          <div className="bg-white  p-4 sm:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
               <div>
                 <h2 className="text-xl sm:text-2xl text-black font-semibold mb-1">{t('petProfile.title')}</h2>
@@ -334,56 +311,65 @@ export default function PetProfile() {
                   {t('petProfile.subtitle')}
                 </p>
               </div>
-              {pets.length > 0 && (
-                <button
-                  onClick={handleAddPet}
-                  className="bg-gray-900 cursor-pointer text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm whitespace-nowrap"
-                >
-                  {t('petProfile.addPet')}
-                </button>
+              {!isLoading && pets.length > 0 && (
+                <div className="relative group inline-block">
+                  <button
+                    onClick={pets.length >= 3 ? undefined : handleAddPet}
+                    className={`px-4 sm:px-6 py-2 sm:py-2.5  text-sm font-medium transition-colors duration-200 shadow-sm whitespace-nowrap ${
+                      pets.length >= 3
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-gray-900 text-white cursor-pointer hover:bg-gray-800'
+                    }`}
+                  >
+                    {t('petProfile.addPet')}
+                  </button>
+                  {pets.length >= 3 && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 z-10">
+                      <div className="bg-gray-900 text-white text-xs  px-3 py-2 whitespace-nowrap text-center shadow-lg">
+                        Limit reached<br />Only 3 pets per Account.
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
-            {pets.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <PetCardShimmer key={index} />
+                ))}
+              </div>
+            ) : pets.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 md:py-20">
                 <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 mb-8">
-                  <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No pets illustration</span>
-                  </div>
+                  <img src="petempty.svg" alt="" />
                 </div>
-
                 <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                   {t('petProfile.noPets.title')}
                 </h3>
-
                 <p className="text-gray-500 text-sm sm:text-base text-center max-w-lg mb-8 leading-relaxed px-4">
                   {t('petProfile.noPets.description')}
                 </p>
-
                 <button
                   onClick={handleAddPet}
-                  className="bg-gray-900 cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm"
+                  className="bg-gray-900 cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm"
                 >
                   {t('petProfile.noPets.addFirstPet')}
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {loadingState === 'shimmer' ? (
-                  Array.from({ length: pets.length }).map((_, index) => (
-                    <PetCardShimmer key={index} />
-                  ))
-                ) : (
-                  pets.map((pet) => (
-                    <PetCard
-                      key={pet.id}
-                      pet={pet}
-                      onEdit={() => handleEdit(pet.id)}
-                      onDelete={() => handleDelete(pet)}
-                      t={t}
-                    />
-                  ))
-                )}
+                {pets.map((pet) => (
+                  <PetCard
+                    key={pet.id}
+                    pet={pet}
+                    onEdit={() => handleEdit(pet)}
+                    onDelete={() => handleDelete(pet)}
+                    t={t}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -392,15 +378,21 @@ export default function PetProfile() {
 
       <AddPetModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddPet={handleAddPetSubmit}
+        onClose={() => { setIsModalOpen(false); setPetToEdit(null); }}
+        onSuccess={fetchPets}
+        petToEdit={petToEdit}
       />
 
       <DeletePetModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
+        petId={petToDelete?.id}
         petName={petToDelete?.name}
+        onSuccess={() => {
+          setIsDeleteModalOpen(false);
+          setPetToDelete(null);
+          fetchPets();
+        }}
       />
     </>
   );

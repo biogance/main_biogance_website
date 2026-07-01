@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biogance — Apple Pay Next.js Guide (FINAL)</title>
+  <style>
+    :root {
+      --black:   #1c1c1e;
+      --accent:  #0071e3;
+      --green:   #34c759;
+      --orange:  #ff9f0a;
+      --red:     #ff3b30;
+      --stripe:  #635bff;
+      --bg:      #f5f5f7;
+      --surface: #ffffff;
+      --border:  #d2d2d7;
+      --text:    #1d1d1f;
+      --muted:   #6e6e73;
+      --code-bg: #0d1117;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(150deg, #1c1c1e 0%, #2d2d30 100%);
+      color: #f5f5f7;
+      padding: 44px 40px 32px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(52,199,89,0.15);
+      border: 1px solid rgba(52,199,89,0.4);
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .8px; text-transform: uppercase;
+      padding: 4px 14px; margin-bottom: 14px; color: #34c759;
+    }
+    header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+    header p  { opacity: .75; max-width: 640px; font-size: 15px; }
+    .domain-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 18px;
+      background: rgba(0,113,227,0.2);
+      border: 1px solid rgba(0,113,227,0.5);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px; font-weight: 600;
+      color: #79c0ff;
+      font-family: "JetBrains Mono", Consolas, monospace;
+    }
+    .domain-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #34c759; }
+    .meta-row {
+      display: flex; gap: 28px; flex-wrap: wrap;
+      margin-top: 20px; font-size: 12px; opacity: .55;
+    }
+
+    /* CONTAINER */
+    .container { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    /* TOC */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px 26px; margin-bottom: 40px;
+    }
+    .toc h2 { font-size: 11px; font-weight: 700; text-transform: uppercase;
+              letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+    .toc ol { padding-left: 18px; column-count: 2; column-gap: 32px; }
+    .toc li { margin: 5px 0; }
+    .toc a  { color: var(--accent); text-decoration: none; font-size: 14px; }
+    .toc a:hover { text-decoration: underline; }
+    @media (max-width: 600px) { .toc ol { column-count: 1; } }
+
+    /* SECTIONS */
+    .section { margin-bottom: 48px; }
+    .section h2 {
+      font-size: 22px; font-weight: 700; color: var(--black);
+      padding-bottom: 10px; border-bottom: 2px solid var(--border);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .num {
+      background: var(--black); color: #fff; border-radius: 50%;
+      width: 30px; height: 30px; display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .num.green { background: var(--green); }
+    .section h3 { font-size: 17px; font-weight: 600; margin: 24px 0 8px; }
+    .section p  { margin-bottom: 10px; }
+
+    /* CALLOUTS */
+    .box {
+      border-radius: 10px; padding: 14px 18px; margin: 14px 0;
+      font-size: 14px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .box-icon { font-size: 18px; flex-shrink: 0; }
+    .box.info    { background: #e8f0fe; border-left: 4px solid var(--accent); }
+    .box.success { background: #e9faf0; border-left: 4px solid var(--green); }
+    .box.warn    { background: #fff4e5; border-left: 4px solid var(--orange); }
+    .box.danger  { background: #fff0ef; border-left: 4px solid var(--red); }
+    .box.stripe  { background: #f0effe; border-left: 4px solid var(--stripe); }
+    .box.black   { background: #f5f5f7; border-left: 4px solid var(--black); }
+
+    /* FLOW */
+    .flow { margin: 20px 0; }
+    .flow-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 0;
+    }
+    .flow-item:hover { border-color: #a0a0a0; }
+    .flow-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; border-radius: 4px;
+      padding: 2px 8px; margin-bottom: 6px; display: inline-block;
+    }
+    .tag-fe     { background: #e0edff; color: #003087; }
+    .tag-be     { background: #e9faf0; color: #166534; }
+    .tag-stripe { background: #f0effe; color: #4c3ed9; }
+    .tag-apple  { background: #f5f5f7; color: #1c1c1e; border: 1px solid #d2d2d7; }
+    .flow-sn {
+      background: var(--accent); color: #fff; border-radius: 50%;
+      width: 26px; height: 26px; display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; margin-bottom: 6px;
+    }
+    .flow-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .flow-item p  { font-size: 13px; color: var(--muted); margin: 0; }
+    .flow-arrow { text-align: center; padding: 5px 0; color: var(--accent); font-size: 20px; }
+
+    /* TABLES */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+    .tbl th {
+      background: #f5f5f7; text-align: left; padding: 9px 12px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .4px; color: var(--muted); border: 1px solid var(--border);
+    }
+    .tbl td { padding: 9px 12px; border: 1px solid var(--border); vertical-align: top; }
+    .tbl tr:nth-child(even) td { background: #fafafa; }
+    .m-post { display:inline-block; font-size:10px; font-weight:700; border-radius:3px; padding:2px 7px; background:#fee2e2; color:#b91c1c; text-transform:uppercase; }
+    .m-get  { display:inline-block; font-size:10px; font-weight:700; border-radius:3px; padding:2px 7px; background:#dcfce7; color:#166534; text-transform:uppercase; }
+
+    /* ENV TABLE */
+    .env-tbl { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .env-tbl th { background: #0d1117; color: #79c0ff; text-align:left; padding:9px 12px; font-size:11px; font-weight:600; letter-spacing:.4px; }
+    .env-tbl td { padding:9px 12px; border-bottom:1px solid #21262d; background:#161b22; color:#c9d1d9; font-family:"JetBrains Mono",Consolas,monospace; font-size:13px; }
+
+    /* CODE */
+    pre {
+      background: var(--code-bg); color: #c9d1d9;
+      border-radius: 10px; padding: 20px 22px;
+      overflow-x: auto; font-size: 13px;
+      line-height: 1.65; margin: 12px 0;
+      border: 1px solid #30363d;
+    }
+    code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; }
+    p code, li code, td code {
+      background: #f0f0f2; color: var(--black);
+      border-radius: 4px; padding: 1px 6px; font-size: 13px;
+    }
+    .kw  { color: #ff7b72; }
+    .fn  { color: #79c0ff; }
+    .str { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .num { color: #79c0ff; }
+    .type{ color: #7ee787; }
+    .var { color: #ffa657; }
+
+    /* FILE PATH */
+    .filepath {
+      display: inline-block; background: #1c1c1e; color: #79c0ff;
+      border-radius: 6px; padding: 4px 12px; font-size: 12px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      margin-bottom: 6px;
+    }
+
+    /* GRID */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px) { .g2 { grid-template-columns: 1fr; } }
+
+    /* CARD */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .card h3 { margin-top: 0; font-size: 15px; }
+
+    /* CHECKLIST */
+    .check { list-style: none; padding: 0; }
+    .check li {
+      padding: 7px 0 7px 30px; position: relative;
+      border-bottom: 1px solid #f0f0f0; font-size: 14px;
+    }
+    .check li:last-child { border-bottom: none; }
+    .check li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 700; font-size: 15px; }
+
+    /* FOOTER */
+    footer {
+      background: var(--black); color: rgba(245,245,247,.55);
+      text-align: center; padding: 22px; font-size: 13px;
+    }
+    footer strong { color: #f5f5f7; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* IMPORTANT BOX */
+    .important {
+      background: linear-gradient(135deg, #1c1c1e 0%, #2d2d30 100%);
+      color: #f5f5f7; border-radius: 12px; padding: 22px 24px;
+      margin: 20px 0;
+    }
+    .important h3 { color: #34c759; font-size: 14px; font-weight: 700;
+                    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
+    .important ul { padding-left: 18px; }
+    .important li { margin: 6px 0; font-size: 14px; opacity: .85; }
+    .important strong { color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER -->
+<header>
+  <div class="badge">✓ Domain Verified &amp; Ready</div>
+  <h1>Biogance — Apple Pay for Next.js</h1>
+  <p>Complete implementation guide. Domain already verified in Stripe. No extra setup needed — just code and ship.</p>
+  <div class="domain-pill">
+    <span class="dot"></span>
+    website-dev.biogance.com &nbsp;·&nbsp; Status: Enabled ✓
+  </div>
+  <div class="meta-row">
+    <span>Platform: Next.js</span>
+    <span>Payment: Apple Pay via Stripe</span>
+    <span>Country: FR &nbsp;|&nbsp; Currency: EUR</span>
+    <span>Date: June 2026</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#status">Current Status &amp; What's Already Done</a></li>
+      <li><a href="#how-it-works">How Apple Pay Works (Web)</a></li>
+      <li><a href="#flow">Payment Flow (Step by Step)</a></li>
+      <li><a href="#env">Environment Setup</a></li>
+      <li><a href="#backend">Backend API Routes</a></li>
+      <li><a href="#frontend">Frontend Component (Full Code)</a></li>
+      <li><a href="#checkout">Checkout Page Integration</a></li>
+      <li><a href="#api-ref">Biogance API Reference</a></li>
+      <li><a href="#errors">Error Handling</a></li>
+      <li><a href="#browser">Browser Compatibility</a></li>
+      <li><a href="#checklist">Final Checklist</a></li>
+    </ol>
+  </div>
+
+  <!-- ══════════ 1. STATUS -->
+  <div class="section" id="status">
+    <h2><span class="num green">✓</span> Current Status — What's Already Done</h2>
+
+    <div class="important">
+      <h3>Already Completed — No Action Needed</h3>
+      <ul>
+        <li><strong>Domain `website-dev.biogance.com`</strong> is already added and <strong>Enabled</strong> in Stripe Dashboard</li>
+        <li><strong>Apple Pay domain verification</strong> is handled automatically by Stripe — no file needed</li>
+        <li><strong>Stripe account</strong> is active and configured (iOS app already uses it)</li>
+      </ul>
+    </div>
+
+    <div class="box success">
+      <span class="box-icon">✅</span>
+      <div>Developer sirf <strong>code likhe aur deploy kare</strong> — domain aur Stripe setup already complete hai. Koi extra configuration nahi karni.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. HOW IT WORKS -->
+  <div class="section" id="how-it-works">
+    <h2><span class="num">2</span> How Apple Pay Works on Web</h2>
+
+    <p>iOS aur Web dono mein Apple Pay <strong>Stripe ke through</strong> kaam karta hai. Fark sirf SDK ka hai:</p>
+
+    <div class="g2">
+      <div class="card">
+        <h3>&#63743; iOS (Reference)</h3>
+        <ul style="font-size:13px; padding-left:16px; margin-top:8px;">
+          <li>SDK: <code>STPApplePayContext</code></li>
+          <li>Native Apple Pay sheet</li>
+          <li>Merchant ID: <code>merchant.biogance.ios</code></li>
+          <li>Auto-verified via Apple Dev Account</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--stripe);">
+        <h3>&#127760; Web (Next.js)</h3>
+        <ul style="font-size:13px; padding-left:16px; margin-top:8px;">
+          <li>SDK: <code>@stripe/react-stripe-js</code></li>
+          <li>Browser-rendered Apple Pay sheet</li>
+          <li>Merchant: <code>website-dev.biogance.com</code></li>
+          <li>Already verified ✓ in Stripe</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="box stripe" style="margin-top:16px;">
+      <span class="box-icon">⚡</span>
+      <div>
+        <strong>Backend API is 100% identical.</strong> Same endpoints, same request body, same response. Biogance backend ka koi change nahi — sirf frontend SDK alag hai.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. FLOW -->
+  <div class="section" id="flow">
+    <h2><span class="num">3</span> Payment Flow (Step by Step)</h2>
+
+    <div class="flow">
+
+      <div class="flow-item">
+        <div class="flow-tag tag-fe">Frontend</div>
+        <div class="flow-sn">1</div>
+        <h4>Page Load — Check Apple Pay Availability</h4>
+        <p>Stripe's <code>paymentRequest.canMakePayment()</code> checks if Safari + Apple Pay is available. If yes → show button. If no → hide button (Chrome/Firefox pe nahi dikhega).</p>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-item">
+        <div class="flow-tag tag-apple">Apple Pay</div>
+        <div class="flow-sn">2</div>
+        <h4>User Clicks Apple Pay Button → Sheet Opens</h4>
+        <p>Browser native Apple Pay sheet khulti hai. User Face ID / Touch ID se confirm karta hai.</p>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-item">
+        <div class="flow-tag tag-be">Next.js API Route</div>
+        <div class="flow-sn">3</div>
+        <h4>POST /api/stripe/create-intent</h4>
+        <p>Biogance backend call: <code>POST user/payment/create/intent</code><br/>
+        Body: <code>{ amount: "49.99", payment_method: "card" }</code><br/>
+        Response: <code>{ data: { client_secret: "pi_xxx_secret_xxx", payment_intent_id: "pi_xxx" } }</code></p>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-item">
+        <div class="flow-tag tag-stripe">Stripe</div>
+        <div class="flow-sn">4</div>
+        <h4>Stripe Confirms Payment with Apple Pay Token</h4>
+        <p><code>stripe.confirmCardPayment(clientSecret, { payment_method: event.paymentMethod.id })</code><br/>
+        Stripe charges the card. No card numbers exposed to your server.</p>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-item">
+        <div class="flow-tag tag-be">Next.js API Route</div>
+        <div class="flow-sn">5</div>
+        <h4>POST /api/orders/place</h4>
+        <p>Biogance backend call: <code>POST user/order/place</code><br/>
+        <code>payment_method: "Apple Pay"</code> &nbsp;·&nbsp; <code>payment_id: payment_intent_id</code> &nbsp;·&nbsp; <code>payment_status: "Confirmed"</code></p>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-item" style="border-color:var(--green);">
+        <div class="flow-tag tag-fe">Frontend</div>
+        <div class="flow-sn" style="background:var(--green);">6</div>
+        <h4>Navigate to Order Success Page</h4>
+        <p>Order confirmed. Redirect to success screen with order data.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ 4. ENV -->
+  <div class="section" id="env">
+    <h2><span class="num">4</span> Environment Setup</h2>
+
+    <h3>Install Packages</h3>
+    <pre><code>npm install @stripe/stripe-js @stripe/react-stripe-js</code></pre>
+
+    <h3>.env.local</h3>
+    <table class="env-tbl">
+      <thead>
+        <tr><th>Variable</th><th>Value</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</td>
+          <td>pk_test_... &nbsp;(sandbox)<br/>pk_live_... &nbsp;(production)</td>
+          <td style="color:#8b949e;">Stripe Dashboard → Developers → API Keys. Safe on frontend.</td>
+        </tr>
+        <tr>
+          <td>BIOGANCE_API_BASE</td>
+          <td>https://api.biogance.com/endpoint</td>
+          <td style="color:#8b949e;">Server-side only. NO NEXT_PUBLIC_ prefix.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="box warn">
+      <span class="box-icon">⚠️</span>
+      <div><strong>Stripe Publishable Key kahan milega?</strong> Stripe Dashboard → Developers → API Keys → "Publishable key" (pk_test_ ya pk_live_ se shuru hota hai). iOS app ke same Stripe account ka key use karo.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 5. BACKEND -->
+  <div class="section" id="backend">
+    <h2><span class="num">5</span> Backend API Routes</h2>
+
+    <div class="box black">
+      <span class="box-icon">📁</span>
+      <div>Ye routes aapke Next.js project mein banana hai. Ye sirf proxy ka kaam karte hain — Biogance backend se baat karte hain aur frontend ko result dete hain.</div>
+    </div>
+
+    <h3>Route 1 — Create Stripe PaymentIntent</h3>
+    <div class="filepath">app/api/stripe/create-intent/route.ts</div>
+    <pre><code><span class="kw">import</span> { NextRequest, NextResponse } <span class="kw">from</span> <span class="str">'next/server'</span>
+
+<span class="kw">export async function</span> <span class="fn">POST</span>(req: NextRequest) {
+  <span class="kw">try</span> {
+    <span class="cm">// User ka auth token header se lo</span>
+    <span class="kw">const</span> authToken = req.headers.get(<span class="str">'authorization'</span>)
+    <span class="kw">if</span> (!authToken) {
+      <span class="kw">return</span> NextResponse.json({ error: <span class="str">'Unauthorized'</span> }, { status: <span class="num">401</span> })
+    }
+
+    <span class="kw">const</span> { amount } = <span class="kw">await</span> req.json()
+
+    <span class="cm">// Biogance backend call — iOS ki tarah bilkul same</span>
+    <span class="kw">const</span> res = <span class="kw">await</span> fetch(
+      <span class="str">`${process.env.BIOGANCE_API_BASE}/user/payment/create/intent`</span>,
+      {
+        method: <span class="str">'POST'</span>,
+        headers: {
+          <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+          <span class="str">'Authorization'</span>: authToken,
+        },
+        body: JSON.stringify({
+          amount: String(amount),
+          payment_method: <span class="str">'card'</span>,  <span class="cm">// Always "card" — iOS bhi yahi bhejta hai</span>
+        }),
+      }
+    )
+
+    <span class="kw">const</span> data = <span class="kw">await</span> res.json()
+
+    <span class="kw">if</span> (!res.ok || !data?.data?.client_secret) {
+      <span class="kw">return</span> NextResponse.json(
+        { error: data?.action ?? <span class="str">'Failed to create payment intent'</span> },
+        { status: <span class="num">400</span> }
+      )
+    }
+
+    <span class="cm">// client_secret → Stripe ke liye, paymentIntentId → place order ke liye</span>
+    <span class="kw">return</span> NextResponse.json({
+      clientSecret:    data.data.client_secret,
+      paymentIntentId: data.data.payment_intent_id,
+    })
+
+  } <span class="kw">catch</span> (err) {
+    console.error(<span class="str">'[create-intent]'</span>, err)
+    <span class="kw">return</span> NextResponse.json({ error: <span class="str">'Server error'</span> }, { status: <span class="num">500</span> })
+  }
+}</code></pre>
+
+    <h3>Route 2 — Place Order</h3>
+    <div class="filepath">app/api/orders/place/route.ts</div>
+    <pre><code><span class="kw">import</span> { NextRequest, NextResponse } <span class="kw">from</span> <span class="str">'next/server'</span>
+
+<span class="kw">export async function</span> <span class="fn">POST</span>(req: NextRequest) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> authToken = req.headers.get(<span class="str">'authorization'</span>)
+    <span class="kw">if</span> (!authToken) {
+      <span class="kw">return</span> NextResponse.json({ error: <span class="str">'Unauthorized'</span> }, { status: <span class="num">401</span> })
+    }
+
+    <span class="kw">const</span> body = <span class="kw">await</span> req.json()
+
+    <span class="kw">const</span> res = <span class="kw">await</span> fetch(
+      <span class="str">`${process.env.BIOGANCE_API_BASE}/user/order/place`</span>,
+      {
+        method: <span class="str">'POST'</span>,
+        headers: {
+          <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+          <span class="str">'Authorization'</span>: authToken,
+        },
+        body: JSON.stringify(body),
+      }
+    )
+
+    <span class="kw">const</span> data = <span class="kw">await</span> res.json()
+    <span class="kw">if</span> (!res.ok) {
+      <span class="kw">return</span> NextResponse.json({ error: <span class="str">'Failed to place order'</span> }, { status: <span class="num">400</span> })
+    }
+
+    <span class="kw">return</span> NextResponse.json({ success: <span class="num">true</span>, data: data.data })
+
+  } <span class="kw">catch</span> (err) {
+    console.error(<span class="str">'[place-order]'</span>, err)
+    <span class="kw">return</span> NextResponse.json({ error: <span class="str">'Server error'</span> }, { status: <span class="num">500</span> })
+  }
+}</code></pre>
+  </div>
+
+  <!-- ══════════ 6. FRONTEND -->
+  <div class="section" id="frontend">
+    <h2><span class="num">6</span> Frontend Component</h2>
+
+    <h3>Step 1 — Stripe Provider (Layout)</h3>
+    <div class="filepath">app/checkout/layout.tsx</div>
+    <pre><code><span class="str">'use client'</span>
+
+<span class="kw">import</span> { loadStripe } <span class="kw">from</span> <span class="str">'@stripe/stripe-js'</span>
+<span class="kw">import</span> { Elements } <span class="kw">from</span> <span class="str">'@stripe/react-stripe-js'</span>
+
+<span class="cm">// Stripe ek baar load karo — component ke bahar</span>
+<span class="kw">const</span> stripePromise = <span class="fn">loadStripe</span>(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+)
+
+<span class="kw">export default function</span> <span class="fn">CheckoutLayout</span>({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  <span class="kw">return</span> (
+    &lt;<span class="fn">Elements</span> stripe={stripePromise}&gt;
+      {children}
+    &lt;/<span class="fn">Elements</span>&gt;
+  )
+}</code></pre>
+
+    <h3>Step 2 — Apple Pay Button Component (Complete)</h3>
+    <div class="filepath">components/ApplePayButton.tsx</div>
+    <pre><code><span class="str">'use client'</span>
+
+<span class="kw">import</span> { useEffect, useRef, useState } <span class="kw">from</span> <span class="str">'react'</span>
+<span class="kw">import</span> { useStripe } <span class="kw">from</span> <span class="str">'@stripe/react-stripe-js'</span>
+
+<span class="cm">// ── Types ──────────────────────────────────────────────────────────</span>
+<span class="kw">interface</span> <span class="type">OrderForm</span> {
+  fullName:                string
+  email:                   string
+  countryCode:             string   <span class="cm">// e.g. "+49"</span>
+  phone:                   string
+  deliveryAddressType:     string
+  deliveryAddressFull:     string
+  deliveryCountry:         string
+  deliveryCity:            string
+  deliveryPostalCode:      string
+  invoiceAddressType:      string
+  invoiceAddressFull:      string
+  invoiceCountry:          string
+  invoiceCity:             string
+  invoicePostalCode:       string
+  isInvoiceSameAsDelivery: boolean
+  shippingCost:            string
+  subtotal:                string
+  taxAmount:               string
+  totalAmount:             string   <span class="cm">// e.g. "49.99"</span>
+  voucher:                 string
+  promoCode:               string
+  cartIds:                 string   <span class="cm">// e.g. "1,2,3"</span>
+}
+
+<span class="kw">interface</span> <span class="type">Props</span> {
+  form:      OrderForm
+  authToken: string
+  onSuccess: (orderData: <span class="kw">any</span>) =&gt; <span class="kw">void</span>
+  onError:   (msg: string)    =&gt; <span class="kw">void</span>
+}
+
+<span class="cm">// ── Component ──────────────────────────────────────────────────────</span>
+<span class="kw">export default function</span> <span class="fn">ApplePayButton</span>({ form, authToken, onSuccess, onError }: Props) {
+
+  <span class="kw">const</span> stripe           = useStripe()
+  <span class="kw">const</span> [canPay, setCanPay]   = useState(<span class="num">false</span>)
+  <span class="kw">const</span> [loading, setLoading] = useState(<span class="num">false</span>)
+  <span class="kw">const</span> prRef = useRef&lt;<span class="kw">any</span>&gt;(<span class="num">null</span>)
+
+  <span class="cm">// ── Check Apple Pay availability ────────────────────────────────</span>
+  useEffect(() =&gt; {
+    <span class="kw">if</span> (!stripe) <span class="kw">return</span>
+
+    <span class="kw">const</span> amountInCents = Math.round(parseFloat(form.totalAmount) * <span class="num">100</span>)
+
+    <span class="kw">const</span> pr = stripe.paymentRequest({
+      country:  <span class="str">'FR'</span>,          <span class="cm">// Same as iOS</span>
+      currency: <span class="str">'eur'</span>,         <span class="cm">// Same as iOS (lowercase for Stripe web)</span>
+      total: {
+        label:  <span class="str">'Biogance'</span>,    <span class="cm">// Same as iOS PKPaymentSummaryItem label</span>
+        amount: amountInCents, <span class="cm">// Stripe uses cents — 49.99 EUR = 4999</span>
+      },
+      requestPayerName:  <span class="num">false</span>,
+      requestPayerEmail: <span class="num">false</span>,
+    })
+
+    pr.canMakePayment().then((result) =&gt; {
+      <span class="kw">if</span> (result?.applePay) {
+        prRef.current = pr
+        setCanPay(<span class="num">true</span>)
+      }
+    })
+  }, [stripe, form.totalAmount])
+
+  <span class="cm">// ── Handle click ────────────────────────────────────────────────</span>
+  <span class="kw">const</span> handleClick = <span class="kw">async</span> () =&gt; {
+    <span class="kw">if</span> (!stripe || !prRef.current) <span class="kw">return</span>
+    setLoading(<span class="num">true</span>)
+
+    <span class="kw">let</span> paymentIntentId = <span class="str">''</span>
+
+    <span class="cm">// ── paymentmethod event (fired after user approves in Apple Pay sheet) ──</span>
+    prRef.current.on(<span class="str">'paymentmethod'</span>, <span class="kw">async</span> (event: <span class="kw">any</span>) =&gt; {
+      <span class="kw">try</span> {
+
+        <span class="cm">// STEP 1 — Create Stripe PaymentIntent via Biogance backend ──────</span>
+        <span class="kw">const</span> intentRes = <span class="kw">await</span> fetch(<span class="str">'/api/stripe/create-intent'</span>, {
+          method: <span class="str">'POST'</span>,
+          headers: {
+            <span class="str">'Content-Type'</span>:  <span class="str">'application/json'</span>,
+            <span class="str">'Authorization'</span>: <span class="str">`Bearer ${authToken}`</span>,
+          },
+          body: JSON.stringify({ amount: form.totalAmount }),
+        })
+
+        <span class="kw">const</span> intentData = <span class="kw">await</span> intentRes.json()
+
+        <span class="kw">if</span> (!intentRes.ok || !intentData.clientSecret) {
+          event.complete(<span class="str">'fail'</span>)
+          onError(<span class="str">'Payment setup failed. Please try again.'</span>)
+          setLoading(<span class="num">false</span>)
+          <span class="kw">return</span>
+        }
+
+        paymentIntentId = intentData.paymentIntentId
+
+        <span class="cm">// STEP 2 — Confirm PaymentIntent with Apple Pay token ────────────</span>
+        <span class="cm">// Web equivalent of iOS: completion(clientSecret, nil)</span>
+        <span class="kw">const</span> { error: stripeError } = <span class="kw">await</span> stripe.confirmCardPayment(
+          intentData.clientSecret,
+          { payment_method: event.paymentMethod.id },
+          { handleActions: <span class="num">false</span> }
+        )
+
+        <span class="kw">if</span> (stripeError) {
+          event.complete(<span class="str">'fail'</span>)
+          onError(stripeError.message ?? <span class="str">'Payment failed'</span>)
+          setLoading(<span class="num">false</span>)
+          <span class="kw">return</span>
+        }
+
+        <span class="cm">// Apple Pay sheet pe checkmark show karo</span>
+        event.complete(<span class="str">'success'</span>)
+
+        <span class="cm">// STEP 3 — Place Order ─────────────────────────────────────────</span>
+        <span class="cm">// Same as iOS: orderPlaceAPI(paymentId: successApplePaymentIntentID)</span>
+        <span class="kw">const</span> placeRes = <span class="kw">await</span> fetch(<span class="str">'/api/orders/place'</span>, {
+          method: <span class="str">'POST'</span>,
+          headers: {
+            <span class="str">'Content-Type'</span>:  <span class="str">'application/json'</span>,
+            <span class="str">'Authorization'</span>: <span class="str">`Bearer ${authToken}`</span>,
+          },
+          body: JSON.stringify({
+            full_name:                    form.fullName,
+            email:                        form.email,
+            country_code:                 form.countryCode,
+            phone:                        form.phone,
+            phone_number:                 form.countryCode + form.phone,
+            delivery_address_type:        form.deliveryAddressType,
+            delivery_address_full:        form.deliveryAddressFull,
+            delivery_address_country:     form.deliveryCountry,
+            delivery_address_city:        form.deliveryCity,
+            delivery_address_postal_code: form.deliveryPostalCode,
+            invoice_address_type:         form.invoiceAddressType,
+            invoice_address_full:         form.invoiceAddressFull,
+            invoice_address_country:      form.invoiceCountry,
+            invoice_address_city:         form.invoiceCity,
+            invoice_address_postal_code:  form.invoicePostalCode,
+            is_invoice_same_as_delivery:  form.isInvoiceSameAsDelivery,
+            payment_status:  <span class="str">'Confirmed'</span>,  <span class="cm">// Always "Confirmed"</span>
+            payment_method:  <span class="str">'Apple Pay'</span>,  <span class="cm">// EXACT string — matches iOS</span>
+            shippingCost:    form.shippingCost,
+            subtotal:        form.subtotal,
+            taxAmount:       form.taxAmount,
+            totalAmount:     form.totalAmount,
+            payment_id:      paymentIntentId, <span class="cm">// payment_intent_id — matches iOS</span>
+            voucher:         form.voucher,
+            promo_code:      form.promoCode,
+            cartIds:         form.cartIds,
+          }),
+        })
+
+        <span class="kw">const</span> placeData = <span class="kw">await</span> placeRes.json()
+        setLoading(<span class="num">false</span>)
+
+        <span class="kw">if</span> (!placeRes.ok) {
+          onError(placeData.error ?? <span class="str">'Order failed after payment'</span>)
+          <span class="kw">return</span>
+        }
+
+        <span class="cm">// SUCCESS ✓</span>
+        onSuccess(placeData.data)
+
+      } <span class="kw">catch</span> (err: <span class="kw">any</span>) {
+        event.complete(<span class="str">'fail'</span>)
+        setLoading(<span class="num">false</span>)
+        onError(err.message ?? <span class="str">'Something went wrong'</span>)
+      }
+    })
+
+    <span class="cm">// Open Apple Pay sheet</span>
+    prRef.current.show()
+  }
+
+  <span class="cm">// Don't render anything if Apple Pay not available</span>
+  <span class="kw">if</span> (!canPay) <span class="kw">return</span> <span class="num">null</span>
+
+  <span class="kw">return</span> (
+    &lt;button
+      onClick={handleClick}
+      disabled={loading}
+      style={{
+        width:          <span class="str">'100%'</span>,
+        background:     <span class="str">'#000'</span>,
+        color:          <span class="str">'#fff'</span>,
+        border:         <span class="str">'none'</span>,
+        borderRadius:   <span class="str">'8px'</span>,
+        padding:        <span class="str">'14px 24px'</span>,
+        fontSize:       <span class="str">'16px'</span>,
+        fontWeight:     <span class="str">'600'</span>,
+        cursor:         loading ? <span class="str">'not-allowed'</span> : <span class="str">'pointer'</span>,
+        opacity:        loading ? <span class="num">0.6</span> : <span class="num">1</span>,
+        fontFamily:     <span class="str">'-apple-system, BlinkMacSystemFont, sans-serif'</span>,
+        display:        <span class="str">'flex'</span>,
+        alignItems:     <span class="str">'center'</span>,
+        justifyContent: <span class="str">'center'</span>,
+        gap:            <span class="str">'8px'</span>,
+      }}
+    &gt;
+      {loading ? <span class="str">'Processing...'</span> : <span class="str">'&#63743; Pay'</span>}
+    &lt;/button&gt;
+  )
+}</code></pre>
+  </div>
+
+  <!-- ══════════ 7. CHECKOUT PAGE -->
+  <div class="section" id="checkout">
+    <h2><span class="num">7</span> Checkout Page Integration</h2>
+
+    <div class="filepath">app/checkout/page.tsx</div>
+    <pre><code><span class="str">'use client'</span>
+
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>
+<span class="kw">import</span> { useRouter } <span class="kw">from</span> <span class="str">'next/navigation'</span>
+<span class="kw">import</span> ApplePayButton <span class="kw">from</span> <span class="str">'@/components/ApplePayButton'</span>
+
+<span class="kw">export default function</span> <span class="fn">CheckoutPage</span>() {
+  <span class="kw">const</span> router = useRouter()
+  <span class="kw">const</span> [error, setError] = useState&lt;string | <span class="kw">null</span>&gt;(<span class="num">null</span>)
+
+  <span class="cm">// Auth token — apne auth system se lo (zustand/context/cookie etc)</span>
+  <span class="kw">const</span> authToken = getUserAuthToken()
+
+  <span class="cm">// Form data — checkout form ki state se lo</span>
+  <span class="kw">const</span> formData = {
+    fullName:                <span class="str">'John Doe'</span>,
+    email:                   <span class="str">'john@example.com'</span>,
+    countryCode:             <span class="str">'+49'</span>,
+    phone:                   <span class="str">'1234567890'</span>,
+    deliveryAddressType:     <span class="str">'Home'</span>,
+    deliveryAddressFull:     <span class="str">'123 Main Street'</span>,
+    deliveryCountry:         <span class="str">'Germany'</span>,
+    deliveryCity:            <span class="str">'Berlin'</span>,
+    deliveryPostalCode:      <span class="str">'10115'</span>,
+    invoiceAddressType:      <span class="str">'Home'</span>,
+    invoiceAddressFull:      <span class="str">'123 Main Street'</span>,
+    invoiceCountry:          <span class="str">'Germany'</span>,
+    invoiceCity:             <span class="str">'Berlin'</span>,
+    invoicePostalCode:       <span class="str">'10115'</span>,
+    isInvoiceSameAsDelivery: <span class="num">true</span>,
+    shippingCost:            <span class="str">'5.00'</span>,
+    subtotal:                <span class="str">'44.99'</span>,
+    taxAmount:               <span class="str">'0.00'</span>,
+    totalAmount:             <span class="str">'49.99'</span>,
+    voucher:                 <span class="str">''</span>,
+    promoCode:               <span class="str">''</span>,
+    cartIds:                 <span class="str">'1,2,3'</span>,
+  }
+
+  <span class="kw">return</span> (
+    &lt;div&gt;
+      &lt;h1&gt;Checkout&lt;/h1&gt;
+
+      {<span class="cm">/* Checkout form fields */</span>}
+
+      {error &amp;&amp; (
+        &lt;div style={{ color: <span class="str">'red'</span>, padding: <span class="str">'12px'</span>, marginBottom: <span class="str">'12px'</span> }}&gt;
+          {error}
+        &lt;/div&gt;
+      )}
+
+      {<span class="cm">/* Apple Pay Button — auto-hides on non-Safari browsers */</span>}
+      &lt;<span class="fn">ApplePayButton</span>
+        form={formData}
+        authToken={authToken}
+        onSuccess={(data) =&gt; router.push(<span class="str">`/checkout/success?id=${data?.id}`</span>)}
+        onError={setError}
+      /&gt;
+
+      {<span class="cm">/* Optional hint for non-Safari users */</span>}
+      &lt;p style={{ fontSize: <span class="str">'12px'</span>, color: <span class="str">'#6e6e73'</span>, textAlign: <span class="str">'center'</span>, marginTop: <span class="str">'8px'</span> }}&gt;
+        Apple Pay is available in Safari on Mac and iOS
+      &lt;/p&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+  </div>
+
+  <!-- ══════════ 8. API REF -->
+  <div class="section" id="api-ref">
+    <h2><span class="num">8</span> Biogance API Reference</h2>
+
+    <p><strong>Base URL:</strong> <code>https://api.biogance.com/endpoint/</code><br/>
+    <strong>Auth:</strong> <code>Authorization: Bearer &lt;USER_TOKEN&gt;</code></p>
+
+    <table class="tbl">
+      <thead>
+        <tr><th>Step</th><th>Method</th><th>Endpoint</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><span class="m-post">POST</span></td>
+          <td><code>user/payment/create/intent</code></td>
+          <td>Stripe PaymentIntent create karo. Returns <code>client_secret</code> + <code>payment_intent_id</code></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><span class="m-post">POST</span></td>
+          <td><code>user/order/place</code></td>
+          <td>Order place karo. <code>payment_method: "Apple Pay"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Important Values — Exactly as iOS</h3>
+    <table class="tbl">
+      <thead><tr><th>Field</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>payment_method (create-intent)</td><td><code>"card"</code></td><td>Always "card" — Stripe processes Apple Pay as card</td></tr>
+        <tr><td>payment_method (place order)</td><td><code>"Apple Pay"</code></td><td>Exact string with space — matches iOS</td></tr>
+        <tr><td>payment_status</td><td><code>"Confirmed"</code></td><td>Always "Confirmed" for Apple Pay</td></tr>
+        <tr><td>payment_id</td><td><code>payment_intent_id</code></td><td>Value from create-intent response — matches iOS</td></tr>
+        <tr><td>country (Stripe)</td><td><code>"FR"</code></td><td>France — matches iOS</td></tr>
+        <tr><td>currency (Stripe)</td><td><code>"eur"</code></td><td>Lowercase — matches iOS EUR</td></tr>
+        <tr><td>amount (Stripe)</td><td>cents: <code>amount * 100</code></td><td>Stripe web uses cents. 49.99 → 4999</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════ 9. ERRORS -->
+  <div class="section" id="errors">
+    <h2><span class="num">9</span> Error Handling</h2>
+
+    <table class="tbl">
+      <thead>
+        <tr><th>Scenario</th><th>iOS Behavior</th><th>Web Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Apple Pay not available</td>
+          <td>Shows alert</td>
+          <td>Button auto-hidden (<code>canMakePayment()</code> returns null)</td>
+        </tr>
+        <tr>
+          <td>User cancels sheet</td>
+          <td>Shows "User cancelled" alert</td>
+          <td>Sheet closes silently — no action needed</td>
+        </tr>
+        <tr>
+          <td>create-intent API fails</td>
+          <td>completion(nil, error)</td>
+          <td><code>event.complete('fail')</code> + show error banner</td>
+        </tr>
+        <tr>
+          <td>Stripe confirm fails</td>
+          <td>Stripe SDK handles</td>
+          <td><code>event.complete('fail')</code> + show stripe error message</td>
+        </tr>
+        <tr>
+          <td>Place order fails (after payment charged)</td>
+          <td>Silent in iOS</td>
+          <td>⚠️ Log <code>paymentIntentId</code> before calling — show support message</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="box danger">
+      <span class="box-icon">🚨</span>
+      <div>
+        <strong>Critical scenario:</strong> Agar payment ho gaya (Stripe confirm success) lekin place order fail ho gaya — customer ka paise gaye order nahi aaya. <strong>Server-side <code>paymentIntentId</code> log karo</strong> place order call se pehle taake manually recover kar sako.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 10. BROWSER -->
+  <div class="section" id="browser">
+    <h2><span class="num">10</span> Browser Compatibility</h2>
+
+    <div class="box warn">
+      <span class="box-icon">⚠️</span>
+      <div><strong>Apple Pay web sirf Safari mein kaam karta hai.</strong> Chrome, Firefox, Edge pe nahi chalta — chahe Apple device ho. Component automatically handle karta hai (<code>canMakePayment()</code> = null → button nahi dikhta).</div>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>Browser</th><th>Apple Pay</th></tr></thead>
+      <tbody>
+        <tr><td>Safari (Mac)</td><td style="color:var(--green); font-weight:700;">✓ Works</td></tr>
+        <tr><td>Safari (iPhone / iPad)</td><td style="color:var(--green); font-weight:700;">✓ Works</td></tr>
+        <tr><td>Chrome (any)</td><td style="color:var(--red); font-weight:700;">✗ Not supported</td></tr>
+        <tr><td>Firefox (any)</td><td style="color:var(--red); font-weight:700;">✗ Not supported</td></tr>
+        <tr><td>Edge (any)</td><td style="color:var(--red); font-weight:700;">✗ Not supported</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:10px; font-size:14px; color:var(--muted);">
+      Always provide Card + PayPal as fallback payment methods for non-Safari users.
+    </p>
+  </div>
+
+  <!-- ══════════ 11. CHECKLIST -->
+  <div class="section" id="checklist">
+    <h2><span class="num">11</span> Final Checklist</h2>
+
+    <div class="card">
+      <ul class="check">
+        <li>npm install <code>@stripe/stripe-js</code> <code>@stripe/react-stripe-js</code></li>
+        <li><code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> set in <code>.env.local</code></li>
+        <li><code>BIOGANCE_API_BASE</code> set in <code>.env.local</code> (no NEXT_PUBLIC)</li>
+        <li>Checkout layout wrapped with <code>&lt;Elements stripe={stripePromise}&gt;</code></li>
+        <li>API route <code>/api/stripe/create-intent</code> created</li>
+        <li>API route <code>/api/orders/place</code> created</li>
+        <li>Domain <code>website-dev.biogance.com</code> is Enabled in Stripe ✓ (already done)</li>
+        <li><code>country: 'FR'</code> in paymentRequest (matches iOS)</li>
+        <li><code>currency: 'eur'</code> in paymentRequest (matches iOS, lowercase)</li>
+        <li><code>label: 'Biogance'</code> in paymentRequest (matches iOS)</li>
+        <li>Amount converted to cents: <code>Math.round(parseFloat(amount) * 100)</code></li>
+        <li><code>payment_method: 'card'</code> in create-intent body</li>
+        <li><code>payment_method: 'Apple Pay'</code> in place-order body (exact — space, capitals)</li>
+        <li><code>payment_id</code> = <code>payment_intent_id</code> from create-intent response</li>
+        <li>Apple Pay button hidden when <code>canMakePayment()</code> returns null</li>
+        <li>Card / PayPal fallback available for non-Safari users</li>
+        <li>HTTPS on production (required for Apple Pay)</li>
+        <li>Tested in Safari on real Mac or iPhone</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Biogance</strong> · Apple Pay Integration · Next.js Developer Guide<br/>
+  Domain: <strong>website-dev.biogance.com</strong> · Status: Enabled ✓ · Powered by Stripe
+</footer>
+
+</body>
+</html>
