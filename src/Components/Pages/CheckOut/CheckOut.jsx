@@ -3360,17 +3360,17 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay availability check ──────────────────────────────────
   useEffect(() => {
-    if (!stripe || !summaryState.total) return;
+    if (!stripe) return;
 
-    const amount = Math.round(toCleanAmount(summaryState.total) * 100);
-    if (amount <= 0) return;
+    // Use at least 1 cent so paymentRequest initializes even before total loads
+    const amount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
 
     const pr = stripe.paymentRequest({
       country: "FR",
       currency: "eur",
       total: {
         label: "Biogance",
-        amount: amount, // cents mein integer — Stripe web SDK requirement
+        amount: amount,
       },
       requestPayerName: false,
       requestPayerEmail: false,
@@ -3378,16 +3378,12 @@ function Checkout({ cartItems = [] }) {
 
     applePayPrRef.current = pr;
 
-    if (typeof window !== "undefined" && window.ApplePaySession && window.ApplePaySession.canMakePayments()) {
-      setApplePayReady(true);
-    } else {
-      pr.canMakePayment().then((result) => {
-        if (result?.applePay) {
-          setApplePayReady(true);
-        }
-      });
-    }
-  }, [stripe, summaryState.total]);
+    pr.canMakePayment().then((result) => {
+      if (result?.applePay) {
+        setApplePayReady(true);
+      }
+    });
+  }, [stripe]);
 
   useEffect(() => {
     if (useDifferentBilling) {
@@ -3586,19 +3582,23 @@ function Checkout({ cartItems = [] }) {
     }
 
     setFormError(null);
-    setIsSubmitting(true);
     setPaymentError(null);
 
     // Update amount in paymentRequest before showing sheet (cents mein)
-    applePayPrRef.current.update({
-      total: { label: "Biogance", amount: Math.round(toCleanAmount(summaryState.total) * 100) },
-    });
+    const latestAmount = Math.round(toCleanAmount(summaryState.total) * 100);
+    if (latestAmount > 0) {
+      applePayPrRef.current.update({
+        total: { label: "Biogance", amount: latestAmount },
+      });
+    }
 
     let paymentIntentId = "";
 
     // Listen for paymentmethod event (fires after Face ID / Touch ID confirm)
     applePayPrRef.current.off("paymentmethod"); // remove old listeners
     applePayPrRef.current.on("paymentmethod", async (event) => {
+      // Set submitting INSIDE the event — after sheet is already open
+      setIsSubmitting(true);
       try {
         // Ensure user is logged in
         let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
