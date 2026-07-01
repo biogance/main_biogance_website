@@ -3379,6 +3379,8 @@ function Checkout({ cartItems = [] }) {
     applePayPrRef.current = pr;
 
     pr.canMakePayment().then((result) => {
+      // Only set ready for Apple Pay — ignore 'link' (Stripe Link) to prevent
+      // Link payment sheet from opening instead of Apple Pay sheet
       if (result?.applePay) {
         setApplePayReady(true);
       }
@@ -3402,12 +3404,7 @@ function Checkout({ cartItems = [] }) {
   };
 
   const handleExpressSelect = (method) => {
-    if (method === "applepay" && !applePayPrRef.current) {
-      if (isSafari) {
-        toast.error("Apple Pay is not initialized. Please wait a moment or refresh the page.");
-        return;
-      }
-      // Apple Pay not available in this browser — offer Safari redirect
+    if (method === "applepay" && !applePayPrRef.current && !isSafari) {
       const openInSafari = window.confirm(
         "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
       );
@@ -3552,20 +3549,23 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler ────────────────────────────────────────────
   const handleApplePayOrder = () => {
-    if (!stripe || !applePayPrRef.current) {
-      if (isSafari) {
-        toast.error("Apple Pay is not initialized yet. Please wait a moment or refresh.");
+    if (!stripe) {
+      toast.error("Payment not initialized. Please refresh.");
+      return;
+    }
+
+    if (!applePayPrRef.current) {
+      if (!isSafari) {
+        const openInSafari = window.confirm(
+          "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
+        );
+        if (openInSafari) {
+          window.location.href = window.location.href.replace(/^https?/, "safari-https") ||
+            `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
+        }
         return;
       }
-      // Guide says: Apple Pay only works in Safari. Show Safari redirect option.
-      const openInSafari = window.confirm(
-        "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
-      );
-      if (openInSafari) {
-        // x-web-search:// deeplink opens Safari on iOS
-        window.location.href = window.location.href.replace(/^https?/, "safari-https") ||
-          `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
-      }
+      toast.error("Apple Pay is not available on this device or browser.");
       return;
     }
 
@@ -4651,8 +4651,8 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {/* Apple Pay — only when canMakePayment() confirms it (Safari on iOS/Mac) */}
-                  {applePayReady && (
+                  {/* Apple Pay — show on iOS/Safari always; applePayReady confirms native sheet works */}
+                  {(applePayReady || isIOS) && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
