@@ -6,6 +6,7 @@ import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { RiUserLine } from "react-icons/ri";
 import { useTranslation } from 'react-i18next';
+import { BASE_URL, MEDIA_URL } from '../../API/API';
 
 
 export default function UserProfile() {
@@ -13,10 +14,35 @@ export default function UserProfile() {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phoneNumber: ''
+        country_code: '',
+        phone: '',
+        phone_number: ''
     });
     const [profileImage, setProfileImage] = useState(null);
+    const [imageLoading, setImageLoading] = useState(false);
+    const [profileImageFile, setProfileImageFile] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const splashData = localStorage.getItem('splashData');
+        if (splashData) {
+            const user = JSON.parse(splashData)?.user;
+            if (user) {
+                setFormData({
+                    fullName: user.name || '',
+                    email: user.email || '',
+                    country_code: user.country_code || '',
+                    phone: user.phone || '',
+                    phone_number: user.phone_number || ''
+                });
+                if (user.profile_picture) {
+                    setImageLoading(true);
+                    setProfileImage(`${MEDIA_URL}${user.profile_picture}`);
+                }
+            }
+        }
+    }, []);
 
     // Custom styles for phone input
     const phoneInputStyles = `
@@ -65,10 +91,10 @@ export default function UserProfile() {
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setProfileImageFile(file);
+            setImageLoading(true);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImage(reader.result);
-            };
+            reader.onloadend = () => setProfileImage(reader.result);
             reader.readAsDataURL(file);
         }
     };
@@ -79,23 +105,65 @@ export default function UserProfile() {
 
     const handleRemoveImage = () => {
         setProfileImage(null);
+        setProfileImageFile(null);
+        setImageLoading(false);
         setShowPreview(false);
         document.getElementById('profile-upload').value = '';
     };
 
     const handleCancel = () => {
-        setFormData({
-            fullName: '',
-            email: '',
-            phoneNumber: ''
-        });
-        setProfileImage(null);
+        const splashData = localStorage.getItem('splashData');
+        if (splashData) {
+            const user = JSON.parse(splashData)?.user;
+            if (user) {
+                setFormData({
+                    fullName: user.name || '',
+                    email: user.email || '',
+                    country_code: user.country_code || '',
+                    phone: user.phone || '',
+                    phone_number: user.phone_number || ''
+                });
+                if (user.profile_picture) {
+                    setImageLoading(true);
+                    setProfileImage(`${MEDIA_URL}${user.profile_picture}`);
+                } else {
+                    setProfileImage(null);
+                }
+            }
+        }
+        setProfileImageFile(null);
         setShowPreview(false);
     };
 
-    const handleSubmit = () => {
-        console.log('Form submitted:', formData);
-        // Add your submit logic here
+    const handleSubmit = async () => {
+        const splashData = localStorage.getItem('splashData');
+        const token = splashData ? JSON.parse(splashData)?.user?.token : null;
+
+        const body = new FormData();
+        body.append('name', formData.fullName);
+        body.append('email', formData.email);
+        body.append('country_code', formData.country_code);
+        body.append('phone', formData.phone);
+        body.append('phone_number', formData.phone_number);
+        if (profileImageFile) body.append('profile_picture', profileImageFile);
+
+        setLoading(true);
+        try {
+            const res = await fetch(`${BASE_URL}/user/update`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body
+            });
+            const data = await res.json();
+            if (data?.user) {
+                const updated = { ...JSON.parse(localStorage.getItem('splashData')), user: data.user };
+                localStorage.setItem('splashData', JSON.stringify(updated));
+            }
+        } catch (e) {
+            console.error('Update failed:', e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleImageClick = () => {
@@ -133,7 +201,7 @@ export default function UserProfile() {
         <>
             <style>{phoneInputStyles}</style>
             <div className="max-w-10xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
-                <div className="bg-white rounded-xl p-4 sm:p-8">
+                <div className="bg-white  p-4 sm:p-8">
                     {/* Header */}
                     <h2 className="text-2xl text-black font-semibold mb-1">{t('userProfile.title')}</h2>
                     <p className="text-gray-600 text-sm mb-8">{t('userProfile.subtitle')}</p>
@@ -144,12 +212,25 @@ export default function UserProfile() {
                         <div className="flex flex-col items-center">
                             <div 
                                 onClick={handleImageClick}
-                                className={`w-24 h-24 sm:w-34 sm:h-34 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden ${
+                                className={`relative w-24 h-24 sm:w-34 sm:h-34 bg-gray-100  flex items-center justify-center overflow-hidden ${
                                     profileImage ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''
                                 }`}
                             >
                                 {profileImage ? (
-                                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                    <>
+                                        {imageLoading && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                                                <div className="w-8 h-8 border-3 border-black border-t-transparent  animate-spin" />
+                                            </div>
+                                        )}
+                                        <img
+                                            src={profileImage}
+                                            alt="Profile"
+                                            className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                                            onLoad={() => setImageLoading(false)}
+                                            onError={() => setImageLoading(false)}
+                                        />
+                                    </>
                                 ) : (
                                     <RiUserLine size={110} className="text-gray-200" />
                                 )}
@@ -160,7 +241,7 @@ export default function UserProfile() {
                                     <button
                                         onClick={handleUploadClick}
                                         type="button"
-                                        className="text-sm border cursor-pointer border-gray-300 px-4 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                                        className="text-sm border cursor-pointer border-gray-300 px-4 py-2  text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                                     >
                                         {t('userProfile.updateImage')}
                                     </button>
@@ -176,7 +257,7 @@ export default function UserProfile() {
                                 <button
                                     onClick={handleUploadClick}
                                     type="button"
-                                    className="text-sm border cursor-pointer border-gray-300 p-2 rounded-lg text-gray-700 mt-3 font-medium hover:bg-gray-50 transition-colors"
+                                    className="text-sm border cursor-pointer border-gray-300 p-2  text-gray-700 mt-3 font-medium hover:bg-gray-50 transition-colors"
                                 >
                                     {t('userProfile.uploadImage')}
                                 </button>
@@ -201,7 +282,7 @@ export default function UserProfile() {
                                     value={formData.fullName}
                                     onChange={handleInputChange}
                                     placeholder={t('userProfile.fullNamePlaceholder')}
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
                                 />
                             </div>
 
@@ -213,7 +294,7 @@ export default function UserProfile() {
                                     value={formData.email}
                                     onChange={handleInputChange}
                                     placeholder={t('userProfile.emailPlaceholder')}
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
                                 />
                             </div>
 
@@ -221,8 +302,8 @@ export default function UserProfile() {
                                 <label className="block text-sm text-gray-700 mb-2 font-medium">{t('userProfile.phoneNumber')}</label>
                                 <PhoneInput
                                     defaultCountry="fr"
-                                    value={formData.phoneNumber}
-                                    onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
+                                    value={formData.phone}
+                                    onChange={(phone) => setFormData(prev => ({ ...prev, phone }))}
                                 />
                             </div>
                         </div>
@@ -232,15 +313,16 @@ export default function UserProfile() {
                     <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10">
                         <button
                             onClick={handleCancel}
-                            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-900  font-medium hover:bg-gray-50 transition-colors cursor-pointer"
                         >
                             {t('userProfile.cancel')}
                         </button>
                         <button
                             onClick={handleSubmit}
-                            className="px-6 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                            disabled={loading}
+                            className="px-6 py-2.5 bg-black text-white  font-medium hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-60"
                         >
-                            {t('userProfile.updateProfileDetails')}
+                            {loading ? 'Updating...' : t('userProfile.updateProfileDetails')}
                         </button>
                     </div>
                 </div>
@@ -255,14 +337,14 @@ export default function UserProfile() {
     <div className="relative">
         <button
             onClick={() => setShowPreview(false)}
-            className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors bg-white rounded-full p-1"
+            className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors bg-white  p-1"
         >
             <FiX size={24} />
         </button>
         <img 
             src={profileImage} 
             alt="Profile Preview" 
-            className="w-[500px] h-[500px] object-cover rounded-lg"
+            className="w-[500px] h-[500px] object-cover "
             onClick={(e) => e.stopPropagation()}
         />
     </div>

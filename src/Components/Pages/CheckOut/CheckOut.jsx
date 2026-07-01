@@ -1107,7 +1107,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
           </button>
         )}
 
-        {isSafari && (
+        {(isIOS || isSafari) && (
           <button
             onClick={() => onSelect("applepay")}
             style={{ ...baseBtn, ...btnBorder("applepay") }}
@@ -3374,15 +3374,26 @@ function Checkout({ cartItems = [] }) {
       },
       requestPayerName: false,
       requestPayerEmail: false,
-      disableWallets: ["link", "googlePay"],
+      disableWallets: ["link", "googlePay"],  // Block Stripe Link & Google Pay — Apple Pay only
     });
 
-    pr.canMakePayment().then((result) => {
-      if (result?.applePay) {
-        applePayPrRef.current = pr;
-        setApplePayReady(true);
-      }
-    });
+    applePayPrRef.current = pr;
+
+    pr.canMakePayment()
+      .then((result) => {
+        console.log("[ApplePay] canMakePayment result:", result, {
+          hostname: typeof window !== "undefined" ? window.location.hostname : null,
+          protocol: typeof window !== "undefined" ? window.location.protocol : null,
+        });
+        // Only set ready for Apple Pay — ignore 'link' (Stripe Link) to prevent
+        // Link payment sheet from opening instead of Apple Pay sheet
+        if (result?.applePay) {
+          setApplePayReady(true);
+        }
+      })
+      .catch((err) => {
+        console.error("[ApplePay] canMakePayment error:", err);
+      });
   }, [stripe]);
 
   useEffect(() => {
@@ -3402,8 +3413,13 @@ function Checkout({ cartItems = [] }) {
   };
 
   const handleExpressSelect = (method) => {
-    if (method === "applepay" && !applePayReady) {
-      toast.error("Apple Pay is only available in Safari on iPhone or Mac.");
+    if (method === "applepay" && !applePayPrRef.current && !isSafari && !isIOS) {
+      const openInSafari = window.confirm(
+        "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
+      );
+      if (openInSafari) {
+        window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
+      }
       return;
     }
     setPaymentMethod(method);
@@ -3529,6 +3545,7 @@ function Checkout({ cartItems = [] }) {
       } catch {}
 
       router.push("/track-order");
+      
     } catch (err) {
       console.error(err);
       setPaymentError(err.message || "PayPal payment failed. Please try again.");
@@ -3539,8 +3556,23 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler ────────────────────────────────────────────
   const handleApplePayOrder = () => {
-    if (!applePayPrRef.current) {
-      toast.error("Apple Pay is not available. Please use Safari on iPhone/Mac.");
+    if (!stripe || !applePayPrRef.current) {
+      toast.error("Payment not initialized. Please refresh.");
+      return;
+    }
+
+    if (!isSafari && !isIOS) {
+      const openInSafari = window.confirm(
+        "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
+      );
+      if (openInSafari) {
+        window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
+      }
+      return;
+    }
+
+    if (!applePayReady) {
+      toast.error("Apple Pay is not available on this device or browser.");
       return;
     }
 
@@ -4623,8 +4655,8 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {/* Apple Pay — only show when Stripe confirms it's available */}
-                  {applePayReady && (
+                  {/* Apple Pay — show on iOS/Safari/macOS Safari always */}
+                  {(applePayReady || isIOS || isSafari) && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
@@ -4633,6 +4665,39 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
+                  {/* For iOS users on Chrome/Firefox — show a Safari redirect hint */}
+                  {isIOS && !isSafari && !applePayReady && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "14px 16px",
+                        borderBottom: "1px solid #e5e5e5",
+                        background: "#f7f7f7",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <ApplePayBadge />
+                        <span style={{ fontSize: "13px", color: "#555", fontFamily: FONT }}>
+                          Apple Pay — requires Safari
+                        </span>
+                      </div>
+                      <a
+                        href={`safari-https://${typeof window !== "undefined" ? window.location.host + window.location.pathname + window.location.search : ""}`}
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#0071e3",
+                          textDecoration: "none",
+                          fontFamily: FONT,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Open in Safari →
+                      </a>
+                    </div>
+                  )}
                   <PaymentMethodRow
                     last
                     active={paymentMethod === "paypal"}
