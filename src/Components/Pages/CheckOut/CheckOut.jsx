@@ -3383,7 +3383,7 @@ function Checkout({ cartItems = [] }) {
       },
       requestPayerName: false,
       requestPayerEmail: false,
-      disableWallets: ["link", "googlePay"],  // Block Stripe Link & Google Pay — Apple Pay only
+      disableWallets: ["link", "googlePay", "browserCard"],
     });
 
     applePayPrRef.current = pr;
@@ -3596,21 +3596,7 @@ function Checkout({ cartItems = [] }) {
       return;
     }
 
-    if (!applePayReady) {
-      toast.error("Apple Pay is not available on this device or browser.");
-      // TEMP DEBUG: surface the last canMakePayment() outcome right when this fires
-      if (typeof window !== "undefined") {
-        const debug = applePayDebugRef.current;
-        window.alert(
-          `[ApplePay Debug]\n` +
-            `canMakePayment result: ${JSON.stringify(debug?.result)}\n` +
-            `canMakePayment error: ${debug?.error || "none"}\n` +
-            `hostname: ${window.location.hostname}\n` +
-            `isSafari: ${isSafari}, isIOS: ${isIOS}`
-        );
-      }
-      return;
-    }
+
 
     // Validate delivery fields first
     if (!deliveryCountryIso2) { setFormError("Please select a country for the delivery address."); return; }
@@ -3821,8 +3807,12 @@ function Checkout({ cartItems = [] }) {
     });
 
     // Open Apple Pay sheet — must be called synchronously in user gesture context
-    // canMakePayment already confirmed at init time via applePayReady state
-    applePayPrRef.current.show();
+    try {
+      applePayPrRef.current.show();
+    } catch (err) {
+      toast.error("Apple Pay could not be opened. Please try again.");
+      console.error("[ApplePay] show() error:", err);
+    }
   };
 
   const handlePlaceOrder = async () => {
