@@ -3374,6 +3374,7 @@ function Checkout({ cartItems = [] }) {
       },
       requestPayerName: false,
       requestPayerEmail: false,
+      disableWallets: ["link", "googlePay"],  // Block Stripe Link & Google Pay — Apple Pay only
     });
 
     applePayPrRef.current = pr;
