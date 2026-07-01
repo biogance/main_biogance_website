@@ -3581,6 +3581,11 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler ────────────────────────────────────────────
   const handleApplePayOrder = () => {
+    if (!stripe || !applePayPrRef.current) {
+      toast.error("Payment not initialized. Please refresh.");
+      return;
+    }
+
     if (!isSafari && !isIOS) {
       const openInSafari = window.confirm(
         "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
@@ -3589,25 +3594,6 @@ function Checkout({ cartItems = [] }) {
         window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
       }
       return;
-    }
-
-    if (!stripe) {
-      toast.error("Payment not initialized. Please refresh.");
-      return;
-    }
-
-    // Re-create paymentRequest if not initialized yet
-    if (!applePayPrRef.current) {
-      const amount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
-      const pr = stripe.paymentRequest({
-        country: "FR",
-        currency: "eur",
-        total: { label: "Biogance", amount },
-        requestPayerName: false,
-        requestPayerEmail: false,
-        disableWallets: ["link", "googlePay", "browserCard"],
-      });
-      applePayPrRef.current = pr;
     }
 
 
@@ -3636,8 +3622,8 @@ function Checkout({ cartItems = [] }) {
     let paymentIntentId = "";
 
     // Listen for paymentmethod event (fires after Face ID / Touch ID confirm)
-    pr.off("paymentmethod"); // remove old listeners
-    pr.on("paymentmethod", async (event) => {
+    applePayPrRef.current.off("paymentmethod"); // remove old listeners
+    applePayPrRef.current.on("paymentmethod", async (event) => {
       setIsSubmitting(true);
       try {
         // Ensure user is logged in
@@ -3820,9 +3806,9 @@ function Checkout({ cartItems = [] }) {
       }
     });
 
-    // Open Apple Pay sheet
+    // Open Apple Pay sheet — must be called synchronously in user gesture context
     try {
-      pr.show();
+      applePayPrRef.current.show();
     } catch (err) {
       toast.error("Apple Pay could not be opened. Please try again.");
       console.error("[ApplePay] show() error:", err);
