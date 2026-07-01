@@ -3380,12 +3380,26 @@ function Checkout({ cartItems = [] }) {
 
     applePayPrRef.current = pr;
 
+    // Raw browser-level check — bypasses Stripe entirely, so we can tell
+    // whether a real Apple Pay session is even possible on this device/browser.
+    const hasApplePaySession = typeof window !== "undefined" && "ApplePaySession" in window;
+    let rawCanMakePayments = "n/a";
+    if (hasApplePaySession) {
+      try {
+        rawCanMakePayments = String(window.ApplePaySession.canMakePayments());
+      } catch (e) {
+        rawCanMakePayments = `threw: ${e?.message || e}`;
+      }
+    }
+
     pr.canMakePayment()
       .then((result) => {
         const debugInfo = {
           hostname: typeof window !== "undefined" ? window.location.hostname : null,
           protocol: typeof window !== "undefined" ? window.location.protocol : null,
           userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+          hasApplePaySession,
+          rawCanMakePayments,
         };
         console.log("[ApplePay] canMakePayment result:", result, debugInfo);
         if (typeof window !== "undefined" && window.innerWidth < 1024) {
@@ -3393,6 +3407,8 @@ function Checkout({ cartItems = [] }) {
             `[ApplePay] canMakePayment result: ${JSON.stringify(result)}\n` +
               `hostname: ${debugInfo.hostname}\n` +
               `protocol: ${debugInfo.protocol}\n` +
+              `window.ApplePaySession exists: ${hasApplePaySession}\n` +
+              `ApplePaySession.canMakePayments(): ${rawCanMakePayments}\n` +
               `userAgent: ${debugInfo.userAgent}`
           );
         }

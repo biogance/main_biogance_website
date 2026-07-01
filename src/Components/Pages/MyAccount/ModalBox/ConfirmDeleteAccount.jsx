@@ -3,22 +3,58 @@ import { useTranslation } from 'react-i18next';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import container from "../../../../../public/DeleteIllustration.svg"
 import Image from 'next/image';
+import { BASE_URL } from '../../../API/API';
+import { useRouter } from 'next/navigation';
+import LoginModal from '../../Onboarding/Login';
 
 
 export default function ConfirmDeletionModal({ onClose }) {
     const { t } = useTranslation("myaccount");
-    const [password, setPassword] = useState('Joh@1234');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [error, setError] = useState('');
+    const [showLogin, setShowLogin] = useState(false);
+    const router = useRouter();
 
-    const handleConfirmDelete = () => {
-        setIsDeleted(true);
+    const getToken = () => {
+        try {
+            const loginData = JSON.parse(localStorage.getItem('LoginData') || '{}');
+            return loginData?.data?.token || loginData?.token || '';
+        } catch { return ''; }
     };
 
-    
+    const handleConfirmDelete = async () => {
+        if (!password) { setError('Please enter your password'); return; }
+        setIsDeleting(true);
+        setError('');
+        try {
+            const res = await fetch(`${BASE_URL}/user/auth/delete/account`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`,
+                },
+                body: JSON.stringify({ password }),
+            });
+            const data = await res.json();
+            if (data?.status === true || data?.status === 'true') {
+                localStorage.removeItem('LoginData');
+                setIsDeleted(true);
+            } else {
+                setError(data?.action || data?.message || 'Failed to delete account');
+            }
+        } catch {
+            setError('Something went wrong. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     if (isDeleted) {
         return (
+            <>
             <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
 
@@ -43,15 +79,21 @@ export default function ConfirmDeletionModal({ onClose }) {
 
                     {/* Buttons */}
                     <div className="space-y-3">
-                        <button className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer">
+                        <button
+                            onClick={() => setShowLogin(true)}
+                            className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer">
                             {t('confirmDeletion.deleted.rejoinButton')}
                         </button>
-                        <button className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
+                        <button
+                            onClick={() => router.push('/')}
+                            className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
                             {t('confirmDeletion.deleted.browseGuestButton')}
                         </button>
                     </div>
                 </div>
             </div>
+            <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
+            </>
         );
     }
 
@@ -94,13 +136,15 @@ export default function ConfirmDeletionModal({ onClose }) {
                     </div>
                 </div>
 
+                {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                 {/* Buttons */}
                 <div className="space-y-3">
                     <button
                         onClick={handleConfirmDelete}
-                        className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer"
+                        disabled={isDeleting}
+                        className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {t('confirmDeletion.confirmButton')}
+                        {isDeleting ? 'Deleting...' : t('confirmDeletion.confirmButton')}
                     </button>
                     <button 
                         onClick={onClose}
