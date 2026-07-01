@@ -160,7 +160,7 @@ export default function Loyalty() {
       return 'loyalty.status.active';
     };
 
-    useEffect(() => {
+    const fetchVouchers = () => {
       const token = JSON.parse(localStorage.getItem('splashData') || '{}')?.user?.token;
       fetch(`${BASE_URL}/user/voucher/list`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -183,6 +183,10 @@ export default function Loyalty() {
         })
         .catch(console.error)
         .finally(() => setLoadingState('loaded'));
+    };
+
+    useEffect(() => {
+      fetchVouchers();
     }, []);
 
     const getStatusBadgeColor = (statusKey) => {
@@ -373,7 +377,7 @@ export default function Loyalty() {
         </div>
 
         {/* Create Voucher Modal - External Component */}
-        <CreateVoucherModal isOpen={isModalOpen} onClose={handleCloseModal} />
+        <CreateVoucherModal isOpen={isModalOpen} onClose={handleCloseModal} loyaltyPoints={userBalance} onRedeemSuccess={fetchVouchers} />
         </>
     )
 }
