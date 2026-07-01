@@ -3366,6 +3366,9 @@ function Checkout({ cartItems = [] }) {
     // Use at least 1 cent so paymentRequest initializes even before total loads
     const amount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
 
+    // TEMP DEBUG: stripped down to Stripe's bare-minimum documented example
+    // (no disableWallets / requestPayerName / requestPayerEmail) to rule out
+    // those extra options as the reason canMakePayment() resolves null.
     const pr = stripe.paymentRequest({
       country: "FR",
       currency: "eur",
@@ -3373,9 +3376,6 @@ function Checkout({ cartItems = [] }) {
         label: "Biogance",
         amount: amount,
       },
-      requestPayerName: false,
-      requestPayerEmail: false,
-      disableWallets: ["link", "googlePay"],  // Block Stripe Link & Google Pay — Apple Pay only
     });
 
     applePayPrRef.current = pr;

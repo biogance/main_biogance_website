@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FiExternalLink } from "react-icons/fi"
 import CreateVoucherModal from "./ModalBox/CreateVoucherModal";
 import { FaRegEdit } from "react-icons/fa";
+import { BASE_URL } from '../../API/API';
 
 // Shimmer Card Component for Voucher Items
 const VoucherShimmer = () => (
@@ -141,53 +142,8 @@ export default function Loyalty() {
     const { t } = useTranslation('myaccount');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loadingState, setLoadingState] = useState('shimmer');
-    const [vouchers, setVouchers] = useState([
-     
-       
-      {
-        code: 'SAVE10-XYZ123',
-        value: 10.00,
-        pointsRedeemed: 100,
-        dateCreated: 'July 10, 2025',
-        expiryDate: 'August 10, 2025',
-        statusKey: 'loyalty.status.active'
-      },
-      {
-        code: 'SAVE20-ABC456',
-        value: 20.00,
-        pointsRedeemed: 200,
-        dateCreated: 'August 1, 2025',
-        expiryDate: 'September 1, 2025',
-        statusKey: 'loyalty.status.active'
-      },
-      {
-        code: 'SAVE15-DEF789',
-        value: 15.00,
-        pointsRedeemed: 150,
-        dateCreated: 'June 15, 2025',
-        expiryDate: 'July 15, 2025',
-        statusKey: 'loyalty.status.used'
-      },
-      {
-        code: 'SAVE25-GHI101',
-        value: 25.00,
-        pointsRedeemed: 250,
-        dateCreated: 'September 5, 2025',
-        expiryDate: 'October 5, 2025',
-        statusKey: 'loyalty.status.active'
-      },
-      {
-        code: 'SAVE5-JKL202',
-        value: 5.00,
-        pointsRedeemed: 50,
-        dateCreated: 'May 20, 2025',
-        expiryDate: 'June 20, 2025',
-        statusKey: 'loyalty.status.expired'
-      }
-      
-    ]);
-    
-    const userBalance = 220;
+    const [vouchers, setVouchers] = useState([]);
+    const [userBalance, setUserBalance] = useState(0);
     const hasPoints = userBalance > 0;
 
     const handleOpenModal = () => {
@@ -198,16 +154,36 @@ export default function Loyalty() {
         setIsModalOpen(false);
     };
 
-    useEffect(() => {
-      console.log('Loading state:', loadingState);
-      // Simulate loading for 3 seconds
-      const timer = setTimeout(() => {
-        setLoadingState('loaded');
-        console.log('Loading state changed to loaded');
-      }, 3000);
+    const getStatusKey = (status) => {
+      if (status === 2) return 'loyalty.status.expired';
+      if (status === 1) return 'loyalty.status.used';
+      return 'loyalty.status.active';
+    };
 
-      return () => clearTimeout(timer);
-    }, [loadingState]);
+    useEffect(() => {
+      const token = JSON.parse(localStorage.getItem('splashData') || '{}')?.user?.token;
+      fetch(`${BASE_URL}/user/voucher/list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.status) {
+            setUserBalance(data.data.loyalty_points);
+            setVouchers(
+              (data.data.vouchers?.data || []).map(v => ({
+                code: v.name,
+                value: v.off,
+                pointsRedeemed: v.point,
+                dateCreated: v.created_date,
+                expiryDate: v.validity_date,
+                statusKey: getStatusKey(v.status)
+              }))
+            );
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoadingState('loaded'));
+    }, []);
 
     const getStatusBadgeColor = (statusKey) => {
       // Extract the actual status from the key
