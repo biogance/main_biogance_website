@@ -3366,9 +3366,6 @@ function Checkout({ cartItems = [] }) {
     // Use at least 1 cent so paymentRequest initializes even before total loads
     const amount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
 
-    // TEMP DEBUG: stripped down to Stripe's bare-minimum documented example
-    // (no disableWallets / requestPayerName / requestPayerEmail) to rule out
-    // those extra options as the reason canMakePayment() resolves null.
     const pr = stripe.paymentRequest({
       country: "FR",
       currency: "eur",
@@ -3376,42 +3373,19 @@ function Checkout({ cartItems = [] }) {
         label: "Biogance",
         amount: amount,
       },
+      requestPayerName: false,
+      requestPayerEmail: false,
+      disableWallets: ["link", "googlePay"],  // Block Stripe Link & Google Pay — Apple Pay only
     });
 
     applePayPrRef.current = pr;
 
-    // Raw browser-level check — bypasses Stripe entirely, so we can tell
-    // whether a real Apple Pay session is even possible on this device/browser.
-    const hasApplePaySession = typeof window !== "undefined" && "ApplePaySession" in window;
-    let rawCanMakePayments = "n/a";
-    if (hasApplePaySession) {
-      try {
-        rawCanMakePayments = String(window.ApplePaySession.canMakePayments());
-      } catch (e) {
-        rawCanMakePayments = `threw: ${e?.message || e}`;
-      }
-    }
-
     pr.canMakePayment()
       .then((result) => {
-        const debugInfo = {
+        console.log("[ApplePay] canMakePayment result:", result, {
           hostname: typeof window !== "undefined" ? window.location.hostname : null,
           protocol: typeof window !== "undefined" ? window.location.protocol : null,
-          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-          hasApplePaySession,
-          rawCanMakePayments,
-        };
-        console.log("[ApplePay] canMakePayment result:", result, debugInfo);
-        if (typeof window !== "undefined" && window.innerWidth < 1024) {
-          window.alert(
-            `[ApplePay] canMakePayment result: ${JSON.stringify(result)}\n` +
-              `hostname: ${debugInfo.hostname}\n` +
-              `protocol: ${debugInfo.protocol}\n` +
-              `window.ApplePaySession exists: ${hasApplePaySession}\n` +
-              `ApplePaySession.canMakePayments(): ${rawCanMakePayments}\n` +
-              `userAgent: ${debugInfo.userAgent}`
-          );
-        }
+        });
         // Only set ready for Apple Pay — ignore 'link' (Stripe Link) to prevent
         // Link payment sheet from opening instead of Apple Pay sheet
         if (result?.applePay) {
@@ -3420,9 +3394,6 @@ function Checkout({ cartItems = [] }) {
       })
       .catch((err) => {
         console.error("[ApplePay] canMakePayment error:", err);
-        if (typeof window !== "undefined" && window.innerWidth < 1024) {
-          window.alert(`[ApplePay] canMakePayment error: ${err?.message || err}`);
-        }
       });
   }, [stripe]);
 
