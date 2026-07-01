@@ -42,7 +42,7 @@ function usePaymentVisibility() {
 
     // Detect iOS: covers Safari, Chrome (CriOS), Firefox (FxiOS), Edge (EdgiOS),
     // Google App, and iPad in desktop mode (reports MacIntel but has multi-touch).
-      const ios =
+    const ios =
       /iPhone|iPad|iPod/i.test(ua) ||
       /iPhone|iPad|iPod/i.test(platform) ||
       (platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -203,11 +203,10 @@ function CustomDropdown({ value, onChange }) {
               <li
                 key={num}
                 onClick={() => handleSelect(num)}
-                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
-                  num === selectedQty
+                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${num === selectedQty
                     ? "font-medium text-black"
                     : "text-gray-800"
-                }`}
+                  }`}
               >
                 {num}
               </li>
@@ -679,8 +678,8 @@ function PhoneFieldBox({
                   (e.currentTarget.style.background = "#f5f5f5")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    p.iso2 === iso2 ? "#f5f5f5" : "#fff")
+                (e.currentTarget.style.background =
+                  p.iso2 === iso2 ? "#f5f5f5" : "#fff")
                 }
               >
                 <span style={{ fontSize: "16px" }}>{p.flag}</span>
@@ -1360,7 +1359,7 @@ function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
             <SizeDropdown
               options={sizeOptions}
               value={sizeOptions[0]}
-              onChange={() => {}}
+              onChange={() => { }}
               disabled={isSingleSize}
             />
           )}
@@ -1658,9 +1657,9 @@ function OrderSummary({
         method: "POST",
         headers: token
           ? {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token
@@ -2005,14 +2004,14 @@ function OrderSummary({
               borderLeft: "1px solid #ddd",
               background:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
+                  loggedVoucherApplied
                   ? "#f3f3f3"
                   : loggedApplyHovered
                     ? "#111"
                     : "transparent",
               color:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
+                  loggedVoucherApplied
                   ? "#aaa"
                   : loggedApplyHovered
                     ? "#fff"
@@ -2024,7 +2023,7 @@ function OrderSummary({
               textTransform: "uppercase",
               cursor:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
+                  loggedVoucherApplied
                   ? "default"
                   : "pointer",
               transition: "background 0.2s, color 0.2s",
@@ -3381,9 +3380,9 @@ function Checkout({ cartItems = [] }) {
         label: "Biogance",
         amount: amount,
       },
-      requestPayerName: false,
-      requestPayerEmail: false,
-      disableWallets: ["link", "googlePay", "browserCard"],
+      requestPayerName: true,
+      requestPayerEmail: true,
+      disableWallets: ["link", "browserCard"],
     });
 
     applePayPrRef.current = pr;
@@ -3439,7 +3438,7 @@ function Checkout({ cartItems = [] }) {
 
   const handlePayPalCreateOrder = async () => {
     let token;
-    try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch {}
+    try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch { }
     if (!token) { setIsLoginModalOpen(true); throw new Error("Login required"); }
     const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
       method: "POST",
@@ -3556,9 +3555,9 @@ function Checkout({ cartItems = [] }) {
           delivery_cost: summaryState.deliveryCost,
           ...(isPickup === 1 && summaryState.selectedLocation
             ? {
-                pickup_name: summaryState.selectedLocation.name,
-                pickup_address: summaryState.selectedLocation.address,
-              }
+              pickup_name: summaryState.selectedLocation.name,
+              pickup_address: summaryState.selectedLocation.address,
+            }
             : {}),
         }),
       });
@@ -3567,10 +3566,10 @@ function Checkout({ cartItems = [] }) {
 
       try {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
-      } catch {}
+      } catch { }
 
       router.push("/track-order");
-      
+
     } catch (err) {
       console.error(err);
       setPaymentError(err.message || "PayPal payment failed. Please try again.");
@@ -3600,14 +3599,14 @@ function Checkout({ cartItems = [] }) {
 
     // Validate delivery fields first
     if (!deliveryCountryIso2) { setFormError("Please select a country for the delivery address."); return; }
-    if (!street.trim())       { setFormError("Please enter the full address for delivery."); return; }
-    if (!postcode.trim())     { setFormError("Please enter the postcode for the delivery address."); return; }
-    if (!city.trim())         { setFormError("Please enter the town/city for the delivery address."); return; }
+    if (!street.trim()) { setFormError("Please enter the full address for delivery."); return; }
+    if (!postcode.trim()) { setFormError("Please enter the postcode for the delivery address."); return; }
+    if (!city.trim()) { setFormError("Please enter the town/city for the delivery address."); return; }
     if (useDifferentBilling) {
-      if (!billingCountryIso2)    { setFormError("Please select a country for the invoice address."); return; }
-      if (!billingStreet.trim())  { setFormError("Please enter the full address for the invoice address."); return; }
-      if (!billingPostcode.trim()){ setFormError("Please enter the postcode for the invoice address."); return; }
-      if (!billingCity.trim())    { setFormError("Please enter the town/city for the invoice address."); return; }
+      if (!billingCountryIso2) { setFormError("Please select a country for the invoice address."); return; }
+      if (!billingStreet.trim()) { setFormError("Please enter the full address for the invoice address."); return; }
+      if (!billingPostcode.trim()) { setFormError("Please enter the postcode for the invoice address."); return; }
+      if (!billingCity.trim()) { setFormError("Please enter the town/city for the invoice address."); return; }
     }
 
     setFormError(null);
@@ -3744,41 +3743,41 @@ function Checkout({ cartItems = [] }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            full_name:                      lastName,
+            full_name: lastName,
             email,
-            country_code:                   dialCode,
-            phone:                          dialCode,
-            phone_number:                   phone,
-            delivery_address_full:          street,
-            delivery_address_country:       deliveryCountryName,
-            delivery_address_city:          city,
-            delivery_address_postal_code:   postcode,
-            delivery_address_type:          "delivery_address",
-            delivery_address_state:         region,
-            invoice_address_full:           useDifferentBilling ? billingStreet   : street,
-            invoice_address_country:        billingCountryName,
-            invoice_address_city:           useDifferentBilling ? billingCity     : city,
-            invoice_address_postal_code:    useDifferentBilling ? billingPostcode : postcode,
-            invoice_address_type:           "invoice_address",
-            invoice_address_state:          useDifferentBilling ? billingRegion   : region,
-            is_invoice_same_as_delivery:    useDifferentBilling ? 1 : 0,
-            payment_status:                 "Confirmed",
-            payment_method:                 "Apple Pay",
-            taxAmount:                      0,
-            shippingCost:                   toCleanAmount(summaryState.deliveryCost),
-            totalAmount:                    toCleanAmount(summaryState.total),
-            subtotal:                       toCleanAmount(subtotal),
-            payment_id:                     paymentIntentId,
-            voucher:                        summaryState.appliedVoucherCode || "",
-            promo_code:                     summaryState.appliedPromo?.code || "",
+            country_code: dialCode,
+            phone: dialCode,
+            phone_number: phone,
+            delivery_address_full: street,
+            delivery_address_country: deliveryCountryName,
+            delivery_address_city: city,
+            delivery_address_postal_code: postcode,
+            delivery_address_type: "delivery_address",
+            delivery_address_state: region,
+            invoice_address_full: useDifferentBilling ? billingStreet : street,
+            invoice_address_country: billingCountryName,
+            invoice_address_city: useDifferentBilling ? billingCity : city,
+            invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
+            invoice_address_type: "invoice_address",
+            invoice_address_state: useDifferentBilling ? billingRegion : region,
+            is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
+            payment_status: "Confirmed",
+            payment_method: "Apple Pay",
+            taxAmount: 0,
+            shippingCost: toCleanAmount(summaryState.deliveryCost),
+            totalAmount: toCleanAmount(summaryState.total),
+            subtotal: toCleanAmount(subtotal),
+            payment_id: paymentIntentId,
+            voucher: summaryState.appliedVoucherCode || "",
+            promo_code: summaryState.appliedPromo?.code || "",
             cartIds,
-            is_pickup:                      isPickup,
-            delivery_cost:                  summaryState.deliveryCost,
+            is_pickup: isPickup,
+            delivery_cost: summaryState.deliveryCost,
             ...(isPickup === 1 && summaryState.selectedLocation
               ? {
-                  pickup_name:    summaryState.selectedLocation.name,
-                  pickup_address: summaryState.selectedLocation.address,
-                }
+                pickup_name: summaryState.selectedLocation.name,
+                pickup_address: summaryState.selectedLocation.address,
+              }
               : {}),
           }),
         });
@@ -3794,7 +3793,7 @@ function Checkout({ cartItems = [] }) {
 
         try {
           localStorage.setItem("lastPlacedOrder", JSON.stringify(orderData.data?.order || orderData.data || {}));
-        } catch {}
+        } catch { }
 
         router.push("/track-order");
 
@@ -3869,205 +3868,205 @@ function Checkout({ cartItems = [] }) {
       let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       let token = loginData?.data?.token;
 
-        // Step 0: Guest user — verify/create account before payment
-        if (!token) {
-          const dialCode = (() => {
-            const c = defaultCountries.find(
-              (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
-            );
-            return c ? `+${parseCountry(c).dialCode}` : "";
-          })();
-          const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: lastName,
-              email,
-              country_code: dialCode,
-              phone: dialCode,
-              phone_number: phone,
-              device: "web",
-              device_id: "123",
-              fcm_token: "web123",
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-
-          if (!verifyData.status) {
-            // Show login modal, stop payment
-            setIsSubmitting(false);
-            setIsLoginModalOpen(true);
-            return;
-          }
-
-          // Save LoginData so user is logged in
-          localStorage.setItem("LoginData", JSON.stringify(verifyData));
-          window.dispatchEvent(new Event("loginStateChange"));
-          loginData = verifyData;
-          token = verifyData?.data?.token;
-          setIsLoggedIn(true);
-        }
-
-        // Step 1: Create Stripe PaymentMethod
-        const cardEl = elements.getElement(CardNumberElement);
-        const { error: methodError, paymentMethod: pm } =
-          await stripe.createPaymentMethod({
-            type: "card",
-            card: cardEl,
-            billing_details: { name: lastName, email },
-          });
-        if (methodError) {
-          setPaymentError(methodError.message);
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Step 2: Create Payment Intent
-        const intentRes = await fetch(`${BASE_URL}/user/payment/create/intent`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            amount: toCleanAmount(summaryState.total),
-            payment_method: "card",
-          }),
-        });
-        const intentData = await intentRes.json();
-        if (!intentData.status) {
-          setPaymentError(
-            getErrorMsg(intentData) || "Failed to create payment intent.",
-          );
-          setIsSubmitting(false);
-          return;
-        }
-        const clientSecret = intentData.data?.client_secret;
-        if (!clientSecret) {
-          setPaymentError("Invalid payment intent response.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Step 3: Confirm Card Payment
-        const { error: confirmError, paymentIntent } =
-          await stripe.confirmCardPayment(clientSecret, {
-            payment_method: pm.id,
-          });
-        if (confirmError) {
-          setPaymentError(confirmError.message);
-          setIsSubmitting(false);
-          return;
-        }
-        if (paymentIntent.status !== "succeeded") {
-          setPaymentError("Payment was not completed. Please try again.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Step 4: Place Order API
+      // Step 0: Guest user — verify/create account before payment
+      if (!token) {
         const dialCode = (() => {
           const c = defaultCountries.find(
             (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
           );
           return c ? `+${parseCountry(c).dialCode}` : "";
         })();
-        const deliveryCountryName = (() => {
-          const c = defaultCountries.find(
-            (c) => parseCountry(c).iso2 === deliveryCountryIso2,
-          );
-          return c ? parseCountry(c).name : deliveryCountryIso2;
-        })();
-        const billingCountryName = (() => {
-          const iso = useDifferentBilling
-            ? billingCountryIso2
-            : deliveryCountryIso2;
-          const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
-          return c ? parseCountry(c).name : iso;
-        })();
-        const cartIds = items.map((i) => i.id).join(",");
-        const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
-        const deliveryCostValue =
-          summaryState.deliveryCost === 0 ? 0 : summaryState.deliveryCost;
-
-        const orderBody = {
-          full_name: lastName,
-          email,
-          country_code: dialCode,
-          phone: dialCode,
-          phone_number: phone,
-          delivery_address_full: street,
-          delivery_address_country: deliveryCountryName,
-          delivery_address_city: city,
-          delivery_address_postal_code: postcode,
-          delivery_address_type: "delivery_address",
-          invoice_address_full: useDifferentBilling ? billingStreet : street,
-          invoice_address_country: billingCountryName,
-          invoice_address_city: useDifferentBilling ? billingCity : city,
-          invoice_address_postal_code: useDifferentBilling
-            ? billingPostcode
-            : postcode,
-          invoice_address_type: "invoice_address",
-          is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
-          payment_method: "card",
-          payment_status: "paid",
-          invoice_address_state: useDifferentBilling ? billingRegion : region,
-          delivery_address_state: region,
-          taxAmount: 0,
-          shippingCost: toCleanAmount(deliveryCostValue),
-          totalAmount: toCleanAmount(summaryState.total),
-          subtotal: toCleanAmount(subtotal),
-          payment_id: paymentIntent.id,
-          voucher: summaryState.appliedVoucherCode || "",
-          promo_code: summaryState.appliedPromo?.code || "",
-          cartIds,
-          is_pickup: isPickup,
-          delivery_cost: deliveryCostValue,
-          ...(isPickup === 1 && summaryState.selectedLocation
-            ? {
-                pickup_name: summaryState.selectedLocation.name,
-                pickup_address: summaryState.selectedLocation.address,
-              }
-            : {}),
-        };
-
-        const orderRes = await fetch(`${BASE_URL}/user/order/place`, {
+        const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(orderBody),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: lastName,
+            email,
+            country_code: dialCode,
+            phone: dialCode,
+            phone_number: phone,
+            device: "web",
+            device_id: "123",
+            fcm_token: "web123",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
         });
-        const orderData = await orderRes.json();
-        if (!orderData.status) {
-          setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
+        const verifyData = await verifyRes.json();
+
+        if (!verifyData.status) {
+          // Show login modal, stop payment
           setIsSubmitting(false);
-          toast.error(getErrorMsg(orderData) || "Order placement failed.");
+          setIsLoginModalOpen(true);
           return;
         }
 
-        // Save order details to localStorage before redirecting
-        try {
-          const orderSummary = {
-            ...(orderData.data?.order || {}),
-            paymentInfo: {
-              brand: pm?.card?.brand || "visa",
-              last4: pm?.card?.last4 || "",
-            },
-          };
-          localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
-        } catch (e) {
-          console.error("Failed to save lastPlacedOrder", e);
-        }
-
-        router.push("/track-order");
-      } catch (err) {
-        console.error(err);
-        setPaymentError("An unexpected error occurred.");
-        setIsSubmitting(false);
+        // Save LoginData so user is logged in
+        localStorage.setItem("LoginData", JSON.stringify(verifyData));
+        window.dispatchEvent(new Event("loginStateChange"));
+        loginData = verifyData;
+        token = verifyData?.data?.token;
+        setIsLoggedIn(true);
       }
+
+      // Step 1: Create Stripe PaymentMethod
+      const cardEl = elements.getElement(CardNumberElement);
+      const { error: methodError, paymentMethod: pm } =
+        await stripe.createPaymentMethod({
+          type: "card",
+          card: cardEl,
+          billing_details: { name: lastName, email },
+        });
+      if (methodError) {
+        setPaymentError(methodError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 2: Create Payment Intent
+      const intentRes = await fetch(`${BASE_URL}/user/payment/create/intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          amount: toCleanAmount(summaryState.total),
+          payment_method: "card",
+        }),
+      });
+      const intentData = await intentRes.json();
+      if (!intentData.status) {
+        setPaymentError(
+          getErrorMsg(intentData) || "Failed to create payment intent.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+      const clientSecret = intentData.data?.client_secret;
+      if (!clientSecret) {
+        setPaymentError("Invalid payment intent response.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 3: Confirm Card Payment
+      const { error: confirmError, paymentIntent } =
+        await stripe.confirmCardPayment(clientSecret, {
+          payment_method: pm.id,
+        });
+      if (confirmError) {
+        setPaymentError(confirmError.message);
+        setIsSubmitting(false);
+        return;
+      }
+      if (paymentIntent.status !== "succeeded") {
+        setPaymentError("Payment was not completed. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 4: Place Order API
+      const dialCode = (() => {
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
+        );
+        return c ? `+${parseCountry(c).dialCode}` : "";
+      })();
+      const deliveryCountryName = (() => {
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === deliveryCountryIso2,
+        );
+        return c ? parseCountry(c).name : deliveryCountryIso2;
+      })();
+      const billingCountryName = (() => {
+        const iso = useDifferentBilling
+          ? billingCountryIso2
+          : deliveryCountryIso2;
+        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
+        return c ? parseCountry(c).name : iso;
+      })();
+      const cartIds = items.map((i) => i.id).join(",");
+      const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
+      const deliveryCostValue =
+        summaryState.deliveryCost === 0 ? 0 : summaryState.deliveryCost;
+
+      const orderBody = {
+        full_name: lastName,
+        email,
+        country_code: dialCode,
+        phone: dialCode,
+        phone_number: phone,
+        delivery_address_full: street,
+        delivery_address_country: deliveryCountryName,
+        delivery_address_city: city,
+        delivery_address_postal_code: postcode,
+        delivery_address_type: "delivery_address",
+        invoice_address_full: useDifferentBilling ? billingStreet : street,
+        invoice_address_country: billingCountryName,
+        invoice_address_city: useDifferentBilling ? billingCity : city,
+        invoice_address_postal_code: useDifferentBilling
+          ? billingPostcode
+          : postcode,
+        invoice_address_type: "invoice_address",
+        is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
+        payment_method: "card",
+        payment_status: "paid",
+        invoice_address_state: useDifferentBilling ? billingRegion : region,
+        delivery_address_state: region,
+        taxAmount: 0,
+        shippingCost: toCleanAmount(deliveryCostValue),
+        totalAmount: toCleanAmount(summaryState.total),
+        subtotal: toCleanAmount(subtotal),
+        payment_id: paymentIntent.id,
+        voucher: summaryState.appliedVoucherCode || "",
+        promo_code: summaryState.appliedPromo?.code || "",
+        cartIds,
+        is_pickup: isPickup,
+        delivery_cost: deliveryCostValue,
+        ...(isPickup === 1 && summaryState.selectedLocation
+          ? {
+            pickup_name: summaryState.selectedLocation.name,
+            pickup_address: summaryState.selectedLocation.address,
+          }
+          : {}),
+      };
+
+      const orderRes = await fetch(`${BASE_URL}/user/order/place`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(orderBody),
+      });
+      const orderData = await orderRes.json();
+      if (!orderData.status) {
+        setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
+        setIsSubmitting(false);
+        toast.error(getErrorMsg(orderData) || "Order placement failed.");
+        return;
+      }
+
+      // Save order details to localStorage before redirecting
+      try {
+        const orderSummary = {
+          ...(orderData.data?.order || {}),
+          paymentInfo: {
+            brand: pm?.card?.brand || "visa",
+            last4: pm?.card?.last4 || "",
+          },
+        };
+        localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
+      } catch (e) {
+        console.error("Failed to save lastPlacedOrder", e);
+      }
+
+      router.push("/track-order");
+    } catch (err) {
+      console.error(err);
+      setPaymentError("An unexpected error occurred.");
+      setIsSubmitting(false);
+    }
   };
 
   // Cart items — localStorage se real data lo, fallback dummy
@@ -4093,9 +4092,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
       });
@@ -4126,9 +4125,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token
@@ -4160,9 +4159,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token ? { cartId } : { device_id: getDeviceId(), cartId },
