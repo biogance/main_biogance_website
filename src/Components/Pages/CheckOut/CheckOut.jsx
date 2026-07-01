@@ -1412,6 +1412,8 @@ function OrderSummary({
   lang,
   onPlaceOrder,
   isSubmitting,
+  paymentMethod,
+  paypalButton,
 }) {
   const router = useRouter();
   const [currentShipping, setCurrentShipping] = useState(0);
@@ -2361,58 +2363,62 @@ function OrderSummary({
       )}
 
       {/* ── Order button — moved to top ── */}
-      <button
-        className="checkout-right-order-btn"
-        onClick={() => onPlaceOrder && onPlaceOrder()}
-        disabled={isSubmitting}
-        style={{
-          width: "100%",
-          padding: "13px",
-          backgroundColor: "#111",
-          color: "#fff",
-          border: "none",
-          fontSize: "11.5px",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          cursor: isSubmitting ? "not-allowed" : "pointer",
-          borderRadius: "2px",
-          fontFamily: FONT,
-          transition: "background 0.2s",
-          textTransform: "uppercase",
-          opacity: isSubmitting ? 0.75 : 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          marginBottom: "16px",
-        }}
-        onMouseEnter={(e) => {
-          if (!isSubmitting) e.currentTarget.style.background = "#333";
-        }}
-        onMouseLeave={(e) => {
-          if (!isSubmitting) e.currentTarget.style.background = "#111";
-        }}
-      >
-        {isSubmitting ? (
-          <>
-            <span
-              style={{
-                display: "inline-block",
-                width: "13px",
-                height: "13px",
-                border: "2px solid rgba(255,255,255,0.3)",
-                borderTopColor: "#fff",
-                borderRadius: "50%",
-                animation: "confirmBtnSpin 0.65s linear infinite",
-                flexShrink: 0,
-              }}
-            />
-            Processing…
-          </>
-        ) : (
-          `Order — ${formatPrice(total, lang)} €`
-        )}
-      </button>
+      {paymentMethod === "paypal" ? (
+        <div className="checkout-right-order-btn" style={{ width: "100%", marginBottom: "16px" }}>{paypalButton}</div>
+      ) : (
+        <button
+          className="checkout-right-order-btn"
+          onClick={() => onPlaceOrder && onPlaceOrder()}
+          disabled={isSubmitting}
+          style={{
+            width: "100%",
+            padding: "13px",
+            backgroundColor: "#111",
+            color: "#fff",
+            border: "none",
+            fontSize: "11.5px",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            cursor: isSubmitting ? "not-allowed" : "pointer",
+            borderRadius: "2px",
+            fontFamily: FONT,
+            transition: "background 0.2s",
+            textTransform: "uppercase",
+            opacity: isSubmitting ? 0.75 : 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            marginBottom: "16px",
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubmitting) e.currentTarget.style.background = "#333";
+          }}
+          onMouseLeave={(e) => {
+            if (!isSubmitting) e.currentTarget.style.background = "#111";
+          }}
+        >
+          {isSubmitting ? (
+            <>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "13px",
+                  height: "13px",
+                  border: "2px solid rgba(255,255,255,0.3)",
+                  borderTopColor: "#fff",
+                  borderRadius: "50%",
+                  animation: "confirmBtnSpin 0.65s linear infinite",
+                  flexShrink: 0,
+                }}
+              />
+              Processing…
+            </>
+          ) : (
+            `Order — ${formatPrice(total, lang)} €`
+          )}
+        </button>
+      )}
 
       {/* Shipping carousel */}
       <div
@@ -3116,6 +3122,7 @@ export default function CheckoutWithStripe(props) {
         currency: "EUR",
         intent: "capture",
         components: "buttons",
+        disableFunding: "card",
       }}
     >
       <Elements stripe={stripePromise}>
@@ -3323,6 +3330,7 @@ function Checkout({ cartItems = [] }) {
   const applePayPrRef = useRef(null);
   const [applePayReady, setApplePayReady] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
+  const applePayDebugRef = useRef(null); // TEMP DEBUG: last canMakePayment() result
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -3382,6 +3390,7 @@ function Checkout({ cartItems = [] }) {
 
     pr.canMakePayment()
       .then((result) => {
+        applePayDebugRef.current = { result, error: null };
         console.log("[ApplePay] canMakePayment result:", result, {
           hostname: typeof window !== "undefined" ? window.location.hostname : null,
           protocol: typeof window !== "undefined" ? window.location.protocol : null,
@@ -3393,6 +3402,7 @@ function Checkout({ cartItems = [] }) {
         }
       })
       .catch((err) => {
+        applePayDebugRef.current = { result: null, error: err?.message || String(err) };
         console.error("[ApplePay] canMakePayment error:", err);
       });
   }, [stripe]);
@@ -3425,6 +3435,20 @@ function Checkout({ cartItems = [] }) {
     }
     setPaymentMethod(method);
     paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handlePayPalCreateOrder = async () => {
+    let token;
+    try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch {}
+    if (!token) { setIsLoginModalOpen(true); throw new Error("Login required"); }
+    const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount: toCleanAmount(summaryState.total), env: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data?.data?.order_id) throw new Error(data.action || data.error || "Could not create PayPal order");
+    return data.data.order_id;
   };
 
   const handlePayPalApprove = async (ppData) => {
@@ -3574,6 +3598,17 @@ function Checkout({ cartItems = [] }) {
 
     if (!applePayReady) {
       toast.error("Apple Pay is not available on this device or browser.");
+      // TEMP DEBUG: surface the last canMakePayment() outcome right when this fires
+      if (typeof window !== "undefined") {
+        const debug = applePayDebugRef.current;
+        window.alert(
+          `[ApplePay Debug]\n` +
+            `canMakePayment result: ${JSON.stringify(debug?.result)}\n` +
+            `canMakePayment error: ${debug?.error || "none"}\n` +
+            `hostname: ${window.location.hostname}\n` +
+            `isSafari: ${isSafari}, isIOS: ${isIOS}`
+        );
+      }
       return;
     }
 
@@ -4182,6 +4217,19 @@ function Checkout({ cartItems = [] }) {
     transition: "background 0.2s",
   };
 
+  // Shared "Pay with PayPal" button — rendered in place of the Order button
+  // (sidebar on desktop, bottom wrapper on mobile) when PayPal is selected.
+  const payPalButtonNode = (
+    <PayPalButtons
+      style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 40 }}
+      createOrder={handlePayPalCreateOrder}
+      onApprove={handlePayPalApprove}
+      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
+      onCancel={() => setPaymentError("Payment cancelled.")}
+      forceReRender={[summaryState.total]}
+    />
+  );
+
   return (
     <div
       style={{
@@ -4706,31 +4754,9 @@ function Checkout({ cartItems = [] }) {
                     label="PayPal"
                     right={<PayPalBadge />}
                   >
-                    <div style={{ paddingTop: "8px" }}>
-                      <PayPalButtons
-                        style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 40 }}
-                        createOrder={async () => {
-                          let token;
-                          try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch {}
-                          if (!token) { setIsLoginModalOpen(true); throw new Error("Login required"); }
-                          const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                            body: JSON.stringify({ amount: toCleanAmount(summaryState.total), env: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok || !data?.data?.order_id) throw new Error(data.action || data.error || "Could not create PayPal order");
-                          return data.data.order_id;
-                        }}
-                        onApprove={handlePayPalApprove}
-                        onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
-                        onCancel={() => setPaymentError("Payment cancelled.")}
-                        forceReRender={[summaryState.total]}
-                      />
-                      {paymentMethod === "paypal" && paymentError && (
-                        <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
-                      )}
-                    </div>
+                    {paymentMethod === "paypal" && paymentError && (
+                      <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
+                    )}
                   </PaymentMethodRow>
                 </div>
               </Section>
@@ -4750,46 +4776,51 @@ function Checkout({ cartItems = [] }) {
                   {formError}
                 </p>
               )}
-              <button
-                onClick={handlePlaceOrder}
-                disabled={isSubmitting}
-                style={{
-                  ...placeOrderBtnStyle,
-                  opacity: isSubmitting ? 0.75 : 1,
-                  cursor: isSubmitting ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSubmitting) e.currentTarget.style.background = "#333";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSubmitting) e.currentTarget.style.background = "#111";
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "14px",
-                        height: "14px",
-                        border: "2px solid rgba(255,255,255,0.3)",
-                        borderTopColor: "#fff",
-                        borderRadius: "50%",
-                        animation: "confirmBtnSpin 0.65s linear infinite",
-                        flexShrink: 0,
-                      }}
-                    />
-                    Processing…
-                  </>
-                ) : (
-                  `Order — ${formatPrice(summaryState.total, lang)} €`
-                )}
-              </button>
+              {paymentMethod === "paypal" && (
+                <div style={{ width: "100%" }}>{payPalButtonNode}</div>
+              )}
+              {paymentMethod !== "paypal" && (
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={isSubmitting}
+                  style={{
+                    ...placeOrderBtnStyle,
+                    opacity: isSubmitting ? 0.75 : 1,
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting) e.currentTarget.style.background = "#333";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSubmitting) e.currentTarget.style.background = "#111";
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <style>{`@keyframes confirmBtnSpin{to{transform:rotate(360deg)}}`}</style>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "14px",
+                          height: "14px",
+                          border: "2px solid rgba(255,255,255,0.3)",
+                          borderTopColor: "#fff",
+                          borderRadius: "50%",
+                          animation: "confirmBtnSpin 0.65s linear infinite",
+                          flexShrink: 0,
+                        }}
+                      />
+                      Processing…
+                    </>
+                  ) : (
+                    `Order — ${formatPrice(summaryState.total, lang)} €`
+                  )}
+                </button>
+              )}
 
               <p
                 style={{
@@ -4856,6 +4887,8 @@ function Checkout({ cartItems = [] }) {
               lang={lang}
               onPlaceOrder={handlePlaceOrder}
               isSubmitting={isSubmitting}
+              paymentMethod={paymentMethod}
+              paypalButton={payPalButtonNode}
             />
             {/* <button
               onClick={handlePlaceOrder}
