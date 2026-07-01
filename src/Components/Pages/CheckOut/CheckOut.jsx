@@ -42,7 +42,7 @@ function usePaymentVisibility() {
 
     // Detect iOS: covers Safari, Chrome (CriOS), Firefox (FxiOS), Edge (EdgiOS),
     // Google App, and iPad in desktop mode (reports MacIntel but has multi-touch).
-    const ios =
+      const ios =
       /iPhone|iPad|iPod/i.test(ua) ||
       /iPhone|iPad|iPod/i.test(platform) ||
       (platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -1006,7 +1006,7 @@ function Section({ title, action, children }) {
   );
 }
 
-function ExpressPaymentBar({ selectedMethod, onSelect }) {
+function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
   const baseBtn = {
@@ -1107,7 +1107,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect }) {
           </button>
         )}
 
-        {isIOS && (
+        {(isIOS || isSafari) && (
           <button
             onClick={() => onSelect("applepay")}
             style={{ ...baseBtn, ...btnBorder("applepay") }}
@@ -3405,7 +3405,7 @@ function Checkout({ cartItems = [] }) {
   };
 
   const handleExpressSelect = (method) => {
-    if (method === "applepay" && !applePayPrRef.current && !isSafari) {
+    if (method === "applepay" && !applePayPrRef.current && !isSafari && !isIOS) {
       const openInSafari = window.confirm(
         "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
       );
@@ -3415,10 +3415,7 @@ function Checkout({ cartItems = [] }) {
       return;
     }
     setPaymentMethod(method);
-    paymentSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handlePayPalApprove = async (ppData) => {
@@ -3550,22 +3547,22 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler ────────────────────────────────────────────
   const handleApplePayOrder = () => {
-    if (!stripe) {
+    if (!stripe || !applePayPrRef.current) {
       toast.error("Payment not initialized. Please refresh.");
       return;
     }
 
-    if (!applePayPrRef.current) {
-      if (!isSafari) {
-        const openInSafari = window.confirm(
-          "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
-        );
-        if (openInSafari) {
-          window.location.href = window.location.href.replace(/^https?/, "safari-https") ||
-            `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
-        }
-        return;
+    if (!isSafari && !isIOS) {
+      const openInSafari = window.confirm(
+        "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
+      );
+      if (openInSafari) {
+        window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
       }
+      return;
+    }
+
+    if (!applePayReady) {
       toast.error("Apple Pay is not available on this device or browser.");
       return;
     }
@@ -3586,19 +3583,16 @@ function Checkout({ cartItems = [] }) {
     setPaymentError(null);
 
     // Update amount in paymentRequest before showing sheet (cents mein)
-    const latestAmount = Math.round(toCleanAmount(summaryState.total) * 100);
-    if (latestAmount > 0) {
-      applePayPrRef.current.update({
-        total: { label: "Biogance", amount: latestAmount },
-      });
-    }
+    const latestAmount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
+    applePayPrRef.current.update({
+      total: { label: "Biogance", amount: latestAmount },
+    });
 
     let paymentIntentId = "";
 
     // Listen for paymentmethod event (fires after Face ID / Touch ID confirm)
     applePayPrRef.current.off("paymentmethod"); // remove old listeners
     applePayPrRef.current.on("paymentmethod", async (event) => {
-      // Set submitting INSIDE the event — after sheet is already open
       setIsSubmitting(true);
       try {
         // Ensure user is logged in
@@ -3781,14 +3775,15 @@ function Checkout({ cartItems = [] }) {
       }
     });
 
-    // Open Apple Pay sheet
+    // Open Apple Pay sheet — must be called synchronously in user gesture context
+    // canMakePayment already confirmed at init time via applePayReady state
     applePayPrRef.current.show();
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     // Route to Apple Pay handler if that method is selected
     if (paymentMethod === "applepay") {
-      handleApplePayOrder();
+      handleApplePayOrder(); // NOT awaited — show() must stay in sync user-gesture chain
       return;
     }
 
@@ -3835,10 +3830,9 @@ function Checkout({ cartItems = [] }) {
     setIsSubmitting(true);
     setPaymentError(null);
 
-    (async () => {
-      try {
-        let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-        let token = loginData?.data?.token;
+    try {
+      let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      let token = loginData?.data?.token;
 
         // Step 0: Guest user — verify/create account before payment
         if (!token) {
@@ -4039,7 +4033,6 @@ function Checkout({ cartItems = [] }) {
         setPaymentError("An unexpected error occurred.");
         setIsSubmitting(false);
       }
-    })();
   };
 
   // Cart items — localStorage se real data lo, fallback dummy
@@ -4370,6 +4363,7 @@ function Checkout({ cartItems = [] }) {
             <ExpressPaymentBar
               selectedMethod={paymentMethod}
               onSelect={handleExpressSelect}
+              isSafari={isSafari}
             />
 
             {/* Contact details */}
@@ -4652,8 +4646,8 @@ function Checkout({ cartItems = [] }) {
                     />
                   )}
 
-                  {/* Apple Pay — show on iOS/Safari always; applePayReady confirms native sheet works */}
-                  {(applePayReady || isIOS) && (
+                  {/* Apple Pay — show on iOS/Safari/macOS Safari always */}
+                  {(applePayReady || isIOS || isSafari) && (
                     <PaymentMethodRow
                       active={paymentMethod === "applepay"}
                       onSelect={() => setPaymentMethod("applepay")}
