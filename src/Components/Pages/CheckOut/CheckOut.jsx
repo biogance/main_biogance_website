@@ -4159,6 +4159,13 @@ function Checkout({ cartItems = [] }) {
         },
       }}
       onReady={({ availablePaymentMethods }) => {
+        console.log("[ExpressCheckout] onReady availablePaymentMethods:", availablePaymentMethods);
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+          window.alert(
+            `[ExpressCheckout] onReady\navailablePaymentMethods: ${JSON.stringify(availablePaymentMethods)}\n` +
+              `hostname: ${window.location.hostname}`
+          );
+        }
         setApplePayReady(!!availablePaymentMethods?.applePay);
       }}
       onConfirm={handleExpressCheckoutConfirm}
