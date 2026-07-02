@@ -362,7 +362,7 @@ export default function MyOrder() {
                 <OrderItemShimmer key={index} />
               ))
             ) : orders.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">{t('orderHistory.noOrders') || 'No orders found.'}</div>
+              <div className="text-center py-12 text-gray-500">{'No orders found.'}</div>
             ) : (
               orders.map((order) => (
                 <div

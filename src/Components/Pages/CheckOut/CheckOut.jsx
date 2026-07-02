@@ -4150,13 +4150,9 @@ function Checkout({ cartItems = [] }) {
         buttonType: { applePay: "buy" },
         buttonTheme: { applePay: "black" },
         buttonHeight: 48,
-        paymentMethods: {
-          applePay: "always",
-          googlePay: "never",
-          link: "never",
-          paypal: "never",
-          amazonPay: "never",
-        },
+        // TEMP DEBUG: leave every wallet on "auto" (Stripe's own default) to
+        // check whether ANYTHING renders at all, isolating whether this is an
+        // Apple-Pay-specific account/domain issue or a broader config problem.
       }}
       onReady={({ availablePaymentMethods }) => {
         console.log("[ExpressCheckout] onReady availablePaymentMethods:", availablePaymentMethods);
