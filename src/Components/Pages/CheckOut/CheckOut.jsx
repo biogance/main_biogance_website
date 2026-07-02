@@ -1058,22 +1058,9 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
           fontFamily: FONT,
         }}
       >
-        Payment
+        Express payment
       </h2>
       <div style={{ display: "flex", gap: "10px" }}>
-        <button
-          onClick={() => onSelect("card")}
-          style={{ ...baseBtn, ...btnBorder("card") }}
-          {...hoverHandlers("card")}
-        >
-          <img
-            src="visa.svg"
-            alt=""
-            className="express-pay-btn-img"
-            style={{ width: "120px", height: "90px", objectFit: "contain" }}
-          />
-        </button>
-
         <button
           onClick={() => onSelect("paypal")}
           style={{
@@ -1092,20 +1079,18 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
           />
         </button>
 
-        {isMobile && isAndroid && (
-          <button
-            onClick={() => onSelect("googlepay")}
-            style={{ ...baseBtn, ...btnBorder("googlepay") }}
-            {...hoverHandlers("googlepay")}
-          >
-            <img
-              src="pay-pal.svg"
-              alt=""
-              className="express-pay-btn-img"
-              style={{ width: "120px", height: "100px", objectFit: "contain" }}
-            />
-          </button>
-        )}
+        <button
+          onClick={() => onSelect("googlepay")}
+          style={{ ...baseBtn, ...btnBorder("googlepay") }}
+          {...hoverHandlers("googlepay")}
+        >
+          <img
+            src="pay-pal.svg"
+            alt=""
+            className="express-pay-btn-img"
+            style={{ width: "120px", height: "100px", objectFit: "contain" }}
+          />
+        </button>
 
         {(isIOS || isSafari) && (
           <button
@@ -3328,6 +3313,10 @@ function Checkout({ cartItems = [] }) {
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("card");
+  // Controls which row is highlighted/expanded in the lower Payment list.
+  // Kept separate from paymentMethod so Express Payment (PayPal/Google Pay)
+  // can drive checkout without touching the list's radio selection.
+  const [radioActiveMethod, setRadioActiveMethod] = useState("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [formError, setFormError] = useState(null);
@@ -3406,6 +3395,14 @@ function Checkout({ cartItems = [] }) {
       return;
     }
     setPaymentMethod(method);
+
+    if (method === "paypal" || method === "googlepay") {
+      // Express Payment selection — don't scroll to the lower Payment
+      // section and don't mark its radio as active.
+      return;
+    }
+
+    setRadioActiveMethod(method);
     paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -4548,8 +4545,8 @@ function Checkout({ cartItems = [] }) {
                   }}
                 >
                   <PaymentMethodRow
-                    active={paymentMethod === "card"}
-                    onSelect={() => setPaymentMethod("card")}
+                    active={radioActiveMethod === "card"}
+                    onSelect={() => { setPaymentMethod("card"); setRadioActiveMethod("card"); }}
                     label="Credit card"
                     right={<CardBrandIcons />}
                   >
@@ -4645,8 +4642,8 @@ function Checkout({ cartItems = [] }) {
 
                   {isMobile && isAndroid && (
                     <PaymentMethodRow
-                      active={paymentMethod === "googlepay"}
-                      onSelect={() => setPaymentMethod("googlepay")}
+                      active={radioActiveMethod === "googlepay"}
+                      onSelect={() => { setPaymentMethod("googlepay"); setRadioActiveMethod("googlepay"); }}
                       label="Google Pay"
                       right={<GooglePayBadge />}
                     />
@@ -4655,8 +4652,8 @@ function Checkout({ cartItems = [] }) {
                   {/* Apple Pay — show on iOS/Safari/macOS Safari always */}
                   {(applePayReady || isIOS || isSafari) && (
                     <PaymentMethodRow
-                      active={paymentMethod === "applepay"}
-                      onSelect={() => setPaymentMethod("applepay")}
+                      active={radioActiveMethod === "applepay"}
+                      onSelect={() => { setPaymentMethod("applepay"); setRadioActiveMethod("applepay"); }}
                       label="Apple Pay"
                       right={<ApplePayBadge />}
                     />
@@ -4680,29 +4677,16 @@ function Checkout({ cartItems = [] }) {
                           Apple Pay — requires Safari
                         </span>
                       </div>
-                      <a
-                        href={`safari-https://${typeof window !== "undefined" ? window.location.host + window.location.pathname + window.location.search : ""}`}
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#0071e3",
-                          textDecoration: "none",
-                          fontFamily: FONT,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Open in Safari →
-                      </a>
                     </div>
                   )}
                   <PaymentMethodRow
                     last
-                    active={paymentMethod === "paypal"}
-                    onSelect={() => setPaymentMethod("paypal")}
+                    active={radioActiveMethod === "paypal"}
+                    onSelect={() => { setPaymentMethod("paypal"); setRadioActiveMethod("paypal"); }}
                     label="PayPal"
                     right={<PayPalBadge />}
                   >
-                    {paymentMethod === "paypal" && paymentError && (
+                    {radioActiveMethod === "paypal" && paymentError && (
                       <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
                     )}
                   </PaymentMethodRow>
