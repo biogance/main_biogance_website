@@ -2367,7 +2367,7 @@ function OrderSummary({
       {paymentMethod === "paypal" ? (
         <div className="checkout-right-order-btn" style={{ width: "100%", marginBottom: "16px" }}>{paypalButton}</div>
       ) : paymentMethod === "applepay" ? (
-        <div className="checkout-right-order-btn" style={{ width: "100%", marginBottom: "16px" }}>{expressCheckoutButton}</div>
+        <div style={{ width: "100%", marginBottom: "16px" }}>{expressCheckoutButton}</div>
       ) : (
         <button
           className="checkout-right-order-btn"
@@ -4713,9 +4713,6 @@ function Checkout({ cartItems = [] }) {
               )}
               {paymentMethod === "paypal" && (
                 <div style={{ width: "100%" }}>{payPalButtonNode}</div>
-              )}
-              {paymentMethod === "applepay" && (
-                <div style={{ width: "100%" }}>{expressCheckoutNode}</div>
               )}
               {paymentMethod !== "paypal" && paymentMethod !== "applepay" && (
                 <button
