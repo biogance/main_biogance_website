@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CiSearch } from "react-icons/ci";
+import { BASE_URL } from '@/Components/API/API';
 import {
   MdOutlineKeyboardArrowDown,
   MdOutlineKeyboardArrowLeft,
@@ -176,32 +177,93 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
 export default function MyOrder() {
   const { t } = useTranslation('myaccount');
   const [loadingState, setLoadingState] = useState('shimmer');
-
-  useEffect(() => {
-    // Simulate loading for 2 seconds
-    const timer = setTimeout(() => {
-      setLoadingState('loaded');
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const [orders] = useState([
-    { id: '#ORD-001', date: 'January 8, 2025', status: 'Processing', price: 64.98, items: 4 },
-    { id: '#ORD-002', date: 'January 10, 2025', status: 'Awaiting Confirmation', price: 49.50, items: 1 },
-    { id: '#ORD-003', date: 'January 12, 2025', status: 'Delivered', price: 120.00, items: 5 },
-    { id: '#ORD-004', date: 'January 12, 2025', status: 'Delivered', price: 120.00, items: 3 },
-    { id: '#ORD-005', date: 'January 15, 2025', status: 'Delivered', price: 250.00, items: 10 },
-    { id: '#ORD-006', date: 'January 20, 2025', status: 'Waiting for Shipment', price: 350.00, items: 8 },
-    { id: '#ORD-007', date: 'January 22, 2025', status: 'Delivered', price: 75.00, items: 3 },
-    { id: '#ORD-008', date: 'January 25, 2025', status: 'Delivered', price: 0.00, items: 2 },
-    { id: '#ORD-009', date: 'January 30, 2025', status: 'Delivered', price: 90.00, items: 4 },
-    { id: '#ORD-010', date: 'February 1, 2025', status: 'Delivered', price: 200.00, items: 12 },
-  ]);
-
+  const [orders, setOrders] = useState([]);
+  const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrderFilter, setSelectedOrderFilter] = useState(t('orderHistory.filters.allOrders'));
   const [selectedSort, setSelectedSort] = useState(t('orderHistory.sort.mostRecent'));
+  const searchDebounceRef = useRef(null);
+
+  const getSortParam = (sortLabel) => {
+    if (sortLabel === t('orderHistory.sort.oldestFirst')) return 'oldest';
+    if (sortLabel === t('orderHistory.sort.highestAmount')) return 'highest_amount';
+    if (sortLabel === t('orderHistory.sort.lowestAmount')) return 'lowest_amount';
+    return null;
+  };
+
+  const getStatusParam = (filterLabel) => {
+    if (filterLabel === t('orderHistory.filters.allOrders')) return null;
+    if (filterLabel === t('orderHistory.filters.delivered')) return 'Delivered';
+    if (filterLabel === t('orderHistory.filters.processing')) return 'Processing';
+    if (filterLabel === t('orderHistory.filters.scheduledForDelivery')) return 'Scheduled for Delivery';
+    if (filterLabel === t('orderHistory.filters.awaitingConfirmation')) return 'Awaiting Confirmation';
+    if (filterLabel === t('orderHistory.filters.waitingForShipment')) return 'Waiting for Shipment';
+    return null;
+  };
+
+  const fetchOrders = useCallback(async (keyword, sortLabel, filterLabel, page = 1) => {
+    setLoadingState('shimmer');
+    try {
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const token = loginData?.data?.token;
+      const body = {};
+      if (keyword) body.keyword = keyword;
+      const sort = getSortParam(sortLabel);
+      if (sort) body.sort = sort;
+      const status = getStatusParam(filterLabel);
+      if (status) body.status = status;
+
+      const res = await fetch(`${BASE_URL}/user/order/history?page=${page}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      const pagination = data?.data;
+      const list = pagination?.data;
+      setOrders(Array.isArray(list) ? list : []);
+      setPagination({ current_page: pagination?.current_page ?? 1, last_page: pagination?.last_page ?? 1 });
+    } catch (e) {
+      setOrders([]);
+    } finally {
+      setLoadingState('loaded');
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchOrders('', selectedSort, selectedOrderFilter, 1);
+  }, []);
+
+  // Search debounce
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      fetchOrders(val, selectedSort, selectedOrderFilter, 1);
+    }, 1000);
+  };
+
+  // Sort change
+  const handleSortChange = (option) => {
+    setSelectedSort(option);
+    fetchOrders(searchQuery, option, selectedOrderFilter, 1);
+  };
+
+  // Filter change
+  const handleFilterChange = (option) => {
+    setSelectedOrderFilter(option);
+    fetchOrders(searchQuery, selectedSort, option, 1);
+  };
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > pagination.last_page) return;
+    fetchOrders(searchQuery, selectedSort, selectedOrderFilter, page);
+  };
 
   const orderFilterOptions = [
     t('orderHistory.filters.allOrders'),
@@ -265,7 +327,7 @@ export default function MyOrder() {
                 type="text"
                 placeholder={t('orderHistory.searchPlaceholder')}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="
                   w-full pl-12 pr-5 py-3
           plz add shimmers         border border-gray-200 rounded-xl
@@ -281,14 +343,14 @@ export default function MyOrder() {
                 label={t('orderHistory.filters.allOrders')}
                 options={orderFilterOptions}
                 selected={selectedOrderFilter}
-                onSelect={setSelectedOrderFilter}
+                onSelect={handleFilterChange}
               />
 
               <Dropdown
                 label={t('orderHistory.sort.label')}
                 options={sortOptions}
                 selected={selectedSort}
-                onSelect={setSelectedSort}
+                onSelect={handleSortChange}
               />
             </div>
           </div>
@@ -296,12 +358,12 @@ export default function MyOrder() {
           {/* Orders List */}
           <div className="space-y-4">
             {loadingState === 'shimmer' ? (
-              // Show shimmer order items
-              Array.from({ length: orders.length }).map((_, index) => (
+              Array.from({ length: 5 }).map((_, index) => (
                 <OrderItemShimmer key={index} />
               ))
+            ) : orders.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">{t('orderHistory.noOrders') || 'No orders found.'}</div>
             ) : (
-              // Show actual orders
               orders.map((order) => (
                 <div
                   key={order.id}
@@ -314,25 +376,25 @@ export default function MyOrder() {
                   "
                 >
                   <div className="flex-1">
-                    <div className="font-bold  text-lg text-gray-900">{order.id}</div>
+                    <div className="font-bold text-lg text-gray-900">{order.order_number || order.id}</div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {t('orderHistory.placedOn')} {order.date}
+                      {t('orderHistory.placedOn')} {order.created_at || order.date}
                     </div>
                     <span className={`
                       mt-2.5 inline-block px-3.5 py-1
                       text-xs font-medium rounded-full
                       ${getStatusColor(order.status)}
                     `}>
-                      {t(`orderHistory.status.${order.status.toLowerCase().replace(/\s+/g, '')}`)}
+                      {order.status}
                     </span>
                   </div>
 
                   <div className="text-right sm:min-w-[180px]">
                     <div className="text-xl font-bold text-gray-900">
-                      ${order.price.toFixed(2)}
+                      ${parseFloat(order.total_amount ?? 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {order.items} {order.items === 1 ? t('dashboard.item') : t('dashboard.items')}
+                      {order.items?.length ?? 0} {order.items?.length === 1 ? t('dashboard.item') : t('dashboard.items')}
                     </div>
                     <button className="
                       mt-4 w-full sm:w-auto
@@ -350,37 +412,65 @@ export default function MyOrder() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-center gap-2 mt-10">
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-              <MdOutlineKeyboardDoubleArrowLeft size={22} />
-            </button>
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-              <MdOutlineKeyboardArrowLeft size={22} />
-            </button>
-            
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 bg-gray-900 text-white rounded-lg font-medium">
-              1
-            </button>
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              2
-            </button>
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              3
-            </button>
-            
-            <span className="px-3 text-gray-500">...</span>
-            
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              11
-            </button>
-            
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-              <MdOutlineKeyboardArrowRight size={22} />
-            </button>
-            <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-              <MdOutlineKeyboardDoubleArrowRight size={22} />
-            </button>
-          </div>
+          {pagination.last_page > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-10">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={pagination.current_page === 1}
+                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <MdOutlineKeyboardDoubleArrowLeft size={22} />
+              </button>
+              <button
+                onClick={() => handlePageChange(pagination.current_page - 1)}
+                disabled={pagination.current_page === 1}
+                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <MdOutlineKeyboardArrowLeft size={22} />
+              </button>
+
+              {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === pagination.last_page || Math.abs(p - pagination.current_page) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="px-3 text-gray-500">...</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => handlePageChange(p)}
+                      className={`w-9 h-9 flex items-center justify-center border rounded-lg font-medium transition-colors ${
+                        pagination.current_page === p
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )
+              }
+
+              <button
+                onClick={() => handlePageChange(pagination.current_page + 1)}
+                disabled={pagination.current_page === pagination.last_page}
+                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <MdOutlineKeyboardArrowRight size={22} />
+              </button>
+              <button
+                onClick={() => handlePageChange(pagination.last_page)}
+                disabled={pagination.current_page === pagination.last_page}
+                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <MdOutlineKeyboardDoubleArrowRight size={22} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
