@@ -4160,13 +4160,23 @@ function Checkout({ cartItems = [] }) {
       }}
       onReady={({ availablePaymentMethods }) => {
         console.log("[ExpressCheckout] onReady availablePaymentMethods:", availablePaymentMethods);
+        setApplePayReady(!!availablePaymentMethods?.applePay);
+      }}
+      onLoadError={({ error }) => {
+        console.error("[ExpressCheckout] onLoadError:", error);
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+          window.alert(`[ExpressCheckout] onLoadError\n${error?.type || ""}: ${error?.message || JSON.stringify(error)}`);
+        }
+      }}
+      onAvailablePaymentMethodsChange={({ paymentMethods }) => {
+        console.log("[ExpressCheckout] onAvailablePaymentMethodsChange:", paymentMethods);
         if (typeof window !== "undefined" && window.innerWidth < 1024) {
           window.alert(
-            `[ExpressCheckout] onReady\navailablePaymentMethods: ${JSON.stringify(availablePaymentMethods)}\n` +
+            `[ExpressCheckout] paymentMethods: ${JSON.stringify(paymentMethods)}\n` +
               `hostname: ${window.location.hostname}`
           );
         }
-        setApplePayReady(!!availablePaymentMethods?.applePay);
+        setApplePayReady(!!paymentMethods?.applePay?.available);
       }}
       onConfirm={handleExpressCheckoutConfirm}
     />
