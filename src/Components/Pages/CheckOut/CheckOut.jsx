@@ -1058,7 +1058,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
           fontFamily: FONT,
         }}
       >
-        Express payment
+        Express Checkout
       </h2>
       <div style={{ display: "flex", gap: "10px" }}>
         <button
