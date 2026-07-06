@@ -65,17 +65,34 @@ function usePaymentVisibility() {
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 const getErrorMsg = (data) => {
-  if (data.errors?.length > 0) return data.errors[0].message;
-  if (data.action) return data.action;
-  if (data.action_message) return data.action_message;
+  if (data?.errors?.length > 0) {
+    const first = data.errors[0];
+    return typeof first === "string" ? first : first?.message || null;
+  }
+  if (typeof data?.action_message === "string") return data.action_message;
+  if (typeof data?.action === "string") return data.action;
+  // Some endpoints return validation errors as an object, e.g.
+  // { email: ["The email field is required."] } — pull out the first one
+  // instead of letting it get coerced into "[object Object]".
+  if (data?.action && typeof data.action === "object") {
+    const firstVal = Object.values(data.action)[0];
+    if (Array.isArray(firstVal) && typeof firstVal[0] === "string") return firstVal[0];
+    if (typeof firstVal === "string") return firstVal;
+  }
   return null;
 };
 
 // Always normalize any number-like value (comma string, dot string, or number)
 // to a clean JS float before sending to any API.
 const toCleanAmount = (val) => {
-  if (typeof val === "number") return val;
-  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+  const num =
+    typeof val === "number"
+      ? val
+      : parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+  // Round to 2 decimals — plain float math (e.g. subtotal + shipping - discount)
+  // can produce values like 30.699999999999996, which PayPal's API rejects
+  // with a DECIMAL_PRECISION / UNPROCESSABLE_ENTITY error.
+  return Math.round((num + Number.EPSILON) * 100) / 100;
 };
 
 // Format price for UI display: EN = dot, FR = comma
@@ -1006,7 +1023,7 @@ function Section({ title, action, children }) {
   );
 }
 
-function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
+function ExpressPaymentBar({ selectedMethod, onSelect, paypalExpressNode, isSafari }) {
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
   const baseBtn = {
@@ -1061,23 +1078,33 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
         Express Checkout
       </h2>
       <div style={{ display: "flex", gap: "10px" }}>
-        <button
-          onClick={() => onSelect("paypal")}
+        <div
           style={{
             ...baseBtn,
-            color: "#003087",
-            height: "50px",
+            position: "relative",
+            padding: 0,
+            overflow: "hidden",
             ...btnBorder("paypal"),
           }}
           {...hoverHandlers("paypal")}
         >
+          {/* Visible brand image — the real PayPalButtons SDK below still
+              handles the click so the PayPal SDK still opens immediately. */}
           <img
-            src="google-pay.svg"
-            alt=""
+            src="payPal.png"
+            alt="PayPal"
             className="express-pay-btn-img"
-            style={{ width: "100px", height: "100px", objectFit: "contain" }}
+            style={{
+              width: "100px",
+              height: "90px",
+              objectFit: "contain",
+              pointerEvents: "none",
+            }}
           />
-        </button>
+          <div style={{ position: "absolute", inset: 0, opacity: 0 }}>
+            {paypalExpressNode}
+          </div>
+        </div>
 
         <button
           onClick={() => onSelect("googlepay")}
@@ -1085,7 +1112,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect, isSafari }) {
           {...hoverHandlers("googlepay")}
         >
           <img
-            src="pay-pal.svg"
+            src="google-payment.svg"
             alt=""
             className="express-pay-btn-img"
             style={{ width: "120px", height: "100px", objectFit: "contain" }}
@@ -3413,17 +3440,97 @@ function Checkout({ cartItems = [] }) {
     const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ amount: toCleanAmount(summaryState.total), env: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
+      body: JSON.stringify({ amount: toCleanAmount(summaryState.total), envi: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
     });
     const data = await res.json();
-    if (!res.ok || !data?.data?.order_id) throw new Error(data.action || data.error || "Could not create PayPal order");
+    if (!res.ok || !data?.data?.order_id) throw new Error(getErrorMsg(data) || "Could not create PayPal order");
     return data.data.order_id;
   };
 
-  const handlePayPalApprove = async (ppData) => {
+  const handlePayPalApprove = async (ppData, ppActions) => {
     setIsSubmitting(true);
     setPaymentError(null);
     try {
+      // Express Checkout: if the contact/delivery fields below are still
+      // empty, pull them from PayPal instead of blocking payment.
+      let finalEmail = email;
+      let finalName = lastName;
+      let finalStreet = street;
+      let finalCity = city;
+      let finalPostcode = postcode;
+      let finalRegion = region;
+      let finalDeliveryCountryIso2 = deliveryCountryIso2;
+
+      const needsContact = !finalEmail.trim() || !finalName.trim();
+      const needsAddress =
+        !finalStreet.trim() ||
+        !finalCity.trim() ||
+        !finalPostcode.trim() ||
+        !finalDeliveryCountryIso2;
+
+      if ((needsContact || needsAddress) && ppActions?.order?.get) {
+        try {
+          const orderDetails = await ppActions.order.get();
+          const payer = orderDetails?.payer;
+
+          if (!finalEmail.trim() && payer?.email_address) {
+            finalEmail = payer.email_address;
+            setEmail(finalEmail);
+          }
+          if (!finalName.trim()) {
+            const paypalName = [payer?.name?.given_name, payer?.name?.surname]
+              .filter(Boolean)
+              .join(" ")
+              .trim();
+            if (paypalName) {
+              finalName = paypalName;
+              setLastName(finalName);
+            }
+          }
+
+          if (needsAddress) {
+            const shippingAddress =
+              orderDetails?.purchase_units?.[0]?.shipping?.address;
+            if (shippingAddress) {
+              const streetFromPaypal = [
+                shippingAddress.address_line_1,
+                shippingAddress.address_line_2,
+              ]
+                .filter(Boolean)
+                .join(", ");
+              if (!finalStreet.trim() && streetFromPaypal) {
+                finalStreet = streetFromPaypal;
+                setStreet(finalStreet);
+              }
+              if (!finalCity.trim() && shippingAddress.admin_area_2) {
+                finalCity = shippingAddress.admin_area_2;
+                setCity(finalCity);
+              }
+              if (!finalPostcode.trim() && shippingAddress.postal_code) {
+                finalPostcode = shippingAddress.postal_code;
+                setPostcode(finalPostcode);
+              }
+              if (!finalRegion.trim() && shippingAddress.admin_area_1) {
+                finalRegion = shippingAddress.admin_area_1;
+                setRegion(finalRegion);
+              }
+              if (!finalDeliveryCountryIso2 && shippingAddress.country_code) {
+                const iso2 = shippingAddress.country_code.toLowerCase();
+                const found = defaultCountries.find(
+                  (c) => parseCountry(c).iso2 === iso2,
+                );
+                if (found) {
+                  finalDeliveryCountryIso2 = iso2;
+                  setDeliveryCountryIso2(iso2);
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch PayPal payer details", err);
+        }
+      }
+
       let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       let token = loginData?.data?.token;
 
@@ -3439,7 +3546,7 @@ function Checkout({ cartItems = [] }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: lastName, email,
+            name: finalName, email: finalEmail,
             country_code: dialCode, phone: dialCode,
             phone_number: phone, device: "web",
             device_id: "123", fcm_token: "web123",
@@ -3466,7 +3573,7 @@ function Checkout({ cartItems = [] }) {
       });
       const captureData = await captureRes.json();
       if (!captureRes.ok || !captureData?.status)
-        throw new Error(captureData?.action || captureData?.error || "Payment capture failed");
+        throw new Error(getErrorMsg(captureData) || "Payment capture failed");
 
       // Step 2: Place order
       const dialCode = (() => {
@@ -3476,11 +3583,11 @@ function Checkout({ cartItems = [] }) {
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
       const deliveryCountryName = (() => {
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === deliveryCountryIso2);
-        return c ? parseCountry(c).name : deliveryCountryIso2;
+        const c = defaultCountries.find((c) => parseCountry(c).iso2 === finalDeliveryCountryIso2);
+        return c ? parseCountry(c).name : finalDeliveryCountryIso2;
       })();
       const billingCountryName = (() => {
-        const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
+        const iso = useDifferentBilling ? billingCountryIso2 : finalDeliveryCountryIso2;
         const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
         return c ? parseCountry(c).name : iso;
       })();
@@ -3496,20 +3603,20 @@ function Checkout({ cartItems = [] }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          full_name: lastName, email,
+          full_name: finalName, email: finalEmail,
           country_code: dialCode, phone: dialCode, phone_number: phone,
-          delivery_address_full: street,
+          delivery_address_full: finalStreet,
           delivery_address_country: deliveryCountryName,
-          delivery_address_city: city,
-          delivery_address_postal_code: postcode,
+          delivery_address_city: finalCity,
+          delivery_address_postal_code: finalPostcode,
           delivery_address_type: "delivery_address",
-          delivery_address_state: region,
-          invoice_address_full: useDifferentBilling ? billingStreet : street,
+          delivery_address_state: finalRegion,
+          invoice_address_full: useDifferentBilling ? billingStreet : finalStreet,
           invoice_address_country: billingCountryName,
-          invoice_address_city: useDifferentBilling ? billingCity : city,
-          invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
+          invoice_address_city: useDifferentBilling ? billingCity : finalCity,
+          invoice_address_postal_code: useDifferentBilling ? billingPostcode : finalPostcode,
           invoice_address_type: "invoice_address",
-          invoice_address_state: useDifferentBilling ? billingRegion : region,
+          invoice_address_state: useDifferentBilling ? billingRegion : finalRegion,
           is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
           payment_status: "Confirmed",
           payment_method: "Paypal",
@@ -3532,7 +3639,7 @@ function Checkout({ cartItems = [] }) {
         }),
       });
       const placeData = await placeRes.json();
-      if (!placeRes.ok) throw new Error(placeData.action ?? placeData.error ?? "Failed to place order");
+      if (!placeRes.ok) throw new Error(getErrorMsg(placeData) || "Failed to place order");
 
       try {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
@@ -4137,6 +4244,21 @@ function Checkout({ cartItems = [] }) {
     />
   );
 
+  // Express Checkout PayPal button — same create-order/approve handlers as
+  // the sidebar PayPal button, but rendered directly inside the Express
+  // Checkout row so PayPal's own SDK opens immediately on click (no
+  // intermediate "select a payment method" step in between).
+  const payPalExpressButtonNode = (
+    <PayPalButtons
+      style={{ layout: "horizontal", color: "gold", shape: "rect", label: "paypal", height: 45, tagline: false }}
+      createOrder={handlePayPalCreateOrder}
+      onApprove={handlePayPalApprove}
+      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
+      onCancel={() => setPaymentError("Payment cancelled.")}
+      forceReRender={[summaryState.total]}
+    />
+  );
+
   // Shared Apple Pay button (Express Checkout Element) — rendered in place of
   // the Order button (sidebar on desktop, bottom wrapper on mobile) when
   // Apple Pay is selected. Only Apple Pay is enabled — Google Pay/Link/PayPal
@@ -4366,6 +4488,7 @@ function Checkout({ cartItems = [] }) {
             <ExpressPaymentBar
               selectedMethod={paymentMethod}
               onSelect={handleExpressSelect}
+              paypalExpressNode={payPalExpressButtonNode}
               isSafari={isSafari}
             />
 
