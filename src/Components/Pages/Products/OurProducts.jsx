@@ -338,7 +338,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                 const families = (universe.sub_categories || []).filter(s => s.type === 'family');
                 return (
                   <div key={universe.id} className="flex flex-col min-w-0">
-                    <h3 className="text-[11px] font-bold text-black uppercase tracking-widest mb-3 pb-2" style={{ borderBottom: '0.5px solid #7a7a7a' }}>
+                    <h3 className="text-[11px] font-bold text-black uppercase tracking-widest mb-3 pb-2" style={{ borderBottom: '0.5px solid #dddddd' }}>
                       {getName(universe)} 
                     </h3>
                     <div className="flex flex-col">

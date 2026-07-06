@@ -27,6 +27,7 @@ export default function ModalChangeAddress({
   const [editData, setEditData] = useState(null);
   const [deleteAddressId, setDeleteAddressId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchAddresses = useCallback(async () => {
     setIsLoading(true);
@@ -132,15 +133,30 @@ export default function ModalChangeAddress({
     setIsAddNewOpen(true);
   };
 
-  const handleAddressSelect = async (addressId) => {
-    if (addressId === selectedId) return;
-
+  const handleAddressSelect = (addressId) => {
     setSelectedId(addressId);
+  };
+
+  const handleSaveSelection = async () => {
+    const selectedAddress = addresses.find((a) => a.id === selectedId);
+    if (!selectedAddress) {
+      toast.error("Please select an address");
+      return;
+    }
+
+    setIsSaving(true);
 
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
     const token = loginData?.data?.token;
     const body = {
-     
+      address_id: selectedAddress.id,
+      main_type: activeTab === "invoice" ? "invoice" : "delivery",
+      type: selectedAddress.type,
+      full_address: selectedAddress.full_address,
+      country: selectedAddress.country,
+      city: selectedAddress.city,
+      postal_code: selectedAddress.postal_code,
+      is_default: 1,
       ...(!token && { device_id: getDeviceId() }),
     };
     const headers = token
@@ -148,35 +164,22 @@ export default function ModalChangeAddress({
       : {};
 
     try {
-      const res = await axios.post(`${BASE_URL}/user/address/default`, body, {
+      const res = await axios.post(`${BASE_URL}/user/address/edit`, body, {
         headers,
       });
 
       if (res.data.status === false) {
-        toast.error(res.data.action || "Failed to set default address");
+        toast.error(res.data.action || "Failed to save address");
       } else {
-        setAddresses((prev) =>
-          prev.map((addr) => ({
-            ...addr,
-            is_default: addr.id === addressId ? 1 : 0,
-          }))
-        );
+        onSelect(selectedAddress);
+        onClose();
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to set default address");
+      toast.error("Failed to save address");
+    } finally {
+      setIsSaving(false);
     }
-  };
-
-  const handleSaveSelection = () => {
-    const selectedAddress = addresses.find((a) => a.id === selectedId);
-    if (!selectedAddress) {
-      toast.error("Please select an address");
-      return;
-    }
-
-    onSelect(selectedAddress);
-    onClose();
   };
 
   return (
@@ -482,30 +485,32 @@ export default function ModalChangeAddress({
           </button>
           <button
             onClick={handleSaveSelection}
-            disabled={addresses.length === 0}
+            disabled={addresses.length === 0 || isSaving}
             style={{
               flex: 1,
               padding: "12px",
               border: "none",
-              backgroundColor: addresses.length === 0 ? "#9CA3AF" : "#111",
+              backgroundColor:
+                addresses.length === 0 || isSaving ? "#9CA3AF" : "#111",
               color: "#fff",
               fontSize: "14px",
               fontWeight: 600,
-              cursor: addresses.length === 0 ? "not-allowed" : "pointer",
+              cursor:
+                addresses.length === 0 || isSaving ? "not-allowed" : "pointer",
               transition: "background 0.2s",
             }}
             onMouseEnter={(e) => {
-              if (addresses.length > 0) {
+              if (addresses.length > 0 && !isSaving) {
                 e.currentTarget.style.backgroundColor = "#333";
               }
             }}
             onMouseLeave={(e) => {
-              if (addresses.length > 0) {
+              if (addresses.length > 0 && !isSaving) {
                 e.currentTarget.style.backgroundColor = "#111";
               }
             }}
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
