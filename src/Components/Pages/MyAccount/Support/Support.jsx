@@ -7,10 +7,12 @@ import { IoChevronDown } from 'react-icons/io5';
 import { LuFilter } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import SupportChat from './SupportChat';
+import CreateTicketModal from './CreateTicketModal';
+import { BASE_URL } from '../../../API/API';
 
 // Support Ticket Shimmer Component
 const SupportTicketShimmer = () => (
-  <div className="bg-white rounded-xl border border-gray-200 p-4">
+  <div className="bg-white border border-gray-200 p-4">
     {/* Header with Ticket ID and Status */}
     <div className="flex items-center justify-between mb-3">
       <div
@@ -62,7 +64,7 @@ const SupportTicketShimmer = () => (
     />
 
     {/* Description Box */}
-    <div className="bg-gray-100 p-3 rounded-xl w-full mb-3">
+    <div className="bg-gray-100 p-3  w-full mb-3">
       <div
         style={{
           width: '100px',
@@ -112,51 +114,93 @@ const SupportTicketShimmer = () => (
 );
 
 export default function Support({ onOpenChat }) {
-  const { t } = useTranslation("myaccount");
+  const { t, i18n } = useTranslation("myaccount");
+  const isFrench = i18n.language === 'fr';
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterOption, setFilterOption] = useState(t('support.filters.allTickets'));
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [filterKey, setFilterKey] = useState('all');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [loadingState, setLoadingState] = useState('shimmer');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [tickets, setTickets] = useState([]);
 
-  // Ticket data with translations
-  const [tickets, setTickets] = useState([
-    {
-      id: '#3021',
-      orderRef: '#56891',
-      createdOn: 'July 10, 2025 - 09:18 PM',
-      statusKey: 'support.status.active',
-      titleKey: 'support.tickets.ticket1.title',
-      descriptionKey: 'support.tickets.ticket1.description',
-      statusColor: 'bg-green-100 text-green-700'
-    },
-    {
-      id: '#3023',
-      orderRef: '#56912',
-      createdOn: 'July 13, 2025 - 11:05 AM',
-      statusKey: 'support.status.inProgress',
-      titleKey: 'support.tickets.ticket2.title',
-      descriptionKey: 'support.tickets.ticket2.description',
-      statusColor: 'bg-yellow-50 text-yellow-500'
-    },
-    {
-      id: '#3024',
-      orderRef: '#56925',
-      createdOn: 'July 14, 2025 - 04:30 PM',
-      statusKey: 'support.status.closed',
-      titleKey: 'support.tickets.ticket3.title',
-      descriptionKey: 'support.tickets.ticket3.description',
-      statusColor: 'bg-gray-200 text-gray-700'
+  const getToken = () => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      return splashData?.user?.token || localStorage.getItem('token') || '';
+    } catch {
+      return '';
     }
-  ]);
+  };
+
+  const getStatusInfo = (status) => {
+    const s = String(status).toLowerCase();
+    if (s.includes('close')) {
+      return { key: 'support.status.closed', color: 'bg-gray-200 text-gray-700' };
+    }
+    if (s.includes('progress') || s.includes('pending')) {
+      return { key: 'support.status.inProgress', color: 'bg-yellow-50 text-yellow-500' };
+    }
+    return { key: 'support.status.active', color: 'bg-green-100 text-green-700' };
+  };
+
+  const fetchTickets = async (filter = 'all', keyword = '') => {
+    setLoadingState('shimmer');
+    try {
+      let url = `${BASE_URL}/app/ticket`;
+      if (filter === 'active') url += '/0';
+      else if (filter === 'closed') url += '/1';
+
+      const params = new URLSearchParams();
+      if (keyword) params.set('keyword', keyword);
+      const qs = params.toString();
+      if (qs) url += `?${qs}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      const raw = data?.data;
+      const list = Array.isArray(raw) ? raw : (raw?.data || []);
+
+      setTickets(list.map((ticket) => {
+        const statusInfo = getStatusInfo(ticket.status);
+        return {
+          id: `#${ticket.id}`,
+          orderRef: ticket.order_id ? `#${ticket.order_id}` : '',
+          createdOn: ticket.created_at ? formatCreatedOn(new Date(ticket.created_at)) : '',
+          statusKey: statusInfo.key,
+          statusColor: statusInfo.color,
+          title: isFrench ? (ticket.category?.french_name || ticket.category?.name || '') : (ticket.category?.name || ''),
+          description: ticket.message || '',
+        };
+      }));
+    } catch (err) {
+      console.error('Fetch tickets error:', err);
+      setTickets([]);
+    } finally {
+      setLoadingState('loaded');
+    }
+  };
 
   const filterOptions = [
-    t('support.filters.allTickets'),
-    t('support.filters.active'),
-    t('support.filters.inProgress'),
-    t('support.filters.closed')
+    { key: 'all', label: t('support.filters.allTickets') },
+    { key: 'active', label: t('support.filters.active') },
+    { key: 'closed', label: t('support.filters.closed') }
   ];
+  const filterOption = filterOptions.find((f) => f.key === filterKey)?.label || filterOptions[0].label;
+
+  const formatCreatedOn = (date) => {
+    const datePart = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const timePart = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${datePart} - ${timePart}`;
+  };
+
+  const handleCreateTicket = () => {
+    fetchTickets(filterKey, debouncedQuery);
+  };
 
   const handleOpenChat = (ticket) => {
     setSelectedTicket(ticket);
@@ -168,18 +212,19 @@ export default function Support({ onOpenChat }) {
     setSelectedTicket(null);
   };
 
-  // You can later add real filtering + search logic here
-  const displayedTickets = tickets; // placeholder — add filtering later
-
-  const hasTickets = displayedTickets.length > 0;
+  const isLoading = loadingState === 'shimmer';
+  const hasTickets = isLoading || tickets.length > 0;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoadingState('loaded');
+    const handle = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
     }, 1000);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => {
+    fetchTickets(filterKey, debouncedQuery);
+  }, [filterKey, debouncedQuery]);
 
   return (
     <>
@@ -196,7 +241,7 @@ export default function Support({ onOpenChat }) {
 
       <div className="min-h-screen bg-gray-100">
         <div className=" sm:p-6 md:p-8 max-w-10xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="bg-white  shadow-sm p-6 md:p-8">
 
           {isChatOpen ? (
             <SupportChat ticket={selectedTicket} onClose={handleCloseChat} />
@@ -227,7 +272,7 @@ export default function Support({ onOpenChat }) {
                         placeholder={t('support.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 text-black pr-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                        className="w-full pl-12 text-black pr-4 py-3 bg-white border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
                       />
                     </div>
 
@@ -243,71 +288,81 @@ export default function Support({ onOpenChat }) {
 
                       <button
                         onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className="flex items-center cursor-pointer text-black gap-3 px-6 py-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors w-full sm:w-auto justify-between relative"
+                        className="flex items-center cursor-pointer text-black gap-3 px-6 py-3 bg-white border border-gray-200 hover:border-gray-300 transition-colors w-full sm:w-auto justify-between relative"
                       >
                         <span>{filterOption}</span>
                         <IoChevronDown size={18} className="text-gray-600" />
                       </button>
 
                       {showFilterDropdown && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200  shadow-lg z-50 overflow-hidden">
                           {filterOptions.map((option) => (
                             <button
-                              key={option}
+                              key={option.key}
                               onClick={() => {
-                                setFilterOption(option);
+                                setFilterKey(option.key);
                                 setShowFilterDropdown(false);
                               }}
                               className="w-full text-left text-black cursor-pointer px-4 py-2.5 hover:bg-black hover:text-white transition-colors"
                             >
-                              {option}
+                              {option.label}
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
 
-
+                    {/* Create New Ticket */}
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="flex items-center cursor-pointer justify-center gap-2 px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-medium w-full sm:w-auto"
+                    >
+                      {t('support.createTicket.button')}
+                    </button>
                   </div>
 
                   {/* Tickets Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {loadingState === 'shimmer' ? (
-                      Array.from({ length: displayedTickets.length }).map((_, index) => (
+                    {isLoading ? (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SupportTicketShimmer key={index} />
                       ))
                     ) : (
-                      displayedTickets.map((ticket) => (
+                      tickets.map((ticket) => (
                         <div
                           key={ticket.id}
-                          className="bg-white rounded-xl border border-gray-200 p-4 hover: transition-shadow"
+                          className="bg-white  border border-gray-200 p-4 hover: transition-shadow"
                         >
                           <div className="flex items-center justify-between mb-3">
                             <h3 className="font-semibold text-black">{t('support.ticketId')} {ticket.id}</h3>
                             <span
-                              className={`px-4 py-2 rounded-full text-xs font-medium ${ticket.statusColor}`}
+                              className={`px-4 py-2  text-xs font-medium ${ticket.statusColor}`}
                             >
                               {t(ticket.statusKey)}
                             </span>
                           </div>
 
-                          <p className="text-sm text-gray-600 mb-1">
-                            {t('support.orderReference')} {ticket.orderRef}
-                          </p>
+                          {ticket.orderRef && (
+                            <p className="text-sm text-gray-600 mb-1">
+                              {t('support.orderReference')} {ticket.orderRef}
+                            </p>
+                          )}
                           <p className="text-sm text-gray-600 mb-6">
                             {t('support.createdOn')} {ticket.createdOn}
                           </p>
 
-                            <div className='bg-gray-100 p-3 rounded-xl w-full mb-3 text black'>
-                          <h4 className="font-medium mb-2 text-black">{t(ticket.titleKey)}</h4>
+                            <div className='bg-gray-100 p-3  w-full mb-3 text black'>
+                          <h4 className="font-medium mb-2 text-black">
+                            {ticket.titleKey ? t(ticket.titleKey) : ticket.title}
+                          </h4>
                           <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
-                            {t(ticket.descriptionKey)}
+                            {ticket.descriptionKey ? t(ticket.descriptionKey) : ticket.description}
                           </p>
                           </div>
 
                           <button
                             onClick={() => handleOpenChat(ticket)}
-                            className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
+                            className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100  transition-colors text-sm font-medium"
                           >
                             <BsChatText size={18} />
                             {t('support.openSupportChat')}
@@ -337,13 +392,15 @@ export default function Support({ onOpenChat }) {
                   </p>
 
                   <button
+                    onClick={() => setIsCreateModalOpen(true)}
                     className="
                       bg-gray-900 text-white
-                      px-8 py-3.5 rounded-lg
+                      px-8 py-3.5
                       text-base font-medium
                       hover:bg-gray-800
                       transition-colors duration-200
                       shadow-sm
+                      cursor-pointer
                     "
                   >
                     {t('support.emptyState.createNewTicket')}
@@ -355,6 +412,12 @@ export default function Support({ onOpenChat }) {
         </div>
       </div>
     </div>
+
+    <CreateTicketModal
+      isOpen={isCreateModalOpen}
+      onClose={() => setIsCreateModalOpen(false)}
+      onCreate={handleCreateTicket}
+    />
     </>
   );
 }

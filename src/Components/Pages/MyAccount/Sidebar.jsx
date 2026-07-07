@@ -12,7 +12,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
   const { t } = useTranslation('sidebar');
 
   return (
-    <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10">
+    <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10 lg:h-full lg:flex-shrink-0">
       {/* Menu Items */}
       <nav className="flex-1">
         <ul className="flex overflow-x-auto lg:flex-col lg:overflow-visible px-4 py-6 lg:px-0 lg:py-6 space-x-2 lg:space-x-0 lg:space-y-5">
@@ -21,8 +21,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('dashboard')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'dashboard'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white  lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <LuLayoutDashboard className="w-4 h-4 flex-shrink-0" />
@@ -35,8 +35,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('orders')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'orders'
-                  ? 'border-b-2 border-[#1A1A1A] text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A] text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white  lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <TbNotes className="w-4 h-4 flex-shrink-0" />
@@ -49,8 +49,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('favorites')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'favorites'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:rounded-lg lg:text-white lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A]  lg:text-white lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <FaRegHeart className="w-4 h-4 flex-shrink-0" />
@@ -63,8 +63,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('loyalty')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'loyalty'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:rounded-lg lg:text-white lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A]  lg:text-white lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <RxRocket className="w-4 h-4 flex-shrink-0" />
@@ -77,8 +77,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('profile')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'profile'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:rounded-lg lg:text-white lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A]  lg:text-white lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <IoPersonOutline className="w-4 h-4 flex-shrink-0" />
@@ -91,8 +91,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('pet')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'pet'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:rounded-lg lg:text-white lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200'
               }`}
             >
                <img
@@ -111,8 +111,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('addresses')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'addresses'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:rounded-lg lg:text-white lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A]  lg:text-white lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <IoLocationOutline className="w-4 h-4 flex-shrink-0" />
@@ -125,8 +125,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
               onClick={() => onItemClick('settings')}
               className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
                 activeItem === 'settings'
-                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white  lg:border-b-0'
+                  : 'text-[#333333] hover:bg-gray-200 '
               }`}
             >
               <IoSettingsOutline className="w-4 h-4 flex-shrink-0" />
@@ -139,8 +139,8 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
     onClick={() => onItemClick('support')}
     className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md transition-colors duration-150 ${
       activeItem === 'support'
-        ? 'border-b-2 border-[#1A1A1A] text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:rounded-lg lg:border-b-0'
-        : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+        ? 'border-b-2 border-[#1A1A1A] text-[#1A1A1A] lg:bg-[#1A1A1A] lg:text-white lg:border-b-0'
+        : 'text-[#333333] hover:bg-gray-200 '
     }`}
   >
     <img
@@ -158,29 +158,29 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
           <li className="lg:hidden">
             <button
                onClick={onDelete}
-              className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg text-md transition-colors duration-150 ${
+              className={`w-full flex items-center gap-3 cursor-pointer px-3 py-2.5  text-md transition-colors duration-150 ${
                 activeItem === 'logout'
                   ? 'border-b-2 border-[#1A1A1A]  text-[#1A1A1A]'
-                  : 'text-[#333333] hover:bg-gray-200 rounded-lg'
+                  : 'text-[#333333] hover:bg-gray-200'
               }`}
             >
               <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
               <span className="whitespace-nowrap">{t('logout')}</span>
             </button>
           </li>
-        </ul> 
-      </nav>
 
-      {/* Logout - Only visible on large screens (outside nav) */}
-      <div className="hidden lg:block px-5 py-6 border-t border-gray-200">
-        <button 
-            onClick={onDelete}
-          className="w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg text-md text-[#333333] hover:bg-gray-200 transition-colors duration-150"
-        >
-          <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
-          <span>{t('logout')}</span>
-        </button>
-      </div>
+          {/* Logout - Only visible on large screens (same list, same spacing as other items) */}
+          <li className="hidden lg:block">
+            <button
+              onClick={onDelete}
+              className="w-full flex items-center gap-3 cursor-pointer px-3 py-2.5 text-md text-[#333333] hover:bg-gray-200 transition-colors duration-150"
+            >
+              <BsArrowBarLeft className="w-4 h-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">{t('logout')}</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 }

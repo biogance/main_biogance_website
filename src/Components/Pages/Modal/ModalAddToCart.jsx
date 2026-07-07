@@ -295,7 +295,7 @@ function UpsellCard({ item, onAdd, isAdding }) {
       : null);
 
   const price = parseFloat(String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", ".")) || 0;
-  const name = item.name || "";
+  const name = (lang === "fr" && item.french_name) ? item.french_name : (item.name || "");
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "4px 12px 4px 4px", backgroundColor: "#fff" }}>
       <div style={{
@@ -1168,7 +1168,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
             {cartItems.map((item) => {
               const p = item.product || {};
               const firstImage = p.images?.[0]?.media ? `${MEDIA_URL}${p.images[0].media}` : "";
-              const name = p.name || "";
+              const name = (lang === "fr" && p.french_name) ? p.french_name : (p.name || "");
               const sizeOptions = p.size_name ? [p.size_name] : [];
               const isSingleSize = sizeOptions.length <= 1;
               const unitPrice = parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;

@@ -7,7 +7,7 @@ import { OrderDetailsModal } from "./ModalBox/OrderDetailsModal";
 
 // Shimmer Card Component for StatCard
 const StatCardShimmer = () => (
-  <div className="bg-white rounded-xl p-6">
+  <div className="bg-white  p-6">
     {/* Value Shimmer */}
     <div
       style={{
@@ -48,7 +48,7 @@ const StatCardShimmer = () => (
 
 // Shimmer Card Component for Order Items
 const OrderItemShimmer = () => (
-  <div className="flex items-center justify-between py-4 border border-gray-200 p-4 rounded-xl">
+  <div className="flex items-center justify-between py-4 border border-gray-200 p-4 ">
     <div className="flex-1">
       {/* Order ID Shimmer */}
       <div
@@ -128,7 +128,7 @@ const OrderItemShimmer = () => (
 
 function StatCard({ title, value, subtitle }) {
   return (
-    <div className="bg-white rounded-xl p-6">
+    <div className="bg-white  p-6">
       <div className="text-4xl font-semibold text-gray-900 mb-2">{value}</div>
       <div className="text-sm font-semibold text-gray-900 mb-1">{title}</div>
       <div className="text-xs text-gray-500">{subtitle}</div>
@@ -241,7 +241,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Orders Section */}
-        <div className="bg-white rounded-xl p-4 md:p-8">
+        <div className="bg-white  p-4 md:p-8">
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <h2 className="text-lg md:text-xl font-semibold text-gray-900">{t('dashboard.recentOrders')}</h2>
             {hasOrders && (
@@ -264,13 +264,13 @@ export default function Dashboard() {
                 recentOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between py-4 border border-gray-200 p-4 rounded-xl"
+                    className="flex items-center justify-between py-4 border border-gray-200 p-4 "
                   >
                     <div className="flex-1">
                       <div className="font-bold text-black mb-1">#{order.id}</div>
                       <div className="text-sm text-gray-500 mb-2">{t('dashboard.placedOn')} {order.date}</div>
                      <span
-                        className={`inline-block px-3 py-1 text-xs font-medium rounded ${
+                        className={`inline-block px-3 py-1 text-xs font-medium ${
                           order.statusColor === 'green'
                             ? 'bg-green-50 text-green-700'
                             : order.statusColor === 'orange'
@@ -291,7 +291,7 @@ export default function Dashboard() {
                       <div className="text-sm text-gray-500 mb-3">
                         {order.items} {order.items === 1 ? t('dashboard.item') : t('dashbaord.items')}
                       </div>
-                      <button className="bg-gray-900 text-white cursor-pointer px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"   onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}  >
+                      <button className="bg-gray-900 text-white cursor-pointer px-4 py-2  text-sm font-medium hover:bg-gray-800 transition-colors"   onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}  >
                         {t('dashboard.moreDetails')}
                       </button>
                     </div>
@@ -311,7 +311,7 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500 mb-4 md:mb-6 text-center max-w-md">
                 {t('dashbaord.emptyCart.description')}
               </p>
-              <button className="bg-gray-900 text-white cursor-pointer px-4 md:px-6 py-2 md:py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+              <button className="bg-gray-900 text-white cursor-pointer px-4 md:px-6 py-2 md:py-3  text-sm font-medium hover:bg-gray-800 transition-colors">
                 {t('dashboard.emptyCart.browseProducts')}
               </button>
             </div>

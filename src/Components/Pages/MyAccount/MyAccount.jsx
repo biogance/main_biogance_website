@@ -1,11 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from "../Navbar"
 import Footer from "../Footer"
-import Link from "next/link"
 import { Sidebar } from "./Sidebar"
 import Dashboard from './Dashboard';
 import MyOrder from './MyOrder';
@@ -20,11 +18,8 @@ import LogoutModal from './ModalBox/LogoutModal';
 
 
 export default function MyAccount() {
-    const { t } = useTranslation("myaccount");
     const searchParams = useSearchParams();
     const router = useRouter();
-    
-
 
     // Valid tabs ki list
     const validTabs = ['dashboard', 'orders', 'favorites', 'loyalty', 'profile', 'pet', 'addresses', 'settings', 'support'];
@@ -40,6 +35,19 @@ export default function MyAccount() {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null);
 
+    const [isHeaderTouchingNav, setIsHeaderTouchingNav] = useState(false);
+
+    useEffect(() => {
+        // Content sits flush against the navbar (no hero/gap), so as soon as
+        // the page scrolls the content is being pulled up under the navbar.
+        const handleScroll = () => {
+            setIsHeaderTouchingNav(window.scrollY > 0);
+        };
+        handleScroll();
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // URL change hone par update karo (optional, agar browser back/forward use karo)
     useEffect(() => {
         const tab = searchParams.get('tab');
@@ -50,7 +58,7 @@ export default function MyAccount() {
 
     const handleSetActiveContent = (content) => {
         setActiveContent(content);
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams);   
         params.set('tab', content);
         router.replace(`?${params.toString()}`, { scroll: false });
     };
@@ -92,41 +100,17 @@ export default function MyAccount() {
 
     return (
         <>
-            <div className="fixed top-0 left-0 right-0 z-50">
-                <Navbar />
-            </div>
-            {/* Hero Section */}
-            <div className="relative h-[500px] w-full">
-                <div className="absolute inset-0">
-                    <img
-                        src="account.svg"
-                        alt="Background"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
+            <Navbar isVideoVisible={!isHeaderTouchingNav} />
 
-                <div className="relative h-full flex flex-col items-center justify-center text-white px-4">
-                    <h1 className="text-white mb-3 sm:mb-4 tracking-wide text-center text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold leading-tight">
-                        {t('common.myAccount')}
-                    </h1>
-
-                    <div className="flex items-center gap-2 text-white text-xs sm:text-sm">
-                        <Link href="/" className="hover:underline">{t('common.home')}</Link>
-                        <span>/</span>
-                        <a className="underline">{t('common.myAccount')}</a>
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-gray-100 flex flex-col lg:flex-row">
+            <div className="bg-gray-100 flex flex-col lg:flex-row pt-[104px] lg:h-screen lg:overflow-hidden">
                 <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
-                <div className="flex-1">
+                <div className="flex-1 lg:h-full lg:overflow-y-auto">
                     {renderContent()}
                 </div>
             </div>
 
             <Footer />
-            <LogoutModal 
+            <LogoutModal
                 isOpen={isLogoutModalOpen}
                 onClose={() => setIsLogoutModalOpen(false)}
             />

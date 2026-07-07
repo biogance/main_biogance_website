@@ -758,14 +758,14 @@ export default function Navbar({
                   href="/my-account"
                   className="flex items-center h-full text-sm font-[500] text-[#1C1C1C]"
                 >
-                  <span>PROFILE</span>
+                  <span>{t("profile")}</span>
                 </Link>
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
                   className="flex items-center h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
                 >
-                  <span>LOGIN</span>
+                  <span>{t("login")}</span>
                 </button>
               )}
 

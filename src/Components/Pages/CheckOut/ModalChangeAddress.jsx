@@ -5,6 +5,7 @@ import { IoAddOutline } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import ModalAddNewAddress from "./ModalAddNewAddress";
@@ -19,6 +20,7 @@ export default function ModalChangeAddress({
   onSelect,
   activeTab,
 }) {
+  const { t } = useTranslation("checkout");
   const [addresses, setAddresses] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,11 +114,11 @@ export default function ModalChangeAddress({
         setDeleteAddressId(null);
         fetchAddresses();
       } else {
-        toast.error(res.data.action || "Failed to delete address");
+        toast.error(res.data.action || t("errorFailedToDeleteAddress"));
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete address");
+      toast.error(t("errorFailedToDeleteAddress"));
     } finally {
       setIsDeleting(false);
     }
@@ -140,7 +142,7 @@ export default function ModalChangeAddress({
   const handleSaveSelection = async () => {
     const selectedAddress = addresses.find((a) => a.id === selectedId);
     if (!selectedAddress) {
-      toast.error("Please select an address");
+      toast.error(t("errorPleaseSelectAddress"));
       return;
     }
 
@@ -169,14 +171,14 @@ export default function ModalChangeAddress({
       });
 
       if (res.data.status === false) {
-        toast.error(res.data.action || "Failed to save address");
+        toast.error(res.data.action || t("errorFailedToSaveAddress"));
       } else {
         onSelect(selectedAddress);
         onClose();
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save address");
+      toast.error(t("errorFailedToSaveAddress"));
     } finally {
       setIsSaving(false);
     }
@@ -222,7 +224,7 @@ export default function ModalChangeAddress({
           }}
         >
           <span style={{ fontSize: "20px", fontWeight: 700, color: "#111" }}>
-            Select {activeTab === "invoice" ? "Billing" : "Delivery"} Address
+            {activeTab === "invoice" ? t("selectBillingAddress") : t("selectDeliveryAddress")}
           </span>
           <button
             onClick={handleAddNewClick}
@@ -248,7 +250,7 @@ export default function ModalChangeAddress({
             }
           >
             <IoAddOutline size={20} />
-            Add new Address
+            {t("addNewAddress")}
           </button>
         </div>
 
@@ -256,8 +258,7 @@ export default function ModalChangeAddress({
         <div
           style={{ padding: "0 24px 16px", fontSize: "13px", color: "#6B7280" }}
         >
-          Choose where you{"'"}d like us to{" "}
-          {activeTab === "invoice" ? "bill" : "deliver"} your order.
+          {activeTab === "invoice" ? t("chooseWhereToBill") : t("chooseWhereToDeliver")}
         </div>
 
         {/* Address Cards List */}
@@ -297,7 +298,7 @@ export default function ModalChangeAddress({
         color: "#6B7280" 
       }}
     >
-      No addresses saved. Please add a new address.
+      {t("noAddressesSaved")}
     </div>
           ) : (
             addresses.map((address) => {
@@ -374,7 +375,13 @@ export default function ModalChangeAddress({
                           textTransform: "capitalize",
                         }}
                       >
-                        {address.type}
+                        {address.type?.toLowerCase() === "home"
+                          ? t("addressTypeHome")
+                          : address.type?.toLowerCase() === "office"
+                            ? t("addressTypeOffice")
+                            : address.type?.toLowerCase() === "other"
+                              ? t("addressTypeOther")
+                              : address.type}
                       </span>
                     </div>
                     <div
@@ -481,7 +488,7 @@ export default function ModalChangeAddress({
               (e.currentTarget.style.backgroundColor = "#fff")
             }
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             onClick={handleSaveSelection}
@@ -510,7 +517,7 @@ export default function ModalChangeAddress({
               }
             }}
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t("saving") : t("save")}
           </button>
         </div>
       </div>
@@ -563,7 +570,7 @@ export default function ModalChangeAddress({
                 margin: "0 0 12px",
               }}
             >
-              Delete Address
+              {t("deleteAddressTitle")}
             </h3>
             <p
               style={{
@@ -573,7 +580,7 @@ export default function ModalChangeAddress({
                 lineHeight: 1.5,
               }}
             >
-              Are you sure you want to delete this address?
+              {t("deleteAddressConfirm")}
             </p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
@@ -601,7 +608,7 @@ export default function ModalChangeAddress({
                     e.currentTarget.style.backgroundColor = "#fff";
                 }}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 onClick={handleConfirmDelete}
@@ -627,7 +634,7 @@ export default function ModalChangeAddress({
                     e.currentTarget.style.backgroundColor = "#111";
                 }}
               >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
+                {isDeleting ? t("deleting") : t("yesDelete")}
               </button>
             </div>
           </div>

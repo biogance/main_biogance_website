@@ -19,7 +19,7 @@ const CustomToggle = ({ checked, onChange }) => {
         onChange={onChange}
       />
       <div
-        className={`relative h-6 px-1 py-1 w-12 rounded-full transition-all duration-500 ease-out ${
+        className={`relative h-6 px-1 py-1 w-12  transition-all duration-500 ease-out ${
           checked ? 'bg-black' : 'bg-gray-300'
         }`}
         style={{ 
@@ -215,13 +215,13 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+        <div className="bg-white  shadow-sm p-6 md:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-black">{t('settings.title')}</h1>
           <p className="text-gray-600">{t('settings.subtitle')}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-4 mb-6 border border-gray-200">
+        <div className="bg-white p-4 mb-6 border border-gray-200">
           <div className="flex items-start gap-3 mb-6">
             <MdLockOutline className="text-gray-700 mt-3" size={20} />
             <div>
@@ -239,7 +239,7 @@ export default function Settings() {
                   placeholder={t('settings.updatePassword.currentPasswordPlaceholder')}
                   value={passwords.current}
                   onChange={(e) => handlePasswordChange('current', e.target.value)}
-                  className={`w-full px-4 text-black py-3 bg-gray-100 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
+                  className={`w-full px-4 text-black py-3 bg-gray-100  border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
                     errors.current ? 'border-red-500 bg-red-50' : 'border-transparent'
                   }`}
                 />
@@ -264,7 +264,7 @@ export default function Settings() {
                   placeholder={t('settings.updatePassword.newPasswordPlaceholder')}
                   value={passwords.new}
                   onChange={(e) => handlePasswordChange('new', e.target.value)}
-                  className={`w-full text-black px-4 py-3 bg-gray-100 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
+                  className={`w-full text-black px-4 py-3 bg-gray-100  border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
                     errors.new ? 'border-red-500 bg-red-50' : 'border-transparent'
                   }`}
                 />
@@ -289,7 +289,7 @@ export default function Settings() {
                   placeholder={t('settings.updatePassword.confirmNewPasswordPlaceholder')}
                   value={passwords.confirm}
                   onChange={(e) => handlePasswordChange('confirm', e.target.value)}
-                  className={`w-full text-black px-4 py-3 bg-gray-100 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
+                  className={`w-full text-black px-4 py-3 bg-gray-100  border-2 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 pr-10 ${
                     errors.confirm ? 'border-red-500 bg-red-50' : 'border-transparent'
                   }`}
                 />
@@ -307,7 +307,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-[#E9F9F0] rounded-xl p-4 mb-4">
+          <div className="bg-[#E9F9F0]  p-4 mb-4">
             <p className="text-sm font-medium text-black mb-2">{t('settings.updatePassword.note')}</p>
             <ul className="text-sm space-y-1 ml-4">
               <li className="list-disc text-black">{t('settings.updatePassword.note1')}</li>
@@ -316,20 +316,20 @@ export default function Settings() {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end gap-3">
-            <button className="px-6 py-3 cursor-pointer text-black border border-gray-300 rounded-lg hover:border-gray-400 transition-colors">
+            <button className="px-6 py-3 cursor-pointer text-black border border-gray-300 hover:border-gray-400 transition-colors">
               {t('settings.updatePassword.cancel')}
             </button>
             <button
               onClick={handleUpdatePassword}
               disabled={isUpdating}
-              className="px-6 py-3 cursor-pointer bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-6 py-3 cursor-pointer bg-black text-white  hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isUpdating ? 'Updating...' : t('settings.updatePassword.updatePassword')}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 mb-6 border border-gray-200">
+        <div className="bg-white  p-4 mb-6 border border-gray-200">
           <div className="flex items-start gap-3 mb-6">
             <FiMail className="text-gray-700 mt-3 w-16 h-16 sm:w-5 sm:h-5" />
 
@@ -343,7 +343,7 @@ export default function Settings() {
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between  p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.orderUpdates.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.orderUpdates.description')}</p>
@@ -354,7 +354,7 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.loyaltyProgram.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.loyaltyProgram.description')}</p>
@@ -367,7 +367,7 @@ export default function Settings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between  p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.refundStatus.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.refundStatus.description')}</p>
@@ -378,7 +378,7 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between  p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.promotions.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.promotions.description')}</p>
@@ -391,7 +391,7 @@ export default function Settings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.productRecommendations.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.productRecommendations.description')}</p>
@@ -402,7 +402,7 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="flex items-start justify-between rounded-xl p-3 mb-6 border border-gray-200">
+              <div className="flex items-start justify-between p-3 mb-6 border border-gray-200">
                 <div>
                   <h3 className="font-medium text-black mb-1">{t('settings.emailNotifications.tipsArticles.title')}</h3>
                   <p className="text-sm text-gray-600">{t('settings.emailNotifications.tipsArticles.description')}</p>
@@ -416,13 +416,13 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-3 rounded-xl mb-6 border border-gray-200">
+        <div className="bg-white  p-3  mb-6 border border-gray-200">
           <div className="flex items-start gap-1 mb-4">
             <FiTrash2 className="text-gray-700 mt-1" size={20} />
             <div className="flex-1">
               <h2 className="font-medium text-black mb-4">{t('settings.deleteAccount.title')}</h2>
 
-             <div className="bg-red-50 rounded-xl p-3">
+             <div className="bg-red-50 p-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <p className="text-sm font-semibold text-red-600">
                     <span className="font-semibold">{t('settings.deleteAccount.warning')}</span>
@@ -431,7 +431,7 @@ export default function Settings() {
                   </p>
                   <button
                     onClick={handleDeleteAccount}
-                    className="w-full sm:w-auto sm:flex-shrink-0 px-6 py-3 cursor-pointer bg-[#D00416] text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                    className="w-full sm:w-auto sm:flex-shrink-0 px-6 py-3 cursor-pointer bg-[#D00416] text-white  hover:bg-red-700 transition-colors whitespace-nowrap"
                   >
                     {t('settings.deleteAccount.deleteButton')}
                   </button>

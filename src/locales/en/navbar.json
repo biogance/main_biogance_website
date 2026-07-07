@@ -2,5 +2,8 @@
   "ourProducts": "PRODUCTS",
   "ourLaboratory": "LABORATORY",
   "ourExpertAdvice": "ADVICES",
-  "language" :"LANGUAGE"
+  "language" :"LANGUAGE",
+  "login": "LOGIN",
+  "profile": "PROFILE",
+  "cart": "CART"
 }
