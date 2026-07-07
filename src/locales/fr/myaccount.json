@@ -440,7 +440,7 @@
   },
 
   "support": {
-    "title": "Support et Remboursement",
+    "title": "Aide et assistance",
     "subtitle": "Gérez vos annulations, demandes de remboursement et tickets de support en un seul endroit.",
     "searchPlaceholder": "Rechercher des tickets...",
     "filters": {
@@ -493,6 +493,31 @@
         "title": "Problème de qualité",
         "description": "L'après-shampoing que j'ai reçu a une texture inhabituelle et ne semble pas correct. J'aimerais demander un remplacement ou un remboursement."
       }
+    },
+    "createTicket": {
+      "button": "Créer un nouveau ticket",
+      "title": "Créer un nouveau ticket",
+      "subtitle": "Décrivez votre problème et nous vous répondrons dans les plus brefs délais.",
+      "category": "Catégorie",
+      "categoryPlaceholder": "Sélectionner une catégorie",
+      "categories": {
+        "orderIssue": "Problème de commande",
+        "refundRequest": "Demande de remboursement",
+        "qualityIssue": "Problème de qualité",
+        "shippingDelay": "Retard de livraison",
+        "other": "Autre"
+      },
+      "orderId": "Numéro de commande",
+      "orderIdPlaceholder": "ex. #56891",
+      "message": "Message",
+      "messagePlaceholder": "Décrivez votre problème en détail...",
+      "cancel": "Annuler",
+      "submit": "Créer le ticket",
+      "submitting": "Création...",
+      "errorCategoryRequired": "Veuillez sélectionner une catégorie",
+      "errorOrderIdRequired": "Veuillez saisir votre numéro de commande",
+      "errorMessageRequired": "Veuillez décrire votre problème",
+      "errorGeneric": "Une erreur s'est produite. Veuillez réessayer."
     }
   }
 }

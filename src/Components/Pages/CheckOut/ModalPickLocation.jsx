@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { IoClose, IoLocationOutline, IoSearch } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
@@ -65,6 +66,7 @@ const PICKUP_LOCATIONS = [
 ];
 
 export default function ModalPickLocation({ isOpen, onClose, onSelectLocation }) {
+  const { t } = useTranslation("checkout");
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredId, setHoveredId] = useState(null);
 
@@ -140,7 +142,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
           }}
         >
           <span style={{ fontSize: "16px", fontWeight: 700, color: "#111" }}>
-            Select Pickup Location
+            {t("selectPickupLocationTitle")}
           </span>
           <button
             onClick={onClose}
@@ -182,7 +184,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
             <IoSearch size={18} color="#999" style={{ marginRight: "10px", flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Search pickup points or cities..."
+              placeholder={t("searchPickupPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -272,10 +274,10 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
                         }}
-                        title={`Lat: ${loc.lat}, Lng: ${loc.lng} • ${loc.address}`}
+                        title={`${t("latLng", { lat: loc.lat, lng: loc.lng })} • ${loc.address}`}
                       >
                         <span style={{ fontWeight: 500, color: "#444" }}>
-                          Lat: {loc.lat}, Lng: {loc.lng}
+                          {t("latLng", { lat: loc.lat, lng: loc.lng })}
                         </span>
                         {" • "}
                         {loc.address}
@@ -294,7 +296,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
                 fontSize: "14px",
               }}
             >
-              No locations found for "{searchQuery}"
+              {t("noLocationsFound", { query: searchQuery })}
             </div>
           )}
         </div>

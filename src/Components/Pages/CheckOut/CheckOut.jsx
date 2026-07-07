@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { parseCountry, defaultCountries } from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -458,11 +458,12 @@ function FieldBox({
 
 // Floating-label-inside-box country select
 function CountryFieldBox({
-  label = "Country *",
+  label,
   iso2,
   onChange,
   disabled = false,
 }) {
+  const { t } = useTranslation("checkout");
   const [focused, setFocused] = useState(false);
   return (
     <div
@@ -485,7 +486,7 @@ function CountryFieldBox({
           fontFamily: FONT,
         }}
       >
-        {label}
+        {label || t("country")}
       </label>
       <select
         value={iso2}
@@ -506,7 +507,7 @@ function CountryFieldBox({
           fontFamily: FONT,
         }}
       >
-        <option value="">Select country</option>
+        <option value="">{t("selectCountry")}</option>
         {defaultCountries.map((c) => {
           const p = parseCountry(c);
           return (
@@ -542,6 +543,7 @@ function PhoneFieldBox({
   onChange,
   disabled = false,
 }) {
+  const { t } = useTranslation("checkout");
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const floatedPhone = focused || (value !== undefined && value !== "");
@@ -635,7 +637,7 @@ function PhoneFieldBox({
             lineHeight: 1,
           }}
         >
-          Phone Number
+          {t("phoneNumber")}
         </label>
         <input
           type="tel"
@@ -1024,6 +1026,7 @@ function Section({ title, action, children }) {
 }
 
 function ExpressPaymentBar({ selectedMethod, onSelect, paypalExpressNode, isSafari }) {
+  const { t } = useTranslation("checkout");
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
   const baseBtn = {
@@ -1075,7 +1078,7 @@ function ExpressPaymentBar({ selectedMethod, onSelect, paypalExpressNode, isSafa
           fontFamily: FONT,
         }}
       >
-        Express Checkout
+        {t("expressCheckout")}
       </h2>
       <div style={{ display: "flex", gap: "10px" }}>
         <div
@@ -1280,11 +1283,15 @@ function CartScrollArea({ children, maxHeight }) {
    CHANGE 2: CartItemRow — now uses new CustomDropdown + API calls
    ──────────────────────────────────────────────────────────────────────── */
 function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
+  const { t } = useTranslation("checkout");
   const p = item.product || {};
   const firstImage = p.images?.[0]?.media
     ? `${MEDIA_URL}${p.images[0].media}`
     : "https://placehold.co/64x80/f3f3f3/999?text=IMG";
-  const name = p.name || item.name || "";
+  const name =
+    lang === "fr" && (p.french_name || item.french_name)
+      ? p.french_name || item.french_name
+      : p.name || item.name || "";
   const sizeName = p.size_name || item.size_name || null;
   const sizeOptions = sizeName ? [sizeName] : [];
   const isSingleSize = true;
@@ -1388,7 +1395,7 @@ function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
               display: "flex",
               alignItems: "center",
             }}
-            title="Remove item"
+            title={t("removeItem")}
           >
             <RiDeleteBinLine className="hover:text-gray-600" />
           </button>
@@ -1428,6 +1435,7 @@ function OrderSummary({
   paypalButton,
   expressCheckoutButton,
 }) {
+  const { t } = useTranslation("checkout");
   const router = useRouter();
   const [currentShipping, setCurrentShipping] = useState(0);
 
@@ -1440,9 +1448,9 @@ function OrderSummary({
   }, []);
 
   const shippingSlides = [
-    { title: "Shipping From France", note: "All orders shipped from Paris" },
-    { title: "Free Shipping", note: "Free on all orders over €39" },
-    { title: "Complimentary Gift", note: "Free gift pouch with every order" },
+    { title: t("shippingTitle1"), note: t("shippingNote1") },
+    { title: t("shippingTitle2"), note: t("shippingNote2") },
+    { title: t("shippingTitle3"), note: t("shippingNote3") },
   ];
 
   // Auth check
@@ -1634,7 +1642,7 @@ function OrderSummary({
 
   const handleGuestApply = () => {
     if (!guestVoucherInput.trim()) return;
-    setGuestVoucherError("Please login first if you want to add a voucher.");
+    setGuestVoucherError(t("loginFirstVoucher"));
   };
 
   // ─── Logged-in Voucher Handlers — exact copy from ModalAddToCart ─────────
@@ -1683,7 +1691,7 @@ function OrderSummary({
       });
       const data = await res.json();
       if (data.status === false) {
-        setLoggedVoucherError(getErrorMsg(data) || "Invalid voucher.");
+        setLoggedVoucherError(getErrorMsg(data) || t("errorInvalidVoucher"));
         setLoggedVoucherLoading(false);
         return;
       }
@@ -1713,7 +1721,7 @@ function OrderSummary({
         fetchVouchers();
       }
     } catch {
-      setLoggedVoucherError("Something went wrong.");
+      setLoggedVoucherError(t("errorSomethingWentWrong"));
     }
     setLoggedVoucherLoading(false);
   };
@@ -1749,14 +1757,14 @@ function OrderSummary({
       });
       const data = await res.json();
       if (data.status === false) {
-        setPromoError(getErrorMsg(data) || "Invalid promo code.");
+        setPromoError(getErrorMsg(data) || t("errorInvalidPromoCode"));
         setPromoLoading(false);
         return;
       }
       setAppliedPromo({ code, off: data.data?.off || 0 });
       setPromoInput("");
     } catch {
-      setPromoError("Something went wrong.");
+      setPromoError(t("errorSomethingWentWrong"));
     }
     setPromoLoading(false);
   };
@@ -1822,7 +1830,7 @@ function OrderSummary({
       >
         <input
           type="text"
-          placeholder="Enter Voucher code"
+          placeholder={t("enterVoucherCode")}
           value={guestVoucherInput}
           onChange={handleGuestInputChange}
           onKeyDown={(e) => {
@@ -1870,7 +1878,7 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          Apply
+          {t("apply")}
         </button>
       </div>
 
@@ -1922,7 +1930,7 @@ function OrderSummary({
                 textDecoration: guestLoginHovered ? "underline" : "none",
               }}
             >
-              Login
+              {t("login")}
             </span>
           </span>
         </div>
@@ -1936,9 +1944,7 @@ function OrderSummary({
           lineHeight: 1.5,
         }}
       >
-        You don't have any vouchers or reward points yet. Points are earned
-        automatically with every purchase, redeem them for discounts on your
-        next order.{" "}
+        {t("noVouchersYet")}{" "}
         <span
           onMouseEnter={() => setLearnMoreHovered(true)}
           onMouseLeave={() => setLearnMoreHovered(false)}
@@ -1949,7 +1955,7 @@ function OrderSummary({
             textDecoration: learnMoreHovered ? "underline" : "none",
           }}
         >
-          Learn More
+          {t("learnMore")}
         </span>
       </p>
     </div>
@@ -1972,7 +1978,7 @@ function OrderSummary({
         >
           <input
             type="text"
-            placeholder="Enter Voucher code"
+            placeholder={t("enterVoucherCode")}
             value={loggedVoucherInput}
             disabled={loggedVoucherApplied}
             onChange={(e) => {
@@ -1985,7 +1991,7 @@ function OrderSummary({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleLoggedApply();
             }}
-            title={loggedVoucherApplied ? "You already added voucher code" : ""}
+            title={loggedVoucherApplied ? t("alreadyAddedVoucherCode") : ""}
             style={{
               flex: 1,
               border: "none",
@@ -2051,7 +2057,7 @@ function OrderSummary({
             {loggedVoucherLoading ? (
               <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} />
             ) : (
-              "Apply"
+              t("apply")
             )}
           </button>
         </div>
@@ -2067,7 +2073,7 @@ function OrderSummary({
                 lineHeight: 1.5,
               }}
             >
-              Voucher code added. Click Apply to redeem it.
+              {t("voucherCodeAdded")}
             </p>
           )}
 
@@ -2200,7 +2206,7 @@ function OrderSummary({
                   whiteSpace: "nowrap",
                 }}
               >
-                Create More Voucher
+                {t("createMoreVoucher")}
               </button>
             )}
           </div>
@@ -2227,8 +2233,11 @@ function OrderSummary({
                   lineHeight: 1.5,
                 }}
               >
-                You have <strong>{voucherPoints} points</strong> — redeem for a{" "}
-                <strong>${Math.floor(voucherPoints / 10)} voucher</strong>
+                <Trans
+                  i18nKey="checkout:pointsRedeemMessage"
+                  values={{ points: voucherPoints, amount: Math.floor(voucherPoints / 10) }}
+                  components={{ b1: <strong />, b2: <strong /> }}
+                />
               </p>
               <button
                 onMouseEnter={() => setRedeemHovered(true)}
@@ -2250,7 +2259,7 @@ function OrderSummary({
                   fontFamily: FONT,
                 }}
               >
-                Redeem
+                {t("redeem")}
               </button>
             </div>
           )}
@@ -2268,9 +2277,7 @@ function OrderSummary({
                 lineHeight: 1.5,
               }}
             >
-              You don't have any vouchers or reward points yet. Points are
-              earned automatically with every purchase, redeem them for
-              discounts on your next order.{" "}
+              {t("noVouchersYet")}{" "}
               <span
                 onMouseEnter={() => setLearnMoreHovered(true)}
                 onMouseLeave={() => setLearnMoreHovered(false)}
@@ -2280,7 +2287,7 @@ function OrderSummary({
                   textDecoration: learnMoreHovered ? "underline" : "none",
                 }}
               >
-                Learn More
+                {t("learnMore")}
               </span>
             </p>
           )}
@@ -2316,7 +2323,7 @@ function OrderSummary({
               />
               <button
                 onClick={handleLoggedRemoveVoucher}
-                title="Remove voucher code"
+                title={t("removeVoucherCode")}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -2427,10 +2434,10 @@ function OrderSummary({
                   flexShrink: 0,
                 }}
               />
-              Processing…
+              {t("processing")}
             </>
           ) : (
-            `Order — ${formatPrice(total, lang)} €`
+            t("order", { price: formatPrice(total, lang) })
           )}
         </button>
       )}
@@ -2514,7 +2521,7 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          <span style={{ fontWeight: 500 }}>Gift card / promo code</span>
+          <span style={{ fontWeight: 500 }}>{t("giftCardPromoCode")}</span>
           <span
             style={{
               fontSize: "18px",
@@ -2547,14 +2554,14 @@ function OrderSummary({
               <div style={{ position: "relative", flex: 1 }}>
                 <input
                   type="text"
-                  placeholder="Enter your code"
+                  placeholder={t("enterYourCode")}
                   value={appliedPromo ? appliedPromo.code : promoInput}
                   disabled={!!appliedPromo}
                   onChange={handlePromoInputChange}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handlePromoApply();
                   }}
-                  title={appliedPromo ? "You already added promo code" : ""}
+                  title={appliedPromo ? t("alreadyAddedPromoCode") : ""}
                   style={{
                     width: "100%",
                     border: "none",
@@ -2608,7 +2615,7 @@ function OrderSummary({
                 {promoLoading ? (
                   <ButtonSpinner color={promoHovered ? "#fff" : "#111"} />
                 ) : (
-                  "Apply"
+                  t("apply")
                 )}
               </button>
             </div>
@@ -2681,7 +2688,7 @@ function OrderSummary({
                   />
                   <button
                     onClick={handleRemovePromo}
-                    title="Remove promo code"
+                    title={t("removePromoCode")}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -2720,7 +2727,7 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          <span style={{ fontWeight: 500 }}>Apply Voucher</span>
+          <span style={{ fontWeight: 500 }}>{t("applyVoucher")}</span>
           <span
             style={{
               fontSize: "18px",
@@ -2764,7 +2771,7 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          <span>Products ({totalUnits})</span>
+          <span>{t("products", { count: totalUnits })}</span>
           <span>{formatPrice(subtotal, lang)} €</span>
         </div>
 
@@ -2779,7 +2786,7 @@ function OrderSummary({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ color: "#555" }}>Promo Code</span>
+              <span style={{ color: "#555" }}>{t("promoCode")}</span>
               <div
                 style={{
                   display: "inline-flex",
@@ -2819,7 +2826,7 @@ function OrderSummary({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ color: "#555" }}>Voucher</span>
+              <span style={{ color: "#555" }}>{t("voucher")}</span>
               <div
                 style={{
                   display: "inline-flex",
@@ -2856,9 +2863,9 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          <span>Delivery costs</span>
+          <span>{t("deliveryCosts")}</span>
           {subtotal >= freeShippingThreshold ? (
-            <span>Free</span>
+            <span>{t("free")}</span>
           ) : (
             <span>{formatPrice(5.9, lang)} €</span>
           )}
@@ -2895,7 +2902,7 @@ function OrderSummary({
                 }}
               >
                 <span>
-                  {deliveryMethod === "home" ? "Home Delivery" : "Pickup Point"}
+                  {deliveryMethod === "home" ? t("homeDelivery") : t("pickupPoint")}
                 </span>
                 <span
                   style={{
@@ -2962,14 +2969,14 @@ function OrderSummary({
                         transition: "background 0.15s, color 0.15s",
                       }}
                     >
-                      {opt === "home" ? "Home Delivery" : "Pickup Point"}
+                      {opt === "home" ? t("homeDelivery") : t("pickupPoint")}
                     </div>
                   ))}
                 </div>
               )}
             </div>
             {isFreeDelivery ? (
-              <span>Free</span>
+              <span>{t("free")}</span>
             ) : (
               <span>{formatPrice(deliveryCost, lang)} €</span>
             )}
@@ -3014,7 +3021,7 @@ function OrderSummary({
                       padding: 0,
                     }}
                   >
-                    Change
+                    {t("change")}
                   </button>
                 </div>
                 <div
@@ -3033,7 +3040,7 @@ function OrderSummary({
                 <div
                   style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}
                 >
-                  Lat: {selectedLocation.lat}, Lng: {selectedLocation.lng}
+                  {t("latLng", { lat: selectedLocation.lat, lng: selectedLocation.lng })}
                 </div>
               </div>
             ) : (
@@ -3051,7 +3058,7 @@ function OrderSummary({
                     fontSize: "11px",
                   }}
                 >
-                  No pickup location selected
+                  {t("noPickupLocation")}
                 </span>
                 <button
                   onClick={() => setIsLocationModalOpen(true)}
@@ -3066,7 +3073,7 @@ function OrderSummary({
                     borderRadius: "2px",
                   }}
                 >
-                  Select Location
+                  {t("selectLocation")}
                 </button>
               </div>
             )}
@@ -3084,7 +3091,7 @@ function OrderSummary({
             fontFamily: FONT,
           }}
         >
-          <span>Total</span>
+          <span>{t("total")}</span>
           <span>{formatPrice(total, lang)} €</span>
         </div>
       </div>
@@ -3156,7 +3163,7 @@ export default function CheckoutWithStripe(props) {
 
 function Checkout({ cartItems = [] }) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("checkout");
   const lang = i18n.language;
   const paymentSectionRef = useRef(null);
 
@@ -3414,7 +3421,7 @@ function Checkout({ cartItems = [] }) {
   const handleExpressSelect = (method) => {
     if (method === "applepay" && !applePayReady && !isSafari && !isIOS) {
       const openInSafari = window.confirm(
-        "Apple Pay requires Safari.\n\nClick OK to open this page in Safari where Apple Pay is available."
+        t("applePayRequiresSafariConfirm")
       );
       if (openInSafari) {
         window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
@@ -3443,7 +3450,7 @@ function Checkout({ cartItems = [] }) {
       body: JSON.stringify({ amount: toCleanAmount(summaryState.total), envi: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
     });
     const data = await res.json();
-    if (!res.ok || !data?.data?.order_id) throw new Error(getErrorMsg(data) || "Could not create PayPal order");
+    if (!res.ok || !data?.data?.order_id) throw new Error(getErrorMsg(data) || t("errorCouldNotCreatePaypalOrder"));
     return data.data.order_id;
   };
 
@@ -3573,7 +3580,7 @@ function Checkout({ cartItems = [] }) {
       });
       const captureData = await captureRes.json();
       if (!captureRes.ok || !captureData?.status)
-        throw new Error(getErrorMsg(captureData) || "Payment capture failed");
+        throw new Error(getErrorMsg(captureData) || t("errorPaymentCaptureFailed"));
 
       // Step 2: Place order
       const dialCode = (() => {
@@ -3639,7 +3646,7 @@ function Checkout({ cartItems = [] }) {
         }),
       });
       const placeData = await placeRes.json();
-      if (!placeRes.ok) throw new Error(getErrorMsg(placeData) || "Failed to place order");
+      if (!placeRes.ok) throw new Error(getErrorMsg(placeData) || t("errorOrderPlacementFailed"));
 
       try {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
@@ -3649,8 +3656,8 @@ function Checkout({ cartItems = [] }) {
 
     } catch (err) {
       console.error(err);
-      setPaymentError(err.message || "PayPal payment failed. Please try again.");
-      toast.error(err.message || "PayPal payment failed.");
+      setPaymentError(err.message || t("errorPaypalPaymentFailedTryAgain"));
+      toast.error(err.message || t("errorPaypalPaymentFailed"));
       setIsSubmitting(false);
     }
   };
@@ -3661,19 +3668,19 @@ function Checkout({ cartItems = [] }) {
     // opens its own payment sheet directly on click, so this only surfaces
     // as an error after the user has already gone through Face ID/Touch ID —
     // Stripe doesn't provide a way to block the sheet from opening beforehand.
-    if (!deliveryCountryIso2) { setFormError("Please select a country for the delivery address."); return; }
-    if (!street.trim()) { setFormError("Please enter the full address for delivery."); return; }
-    if (!postcode.trim()) { setFormError("Please enter the postcode for the delivery address."); return; }
-    if (!city.trim()) { setFormError("Please enter the town/city for the delivery address."); return; }
+    if (!deliveryCountryIso2) { setFormError(t("errorSelectCountryDelivery")); return; }
+    if (!street.trim()) { setFormError(t("errorFullAddressDelivery")); return; }
+    if (!postcode.trim()) { setFormError(t("errorPostcodeDelivery")); return; }
+    if (!city.trim()) { setFormError(t("errorCityDelivery")); return; }
     if (useDifferentBilling) {
-      if (!billingCountryIso2) { setFormError("Please select a country for the invoice address."); return; }
-      if (!billingStreet.trim()) { setFormError("Please enter the full address for the invoice address."); return; }
-      if (!billingPostcode.trim()) { setFormError("Please enter the postcode for the invoice address."); return; }
-      if (!billingCity.trim()) { setFormError("Please enter the town/city for the invoice address."); return; }
+      if (!billingCountryIso2) { setFormError(t("errorSelectCountryInvoice")); return; }
+      if (!billingStreet.trim()) { setFormError(t("errorFullAddressInvoice")); return; }
+      if (!billingPostcode.trim()) { setFormError(t("errorPostcodeInvoice")); return; }
+      if (!billingCity.trim()) { setFormError(t("errorCityInvoice")); return; }
     }
 
     if (!stripe || !elements) {
-      setPaymentError("Payment not initialized. Please refresh.");
+      setPaymentError(t("errorPaymentNotInitialized"));
       return;
     }
 
@@ -3684,7 +3691,7 @@ function Checkout({ cartItems = [] }) {
     try {
       const { error: submitError } = await elements.submit();
       if (submitError) {
-        setPaymentError(submitError.message || "Payment details incomplete.");
+        setPaymentError(submitError.message || t("errorPaymentDetailsIncomplete"));
         setIsSubmitting(false);
         return;
       }
@@ -3737,7 +3744,7 @@ function Checkout({ cartItems = [] }) {
       const intentData = await intentRes.json();
 
       if (!intentData.status || !intentData.data?.client_secret) {
-        setPaymentError(getErrorMsg(intentData) || "Payment setup failed. Please try again.");
+        setPaymentError(getErrorMsg(intentData) || t("errorPaymentSetupFailed"));
         setIsSubmitting(false);
         return;
       }
@@ -3755,7 +3762,7 @@ function Checkout({ cartItems = [] }) {
       });
 
       if (confirmError) {
-        setPaymentError(confirmError.message ?? "Payment failed.");
+        setPaymentError(confirmError.message ?? t("errorPaymentFailed"));
         setIsSubmitting(false);
         return;
       }
@@ -3827,8 +3834,8 @@ function Checkout({ cartItems = [] }) {
       setIsSubmitting(false);
 
       if (!orderData.status) {
-        setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
-        toast.error(getErrorMsg(orderData) || "Order placement failed.");
+        setPaymentError(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
+        toast.error(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
         return;
       }
 
@@ -3840,8 +3847,8 @@ function Checkout({ cartItems = [] }) {
 
     } catch (err) {
       setIsSubmitting(false);
-      setPaymentError(err.message || "Something went wrong.");
-      toast.error(err.message || "Apple Pay payment failed.");
+      setPaymentError(err.message || t("errorSomethingWentWrong"));
+      toast.error(err.message || t("errorApplePayPaymentFailed"));
     }
   };
 
@@ -3850,37 +3857,37 @@ function Checkout({ cartItems = [] }) {
 
     // Validate required delivery fields
     if (!deliveryCountryIso2) {
-      setFormError("Please select a country for the delivery address.");
+      setFormError(t("errorSelectCountryDelivery"));
       return;
     }
     if (!street.trim()) {
-      setFormError("Please enter the full address for delivery.");
+      setFormError(t("errorFullAddressDelivery"));
       return;
     }
     if (!postcode.trim()) {
-      setFormError("Please enter the postcode for the delivery address.");
+      setFormError(t("errorPostcodeDelivery"));
       return;
     }
     if (!city.trim()) {
-      setFormError("Please enter the town/city for the delivery address.");
+      setFormError(t("errorCityDelivery"));
       return;
     }
     // Validate required billing fields if different billing is used
     if (useDifferentBilling) {
       if (!billingCountryIso2) {
-        setFormError("Please select a country for the invoice address.");
+        setFormError(t("errorSelectCountryInvoice"));
         return;
       }
       if (!billingStreet.trim()) {
-        setFormError("Please enter the full address for the invoice address.");
+        setFormError(t("errorFullAddressInvoice"));
         return;
       }
       if (!billingPostcode.trim()) {
-        setFormError("Please enter the postcode for the invoice address.");
+        setFormError(t("errorPostcodeInvoice"));
         return;
       }
       if (!billingCity.trim()) {
-        setFormError("Please enter the town/city for the invoice address.");
+        setFormError(t("errorCityInvoice"));
         return;
       }
     }
@@ -3962,14 +3969,14 @@ function Checkout({ cartItems = [] }) {
       const intentData = await intentRes.json();
       if (!intentData.status) {
         setPaymentError(
-          getErrorMsg(intentData) || "Failed to create payment intent.",
+          getErrorMsg(intentData) || t("errorFailedToCreatePaymentIntent"),
         );
         setIsSubmitting(false);
         return;
       }
       const clientSecret = intentData.data?.client_secret;
       if (!clientSecret) {
-        setPaymentError("Invalid payment intent response.");
+        setPaymentError(t("errorInvalidPaymentIntent"));
         setIsSubmitting(false);
         return;
       }
@@ -3985,7 +3992,7 @@ function Checkout({ cartItems = [] }) {
         return;
       }
       if (paymentIntent.status !== "succeeded") {
-        setPaymentError("Payment was not completed. Please try again.");
+        setPaymentError(t("errorPaymentNotCompleted"));
         setIsSubmitting(false);
         return;
       }
@@ -4066,9 +4073,9 @@ function Checkout({ cartItems = [] }) {
       });
       const orderData = await orderRes.json();
       if (!orderData.status) {
-        setPaymentError(getErrorMsg(orderData) || "Order placement failed.");
+        setPaymentError(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
         setIsSubmitting(false);
-        toast.error(getErrorMsg(orderData) || "Order placement failed.");
+        toast.error(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
         return;
       }
 
@@ -4089,7 +4096,7 @@ function Checkout({ cartItems = [] }) {
       router.push("/track-order");
     } catch (err) {
       console.error(err);
-      setPaymentError("An unexpected error occurred.");
+      setPaymentError(t("errorUnexpected"));
       setIsSubmitting(false);
     }
   };
@@ -4238,8 +4245,8 @@ function Checkout({ cartItems = [] }) {
       style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 40 }}
       createOrder={handlePayPalCreateOrder}
       onApprove={handlePayPalApprove}
-      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
-      onCancel={() => setPaymentError("Payment cancelled.")}
+      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError(t("errorPaymentFailedTryAgain")); }}
+      onCancel={() => setPaymentError(t("errorPaymentCancelled"))}
       forceReRender={[summaryState.total]}
     />
   );
@@ -4253,8 +4260,8 @@ function Checkout({ cartItems = [] }) {
       style={{ layout: "horizontal", color: "gold", shape: "rect", label: "paypal", height: 45, tagline: false }}
       createOrder={handlePayPalCreateOrder}
       onApprove={handlePayPalApprove}
-      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError("Payment failed. Please try again."); }}
-      onCancel={() => setPaymentError("Payment cancelled.")}
+      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError(t("errorPaymentFailedTryAgain")); }}
+      onCancel={() => setPaymentError(t("errorPaymentCancelled"))}
       forceReRender={[summaryState.total]}
     />
   );
@@ -4433,7 +4440,7 @@ function Checkout({ cartItems = [] }) {
               color: "#333",
             }}
           >
-            <span>Have an account?</span>
+            <span>{t("haveAccount")}</span>
             <button
               onClick={() => setIsLoginModalOpen(true)}
               style={{
@@ -4447,7 +4454,7 @@ function Checkout({ cartItems = [] }) {
                 fontFamily: FONT,
               }}
             >
-              Sign in
+              {t("signIn")}
             </button>
           </div>
         ) : (
@@ -4493,7 +4500,7 @@ function Checkout({ cartItems = [] }) {
             />
 
             {/* Contact details */}
-            <Section title="Contact Details">
+            <Section title={t("contactDetails")}>
               <div
                 style={{
                   display: "flex",
@@ -4502,14 +4509,14 @@ function Checkout({ cartItems = [] }) {
                 }}
               >
                 <FieldBox
-                  label="Email *"
+                  label={t("email")}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <div style={{ display: "flex", gap: "12px" }}>
                   <FieldBox
-                    label="Full Name *"
+                    label={t("fullName")}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     style={{ flex: 1 }}
@@ -4526,7 +4533,7 @@ function Checkout({ cartItems = [] }) {
 
             {/* Delivery */}
             <Section
-              title="Delivery"
+              title={t("delivery")}
               action={
                 hasDeliveryData && (
                   <button
@@ -4543,7 +4550,7 @@ function Checkout({ cartItems = [] }) {
                       fontFamily: FONT,
                     }}
                   >
-                    Change Address
+                    {t("changeAddress")}
                   </button>
                 )
               }
@@ -4560,25 +4567,25 @@ function Checkout({ cartItems = [] }) {
                   onChange={(iso2) => setDeliveryCountryIso2(iso2)}
                 />
                 <FieldBox
-                  label="Full address *"
+                  label={t("fullAddress")}
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                 />
                 <div style={{ display: "flex", gap: "12px" }}>
                   <FieldBox
-                    label="Postcode *"
+                    label={t("postcode")}
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
                     style={{ flex: 1 }}
                   />
                   <FieldBox
-                    label="State"
+                    label={t("state")}
                     value={region}
                     onChange={(e) => setRegion(e.target.value)}
                     style={{ flex: 1 }}
                   />
                   <FieldBox
-                    label="Town/city *"
+                    label={t("townCity")}
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     style={{ flex: 1 }}
@@ -4587,7 +4594,7 @@ function Checkout({ cartItems = [] }) {
                 <Checkbox
                   checked={useDifferentBilling}
                   onChange={setUseDifferentBilling}
-                  label="Use a different billing address?"
+                  label={t("useDifferentBilling")}
                 />
               </div>
             </Section>
@@ -4595,7 +4602,7 @@ function Checkout({ cartItems = [] }) {
             {/* Billing address — only visible when checkbox checked */}
             {useDifferentBilling && (
               <Section
-                title="Billing Address"
+                title={t("billingAddress")}
                 action={
                   hasBillingData && (
                     <button
@@ -4612,7 +4619,7 @@ function Checkout({ cartItems = [] }) {
                         fontFamily: FONT,
                       }}
                     >
-                      Change Address
+                      {t("changeAddress")}
                     </button>
                   )
                 }
@@ -4629,25 +4636,25 @@ function Checkout({ cartItems = [] }) {
                     onChange={setBillingCountryIso2}
                   />
                   <FieldBox
-                    label="Full address *"
+                    label={t("fullAddress")}
                     value={billingStreet}
                     onChange={(e) => setBillingStreet(e.target.value)}
                   />
                   <div style={{ display: "flex", gap: "12px" }}>
                     <FieldBox
-                      label="Postcode *"
+                      label={t("postcode")}
                       value={billingPostcode}
                       onChange={(e) => setBillingPostcode(e.target.value)}
                       style={{ flex: 1 }}
                     />
                     <FieldBox
-                      label="State"
+                      label={t("state")}
                       value={billingRegion}
                       onChange={(e) => setBillingRegion(e.target.value)}
                       style={{ flex: 1 }}
                     />
                     <FieldBox
-                      label="Town/city *"
+                      label={t("townCity")}
                       value={billingCity}
                       onChange={(e) => setBillingCity(e.target.value)}
                       style={{ flex: 1 }}
@@ -4659,7 +4666,7 @@ function Checkout({ cartItems = [] }) {
 
             {/* Payment */}
             <div ref={paymentSectionRef}>
-              <Section title="Payment">
+              <Section title={t("payment")}>
                 <div
                   style={{
                     border: "1px solid #ddd",
@@ -4670,7 +4677,7 @@ function Checkout({ cartItems = [] }) {
                   <PaymentMethodRow
                     active={radioActiveMethod === "card"}
                     onSelect={() => { setPaymentMethod("card"); setRadioActiveMethod("card"); }}
-                    label="Credit card"
+                    label={t("creditCard")}
                     right={<CardBrandIcons />}
                   >
                     <div
@@ -4698,7 +4705,7 @@ function Checkout({ cartItems = [] }) {
                             fontFamily: FONT,
                           }}
                         >
-                          Card number
+                          {t("cardNumber")}
                         </label>
                         <CardNumberElement options={stripeElementStyle} />
                       </div>
@@ -4721,7 +4728,7 @@ function Checkout({ cartItems = [] }) {
                               fontFamily: FONT,
                             }}
                           >
-                            Expiration date
+                            {t("expirationDate")}
                           </label>
                           <CardExpiryElement options={stripeElementStyle} />
                         </div>
@@ -4743,7 +4750,7 @@ function Checkout({ cartItems = [] }) {
                               fontFamily: FONT,
                             }}
                           >
-                            CVC/CVV
+                            {t("cvc")}
                           </label>
                           <CardCvcElement options={stripeElementStyle} />
                         </div>
@@ -4767,7 +4774,7 @@ function Checkout({ cartItems = [] }) {
                     <PaymentMethodRow
                       active={radioActiveMethod === "googlepay"}
                       onSelect={() => { setPaymentMethod("googlepay"); setRadioActiveMethod("googlepay"); }}
-                      label="Google Pay"
+                      label={t("googlePay")}
                       right={<GooglePayBadge />}
                     />
                   )}
@@ -4777,7 +4784,7 @@ function Checkout({ cartItems = [] }) {
                     <PaymentMethodRow
                       active={radioActiveMethod === "applepay"}
                       onSelect={() => { setPaymentMethod("applepay"); setRadioActiveMethod("applepay"); }}
-                      label="Apple Pay"
+                      label={t("applePay")}
                       right={<ApplePayBadge />}
                     />
                   )}
@@ -4797,7 +4804,7 @@ function Checkout({ cartItems = [] }) {
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <ApplePayBadge />
                         <span style={{ fontSize: "13px", color: "#555", fontFamily: FONT }}>
-                          Apple Pay — requires Safari
+                          {t("applePaySafariOnly")}
                         </span>
                       </div>
                     </div>
@@ -4806,7 +4813,7 @@ function Checkout({ cartItems = [] }) {
                     last
                     active={radioActiveMethod === "paypal"}
                     onSelect={() => { setPaymentMethod("paypal"); setRadioActiveMethod("paypal"); }}
-                    label="PayPal"
+                    label={t("paypal")}
                     right={<PayPalBadge />}
                   >
                     {radioActiveMethod === "paypal" && paymentError && (
@@ -4869,10 +4876,10 @@ function Checkout({ cartItems = [] }) {
                           flexShrink: 0,
                         }}
                       />
-                      Processing…
+                      {t("processing")}
                     </>
                   ) : (
-                    `Order — ${formatPrice(summaryState.total, lang)} €`
+                    t("order", { price: formatPrice(summaryState.total, lang) })
                   )}
                 </button>
               )}
@@ -4886,9 +4893,7 @@ function Checkout({ cartItems = [] }) {
                   fontFamily: FONT,
                 }}
               >
-                Your payment is processed securely through Stripe and your card
-                details are never stored on our servers. All transactions are
-                encrypted end-to-end.
+                {t("securePaymentNote")}
               </p>
               <p
                 style={{
@@ -4899,19 +4904,21 @@ function Checkout({ cartItems = [] }) {
                   fontFamily: FONT,
                 }}
               >
-                We respect your privacy. Your personal information is only used
-                to deliver your order, nothing more, nothing less. Read our{" "}
-                <a
-                  href="#"
-                  style={{
-                    color: "#111",
-                    fontWeight: 600,
-                    textDecoration: "underline",
+                <Trans
+                  i18nKey="checkout:privacyNote"
+                  components={{
+                    privacyLink: (
+                      <a
+                        href="#"
+                        style={{
+                          color: "#111",
+                          fontWeight: 600,
+                          textDecoration: "underline",
+                        }}
+                      />
+                    ),
                   }}
-                >
-                  privacy policy
-                </a>{" "}
-                to learn more.
+                />
               </p>
             </div>
           </div>

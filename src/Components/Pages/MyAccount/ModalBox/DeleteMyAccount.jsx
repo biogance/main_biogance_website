@@ -42,7 +42,7 @@ export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4">
       <div
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-white  shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 pt-8 pb-7 text-center">
@@ -59,7 +59,7 @@ export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
               type="button"
               onClick={handleConfirm}
               className="
-                px-8 py-3.5 rounded-xl font-medium text-white
+                px-8 py-3.5  font-medium text-white
                 bg-[#D00416] hover:bg-red-700 active:bg-red-800
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2
@@ -73,7 +73,7 @@ export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
               type="button"
               onClick={handleClose}
               className="
-                px-8 py-3.5 rounded-xl font-medium text-gray-800
+                px-8 py-3.5 font-medium text-gray-800
                 border border-gray-300 hover:bg-gray-100 active:bg-gray-300
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-gray-400/50

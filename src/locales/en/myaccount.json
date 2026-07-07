@@ -441,7 +441,7 @@
   },
 
  "support": {
-    "title": "Support & Refund",
+    "title": "Help & Support",
     "subtitle": "Manage your cancellations, refund requests, and support tickets all in one place.",
     "searchPlaceholder": "Search tickets...",
     "filters": {
@@ -494,6 +494,31 @@
         "title": "Quality Issue",
         "description": "The conditioner I received has an unusual texture and doesn't seem right. I'd like to request a replacement or refund."
       }
+    },
+    "createTicket": {
+      "button": "Create New Ticket",
+      "title": "Create New Ticket",
+      "subtitle": "Describe your issue and we'll get back to you as soon as possible.",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "categories": {
+        "orderIssue": "Order Issue",
+        "refundRequest": "Refund Request",
+        "qualityIssue": "Quality Issue",
+        "shippingDelay": "Shipping Delay",
+        "other": "Other"
+      },
+      "orderId": "Order ID",
+      "orderIdPlaceholder": "e.g. #56891",
+      "message": "Message",
+      "messagePlaceholder": "Describe your issue in detail...",
+      "cancel": "Cancel",
+      "submit": "Create Ticket",
+      "submitting": "Creating...",
+      "errorCategoryRequired": "Please select a category",
+      "errorOrderIdRequired": "Please enter your order ID",
+      "errorMessageRequired": "Please describe your issue",
+      "errorGeneric": "Something went wrong. Please try again."
     }
   }
 }

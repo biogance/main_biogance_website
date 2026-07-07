@@ -26,6 +26,7 @@ import productreviewsEN from "../src/locales/en/productreviews.json";
 import stickyaddtocartEN from "../src/locales/en/stickyaddtocart.json";
 import filterEN from "../src/locales/en/filter.json";
 import modaladdtocartEN from "../src/locales/en/modaladdtocart.json";
+import checkoutEN from "../src/locales/en/checkout.json";
 
 
 
@@ -54,6 +55,7 @@ import productreviewsFR from "../src/locales/fr/productreviews.json";
 import stickyaddtocartFR from "../src/locales/fr/stickyaddtocart.json";
 import filterFR from "../src/locales/fr/filter.json";
 import modaladdtocartFR from "../src/locales/fr/modaladdtocart.json";
+import checkoutFR from "../src/locales/fr/checkout.json";
 
 i18n
     .use(LanguageDetector)
@@ -85,6 +87,7 @@ i18n
                 stickyaddtocart: stickyaddtocartEN,
                 filter: filterEN,
                 modaladdtocart: modaladdtocartEN,
+                checkout: checkoutEN,
             },
             fr: {
                 common: commonFR,
@@ -111,10 +114,11 @@ i18n
                 stickyaddtocart: stickyaddtocartFR,
                 filter: filterFR,
                 modaladdtocart: modaladdtocartFR,
+                checkout: checkoutFR,
             },
         },
         fallbackLng: "en",
-        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart"],
+        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout"],
         defaultNS: "common",
         interpolation: {
             escapeValue: false,

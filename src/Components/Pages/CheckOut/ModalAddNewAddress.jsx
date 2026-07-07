@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
@@ -16,6 +17,7 @@ export default function ModalAddNewAddress({
   activeTab,
   editData,
 }) {
+  const { t } = useTranslation("checkout");
   const [formData, setFormData] = useState({
     addressType: "Home",
     streetAddress: "",
@@ -64,13 +66,13 @@ export default function ModalAddNewAddress({
   const validate = () => {
     const tempErrors = {};
     if (!formData.addressType)
-      tempErrors.addressType = "Address type is required";
+      tempErrors.addressType = t("errorAddressTypeRequired");
     if (!formData.streetAddress.trim())
-      tempErrors.streetAddress = "Street address is required";
-    if (!formData.country.trim()) tempErrors.country = "Country is required";
-    if (!formData.city.trim()) tempErrors.city = "City is required";
+      tempErrors.streetAddress = t("errorStreetAddressRequired");
+    if (!formData.country.trim()) tempErrors.country = t("errorCountryRequired");
+    if (!formData.city.trim()) tempErrors.city = t("errorCityRequired");
     if (!formData.postalCode.trim())
-      tempErrors.postalCode = "Postal code is required";
+      tempErrors.postalCode = t("errorPostalCodeRequired");
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -107,7 +109,7 @@ export default function ModalAddNewAddress({
         toast.error(
           res.data.action_message ||
             res.data.action ||
-            "Failed to save address",
+            t("errorFailedToSaveAddress"),
         );
       } else {
         onSave();
@@ -115,7 +117,7 @@ export default function ModalAddNewAddress({
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred while saving the address");
+      toast.error(t("errorSavingAddress"));
     } finally {
       setIsSaving(false);
     }
@@ -158,7 +160,7 @@ export default function ModalAddNewAddress({
           }}
         >
           <span style={{ fontSize: "18px", fontWeight: 700, color: "#111" }}>
-            {isEditMode ? "Edit Address" : "Add New Address"}
+            {isEditMode ? t("editAddress") : t("addNewAddress")}
           </span>
           <button
             onClick={onClose}
@@ -202,7 +204,7 @@ export default function ModalAddNewAddress({
                 marginBottom: "6px",
               }}
             >
-              Address type
+              {t("addressType")}
             </label>
             <div style={{ position: "relative" }}>
               <select
@@ -223,9 +225,9 @@ export default function ModalAddNewAddress({
                   color: "#111",
                 }}
               >
-                <option value="Home">Home</option>
-                <option value="Office">Office</option>
-                <option value="Other">Other</option>
+                <option value="Home">{t("addressTypeHome")}</option>
+                <option value="Office">{t("addressTypeOffice")}</option>
+                <option value="Other">{t("addressTypeOther")}</option>
               </select>
               <div
                 style={{
@@ -267,11 +269,11 @@ export default function ModalAddNewAddress({
                 marginBottom: "6px",
               }}
             >
-              Street address
+              {t("streetAddress")}
             </label>
             <input
               type="text"
-              placeholder="e.g. 2972 Westheimer Rd."
+              placeholder={t("streetAddressPlaceholder")}
               value={formData.streetAddress}
               onChange={(e) =>
                 setFormData({ ...formData, streetAddress: e.target.value })
@@ -312,11 +314,11 @@ export default function ModalAddNewAddress({
                   marginBottom: "6px",
                 }}
               >
-                Country
+                {t("countryLabel")}
               </label>
               <input
                 type="text"
-                placeholder="e.g. United State"
+                placeholder={t("countryPlaceholder")}
                 value={formData.country}
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
@@ -354,11 +356,11 @@ export default function ModalAddNewAddress({
                   marginBottom: "6px",
                 }}
               >
-                City
+                {t("cityLabel")}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Los Angeles"
+                placeholder={t("cityPlaceholder")}
                 value={formData.city}
                 onChange={(e) =>
                   setFormData({ ...formData, city: e.target.value })
@@ -399,11 +401,11 @@ export default function ModalAddNewAddress({
                 marginBottom: "6px",
               }}
             >
-              Postal Code
+              {t("postalCode")}
             </label>
             <input
               type="text"
-              placeholder="e.g. 7500"
+              placeholder={t("postalCodePlaceholder")}
               value={formData.postalCode}
               onChange={(e) =>
                 setFormData({ ...formData, postalCode: e.target.value })
@@ -457,7 +459,7 @@ export default function ModalAddNewAddress({
               if (!isSaving) e.currentTarget.style.backgroundColor = "#111";
             }}
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t("saving") : t("save")}
           </button>
         </div>
       </div>

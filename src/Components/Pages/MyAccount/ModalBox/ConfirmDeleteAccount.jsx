@@ -56,11 +56,11 @@ export default function ConfirmDeletionModal({ onClose }) {
         return (
             <>
             <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
+                <div className="bg-white  shadow-2xl max-w-lg w-full p-8 relative">
 
                     {/* Illustration Placeholder */}
                     <div className="flex justify-center mb-6">
-                        <div className="  rounded-lg flex items-center justify-center">
+                        <div className=" flex items-center justify-center">
                             <Image
                                 src={container}
                                 alt="Laboratory workers"
@@ -81,12 +81,12 @@ export default function ConfirmDeletionModal({ onClose }) {
                     <div className="space-y-3">
                         <button
                             onClick={() => setShowLogin(true)}
-                            className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer">
+                            className="w-full px-6 py-3.5 bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors cursor-pointer">
                             {t('confirmDeletion.deleted.rejoinButton')}
                         </button>
                         <button
                             onClick={() => router.push('/')}
-                            className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
+                            className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700  font-semibold hover:bg-gray-50 transition-colors cursor-pointer">
                             {t('confirmDeletion.deleted.browseGuestButton')}
                         </button>
                     </div>
@@ -99,7 +99,7 @@ export default function ConfirmDeletionModal({ onClose }) {
 
     return (
         <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
+            <div className="bg-white shadow-2xl max-w-lg w-full p-8 relative">
 
                 {/* Header */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">
@@ -119,7 +119,7 @@ export default function ConfirmDeletionModal({ onClose }) {
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
+                            className="w-full px-4 py-3 pr-12 border border-gray-300  text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
                             placeholder={t('confirmDeletion.passwordPlaceholder')}
                         />
                         <button
@@ -142,13 +142,13 @@ export default function ConfirmDeletionModal({ onClose }) {
                     <button
                         onClick={handleConfirmDelete}
                         disabled={isDeleting}
-                        className="w-full px-6 py-3.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full px-6 py-3.5 bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {isDeleting ? 'Deleting...' : t('confirmDeletion.confirmButton')}
                     </button>
                     <button 
                         onClick={onClose}
-                        className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+                        className="w-full px-6 py-3.5 border-2 border-gray-300 text-gray-700  font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                         {t('confirmDeletion.goBackButton')}
                     </button>

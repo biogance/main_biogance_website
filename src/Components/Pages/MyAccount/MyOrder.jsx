@@ -17,7 +17,7 @@ const OrderItemShimmer = () => (
   <div className="
     flex flex-col sm:flex-row sm:items-center
     justify-between gap-4 p-5
-    border border-gray-200 rounded-xl
+    border border-gray-200 
   ">
     {/* Left Section */}
     <div className="flex-1">
@@ -112,7 +112,7 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
         className={`
           flex items-center justify-between gap-2 
           min-w-[160px] px-4 py-2.5 
-          bg-white border border-gray-200 rounded-lg 
+          bg-white border border-gray-200  
           text-sm font-medium text-gray-700
           hover:border-gray-400 hover:shadow-sm
           focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1
@@ -141,7 +141,7 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
           <div className="
             absolute right-0 top-full mt-2 z-20
             min-w-[180px] max-h-[280px] overflow-auto
-            bg-white rounded-lg shadow-2xl border border-gray-200
+            bg-white  shadow-2xl border border-gray-200
             py-2 text-sm font-medium
             scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50
           ">
@@ -311,7 +311,7 @@ export default function MyOrder() {
       `}} />
 
       <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+        <div className="bg-white  shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">
             <h2 className="text-2xl font-bold text-gray-900">{t('orderHistory.title')}</h2>
@@ -330,7 +330,7 @@ export default function MyOrder() {
                 onChange={handleSearchChange}
                 className="
                   w-full pl-12 pr-5 py-3
-          plz add shimmers         border border-gray-200 rounded-xl
+          plz add shimmers         border border-gray-200 
                   text-sm text-black focus:outline-none focus:ring-2 focus:ring-gray-300
                   placeholder-gray-500 transition-all duration-200
                 "
@@ -370,7 +370,7 @@ export default function MyOrder() {
                   className="
                     flex flex-col sm:flex-row sm:items-center
                     justify-between gap-4 p-5
-                    border border-gray-200 rounded-xl
+                    border border-gray-200 
                     hover:border-gray-300 hover:shadow-sm
                     transition-all duration-200
                   "
@@ -382,7 +382,7 @@ export default function MyOrder() {
                     </div>
                     <span className={`
                       mt-2.5 inline-block px-3.5 py-1
-                      text-xs font-medium rounded-full
+                      text-xs font-medium 
                       ${getStatusColor(order.status)}
                     `}>
                       {order.status}
@@ -400,7 +400,7 @@ export default function MyOrder() {
                       mt-4 w-full sm:w-auto
                       bg-gray-900 hover:bg-gray-800 cursor-pointer
                       text-white text-sm font-medium
-                      px-6 py-2.5 rounded-lg
+                      px-6 py-2.5
                       transition-colors duration-200
                     ">
                       {t('orderHistory.moreDetails')}
@@ -417,14 +417,14 @@ export default function MyOrder() {
               <button
                 onClick={() => handlePageChange(1)}
                 disabled={pagination.current_page === 1}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <MdOutlineKeyboardDoubleArrowLeft size={22} />
               </button>
               <button
                 onClick={() => handlePageChange(pagination.current_page - 1)}
                 disabled={pagination.current_page === 1}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <MdOutlineKeyboardArrowLeft size={22} />
               </button>
@@ -443,7 +443,7 @@ export default function MyOrder() {
                     <button
                       key={p}
                       onClick={() => handlePageChange(p)}
-                      className={`w-9 h-9 flex items-center justify-center border rounded-lg font-medium transition-colors ${
+                      className={`w-9 h-9 flex items-center justify-center border  font-medium transition-colors ${
                         pagination.current_page === p
                           ? 'bg-gray-900 text-white border-gray-900'
                           : 'border-gray-200 text-gray-600 hover:bg-gray-100'
@@ -458,14 +458,14 @@ export default function MyOrder() {
               <button
                 onClick={() => handlePageChange(pagination.current_page + 1)}
                 disabled={pagination.current_page === pagination.last_page}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <MdOutlineKeyboardArrowRight size={22} />
               </button>
               <button
                 onClick={() => handlePageChange(pagination.last_page)}
                 disabled={pagination.current_page === pagination.last_page}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <MdOutlineKeyboardDoubleArrowRight size={22} />
               </button>

@@ -9,7 +9,7 @@ import { BASE_URL } from '../../API/API';
 
 // Shimmer Card Component for Voucher Items
 const VoucherShimmer = () => (
-  <div className="bg-gray-100 cursor-pointer rounded-xl p-4">
+  <div className="bg-gray-100 cursor-pointer p-4">
     {/* Header Section */}
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-2">
@@ -25,7 +25,7 @@ const VoucherShimmer = () => (
           }}
         />
         {/* Edit Icon Placeholder */}
-        <div className="w-4 h-4 bg-gray-200 rounded" />
+        <div className="w-4 h-4 bg-gray-200 " />
       </div>
       {/* Status Badge Shimmer */}
       <div
@@ -215,7 +215,7 @@ export default function Loyalty() {
          `}} />
          <div className="min-h-screen bg-gray-100">
           <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+            <div className="bg-white  shadow-sm p-6 md:p-8">
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8 flex justify-between items-start">
                 <div>
@@ -226,12 +226,12 @@ export default function Loyalty() {
                 </div>
                 {hasPoints && vouchers.length > 0 && (
                   <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <button className="bg-white text-black border border-gray-300 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                    <button className="bg-white text-black border border-gray-300 px-5 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
                       {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
-                      className="bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm cursor-pointer"
+                      className="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm cursor-pointer"
                     >
                       {t('loyalty.createVoucher')}
                     </button>
@@ -260,12 +260,12 @@ export default function Loyalty() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
-                      className="bg-white text-black border border-black px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
+                      className="bg-white text-black border border-black px-8 py-3.5  text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
                       {t('loyalty.pointsDetails')}
                     </button>
                     <button
-                      className="bg-gray-900 text-white px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
+                      className="bg-gray-900 text-white px-8 py-3.5  text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
                       {t('loyalty.noPoints.shopEarn')}
                     </button>
@@ -276,7 +276,7 @@ export default function Loyalty() {
               {/* Conditional Rendering: Has Points but No Vouchers */}
               {hasPoints && vouchers.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 md:py-20">
-                  <div className="bg-[#FFFBEC] w-full text-center p-4 border-dotted border-2 rounded-lg border-yellow-500 mb-8">
+                  <div className="bg-[#FFFBEC] w-full text-center p-4 border-dotted border-2 border-yellow-500 mb-8">
                     <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
                   </div>
 
@@ -301,13 +301,13 @@ export default function Loyalty() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
-                      className="bg-white text-black border border-black px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
+                      className="bg-white text-black border border-black px-8 py-3.5  text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
                       {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
-                      className="bg-gray-900 text-white px-8 py-3.5 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
+                      className="bg-gray-900 text-white px-8 py-3.5  text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
                       {t('loyalty.createVoucher')}
                     </button>
@@ -319,7 +319,7 @@ export default function Loyalty() {
               {hasPoints && vouchers.length > 0 && (
                 <>
                   {/* Points Banner */}
-                  <div className="bg-[#FFFBEC] w-full text-center border-2 border-dotted border-yellow-500 p-4 rounded-lg mb-8">
+                  <div className="bg-[#FFFBEC] w-full text-center border-2 border-dotted border-yellow-500 p-4  mb-8">
                     <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
                   </div>
 
@@ -336,13 +336,13 @@ export default function Loyalty() {
                       ) : (
                         // Show actual vouchers
                         vouchers.map((voucher, index) => (
-                          <div key={index} className="bg-gray-100 cursor-pointer rounded-xl p-4 hover:shadow-sm transition-shadow">
+                          <div key={index} className="bg-gray-100 cursor-pointer  p-4 hover:shadow-sm transition-shadow">
                             <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-lg text-gray-900">{voucher.code}</span>
                                 <FaRegEdit className="text-black" size={16} />
                               </div>
-                              <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.statusKey)} text-white text-sm rounded-md font-medium`}>
+                              <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.statusKey)} text-white text-sm  font-medium`}>
                                 {t(voucher.statusKey)}
                               </span>
                             </div>

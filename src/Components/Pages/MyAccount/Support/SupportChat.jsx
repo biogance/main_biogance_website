@@ -373,7 +373,7 @@ export default function SupportChat({ ticket, onClose }) {
                   <p className="text-sm text-gray-600">{t('support.ticketId')} {ticket?.id || '#3021'}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="text-sm cursor-pointer text-gray-700 border border-gray-300 rounded-lg p-2 hover:text-black transition-colors" >
+              <button onClick={onClose} className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors" >
                 {t('support.chat.closeChat')}
               </button>
             </div>
@@ -384,7 +384,7 @@ export default function SupportChat({ ticket, onClose }) {
             <div className="max-w-10xl mx-auto space-y-6">
               {/* Date Separator */}
               <div className="flex justify-center">
-                <span className="text-sm text-gray-500 bg-white px-4 py-1 rounded-full border border-gray-200">
+                <span className="text-sm text-gray-500 bg-white px-4 py-1 border border-gray-200">
                   {t('support.chat.dateSeparator')}
                 </span>
               </div>
@@ -397,7 +397,7 @@ export default function SupportChat({ ticket, onClose }) {
                     <div className="flex justify-end mb-2">
                       <div className="flex items-end  gap-3">
                         <div className="max-w-xl">
-                          <div className="text-black border border-gray-300 rounded-2xl rounded-br-sm px-5 py-4 inline-block">
+                          <div className="text-black border border-gray-300  rounded-br-sm px-5 py-4 inline-block">
                             <p className="text-sm leading-relaxed">
                               {msg.textKey ? t(msg.textKey) : msg.text}
                             </p>
@@ -405,7 +405,7 @@ export default function SupportChat({ ticket, onClose }) {
                         </div>
                         {msg.hasIcon && (
                           <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
                                   <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
                                 <span className="text-[10px] sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
@@ -420,7 +420,7 @@ export default function SupportChat({ ticket, onClose }) {
                     <div className="flex items-end gap-3 mb-2">
                       {msg.avatar && (
                         <div className="flex flex-col items-center gap-2">
-                          <div className="w-10 h-10 bg-gray-300 rounded-lg flex-shrink-0 overflow-hidden">
+                          <div className="w-10 h-10 bg-gray-300  flex-shrink-0 overflow-hidden">
                             <img
                               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
                               alt="User"
@@ -431,12 +431,12 @@ export default function SupportChat({ ticket, onClose }) {
                         </div>
                       )}
                       <div className="max-w-xl">
-                        <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-4 inline-block border border-gray-300">
+                        <div className="bg-white  rounded-bl-sm px-5 py-4 inline-block border border-gray-300">
                           {msg.image && (
                             <img 
                               src={msg.image} 
                               alt="Uploaded" 
-                              className="max-w-xs rounded-lg mb-2 cursor-pointer hover:opacity-90 transition-opacity"
+                              className="max-w-xs  mb-2 cursor-pointer hover:opacity-90 transition-opacity"
                               onClick={() => setPreviewImage(msg.image)}
                             />
                           )}
@@ -464,7 +464,7 @@ export default function SupportChat({ ticket, onClose }) {
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="py-3 px-3 bg-gray-100 cursor-pointer border border-gray-300 rounded-lg flex items-center justify-center text-gray-600 hover:text-black transition-colors"
+                className="py-3 px-3 bg-gray-100 cursor-pointer border border-gray-300  flex items-center justify-center text-gray-600 hover:text-black transition-colors"
               >
                 <FiPlus size={24} />
               </button>
@@ -476,7 +476,7 @@ export default function SupportChat({ ticket, onClose }) {
                       <img 
                         src={selectedImage} 
                         alt="Selected" 
-                        className="w-20 h-20 rounded-lg object-cover border border-gray-300 cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-20 h-20  object-cover border border-gray-300 cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => setPreviewImage(selectedImage)}
                       />
                       <button
@@ -497,12 +497,12 @@ export default function SupportChat({ ticket, onClose }) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className={`w-full ${selectedImage ? 'pl-25 py-10' : 'pl-4 py-3'} pr-4 text-black bg-gray-100 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all`}
+                  className={`w-full ${selectedImage ? 'pl-25 py-10' : 'pl-4 py-3'} pr-4 text-black bg-gray-100  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all`}
                 />
               </div>
               <button
                 onClick={handleSendMessage}
-                className="py-3 px-3 flex bg-gray-100 cursor-pointer rounded-lg  border border-gray-300  items-center justify-center text-gray-700 hover:text-black transition-colors"
+                className="py-3 px-3 flex bg-gray-100 cursor-pointer   border border-gray-300  items-center justify-center text-gray-700 hover:text-black transition-colors"
               >
                 <IoSend size={22} />
               </button>
@@ -527,7 +527,7 @@ export default function SupportChat({ ticket, onClose }) {
             <img
               src={previewImage}
               alt="Preview"
-              className="max-w-[500px] max-h-[500px] object-contain rounded-lg"
+              className="max-w-[500px] max-h-[500px] object-contain "
               onClick={(e) => e.stopPropagation()}
             />
           </div>

@@ -23,7 +23,7 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-4xl w-full p-6 relative">
+      <div className="bg-white  shadow-lg max-w-4xl w-full p-6 relative">
         {/* Yellow star decoration */}
         
 
@@ -36,7 +36,7 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
         </p>
 
         {/* Radio options */}
-        <div className="space-y-4 mb-8 rounded-lg">
+        <div className="space-y-4 mb-8">
           {reasons.map((reason, index) => (
             <div key={index}>
               <label className="flex items-center cursor-pointer group ">
@@ -61,7 +61,7 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
                     value={otherText}
                     onChange={(e) => setOtherText(e.target.value)}
                     placeholder={t('feedbackForm.otherPlaceholder')}
-                    className="w-full px-3 py-4 bg-gray-100  rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent resize-none"
+                    className="w-full px-3 py-4 bg-gray-100   text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent resize-none"
                     rows="3"
                   />
                 </div>
@@ -74,13 +74,13 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
         <div className="flex gap-4">
           <button 
             onClick={onClose}
-            className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+            className="flex-1 px-6 py-3 border border-gray-300  text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer"
           >
             {t('feedbackForm.goBackButton')}
           </button>
           <button 
             onClick={onContinueToDelete}
-            className="flex-1 px-6 py-3 bg-[#D00416] text-white rounded-xl font-medium hover:bg-red-700 transition-colors cursor-pointer"
+            className="flex-1 px-6 py-3 bg-[#D00416] text-white font-medium hover:bg-red-700 transition-colors cursor-pointer"
           >
             {t('feedbackForm.continueDeleteButton')}
           </button>

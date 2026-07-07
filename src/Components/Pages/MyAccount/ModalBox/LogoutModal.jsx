@@ -84,7 +84,7 @@ export default function LogoutModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-white shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 pt-8 pb-7 text-center">
@@ -109,7 +109,7 @@ export default function LogoutModal({
               onClick={handleLogout}
               disabled={isLoading}
               className={`
-                px-8 py-3.5 rounded-xl font-medium text-white
+                px-8 py-3.5  font-medium text-white
                 bg-[#D00416] hover:bg-red-700 active:bg-red-800
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2
@@ -122,7 +122,7 @@ export default function LogoutModal({
               type="button"
               onClick={onClose}
               className={`
-                px-8 py-3.5 rounded-xl font-medium text-gray-800
+                px-8 py-3.5  font-medium text-gray-800
                 border border-gray-300 hover:bg-gray-100 active:bg-gray-300
                 transition-colors duration-150 cursor-pointer
                 focus:outline-none focus:ring-2 focus:ring-gray-400/50
