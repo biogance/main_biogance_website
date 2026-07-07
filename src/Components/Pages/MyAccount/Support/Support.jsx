@@ -136,12 +136,8 @@ export default function Support({ onOpenChat }) {
   };
 
   const getStatusInfo = (status) => {
-    const s = String(status).toLowerCase();
-    if (s.includes('close')) {
+    if (Number(status) === 1) {
       return { key: 'support.status.closed', color: 'bg-gray-200 text-gray-700' };
-    }
-    if (s.includes('progress') || s.includes('pending')) {
-      return { key: 'support.status.inProgress', color: 'bg-yellow-50 text-yellow-500' };
     }
     return { key: 'support.status.active', color: 'bg-green-100 text-green-700' };
   };
@@ -165,15 +161,24 @@ export default function Support({ onOpenChat }) {
       const raw = data?.data;
       const list = Array.isArray(raw) ? raw : (raw?.data || []);
 
+      const splashCategories = JSON.parse(localStorage.getItem('splashData') || '{}')?.ticket_categories || [];
+
       setTickets(list.map((ticket) => {
         const statusInfo = getStatusInfo(ticket.status);
+        const categoryMeta = splashCategories.find((c) => c.name === ticket.category);
+        const categoryLabel = isFrench
+          ? (categoryMeta?.french_name || ticket.category || '')
+          : (ticket.category || '');
+
         return {
           id: `#${ticket.id}`,
+          rawId: ticket.id,
+          userId: ticket.user_id,
           orderRef: ticket.order_id ? `#${ticket.order_id}` : '',
-          createdOn: ticket.created_at ? formatCreatedOn(new Date(ticket.created_at)) : '',
+          createdOn: ticket.time ? formatCreatedOn(new Date(Number(ticket.time) * 1000)) : '',
           statusKey: statusInfo.key,
           statusColor: statusInfo.color,
-          title: isFrench ? (ticket.category?.french_name || ticket.category?.name || '') : (ticket.category?.name || ''),
+          title: categoryLabel,
           description: ticket.message || '',
         };
       }));
@@ -213,7 +218,9 @@ export default function Support({ onOpenChat }) {
   };
 
   const isLoading = loadingState === 'shimmer';
-  const hasTickets = isLoading || tickets.length > 0;
+  const isFiltering = filterKey !== 'all' || debouncedQuery.trim() !== '';
+  const hasTickets = tickets.length > 0;
+  const showBar = isLoading || hasTickets || isFiltering;
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -257,7 +264,7 @@ export default function Support({ onOpenChat }) {
                 </p>
               </div>
 
-              {hasTickets ? (
+              {showBar ? (
                 <>
                   {/* Search + Filter Bar */}
                   <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -322,6 +329,16 @@ export default function Support({ onOpenChat }) {
                   </div>
 
                   {/* Tickets Grid */}
+                  {!isLoading && !hasTickets ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {t('support.noResults.title')}
+                      </h3>
+                      <p className="text-sm text-gray-500 max-w-md">
+                        {t('support.noResults.description')}
+                      </p>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {isLoading ? (
                       Array.from({ length: 4 }).map((_, index) => (
@@ -371,6 +388,7 @@ export default function Support({ onOpenChat }) {
                       ))
                     )}
                   </div>
+                  )}
                 </>
               ) : (
                 /* ── Empty State ── */

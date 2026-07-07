@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,16 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [ticketCategories, setTicketCategories] = useState([]);
+  const modalCardRef = useRef(null);
+
+  const handleBackdropClick = () => {
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
+  };
 
   const getToken = () => {
     try {
@@ -118,9 +128,10 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
   return (
     <div
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1200] p-4"
-      onClick={handleClose}
+      onClick={handleBackdropClick}
     >
       <div
+        ref={modalCardRef}
         className="bg-white w-full max-w-[480px] shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >

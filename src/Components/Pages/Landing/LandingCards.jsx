@@ -118,15 +118,12 @@ export const LandingCards = ({
     setLoadingFav(true);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const payload = {};
-      if (loginData?.data?.token) {
-        payload.token = loginData.data.token;
-      } else {
-        payload.device_id = getDeviceId();
-      }
+      const token = loginData?.data?.token;
+      const payload = token ? {} : { device_id: getDeviceId() };
       const res = await axios.post(
         `${BASE_URL}/user/add/favorite/bundle/${safeProduct.id}`,
         payload,
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data.status === false) {
         const msg =

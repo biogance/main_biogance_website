@@ -2,88 +2,81 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoSend } from 'react-icons/io5';
 import { FiPlus, FiX } from 'react-icons/fi';
+import { BsClock, BsCheck2 } from 'react-icons/bs';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { BASE_URL, MEDIA_URL } from '../../../API/API';
 
 export default function SupportChat({ ticket, onClose }) {
   const { t } = useTranslation("myaccount");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'support',
-      textKey: 'support.chat.messages.support1',
-      time: '10:00 am',
-      hasIcon: true
-    },
-    {
-      id: 2,
-      type: 'customer',
-      textKey: 'support.chat.messages.customer1',
-      time: '10:05 am',
-      avatar: true
-    },
-    {
-      id: 3,
-      type: 'support',
-      textKey: 'support.chat.messages.support2',
-      time: '10:10 am',
-      hasIcon: true
-    },
-    {
-      id: 4,
-      type: 'customer',
-      textKey: 'support.chat.messages.customer2',
-      time: '10:10 am',
-      avatar: true
-    },
-    {
-      id: 5,
-      type: 'support',
-      textKey: 'support.chat.messages.support3',
-      time: '10:20 am',
-      hasIcon: true
-    },
-    {
-      id: 6,
-      type: 'customer',
-      textKey: 'support.chat.messages.customer3',
-      time: '10:25 am',
-      avatar: true
-    },
-    {
-      id: 7,
-      type: 'support',
-      textKey: 'support.chat.messages.support4',
-      time: '10:20 am',
-      hasIcon: true
-    },
-    {
-      id: 8,
-      type: 'customer',
-      textKey: 'support.chat.messages.customer4',
-      time: '11:25 am',
-      avatar: true
-    },
-    {
-      id: 9,
-      type: 'support',
-      textKey: 'support.chat.messages.support5',
-      time: '10:20 am',
-      hasIcon: true
+  const [messages, setMessages] = useState([]);
+  const [userAvatar, setUserAvatar] = useState('');
+  const [loadedImages, setLoadedImages] = useState({});
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [isClosingTicket, setIsClosingTicket] = useState(false);
+
+  const handleImageLoad = (id) => {
+    setLoadedImages((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const getToken = () => {
+    try {
+      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+      return splashData?.user?.token || localStorage.getItem('token') || '';
+    } catch {
+      return '';
     }
-  ]);
+  };
+
+  const formatMessageTime = (time) => {
+    if (!time) return '';
+    return new Date(Number(time) * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const loadUserAvatar = () => {
+      try {
+        const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
+        setUserAvatar(splashData?.user?.profile_picture ? `${MEDIA_URL}${splashData.user.profile_picture}` : '');
+      } catch {
+        setUserAvatar('');
+      }
+    };
+    loadUserAvatar();
   }, []);
+
+  useEffect(() => {
+    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    if (!ticketId) return;
+
+    fetch(`${BASE_URL}/app/ticket/conversation/${ticketId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data?.status) return;
+        const userId = ticket?.userId || data.data?.ticket?.user_id;
+        setMessages(
+          (data.data?.messages || []).map((msg) => ({
+            id: msg.id,
+            type: msg.from === userId ? 'customer' : 'support',
+            text: msg.message,
+            image: msg.attachment ? `${MEDIA_URL}${msg.attachment}` : null,
+            time: formatMessageTime(msg.time),
+            hasIcon: msg.from !== userId,
+            avatar: msg.from === userId,
+          }))
+        );
+      })
+      .catch((err) => console.error('Fetch conversation error:', err))
+      .finally(() => setLoading(false));
+  }, [ticket]);
 
   useEffect(() => {
     if (previewImage) {
@@ -106,6 +99,7 @@ export default function SupportChat({ ticket, onClose }) {
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
+      setSelectedImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result);
@@ -114,19 +108,66 @@ export default function SupportChat({ ticket, onClose }) {
     }
   };
 
-  const handleSendMessage = () => {
-    if (message.trim() || selectedImage) {
-      const newMessage = {
-        id: messages.length + 1,
-        type: 'customer',
-        text: message,
-        image: selectedImage,
-        time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        avatar: true
-      };
-      setMessages([...messages, newMessage]);
-      setMessage('');
-      setSelectedImage(null);
+  const handleSendMessage = async () => {
+    const text = message.trim();
+    if (!text && !selectedImageFile) return;
+
+    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    const tempId = `local-${Date.now()}`;
+
+    setMessages((prev) => [...prev, {
+      id: tempId,
+      type: 'customer',
+      text,
+      image: selectedImage,
+      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      avatar: true,
+      status: 'sending',
+    }]);
+    setMessage('');
+    setSelectedImage(null);
+    setSelectedImageFile(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('ticket_id', ticketId);
+      formData.append('type', 'text');
+      formData.append('message', text);
+      if (selectedImageFile) {
+        formData.append('attachment', selectedImageFile);
+      }
+
+      const res = await fetch(`${BASE_URL}/app/ticket/send/message`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: formData,
+      });
+      const data = await res.json();
+
+      setMessages((prev) => prev.map((m) => (
+        m.id === tempId
+          ? { ...m, id: data?.data?.id || tempId, status: data?.status ? 'sent' : 'failed' }
+          : m
+      )));
+    } catch (err) {
+      console.error('Send message error:', err);
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'failed' } : m)));
+    }
+  };
+
+  const handleCloseTicket = async () => {
+    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    setIsClosingTicket(true);
+    try {
+      await fetch(`${BASE_URL}/app/ticket/close/${ticketId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+    } catch (err) {
+      console.error('Close ticket error:', err);
+    } finally {
+      setIsClosingTicket(false);
+      setShowCloseConfirm(false);
+      onClose();
     }
   };
 
@@ -373,7 +414,7 @@ export default function SupportChat({ ticket, onClose }) {
                   <p className="text-sm text-gray-600">{t('support.ticketId')} {ticket?.id || '#3021'}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors" >
+              <button onClick={() => setShowCloseConfirm(true)} className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors" >
                 {t('support.chat.closeChat')}
               </button>
             </div>
@@ -393,57 +434,93 @@ export default function SupportChat({ ticket, onClose }) {
               {messages.map((msg) => (
                 <div key={msg.id}>
                 {msg.type === 'support' ? (
-                    // Support Message (Right Side)
+                    // Support Message (Left Side)
+                    <div className="flex items-end gap-3 mb-2">
+                      {msg.hasIcon && (
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
+                            <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <span className="text-[10px] sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
+                        </div>
+                      )}
+                      <div className="max-w-xl">
+                        <div className="text-black border border-gray-300  rounded-bl-sm px-5 py-4 inline-block">
+                          {msg.image && (
+                            <div className={`relative mb-2 max-w-xs border-b border-gray-300 overflow-hidden ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                              {!loadedImages[msg.id] && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                                  <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                </div>
+                              )}
+                              <img
+                                src={msg.image}
+                                alt="Attachment"
+                                className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? 'opacity-100' : 'opacity-0'}`}
+                                onClick={() => setPreviewImage(msg.image)}
+                                onLoad={() => handleImageLoad(msg.id)}
+                                onError={() => handleImageLoad(msg.id)}
+                              />
+                            </div>
+                          )}
+                          <p className="text-sm leading-relaxed">
+                            {msg.textKey ? t(msg.textKey) : msg.text}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                 ) : (
+                    // Customer Message (Right Side)
                     <div className="flex justify-end mb-2">
-                      <div className="flex items-end  gap-3">
+                      <div className="flex items-end gap-3">
                         <div className="max-w-xl">
-                          <div className="text-black border border-gray-300  rounded-br-sm px-5 py-4 inline-block">
-                            <p className="text-sm leading-relaxed">
+                          <div className="bg-white  rounded-br-sm px-5 py-4 inline-block border border-gray-300">
+                            {msg.image && (
+                              <div className={`relative mb-2 max-w-xs border-b border-gray-300 overflow-hidden ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                                {!loadedImages[msg.id] && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                                    <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                  </div>
+                                )}
+                                <img
+                                  src={msg.image}
+                                  alt="Uploaded"
+                                  className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? 'opacity-100' : 'opacity-0'}`}
+                                  onClick={() => setPreviewImage(msg.image)}
+                                  onLoad={() => handleImageLoad(msg.id)}
+                                  onError={() => handleImageLoad(msg.id)}
+                                />
+                              </div>
+                            )}
+                            <p className="text-sm leading-relaxed text-gray-800">
                               {msg.textKey ? t(msg.textKey) : msg.text}
                             </p>
                           </div>
                         </div>
-                        {msg.hasIcon && (
-                          <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
-                                  <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </div>
-                                <span className="text-[10px] sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
-                              </div>
-                        )}
-                      </div>
-                    </div>
-
-
-                 ) : (
-                    // Customer Message (Left Side)
-                    <div className="flex items-end gap-3 mb-2">
-                      {msg.avatar && (
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="w-10 h-10 bg-gray-300  flex-shrink-0 overflow-hidden">
-                            <img
-                              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
-                              alt="User"
-                              className="w-full h-full object-cover"
-                            />
+                        {msg.avatar && (
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-10 h-10 bg-gray-300  flex-shrink-0 overflow-hidden">
+                              {userAvatar ? (
+                                <img
+                                  src={userAvatar}
+                                  alt="User"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-300" />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-1">
+                              {msg.status === 'sending' && (
+                                <BsClock className="text-gray-400" size={11} />
+                              )}
+                              {msg.status === 'sent' && (
+                                <BsCheck2 className="text-gray-400" size={13} />
+                              )}
+                              <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{msg.time}</span>
+                            </div>
                           </div>
-                        <span className="text-[10px] -mb-4 sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
-                        </div>
-                      )}
-                      <div className="max-w-xl">
-                        <div className="bg-white  rounded-bl-sm px-5 py-4 inline-block border border-gray-300">
-                          {msg.image && (
-                            <img 
-                              src={msg.image} 
-                              alt="Uploaded" 
-                              className="max-w-xs  mb-2 cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => setPreviewImage(msg.image)}
-                            />
-                          )}
-                          <p className="text-sm leading-relaxed text-gray-800">
-                            {msg.textKey ? t(msg.textKey) : msg.text}
-                          </p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -483,6 +560,7 @@ export default function SupportChat({ ticket, onClose }) {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedImage(null);
+                          setSelectedImageFile(null);
                         }}
                         className="absolute top-1 right-1 cursor-pointer bg-white text-black rounded-full p-0.5"
                       >
@@ -530,6 +608,39 @@ export default function SupportChat({ ticket, onClose }) {
               className="max-w-[500px] max-h-[500px] object-contain "
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Close Ticket Confirm Modal */}
+      {showCloseConfirm && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1300] p-4"
+          onClick={() => !isClosingTicket && setShowCloseConfirm(false)}
+        >
+          <div
+            className="bg-white w-full max-w-sm p-6 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+              {t('support.chat.closeConfirm.title')}
+            </h3>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCloseConfirm(false)}
+                disabled={isClosingTicket}
+                className="flex-1 py-3 text-sm font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {t('support.chat.closeConfirm.cancel')}
+              </button>
+              <button
+                onClick={handleCloseTicket}
+                disabled={isClosingTicket}
+                className="flex-1 py-3 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              >
+                {isClosingTicket ? t('support.chat.closeConfirm.closing') : t('support.chat.closeConfirm.confirm')}
+              </button>
+            </div>
           </div>
         </div>
       )}

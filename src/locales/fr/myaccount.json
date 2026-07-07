@@ -11,8 +11,9 @@
     "estimatedDelivery": "Livraison estimée le",
     "downloadInvoice": "Télécharger la facture",
     "cancelOrder": "Annuler la commande",
-    "reorderItem": "Commander à nouveau"
-  }, 
+    "reorderItem": "Commander à nouveau",
+    "reordering": "Ajout au panier..."
+  },
    "cancelOrder": {
     "title": "Confirmer l'annulation",
     "description": "Êtes-vous sûr de vouloir annuler cette commande ? Une fois annulée, nous créerons un ticket de support pour gérer votre remboursement.",
@@ -228,10 +229,11 @@
   },
  
   "dashboard": {
-    "welcome": "Bon retour, John !",
+    "welcome": "Bon retour, {{name}} !",
     "loyaltyPoints": "Points de fidélité",
     "pointsThisMonth": "{{count}} points ce mois-ci",
     "recentOrders": "Commandes récentes",
+    "totalOrders": "Total des publications",
     "orderStats": "{{delivered}} livrées • {{processing}} en cours • {{shipping}} en expédition",
     "wishlist": "Liste de souhaits",
     "itemsSavedForLater": "Articles enregistrés pour plus tard",
@@ -463,11 +465,21 @@
       "description": "Vous n'avez pas encore créé de demandes de support ou de remboursement. Si vous rencontrez un problème avec votre commande, vous pouvez facilement créer un ticket ici et le suivre en temps réel.",
       "createNewTicket": "Créer un nouveau ticket"
     },
+    "noResults": {
+      "title": "Aucun ticket trouvé",
+      "description": "Veuillez ajuster le filtre ou essayer une autre recherche."
+    },
     "chat": {
       "title": "Chat de support",
       "closeChat": "Fermer le chat/ticket",
       "writeMessage": "Écrire un message...",
       "dateSeparator": "Mardi",
+      "closeConfirm": {
+        "title": "Êtes-vous sûr de vouloir fermer ce ticket ?",
+        "cancel": "Annuler",
+        "confirm": "Oui, fermer",
+        "closing": "Fermeture..."
+      },
       "messages": {
         "support1": "Bonjour ! 👋 Merci de contacter le support Biogance. Je vois que votre commande a déjà été expédiée. Veuillez ne pas recevoir le colis lorsqu'il arrive. Une fois qu'il nous sera retourné, nous traiterons votre remboursement et créditerons le montant sur votre portefeuille.",
         "customer1": "Merci pour la réponse rapide. Combien de temps faut-il généralement pour que le colis vous soit retourné ?",

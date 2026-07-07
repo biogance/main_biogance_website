@@ -12,7 +12,8 @@
     "estimatedDelivery": "Estimated Delivery on",
     "downloadInvoice": "Download Invoice",
     "cancelOrder": "Cancel Order",
-    "reorderItem": "Reorder Item"
+    "reorderItem": "Reorder Item",
+    "reordering": "Adding to Cart..."
   },
    "cancelOrder": {
     "title": "Confirm Cancellation",
@@ -228,10 +229,11 @@
 
   
   "dashboard": {
-    "welcome": "Welcome back, John!",
+    "welcome": "Welcome back, {{name}}!",
     "loyaltyPoints": "Loyalty Points",
     "pointsThisMonth": "{{count}} points this month",
     "recentOrders": "Recent Orders",
+    "totalOrders": "Total Orders",
     "orderStats": "{{delivered}} delivered • {{processing}} processing • {{shipping}} shipping",
     "wishlist": "Wishlist",
     "itemsSavedForLater": "Items saved for later",
@@ -464,11 +466,21 @@
       "description": "You haven't created any support or refund requests yet. If you face any issue with your order, you can easily raise a ticket here and track it in real time.",
       "createNewTicket": "Create New Ticket"
     },
+    "noResults": {
+      "title": "No ticket found",
+      "description": "Please adjust the filter or try searching for something else."
+    },
     "chat": {
       "title": "Support Chat",
       "closeChat": "Close Chat/Ticket",
       "writeMessage": "Write Message...",
       "dateSeparator": "Tuesday",
+      "closeConfirm": {
+        "title": "Are you sure you want to close this ticket?",
+        "cancel": "Cancel",
+        "confirm": "Yes, Close",
+        "closing": "Closing..."
+      },
       "messages": {
         "support1": "Hi there! 👋 Thanks for contacting Biogance Support. I can see your order has already been dispatched. Please do not receive the package when it arrives. Once it is returned to us, we'll process your refund and credit the amount back to your wallet.",
         "customer1": "Thank you for the quick response. How long does it usually take for the package to return to you?",
