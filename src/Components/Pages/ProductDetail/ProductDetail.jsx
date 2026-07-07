@@ -133,6 +133,35 @@ export default function ProductDetail() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartBtnLoading, setCartBtnLoading] = useState(false);
   const [navBgWhite, setNavBgWhite] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  const handleToggleWishlist = async () => {
+    if (wishlistLoading || !apiProduct?.id) return;
+    setWishlistLoading(true);
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const payload = token ? {} : { device_id: getDeviceId() };
+      const res = await axios.post(
+        `${BASE_URL}/user/add/favorite/bundle/${apiProduct.id}`,
+        payload,
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      );
+      if (res.data.status === false) {
+        const msg =
+          res.data.errors?.length > 0
+            ? res.data.errors[0].message
+            : res.data.action;
+        toast.error(msg);
+      } else {
+        setIsWishlisted((prev) => !prev);
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   const handleOpenCart = async () => {
     if (cartBtnLoading) return;
@@ -192,6 +221,7 @@ export default function ProductDetail() {
       .then((json) => {
         if (json.status) {
           setApiProduct(json.data);
+          setIsWishlisted(json.data.favorites_exists || false);
           setIsFetchingProduct(false);
           setSelectedProductIdx(0);
           const firstProduct = json.data.products?.[0];
@@ -868,8 +898,9 @@ export default function ProductDetail() {
                     )}
                   </button>
                   <button
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`w-12 h-12  cursor-pointer border flex items-center justify-center transition-all duration-200 ${
+                    onClick={handleToggleWishlist}
+                    disabled={wishlistLoading}
+                    className={`w-12 h-12  cursor-pointer border flex items-center justify-center transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
                       isWishlisted
                         ? "border-[#E8E8E8] bg-[#F3F3F3] text-black"
                         : "border-[#E8E8E8] bg-[#F3F3F3] text-gray-600 hover:border-gray-400"

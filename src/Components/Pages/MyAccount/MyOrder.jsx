@@ -26,7 +26,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '100px',
           height: '24px',
-          borderRadius: '4px',
+        
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite',
@@ -39,7 +39,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '170px',
           height: '16px',
-          borderRadius: '4px',
+       
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite',
@@ -52,7 +52,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '90px',
           height: '28px',
-          borderRadius: '6px',
+        
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite'
@@ -67,7 +67,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '90px',
           height: '28px',
-          borderRadius: '4px',
+      
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite'
@@ -79,7 +79,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '60px',
           height: '16px',
-          borderRadius: '4px',
+       
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite',
@@ -92,7 +92,7 @@ const OrderItemShimmer = () => (
         style={{
           width: '130px',
           height: '44px',
-          borderRadius: '8px',
+        
           background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
           backgroundSize: '200px 100%',
           animation: 'shimmer 1.5s infinite'

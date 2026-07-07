@@ -144,6 +144,7 @@ export default function Loyalty() {
     const [loadingState, setLoadingState] = useState('shimmer');
     const [vouchers, setVouchers] = useState([]);
     const [userBalance, setUserBalance] = useState(0);
+    const isLoading = loadingState === 'shimmer';
     const hasPoints = userBalance > 0;
 
     const handleOpenModal = () => {
@@ -239,8 +240,17 @@ export default function Loyalty() {
                 )}
               </div>
 
+              {/* Conditional Rendering: Loading State */}
+              {isLoading && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <VoucherShimmer key={index} />
+                  ))}
+                </div>
+              )}
+
               {/* Conditional Rendering: No Points State */}
-              {!hasPoints && (
+              {!isLoading && !hasPoints && (
                 <div className="flex flex-col items-center justify-center py-12 md:py-20">
                   <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
                     <img
@@ -274,7 +284,7 @@ export default function Loyalty() {
               )}
 
               {/* Conditional Rendering: Has Points but No Vouchers */}
-              {hasPoints && vouchers.length === 0 && (
+              {!isLoading && hasPoints && vouchers.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 md:py-20">
                   <div className="bg-[#FFFBEC] w-full text-center p-4 border-dotted border-2 border-yellow-500 mb-8">
                     <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
@@ -316,7 +326,7 @@ export default function Loyalty() {
               )}
 
               {/* Conditional Rendering: Has Points and Vouchers */}
-              {hasPoints && vouchers.length > 0 && (
+              {!isLoading && hasPoints && vouchers.length > 0 && (
                 <>
                   {/* Points Banner */}
                   <div className="bg-[#FFFBEC] w-full text-center border-2 border-dotted border-yellow-500 p-4  mb-8">
@@ -326,48 +336,40 @@ export default function Loyalty() {
                   {/* Vouchers History */}
                   <div>
                     <h3 className="text-xl text-black font-semibold mb-6">{t('loyalty.vouchersHistory')}</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {loadingState === 'shimmer' ? (
-                        // Show shimmer voucher items
-                        Array.from({ length: vouchers.length }).map((_, index) => (
-                          <VoucherShimmer key={index} />
-                        ))
-                      ) : (
-                        // Show actual vouchers
-                        vouchers.map((voucher, index) => (
-                          <div key={index} className="bg-gray-100 cursor-pointer  p-4 hover:shadow-sm transition-shadow">
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg text-gray-900">{voucher.code}</span>
-                                <FaRegEdit className="text-black" size={16} />
-                              </div>
-                              <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.statusKey)} text-white text-sm  font-medium`}>
-                                {t(voucher.statusKey)}
-                              </span>
-                            </div>
 
-                            <div className="space-y-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">{t('loyalty.voucherDetails.value')}</span>
-                                <span className="font-medium text-gray-900">€{voucher.value.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">{t('loyalty.voucherDetails.pointsRedeemed')}</span>
-                                <span className="font-medium text-gray-900">{voucher.pointsRedeemed}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">{t('loyalty.voucherDetails.dateCreated')}</span>
-                                <span className="font-medium text-gray-900">{voucher.dateCreated}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">{t('loyalty.voucherDetails.expiryDate')}</span>
-                                <span className="font-medium text-gray-900">{voucher.expiryDate}</span>
-                              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {vouchers.map((voucher, index) => (
+                        <div key={index} className="bg-gray-100 cursor-pointer  p-4 hover:shadow-sm transition-shadow">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-lg text-gray-900">{voucher.code}</span>
+                              <FaRegEdit className="text-black" size={16} />
+                            </div>
+                            <span className={`px-3 py-1 ${getStatusBadgeColor(voucher.statusKey)} text-white text-sm  font-medium`}>
+                              {t(voucher.statusKey)}
+                            </span>
+                          </div>
+
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{t('loyalty.voucherDetails.value')}</span>
+                              <span className="font-medium text-gray-900">€{voucher.value.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{t('loyalty.voucherDetails.pointsRedeemed')}</span>
+                              <span className="font-medium text-gray-900">{voucher.pointsRedeemed}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{t('loyalty.voucherDetails.dateCreated')}</span>
+                              <span className="font-medium text-gray-900">{voucher.dateCreated}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{t('loyalty.voucherDetails.expiryDate')}</span>
+                              <span className="font-medium text-gray-900">{voucher.expiryDate}</span>
                             </div>
                           </div>
-                        ))
-                      )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </>
