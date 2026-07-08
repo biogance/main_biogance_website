@@ -162,7 +162,7 @@ export default function Navbar({
 
   const navLinks = [
     { href: "/who-are-we", text: t("ourLaboratory"), key: "laboratory" },
-    { href: "#", text: t("ourExpertAdvice"), key: "advice" },
+    { href: "/expert-advice", text: t("ourExpertAdvice"), key: "advice" },
     { href: "/navPro", text: "PRO", key: "pro" },
   ];
 
@@ -560,11 +560,11 @@ export default function Navbar({
       <nav
         className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-all duration-300 ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
-            ? "bg-white shadow-sm"
+            ? "bg-white"
             : !isVideoVisible && scrolledBlur
-            ? "bg-white/60 backdrop-blur-xs shadow-sm"
+            ? "bg-white"
             : !isVideoVisible
-            ? "bg-white shadow-sm"
+            ? "bg-white"
             : "bg-transparent"
         } ${
           (isNavHovered ||

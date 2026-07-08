@@ -20,9 +20,9 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
     const userBalance = loyaltyPoints;
     const maxOptions = Math.floor(loyaltyPoints / 10);
 
-    // Generate dropdown: 10, 20, 30 ... maxOptions (not *10)
+    // Generate dropdown: 10, 20, 30 ... up to (maxOptions * 10)
     const pointsOptions = Array.from({ length: maxOptions }, (_, i) => {
-      const pts = (i + 1);
+      const pts = (i + 1) * 10;
       return { value: String(pts), label: t('createVoucher.pointsOption', { points: pts }) };
     });
 

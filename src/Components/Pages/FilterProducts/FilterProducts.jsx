@@ -1,6 +1,3 @@
-
-
-
 "use client";
 
 import { useMemo, useRef, useState, useEffect } from "react";
@@ -9,20 +6,21 @@ import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { 
-  LuChevronDown, 
-  LuSearch, 
-  LuX, 
-  LuSlidersHorizontal, 
-  LuHeart, 
-  LuArrowUpRight, 
-  LuCheck, 
-  LuArrowLeft, 
-  LuSparkles, 
-  LuAward, 
-  LuFlame, 
-  LuMegaphone, 
-  LuBookOpen 
+import {
+  LuChevronDown,
+  LuSearch,
+  LuX,
+  LuSlidersHorizontal,
+  LuHeart,
+  LuArrowUpRight,
+  LuCheck,
+  LuArrowLeft,
+  LuSparkles,
+  LuAward,
+  LuFlame,
+  LuMegaphone,
+  LuBookOpen,
+  LuStar,
 } from "react-icons/lu";
 
 import Navbar from "../Navbar";
@@ -31,18 +29,25 @@ import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
+// TODO: hardcoded until a dedicated "recently viewed" tracking API exists.
+const RECENTLY_VIEWED = [
+  { id: "rv1", name: "Fleas Away", price: "13.00", image: "/wishlist-img.jpg" },
+  { id: "rv2", name: "Repairing shampoo", price: "10.70", image: "/distributorImg.jpg" },
+  { id: "rv3", name: "Repairing shampoo", price: "10.70", image: "/partnerImg.jpg" },
+];
+
 const GROUP_LABELS_FR = {
-  "Category": "Catégorie",
-  "Universe": "Univers",
-  "Family": "Famille",
-  "Specificity": "Spécificité",
-  "Needs": "Besoins",
-  "Breed": "Race",
+  Category: "Catégorie",
+  Universe: "Univers",
+  Family: "Famille",
+  Specificity: "Spécificité",
+  Needs: "Besoins",
+  Breed: "Race",
   "For Which": "Pour qui",
-  "Range": "Gamme",
-  "Size": "Taille",
-  "Color": "Couleur",
-  "Price": "Prix"
+  Range: "Gamme",
+  Size: "Taille",
+  Color: "Couleur",
+  Price: "Prix",
 };
 
 // ───────────── Data Model ─────────────
@@ -95,22 +100,63 @@ const getProductCategories = (product, categoriesFromApi) => {
     const catFrenchName = (cat.french_name || "").toLowerCase();
 
     let shouldAdd = false;
-    if (catName.includes("dog") && (text.includes("dog") || text.includes("chien") || text.includes("puppy") || text.includes("hound") || text.includes("terrier"))) {
+    if (
+      catName.includes("dog") &&
+      (text.includes("dog") ||
+        text.includes("chien") ||
+        text.includes("puppy") ||
+        text.includes("hound") ||
+        text.includes("terrier"))
+    ) {
       shouldAdd = true;
-    } else if (catName.includes("cat") && (text.includes("cat") || text.includes("chat") || text.includes("kitten"))) {
+    } else if (
+      catName.includes("cat") &&
+      (text.includes("cat") || text.includes("chat") || text.includes("kitten"))
+    ) {
       shouldAdd = true;
-    } else if (catName.includes("horse") && (text.includes("horse") || text.includes("cheval") || text.includes("poney") || text.includes("pony"))) {
+    } else if (
+      catName.includes("horse") &&
+      (text.includes("horse") ||
+        text.includes("cheval") ||
+        text.includes("poney") ||
+        text.includes("pony"))
+    ) {
       shouldAdd = true;
-    } else if (catName.includes("bird") && (text.includes("bird") || text.includes("poultry") || text.includes("oiseau"))) {
+    } else if (
+      catName.includes("bird") &&
+      (text.includes("bird") ||
+        text.includes("poultry") ||
+        text.includes("oiseau"))
+    ) {
       shouldAdd = true;
-    } else if (catName.includes("reptile") && (text.includes("reptile") || text.includes("turtle") || text.includes("tortue") || text.includes("snake") || text.includes("gecko"))) {
+    } else if (
+      catName.includes("reptile") &&
+      (text.includes("reptile") ||
+        text.includes("turtle") ||
+        text.includes("tortue") ||
+        text.includes("snake") ||
+        text.includes("gecko"))
+    ) {
       shouldAdd = true;
-    } else if (catName.includes("mammal") && (text.includes("rabbit") || text.includes("hamster") || text.includes("bunny") || text.includes("guinea") || text.includes("rodent") || text.includes("ferret") || text.includes("mammal") || text.includes("rongeur"))) {
+    } else if (
+      catName.includes("mammal") &&
+      (text.includes("rabbit") ||
+        text.includes("hamster") ||
+        text.includes("bunny") ||
+        text.includes("guinea") ||
+        text.includes("rodent") ||
+        text.includes("ferret") ||
+        text.includes("mammal") ||
+        text.includes("rongeur"))
+    ) {
       shouldAdd = true;
     } else if (catName.includes("puppies") && text.includes("puppy")) {
       shouldAdd = true;
     } else {
-      if (text.includes(catName) || (catFrenchName && text.includes(catFrenchName))) {
+      if (
+        text.includes(catName) ||
+        (catFrenchName && text.includes(catFrenchName))
+      ) {
         shouldAdd = true;
       }
     }
@@ -161,7 +207,8 @@ function buildColorSwatches(colorsList) {
     if (c.startsWith("#")) {
       if (c.includes(" & ")) {
         const parts = c.split(" & ").map((p) => p.trim());
-        swatches[c] = `linear-gradient(135deg, ${parts[0]} 50%, ${parts[1]} 50%)`;
+        swatches[c] =
+          `linear-gradient(135deg, ${parts[0]} 50%, ${parts[1]} 50%)`;
       } else {
         swatches[c] = c;
       }
@@ -172,8 +219,6 @@ function buildColorSwatches(colorsList) {
   });
   return swatches;
 }
-
-
 
 function toggle(arr, v) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -188,7 +233,13 @@ function hashString(str) {
   return hash;
 }
 
-const extendProductWithFilters = (product, rangesList, sizesList, colorsList, categoriesFromApi) => {
+const extendProductWithFilters = (
+  product,
+  rangesList,
+  sizesList,
+  colorsList,
+  categoriesFromApi,
+) => {
   const name = product.name || "";
   const subtitle = product.subtitle || "";
   const text = `${name} ${subtitle}`.toLowerCase();
@@ -212,7 +263,8 @@ const extendProductWithFilters = (product, rangesList, sizesList, colorsList, ca
     }
   }
 
-  let color = colorsList[Math.abs(hashString(name + "color")) % colorsList.length];
+  let color =
+    colorsList[Math.abs(hashString(name + "color")) % colorsList.length];
   for (const c of colorsList) {
     if (text.includes(c.toLowerCase())) {
       color = c;
@@ -220,47 +272,62 @@ const extendProductWithFilters = (product, rangesList, sizesList, colorsList, ca
     }
   }
 
-  const catObj = categoriesFromApi.find(c => c.name === firstCategoryName);
+  const catObj = categoriesFromApi.find((c) => c.name === firstCategoryName);
 
   // Derive universe values dynamically
-  const catUniverses = catObj?.sub_categories?.filter(s => s.type === "universe") || [];
-  const universeObj = catUniverses.length > 0 
-    ? catUniverses[Math.abs(hashString(name + "universe")) % catUniverses.length] 
-    : null;
+  const catUniverses =
+    catObj?.sub_categories?.filter((s) => s.type === "universe") || [];
+  const universeObj =
+    catUniverses.length > 0
+      ? catUniverses[
+          Math.abs(hashString(name + "universe")) % catUniverses.length
+        ]
+      : null;
   const universeVal = universeObj ? universeObj.name : "";
 
   // Derive family values dynamically from universeObj sub_categories
-  const uniFamilies = universeObj?.sub_categories?.filter(s => s.type === "family") || [];
-  const familyObj = uniFamilies.length > 0
-    ? uniFamilies[Math.abs(hashString(name + "family")) % uniFamilies.length]
-    : null;
+  const uniFamilies =
+    universeObj?.sub_categories?.filter((s) => s.type === "family") || [];
+  const familyObj =
+    uniFamilies.length > 0
+      ? uniFamilies[Math.abs(hashString(name + "family")) % uniFamilies.length]
+      : null;
   const familyVal = familyObj ? familyObj.name : "";
 
   // Derive specificity values dynamically from familyObj sub_categories
-  const famSpecs = familyObj?.sub_categories?.filter(s => s.type === "specificity") || [];
-  const specObj = famSpecs.length > 0
-    ? famSpecs[Math.abs(hashString(name + "specificity")) % famSpecs.length]
-    : null;
+  const famSpecs =
+    familyObj?.sub_categories?.filter((s) => s.type === "specificity") || [];
+  const specObj =
+    famSpecs.length > 0
+      ? famSpecs[Math.abs(hashString(name + "specificity")) % famSpecs.length]
+      : null;
   const specVal = specObj ? specObj.name : "";
 
   // Derive need values dynamically from specObj sub_categories
-  const specNeeds = specObj?.sub_categories?.filter(s => s.type === "need") || [];
-  const needObj = specNeeds.length > 0
-    ? specNeeds[Math.abs(hashString(name + "need")) % specNeeds.length]
-    : null;
+  const specNeeds =
+    specObj?.sub_categories?.filter((s) => s.type === "need") || [];
+  const needObj =
+    specNeeds.length > 0
+      ? specNeeds[Math.abs(hashString(name + "need")) % specNeeds.length]
+      : null;
   const needVal = needObj ? needObj.name : "";
 
   // Derive breed values dynamically
   const catBreeds = catObj?.breeds || [];
-  const breedVal = catBreeds.length > 0
-    ? catBreeds[Math.abs(hashString(name + "breed")) % catBreeds.length].name
-    : "";
+  const breedVal =
+    catBreeds.length > 0
+      ? catBreeds[Math.abs(hashString(name + "breed")) % catBreeds.length].name
+      : "";
 
   // Derive for_which values dynamically
-  const catForWhich = catObj?.sub_categories?.filter(s => s.type === "for_which") || [];
-  const forWhichVal = catForWhich.length > 0 
-    ? catForWhich[Math.abs(hashString(name + "forwhich")) % catForWhich.length].name 
-    : "";
+  const catForWhich =
+    catObj?.sub_categories?.filter((s) => s.type === "for_which") || [];
+  const forWhichVal =
+    catForWhich.length > 0
+      ? catForWhich[
+          Math.abs(hashString(name + "forwhich")) % catForWhich.length
+        ].name
+      : "";
 
   return {
     ...product,
@@ -284,8 +351,7 @@ function getShopContext(source, q, categoryName, t) {
       key: "category",
       crumbLabel: categoryName,
       eyebrow: t("category.eyebrow", "Category · Curated collection"),
-      title: <>{t("category.titlePart1", "All ")}<em className="font-serif italic">{categoryName}</em><span className="block">{t("category.titlePart3", "products.")}</span></>,
-      description: t("category.description", "Browse our complete range of formulations crafted for this category — filtered by family, need and ritual."),
+      title: categoryName,
       Icon: LuBookOpen,
       accent: "text-stone-700",
     };
@@ -296,8 +362,7 @@ function getShopContext(source, q, categoryName, t) {
         key: "recommended",
         crumbLabel: t("recommended.crumbLabel", "Recommended"),
         eyebrow: t("recommended.eyebrow", "Recommended · Curated for you"),
-        title: <>{t("recommended.titlePart1", "Picked ")}<em className="font-serif italic">{t("recommended.titlePart2", "for your")}</em><span className="block">{t("recommended.titlePart3", "companions.")}</span></>,
-        description: t("recommended.description", "A personal edit drawn from your recent visits, favourites and the rituals your animals respond to best."),
+        title: t("recommended.title", "Recommended For You"),
         Icon: LuSparkles,
         accent: "text-amber-700",
       };
@@ -306,8 +371,7 @@ function getShopContext(source, q, categoryName, t) {
         key: "best",
         crumbLabel: t("best.crumbLabel", "Best Products"),
         eyebrow: t("best.eyebrow", "Best products · Editor's selection"),
-        title: <>{t("best.titlePart1", "The ")}<em className="font-serif italic">{t("best.titlePart2", "very best")}</em><span className="block">{t("best.titlePart3", "of Biogance.")}</span></>,
-        description: t("best.description", "Formulations that earned their place — chosen by our laboratory and reviewed by groomers, vets and breeders."),
+        title: t("best.title", "Best Seller"),
         Icon: LuAward,
         accent: "text-emerald-700",
       };
@@ -316,8 +380,7 @@ function getShopContext(source, q, categoryName, t) {
         key: "popular",
         crumbLabel: t("popular.crumbLabel", "Popular This Week"),
         eyebrow: t("popular.eyebrow", "Popular this week"),
-        title: <>{t("popular.titlePart1", "What everyone is ")}<em className="font-serif italic">{t("popular.titlePart2", "reaching")}</em><span className="block">{t("popular.titlePart3", "for right now.")}</span></>,
-        description: t("popular.description", "Most-loved bottles across our community over the last seven days — refined by animal, family and ritual."),
+        title: t("popular.title", "Popular Products"),
         Icon: LuFlame,
         accent: "text-rose-700",
       };
@@ -325,9 +388,10 @@ function getShopContext(source, q, categoryName, t) {
       return {
         key: "search",
         crumbLabel: t("search.crumbLabel", "Search"),
-        eyebrow: q ? t("search.eyebrowWithQuery", "Search results · “{{q}}”", { q }) : t("search.eyebrow", "Search results"),
-        title: <>{q ? <>{t("search.titleWithQuery", "Results for ")}<em className="font-serif italic">“{q}”</em></> : <>{t("search.titleWithoutQuery", "Search the ")}<em className="font-serif italic">{t("search.titleWithoutQueryPart2", "catalogue")}</em></>}<span className="block">{t("search.titlePart3", "across our library.")}</span></>,
-        description: t("search.description", "Use the filters to narrow by species, breed, need or range — your keyword stays applied."),
+        eyebrow: q
+          ? t("search.eyebrowWithQuery", "Search results · “{{q}}”", { q })
+          : t("search.eyebrow", "Search results"),
+        title: q || t("search.title", "Search Results"),
         Icon: LuSearch,
         accent: "text-stone-700",
       };
@@ -337,8 +401,7 @@ function getShopContext(source, q, categoryName, t) {
         key: "ads",
         crumbLabel: t("ads.crumbLabel", "Campaign"),
         eyebrow: t("ads.eyebrow", "Featured campaign"),
-        title: <>{t("ads.titlePart1", "The ")}<em className="font-serif italic">{t("ads.titlePart2", "edit")}</em> <span className="block">{t("ads.titlePart3", "you came in for.")}</span></>,
-        description: t("ads.description", "A focused selection from the campaign that brought you here — all complementary products, in one place."),
+        title: t("ads.title", "Featured Selection"),
         Icon: LuMegaphone,
         accent: "text-indigo-700",
       };
@@ -347,8 +410,7 @@ function getShopContext(source, q, categoryName, t) {
         key: "catalogue",
         crumbLabel: t("catalogue.crumbLabel", "Catalogue"),
         eyebrow: t("catalogue.eyebrow", "Catalogue · Vol. 04"),
-        title: <>{t("catalogue.titlePart1", "Care, ")}<em className="font-serif italic">{t("catalogue.titlePart2", "refined")}</em><span className="block">{t("catalogue.titlePart3", "for every species.")}</span></>,
-        description: t("catalogue.description", "A living index of formulations — filtered by animal, family, need and ritual. Made in France, certified by nature."),
+        title: t("catalogue.title", "All Products"),
         Icon: LuBookOpen,
         accent: "text-stone-700",
       };
@@ -371,7 +433,9 @@ export default function FilterProducts() {
   const source = searchParams ? searchParams.get("source") : undefined;
   const q = searchParams ? searchParams.get("q") : undefined;
   const from = searchParams ? searchParams.get("from") : undefined;
-  const categoryName = searchParams ? searchParams.get("category_name") : undefined;
+  const categoryName = searchParams
+    ? searchParams.get("category_name")
+    : undefined;
 
   const { t, i18n } = useTranslation("filter");
   const ctx = getShopContext(source, q, categoryName, t);
@@ -429,14 +493,16 @@ export default function FilterProducts() {
 
   useEffect(() => {
     const loadFromSplash = () => {
-      const cached = localStorage.getItem('splashData');
+      const cached = localStorage.getItem("splashData");
       if (cached) {
-        try { setApiData(JSON.parse(cached)); } catch (e) {}
+        try {
+          setApiData(JSON.parse(cached));
+        } catch (e) {}
       }
     };
     loadFromSplash();
-    window.addEventListener('splashDataReady', loadFromSplash);
-    return () => window.removeEventListener('splashDataReady', loadFromSplash);
+    window.addEventListener("splashDataReady", loadFromSplash);
+    return () => window.removeEventListener("splashDataReady", loadFromSplash);
   }, []);
 
   const apiProducts = apiData?.popular || [];
@@ -469,30 +535,50 @@ export default function FilterProducts() {
   const RANGES_LIST = useMemo(() => buildRangesList(apiData), [apiData]);
   const SIZES_LIST = useMemo(() => buildSizesList(apiData), [apiData]);
   const COLORS_LIST = useMemo(() => buildColorsList(apiData), [apiData]);
-  const COLOR_SWATCHES_MAP = useMemo(() => buildColorSwatches(COLORS_LIST), [COLORS_LIST]);
+  const COLOR_SWATCHES_MAP = useMemo(
+    () => buildColorSwatches(COLORS_LIST),
+    [COLORS_LIST],
+  );
 
-  const mapProducts = (items) => items.map(item => ({
-    id: item.id,
-    name: item.name,
-    french_name: item.french_name || '',
-    english_seo_keyword: item.english_seo_keyboard || item.english_seo_keyword || '',
-    french_seo_keyword: item.french_seo_keyword || '',
-    subtitle: item.subtitle || (item.products?.[0]?.description ? item.products[0].description.slice(0, 50) + "..." : "Care formulation"),
-    price: parseFloat(item.price || (item.products?.[0]?.price) || '0'),
-    oldPrice: item.products?.[0]?.price ? parseFloat(item.products[0].price) * 1.2 : null,
-    discount: item.discount || (item.products?.[0]?.off) || '',
-    tag: item.discount || (item.products?.[0]?.off) || null,
-    image: item.image || (item.products?.[0]?.images[0]?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}` : ''),
-    images: item.images || (item.products?.[0]?.images?.map(img => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`) || ['']),
-    videoUrl: item.products?.[0]?.video?.media ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].video.media}` : null,
-    liked: item.liked ?? item.favorites_exists,
-    productsCount: item.products?.length || 1,
-    products: item.products || [],
-    description: item.description || '',
-    french_description: item.french_description || '',
-    product_label: item.product_label || '',
-    french_product_label: item.french_product_label || ''
-  }));
+  const mapProducts = (items) =>
+    items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      french_name: item.french_name || "",
+      english_seo_keyword:
+        item.english_seo_keyboard || item.english_seo_keyword || "",
+      french_seo_keyword: item.french_seo_keyword || "",
+      subtitle:
+        item.subtitle ||
+        (item.products?.[0]?.description
+          ? item.products[0].description.slice(0, 50) + "..."
+          : "Care formulation"),
+      price: parseFloat(item.price || item.products?.[0]?.price || "0"),
+      oldPrice: item.products?.[0]?.price
+        ? parseFloat(item.products[0].price) * 1.2
+        : null,
+      discount: item.discount || item.products?.[0]?.off || "",
+      tag: item.discount || item.products?.[0]?.off || null,
+      image:
+        item.image ||
+        (item.products?.[0]?.images[0]?.media
+          ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
+          : ""),
+      images: item.images ||
+        item.products?.[0]?.images?.map(
+          (img) => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`,
+        ) || [""],
+      videoUrl: item.products?.[0]?.video?.media
+        ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].video.media}`
+        : null,
+      liked: item.liked ?? item.favorites_exists,
+      productsCount: item.products?.length || 1,
+      products: item.products || [],
+      description: item.description || "",
+      french_description: item.french_description || "",
+      product_label: item.product_label || "",
+      french_product_label: item.french_product_label || "",
+    }));
 
   const [searchedProducts, setSearchedProducts] = useState([]);
   const searchedProductsRef = useRef([]);
@@ -504,38 +590,23 @@ export default function FilterProducts() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
 
-
-  const sentinelRef = useRef(null);
-
   useEffect(() => {
     searchedProductsRef.current = searchedProducts;
   }, [searchedProducts]);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingRef.current) {
-          isFetchingRef.current = true;
-          setPage(prev => {
-            if (prev < lastPage) return prev + 1;
-            isFetchingRef.current = false;
-            return prev;
-          });
-        }
-      },
-      { threshold: 0, rootMargin: "200px" }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [lastPage, isSearching]);
+  const handleLoadMore = () => {
+    if (isFetchingRef.current || page >= lastPage) return;
+    isFetchingRef.current = true;
+    setPage((prev) => prev + 1);
+  };
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
   useEffect(() => {
     if (catParam && categoriesList.length > 0) {
-      const matchedCat = categoriesList.find((c) => String(c.id) === String(catParam));
+      const matchedCat = categoriesList.find(
+        (c) => String(c.id) === String(catParam),
+      );
       if (matchedCat) {
         setAnimals([matchedCat.name]);
       }
@@ -544,8 +615,8 @@ export default function FilterProducts() {
 
   const getSelectedIds = () => {
     const categoryIds = categoriesList
-      .filter(cat => animals.includes(cat.name))
-      .map(cat => cat.id)
+      .filter((cat) => animals.includes(cat.name))
+      .map((cat) => cat.id)
       .join(",");
 
     const findSubcategoryIds = (type, selectedNames) => {
@@ -559,7 +630,7 @@ export default function FilterProducts() {
           item.sub_categories.forEach(traverse);
         }
       };
-      categoriesList.forEach(cat => {
+      categoriesList.forEach((cat) => {
         cat.sub_categories?.forEach(traverse);
       });
       return [...new Set(ids)].join(",");
@@ -572,14 +643,14 @@ export default function FilterProducts() {
     const forWhichIds = findSubcategoryIds("for_which", forWhich);
 
     const rangeIds = (apiData?.ranges || [])
-      .filter(r => ranges.includes(r.name))
-      .map(r => r.id)
+      .filter((r) => ranges.includes(r.name))
+      .map((r) => r.id)
       .join(",");
 
     const breedIds = categoriesList
-      .flatMap(cat => cat.breeds || [])
-      .filter(b => breeds.includes(b.name))
-      .map(b => b.id)
+      .flatMap((cat) => cat.breeds || [])
+      .filter((b) => breeds.includes(b.name))
+      .map((b) => b.id)
       .join(",");
 
     return {
@@ -590,24 +661,50 @@ export default function FilterProducts() {
       needIds,
       forWhichIds,
       rangeIds,
-      breedIds
+      breedIds,
     };
   };
 
   // Serialize filters to detect changes and reset page to 1
   const filtersSerialized = useMemo(() => {
     return JSON.stringify({
-      query: debouncedQuery, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds
+      query: debouncedQuery,
+      q,
+      animals,
+      universe,
+      families,
+      specificity,
+      needs,
+      ranges,
+      forWhich,
+      price,
+      sort,
+      sizes,
+      colors,
+      breeds,
     });
-  }, [debouncedQuery, q, animals, universe, families, specificity, needs, ranges, forWhich, price, sort, sizes, colors, breeds]);
+  }, [
+    debouncedQuery,
+    q,
+    animals,
+    universe,
+    families,
+    specificity,
+    needs,
+    ranges,
+    forWhich,
+    price,
+    sort,
+    sizes,
+    colors,
+    breeds,
+  ]);
 
   const prevFiltersRef = useRef(filtersSerialized);
   const prevPageRef = useRef(page);
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
-
-
     // Detect if filters changed, reset page to 1
     let targetPage = page;
     const filtersChanged = prevFiltersRef.current !== filtersSerialized;
@@ -656,7 +753,7 @@ export default function FilterProducts() {
       needIds,
       forWhichIds,
       rangeIds,
-      breedIds
+      breedIds,
     } = getSelectedIds();
 
     const body = {
@@ -674,43 +771,61 @@ export default function FilterProducts() {
       max_price: price,
       sort: sortParam,
       page: targetPage,
-      per_page: 20,
-      ...(token ? { token } : { device_id: getDeviceId() })
+      per_page: 12,
+      ...(token ? {} : { device_id: getDeviceId() }),
     };
 
-    axios.post(`${BASE_URL}/web/search`, body)
+    axios
+      .post(
+        `${BASE_URL}/web/search`,
+        body,
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      )
       .then((res) => {
         if (res.data.status) {
-          const rawItems = Array.isArray(res.data.data) 
-            ? res.data.data 
-            : (res.data.data?.data && Array.isArray(res.data.data.data)) 
-              ? res.data.data.data 
+          const rawItems = Array.isArray(res.data.data)
+            ? res.data.data
+            : res.data.data?.data && Array.isArray(res.data.data.data)
+              ? res.data.data.data
               : [];
-          
+
           const mapped = mapProducts(rawItems);
           const unique = [];
           const seen = new Set();
-          
+
           const baseItems = targetPage === 1 ? [] : searchedProductsRef.current;
           const allItems = [...baseItems, ...mapped];
 
           for (const p of allItems) {
             if (!seen.has(p.id)) {
               seen.add(p.id);
-              unique.push(extendProductWithFilters(p, RANGES_LIST, SIZES_LIST, COLORS_LIST, categoriesList));
+              unique.push(
+                extendProductWithFilters(
+                  p,
+                  RANGES_LIST,
+                  SIZES_LIST,
+                  COLORS_LIST,
+                  categoriesList,
+                ),
+              );
             }
           }
-          const hasMore = res.data.data?.last_page 
-            ? targetPage < res.data.data.last_page 
-            : rawItems.length >= 20;
+          const hasMore = res.data.data?.last_page
+            ? targetPage < res.data.data.last_page
+            : rawItems.length >= 12;
 
           setSearchedProducts(unique);
           setHasSearched(true);
           setTotalCount(res.data.data?.total ?? unique.length);
-          setLastPage(res.data.data?.last_page || (hasMore ? targetPage + 1 : targetPage));
-         
+          setLastPage(
+            res.data.data?.last_page || (hasMore ? targetPage + 1 : targetPage),
+          );
         } else {
-          toast.error(res.data.action_message || res.data.action || "Something went wrong.");
+          toast.error(
+            res.data.action_message ||
+              res.data.action ||
+              "Something went wrong.",
+          );
         }
       })
       .catch((err) => {
@@ -722,14 +837,20 @@ export default function FilterProducts() {
         setIsFetchingMore(false);
         isFetchingRef.current = false;
       });
-  }, [
-    apiData,
-    filtersSerialized,
-    page
-  ]);
+  }, [apiData, filtersSerialized, page]);
 
   const filteredProducts = searchedProducts;
   const allProducts = filteredProducts;
+
+  // First 10 products get the featured "4 cards + 1 video card" treatment; the rest use the plain grid.
+  const showFeaturedIntro = filteredProducts.length >= 10;
+  const featuredProducts = showFeaturedIntro
+    ? filteredProducts.slice(0, 10)
+    : [];
+  const restProducts = showFeaturedIntro
+    ? filteredProducts.slice(10)
+    : filteredProducts;
+  const restStartIndex = showFeaturedIntro ? 10 : 0;
 
   const hasAnimal = animals.length > 0;
   const hasUniverse = universe.length > 0;
@@ -737,15 +858,15 @@ export default function FilterProducts() {
   const hasSpec = specificity.length > 0;
 
   const selectedCategoryObjs = useMemo(() => {
-    return categoriesList.filter(cat => animals.includes(cat.name));
+    return categoriesList.filter((cat) => animals.includes(cat.name));
   }, [animals, categoriesList]);
 
   // Universe options: sub_categories of categories where type === "universe"
   const universeOptions = useMemo(() => {
     const options = new Set();
-    selectedCategoryObjs.forEach(cat => {
+    selectedCategoryObjs.forEach((cat) => {
       if (cat.sub_categories) {
-        cat.sub_categories.forEach(sub => {
+        cat.sub_categories.forEach((sub) => {
           if (sub.type === "universe") {
             options.add(sub.name);
           }
@@ -758,9 +879,9 @@ export default function FilterProducts() {
   // Selected universe objects
   const selectedUniverseObjs = useMemo(() => {
     const list = [];
-    selectedCategoryObjs.forEach(cat => {
+    selectedCategoryObjs.forEach((cat) => {
       if (cat.sub_categories) {
-        cat.sub_categories.forEach(sub => {
+        cat.sub_categories.forEach((sub) => {
           if (sub.type === "universe" && universe.includes(sub.name)) {
             list.push(sub);
           }
@@ -773,10 +894,10 @@ export default function FilterProducts() {
   // Family options: all families from all universes under selected categories (universe step skipped in UI)
   const familyOptions = useMemo(() => {
     const options = new Set();
-    selectedCategoryObjs.forEach(cat => {
-      cat.sub_categories?.forEach(sub => {
+    selectedCategoryObjs.forEach((cat) => {
+      cat.sub_categories?.forEach((sub) => {
         if (sub.type === "universe") {
-          sub.sub_categories?.forEach(fam => {
+          sub.sub_categories?.forEach((fam) => {
             if (fam.type === "family") options.add(fam.name);
           });
         }
@@ -788,11 +909,12 @@ export default function FilterProducts() {
   // Selected family objects (search across all universes)
   const selectedFamilyObjs = useMemo(() => {
     const list = [];
-    selectedCategoryObjs.forEach(cat => {
-      cat.sub_categories?.forEach(sub => {
+    selectedCategoryObjs.forEach((cat) => {
+      cat.sub_categories?.forEach((sub) => {
         if (sub.type === "universe") {
-          sub.sub_categories?.forEach(fam => {
-            if (fam.type === "family" && families.includes(fam.name)) list.push(fam);
+          sub.sub_categories?.forEach((fam) => {
+            if (fam.type === "family" && families.includes(fam.name))
+              list.push(fam);
           });
         }
       });
@@ -803,9 +925,9 @@ export default function FilterProducts() {
   // Specificity options: sub_categories of family where type === "specificity"
   const specificityOptions = useMemo(() => {
     const options = new Set();
-    selectedFamilyObjs.forEach(fam => {
+    selectedFamilyObjs.forEach((fam) => {
       if (fam.sub_categories) {
-        fam.sub_categories.forEach(sub => {
+        fam.sub_categories.forEach((sub) => {
           if (sub.type === "specificity") {
             options.add(sub.name);
           }
@@ -818,9 +940,9 @@ export default function FilterProducts() {
   // Selected specificity objects
   const selectedSpecificityObjs = useMemo(() => {
     const list = [];
-    selectedFamilyObjs.forEach(fam => {
+    selectedFamilyObjs.forEach((fam) => {
       if (fam.sub_categories) {
-        fam.sub_categories.forEach(sub => {
+        fam.sub_categories.forEach((sub) => {
           if (sub.type === "specificity" && specificity.includes(sub.name)) {
             list.push(sub);
           }
@@ -833,9 +955,9 @@ export default function FilterProducts() {
   // Need options: sub_categories of specificity where type === "need"
   const needsOptions = useMemo(() => {
     const options = new Set();
-    selectedSpecificityObjs.forEach(spec => {
+    selectedSpecificityObjs.forEach((spec) => {
       if (spec.sub_categories) {
-        spec.sub_categories.forEach(sub => {
+        spec.sub_categories.forEach((sub) => {
           if (sub.type === "need") {
             options.add(sub.name);
           }
@@ -848,9 +970,9 @@ export default function FilterProducts() {
   // Breed options: breeds property of categories
   const breedOptions = useMemo(() => {
     const options = new Set();
-    selectedCategoryObjs.forEach(cat => {
+    selectedCategoryObjs.forEach((cat) => {
       if (cat.breeds) {
-        cat.breeds.forEach(breed => {
+        cat.breeds.forEach((breed) => {
           options.add(breed.name);
         });
       }
@@ -861,9 +983,9 @@ export default function FilterProducts() {
   // For Which options: sub_categories of categories where type === "for_which"
   const forWhichOptions = useMemo(() => {
     const options = new Set();
-    selectedCategoryObjs.forEach(cat => {
+    selectedCategoryObjs.forEach((cat) => {
       if (cat.sub_categories) {
-        cat.sub_categories.forEach(sub => {
+        cat.sub_categories.forEach((sub) => {
           if (sub.type === "for_which") {
             options.add(sub.name);
           }
@@ -876,7 +998,10 @@ export default function FilterProducts() {
   const activeChips = useMemo(() => {
     const c = [];
     animals.forEach((a) => {
-      c.push({ label: a, clear: () => setAnimals((p) => p.filter((x) => x !== a)) });
+      c.push({
+        label: a,
+        clear: () => setAnimals((p) => p.filter((x) => x !== a)),
+      });
     });
     [
       [universe, setUniverse],
@@ -889,22 +1014,47 @@ export default function FilterProducts() {
       [sizes, setSizes],
       [colors, setColors],
     ].forEach(([arr, setter]) => {
-      arr.forEach((v) => c.push({ label: v, clear: () => setter((p) => p.filter((x) => x !== v)) }));
+      arr.forEach((v) =>
+        c.push({
+          label: v,
+          clear: () => setter((p) => p.filter((x) => x !== v)),
+        }),
+      );
     });
     return c;
-  }, [animals, universe, families, specificity, needs, breeds, forWhich, ranges, sizes, colors]);
+  }, [
+    animals,
+    universe,
+    families,
+    specificity,
+    needs,
+    breeds,
+    forWhich,
+    ranges,
+    sizes,
+    colors,
+  ]);
 
   const clearAll = () => {
-    setAnimals([]); setUniverse([]); setFamilies([]); setSpecificity([]); setNeeds([]);
-    setBreeds([]); setForWhich([]); setRanges([]); setSizes([]); setColors([]);
+    setAnimals([]);
+    setUniverse([]);
+    setFamilies([]);
+    setSpecificity([]);
+    setNeeds([]);
+    setBreeds([]);
+    setForWhich([]);
+    setRanges([]);
+    setSizes([]);
+    setColors([]);
   };
 
   return (
     <div className="min-h-screen mt-30 bg-white text-stone-900">
-      <Navbar isVideoVisible={!isHeaderTouchingNav} scrolledBlur={true} />
+       <Navbar bgWhite={true} />
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -957,125 +1107,69 @@ export default function FilterProducts() {
 .filter-rail-scroll::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
-        `
-      }} />
-
-      {/* Editorial header — context aware */}
-      <section ref={headerRef} className="border-b border-stone-900/10 bg-white">
-        <div className="mx-auto max-w-[1500px] px-8">
-          {/* Row 1 — breadcrumb + back */}
-          <div className="flex flex-wrap items-center justify-between gap-3 py-4 text-[11px] uppercase tracking-[0.22em] text-stone-500">
-            <nav className="flex items-center gap-2">
-              <a href="/" className="hover:text-stone-900">{t("home", "Home")}</a>
-             
-              {ctx.key !== "catalogue" && (
-                <>
-                  <span className="text-stone-300">/</span>
-                  <span className="text-stone-900">{ctx.crumbLabel}</span>
-                </>
-              )}
-            </nav>
-            {from ? (
-              <a
-                href={from}
-                className="group inline-flex items-center gap-2 text-stone-600 transition hover:text-stone-900"
-              >
-                <LuArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-0.5" />
-                {t("backToPrevious", "Back to previous")}
-              </a>
-            ) : (
-              <span className="hidden sm:inline text-stone-400">
-                {t("speciesCount", "{{count}} species", { count: categoriesList.length })} · {t("formulationsCount", "{{count}} formulations", { count: allProducts.length })}
-              </span>
-            )}
-          </div>
-
-          {/* Row 2 — editorial hero */}
-          <div className="grid grid-cols-12 gap-x-8 gap-y-8 pt-6 pb-10">
-            {/* Left: eyebrow + headline */}
-            <div className="col-span-12 lg:col-span-9">
-              <div className="inline-flex items-center gap-2.5">
-                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-900/[0.04] ${ctx.accent}`}>
-                   <ctx.Icon className="h-3.5 w-3.5" />
-                </span>
-                <span className="text-[10.5px] uppercase tracking-[0.28em] text-stone-700">
-                  {ctx.eyebrow}
-                </span>
-              </div>
-              <h1
-  className="mt-6 font-serif text-[clamp(44px,6.6vw,92px)] leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
-  style={{
-    display: "-webkit-box",
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-  }}
->
-  {ctx.title}
-</h1>
-            </div>
-
-            {/* Right: description + meta line */}
-            <aside className="col-span-12 flex flex-col justify-end gap-6 lg:col-span-3">
-              <p className="text-[13.5px] leading-[1.65] text-stone-600">
-                {ctx.description}
-              </p>
-
-              {ctx.key === "search" && q ? (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">{t("keyword", "Keyword")}</span>
-                  <span className="inline-flex items-start gap-2 rounded-lg bg-stone-900 px-3 py-2 text-[11px] tracking-[0.05em] text-white max-w-[200px]">
-                    <LuSearch className="h-3 w-3 shrink-0 mt-0.5" />
-                    <span
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        wordBreak: "break-word",
-                      }}
-                    >{q}</span>
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-baseline gap-2 border-t border-stone-900/10 pt-4">
-                  <span className="font-serif text-3xl leading-none text-stone-900">
-                    {totalCount}
-                  </span>
-                  <span className="text-[10.5px] uppercase tracking-[0.24em] text-stone-500">
-                    {t("productsInView", "products in this view")}
-                  </span>
-                </div>
-              )}
-            </aside>
-          </div>
-        </div>
-      </section>
+        `,
+        }}
+      />
 
       {/* Sticky filter rail */}
       <FilterRail
         categoriesList={categoriesList}
         state={{
-          animals, universe, families, specificity, needs, breeds, forWhich, ranges, sizes, colors, price,
+          animals,
+          universe,
+          families,
+          specificity,
+          needs,
+          breeds,
+          forWhich,
+          ranges,
+          sizes,
+          colors,
+          price,
         }}
         setters={{
-          setAnimals, setUniverse, setFamilies, setSpecificity, setNeeds, setBreeds, setForWhich,
-          setRanges, setSizes, setColors, setPrice,
+          setAnimals,
+          setUniverse,
+          setFamilies,
+          setSpecificity,
+          setNeeds,
+          setBreeds,
+          setForWhich,
+          setRanges,
+          setSizes,
+          setColors,
+          setPrice,
         }}
-        options={{ familyOptions, universeOptions, specificityOptions, needsOptions, breedOptions, forWhichOptions }}
+        options={{
+          familyOptions,
+          universeOptions,
+          specificityOptions,
+          needsOptions,
+          breedOptions,
+          forWhichOptions,
+        }}
         hasAnimal={hasAnimal}
         hasUniverse={hasUniverse}
         hasFamily={hasFamily}
         hasSpec={hasSpec}
-        dynamicLists={{ RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench }}
+        dynamicLists={{
+          RANGES_LIST,
+          SIZES_LIST,
+          COLORS_LIST,
+          COLOR_SWATCHES_MAP,
+          translateName,
+          isFrench,
+        }}
       />
 
       {/* Result meta + chips */}
-      <section className="mx-auto max-w-[1500px] px-8 pt-8">
+      <section className="mx-auto max-w-10xl px-8 pt-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-5">
           <div className="flex items-baseline gap-3">
             <span className="font-serif text-3xl">{totalCount}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">{t("productsInView", "products in view")}</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+              {t("productsInView", "products in view")}
+            </span>
           </div>
           <div className="flex flex-1 items-center justify-end gap-5">
             <div className="group relative flex w-full max-w-md items-center">
@@ -1084,12 +1178,19 @@ export default function FilterProducts() {
                 type="text"
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder={t("searchPlaceholder", "Search shampoos, sprays, rituals…")}
-                className="h-11 w-full rounded-full border border-stone-900/15 bg-stone-50/60 pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
+                placeholder={t(
+                  "searchPlaceholder",
+                  "Search shampoos, sprays, rituals…",
+                )}
+                className="h-11 w-full border border-stone-900/15 bg-stone-50/60 pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
               />
               {query && (
                 <button
-                  onClick={() => { setQuery(""); setDebouncedQuery(""); clearTimeout(queryDebounceRef.current); }}
+                  onClick={() => {
+                    setQuery("");
+                    setDebouncedQuery("");
+                    clearTimeout(queryDebounceRef.current);
+                  }}
                   className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
                   aria-label={t("clearSearch", "Clear search")}
                 >
@@ -1097,13 +1198,46 @@ export default function FilterProducts() {
                 </button>
               )}
             </div>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">{t("sort", "Sort")}</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+              {t("sort", "Sort")}
+            </span>
             <SortMenu value={sort} onChange={setSort} />
           </div>
         </div>
+        {/* Editorial header — context aware */}
+        <section ref={headerRef} className=" bg-[#fbf9f7]">
+          <div className="mx-auto max-w-10xl px-8">
+            {/* Row 2 — editorial hero */}
+            <div className="grid grid-cols-12 gap-x-8 gap-y-8 pt-6 pb-6">
+              {/* Left: eyebrow + headline */}
+              <div className="col-span-12 lg:col-span-9">
+                <h4
+                  className="mt-6 font-serif text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {ctx.title}
+                </h4>
+              </div>
 
+              {/* Right: description + meta line */}
+              <aside className="col-span-12 flex flex-col justify-end gap-6 lg:col-span-3">
+                <p className="text-sm text-stone-700">
+                  {t(
+                    "shopDescription",
+                    "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
+                  )}
+                </p>
+              </aside>
+            </div>
+          </div>
+        </section>
         {activeChips.length > 0 && (
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-5 mb-6 flex flex-wrap items-center gap-2">
             {activeChips.map((c, i) => (
               <span
                 key={i}
@@ -1130,55 +1264,305 @@ export default function FilterProducts() {
       </section>
 
       {/* Products — grid */}
-      <section className="mx-auto max-w-[1500px] px-8 pb-24 pt-10">
+      <section className="mx-auto max-w-10xl px-8 pb-24">
         {isSearching ? (
-         <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]">
-
+          <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : (
           <>
-          <div 
-  className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px]"
-  style={{ overflowAnchor: "none" }}
->
-  {filteredProducts.map((p, i) => (
+            {showFeaturedIntro && (
+              <div className="mb-[3px]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
+                  <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+                    {featuredProducts.slice(0, 4).map((p, i) => (
+                      <div key={p.id} className="w-full">
+                        <LandingCards
+                          product={p}
+                          showNav={true}
+                          index={i}
+                          compact={false}
+                          compactButtons={true}
+                          raisedLabel={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="h-64 sm:h-full">
+                    <LandingCards
+                      product={featuredProducts[4]}
+                      showNav={true}
+                      index={4}
+                      compact={false}
+                      compactButtons={true}
+                      raisedLabel={true}
+                      fillHeight
+                      forceVideo
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
+                  <div className="h-64 sm:h-full">
+                    <LandingCards
+                      product={featuredProducts[5]}
+                      showNav={true}
+                      index={5}
+                      compact={false}
+                      compactButtons={true}
+                      raisedLabel={true}
+                      fillHeight
+                      forceVideo
+                    />
+                  </div>
+                  <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+                    {featuredProducts.slice(6, 10).map((p, i) => (
+                      <div key={p.id} className="w-full">
+                        <LandingCards
+                          product={p}
+                          showNav={true}
+                          index={i + 6}
+                          compact={false}
+                          compactButtons={true}
+                          raisedLabel={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              style={{ overflowAnchor: "none" }}
+            >
+              {restProducts.map((p, i) => (
                 <div key={p.id} className="w-full">
-                <LandingCards product={p} showNav={true} index={i} compact={false} compactButtons={true} raisedLabel={true} />
-
-
+                  <LandingCards
+                    product={p}
+                    showNav={true}
+                    index={restStartIndex + i}
+                    compact={false}
+                    compactButtons={true}
+                    raisedLabel={true}
+                  />
                 </div>
               ))}
-             </div>
+            </div>
 
-{isFetchingMore && (
-  <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-[5px] mt-[3px]">
-    {Array.from({ length: 4 }).map((_, i) => (
-      <SkeletonCard key={`more-${i}`} />
-    ))}
-  </div>
-)}
-{filteredProducts.length === 0 && hasSearched && (
+            {filteredProducts.length === 0 && hasSearched && (
               <div className="flex flex-col items-center justify-center py-28 text-center">
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100">
                   <LuSearch className="h-7 w-7 text-stone-400" />
                 </div>
-                <p className="font-serif text-2xl text-stone-800">{t("noResultsFound", "No results found")}</p>
-                <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
-                  {t("noResultsDesc", "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.")}
+                <p className="font-serif text-2xl text-stone-800">
+                  {t("noResultsFound", "No results found")}
                 </p>
+                <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
+                  {t(
+                    "noResultsDesc",
+                    "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.",
+                  )}
+                </p>
+              </div>
+            )}
+
+            {page < lastPage && (
+              <div className="flex justify-center pt-10">
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  disabled={isFetchingMore}
+                  className="flex items-center gap-2 border border-stone-900 text-stone-900 text-xs font-semibold uppercase tracking-wider px-8 py-3 hover:bg-stone-900 hover:text-white transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isFetchingMore && (
+                    <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {isFetchingMore
+                    ? t("loading", "Loading...")
+                    : t("loadMore", "Load More")}
+                </button>
               </div>
             )}
           </>
         )}
       </section>
 
-   {/* Sentinel: always render when more pages exist to prevent layout thrash on macOS Chrome */}
-   {page < lastPage && (
-     <div ref={sentinelRef} className="h-1" aria-hidden style={{ overflowAnchor: "none" }} />
-   )}
+      {!isSearching && (
+        <section className="mx-auto max-w-10xl px-8 pb-16">
+          <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
+            {t("recentlyViewed", "Recently Viewed")}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
+            {RECENTLY_VIEWED.map((item, i) => (
+              <div
+                key={item.id}
+                className="relative aspect-[4/5] bg-[#f3f3f3] overflow-hidden"
+              >
+                {i === 0 && (
+                  <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5">
+                    {[0, 1, 2, 3].map((s) => (
+                      <LuStar key={s} className="h-3 w-3 text-black" fill="currentColor" />
+                    ))}
+                    <LuStar className="h-3 w-3 text-black" />
+                  </div>
+                )}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-full w-full object-cover"
+                />
+                {i === 0 ? (
+                  <button
+                    type="button"
+                    className="absolute bottom-0 left-0 right-0 bg-black py-2.5 text-xs font-semibold uppercase tracking-widest text-white cursor-pointer"
+                  >
+                    {t("addToCart", "Add to Cart")} – {item.price} €
+                  </button>
+                ) : (
+                  <p className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2 text-xs font-medium text-black">
+                    {item.name} —{" "}
+                    <span className="text-stone-500">{item.price} €</span>
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!isSearching && (
+        <section className="mx-auto max-w-10xl px-8 pb-20">
+          <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2">
+            <div>
+              <h2 className="mb-6 font-serif text-4xl text-stone-900 sm:text-5xl">
+                {t("ourAdvices.title", "Our Advices")}
+              </h2>
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src="/distributorImg.jpg"
+                  alt={t("ourAdvices.title", "Our Advices")}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.introTitle",
+                    "How to choose the right care for your pet?",
+                  )}
+                </h3>
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.introBody",
+                    "Every pet is different — their coat, skin and lifestyle all play a role in choosing the right care routine. Our experts share their advice to help you pick the most suitable formulation for your companion.",
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step1Title",
+                    "Step 1: Assess your pet's lifestyle",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step1Intro",
+                    "Every pet has different needs depending on their environment and daily routine.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step1Bullet1",
+                      "Indoor pets: even indoor pets benefit from a gentle, regular care routine.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step1Bullet2",
+                      "Outdoor pets: pets that walk, swim or play outside need more frequent care and protection.",
+                    )}
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step2Title",
+                    "Step 2: Choose the right formulation",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step2Intro",
+                    "Our ranges are designed to suit different needs and lifestyles.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet1",
+                      "For everyday care: choose a gentle, everyday formulation.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet2",
+                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet3",
+                      "For multi-pet households: look for products safe to use across species.",
+                    )}
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.whyTitle",
+                    "Why does the right routine matter?",
+                  )}
+                </h4>
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.whyBody",
+                    "The wrong products can cause discomfort, dryness or irritation. Using a routine adapted to your pet helps keep them comfortable while supporting their overall well-being.",
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.whenTitle",
+                    "When should you apply this routine?",
+                  )}
+                </h4>
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.whenBody",
+                    "For best results, stay consistent throughout the year and follow the recommended usage on your chosen product, adjusting as your pet's needs evolve.",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
@@ -1186,9 +1570,26 @@ export default function FilterProducts() {
 }
 
 // ───────────── Filter Rail ─────────────
-function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUniverse, hasFamily, hasSpec, dynamicLists }) {
+function FilterRail({
+  categoriesList,
+  state,
+  setters,
+  options,
+  hasAnimal,
+  hasUniverse,
+  hasFamily,
+  hasSpec,
+  dynamicLists,
+}) {
   const { t } = useTranslation("filter");
-  const { RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench } = dynamicLists;
+  const {
+    RANGES_LIST,
+    SIZES_LIST,
+    COLORS_LIST,
+    COLOR_SWATCHES_MAP,
+    translateName,
+    isFrench,
+  } = dynamicLists;
   const [openKey, setOpenKey] = useState(null);
   const [allOpen, setAllOpen] = useState(false);
   const ref = useRef(null);
@@ -1203,38 +1604,78 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
 
   const groups = [
     {
-      key: "animal", label: "Category", values: state.animals,
+      key: "animal",
+      label: "Category",
+      values: state.animals,
       options: categoriesList.map((c) => c.name),
       setter: (v) => setters.setAnimals((p) => toggle(p, v)),
     },
     {
-      key: "family", label: "Family", values: state.families, options: options.familyOptions,
+      key: "family",
+      label: "Family",
+      values: state.families,
+      options: options.familyOptions,
       setter: (v) => setters.setFamilies((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
     {
-      key: "specificity", label: "Specificity", values: state.specificity, options: options.specificityOptions,
+      key: "specificity",
+      label: "Specificity",
+      values: state.specificity,
+      options: options.specificityOptions,
       setter: (v) => setters.setSpecificity((p) => toggle(p, v)),
-      disabled: !hasFamily, tip: "Select a family first",
+      disabled: !hasFamily,
+      tip: "Select a family first",
     },
     {
-      key: "needs", label: "Needs", values: state.needs, options: options.needsOptions,
+      key: "needs",
+      label: "Needs",
+      values: state.needs,
+      options: options.needsOptions,
       setter: (v) => setters.setNeeds((p) => toggle(p, v)),
-      disabled: !hasSpec, tip: "Select a specificity first",
+      disabled: !hasSpec,
+      tip: "Select a specificity first",
     },
     {
-      key: "breed", label: "Breed", values: state.breeds, options: options.breedOptions,
+      key: "breed",
+      label: "Breed",
+      values: state.breeds,
+      options: options.breedOptions,
       setter: (v) => setters.setBreeds((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
     {
-      key: "forwhich", label: "For Which", values: state.forWhich, options: options.forWhichOptions,
+      key: "forwhich",
+      label: "For Which",
+      values: state.forWhich,
+      options: options.forWhichOptions,
       setter: (v) => setters.setForWhich((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
-    { key: "range", label: "Range", values: state.ranges, options: RANGES_LIST, setter: (v) => setters.setRanges((p) => toggle(p, v)) },
-    { key: "size", label: "Size", values: state.sizes, options: SIZES_LIST, setter: (v) => setters.setSizes((p) => toggle(p, v)) },
-    { key: "color", label: "Color", values: state.colors, options: COLORS_LIST, setter: (v) => setters.setColors((p) => toggle(p, v)) },
+    {
+      key: "range",
+      label: "Range",
+      values: state.ranges,
+      options: RANGES_LIST,
+      setter: (v) => setters.setRanges((p) => toggle(p, v)),
+    },
+    {
+      key: "size",
+      label: "Size",
+      values: state.sizes,
+      options: SIZES_LIST,
+      setter: (v) => setters.setSizes((p) => toggle(p, v)),
+    },
+    {
+      key: "color",
+      label: "Color",
+      values: state.colors,
+      options: COLORS_LIST,
+      setter: (v) => setters.setColors((p) => toggle(p, v)),
+    },
   ];
 
   const activeGroup = groups.find((g) => g.key === openKey);
@@ -1251,15 +1692,25 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
     state.colors.length;
 
   const clearAll = () => {
-    setters.setAnimals([]); setters.setUniverse([]); setters.setFamilies([]); setters.setSpecificity([]);
-    setters.setNeeds([]); setters.setBreeds([]); setters.setForWhich([]);
-    setters.setRanges([]); setters.setSizes([]); setters.setColors([]);
+    setters.setAnimals([]);
+    setters.setUniverse([]);
+    setters.setFamilies([]);
+    setters.setSpecificity([]);
+    setters.setNeeds([]);
+    setters.setBreeds([]);
+    setters.setForWhich([]);
+    setters.setRanges([]);
+    setters.setSizes([]);
+    setters.setColors([]);
   };
 
   return (
-    <div ref={ref} className="sticky top-[104px] z-39 border-y border-stone-900/10 bg-white/95 backdrop-blur">
+    <div
+      ref={ref}
+      className="sticky top-[104px] z-39 border-b border-stone-900/10 bg-white"
+    >
       {/* Mobile: single prominent CTA that opens the full filters modal */}
-      <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-5 py-3 md:hidden">
+      <div className="mx-auto flex max-w-10xl items-center gap-3 px-5 py-3 md:hidden">
         <button
           onClick={() => setAllOpen(true)}
           className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-900 bg-stone-900 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-sm active:scale-[0.99] cursor-pointer"
@@ -1272,25 +1723,27 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
             </span>
           )}
         </button>
-       <button
-  onClick={() => setOpenKey(openKey === "price" ? null : "price")}
-  className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${openKey === "price" ? "bg-stone-100 text-stone-900" : ""}`}
->
-  €{state.price}
-  <LuChevronDown className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`} />
-</button>
+        <button
+          onClick={() => setOpenKey(openKey === "price" ? null : "price")}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${openKey === "price" ? "bg-stone-100 text-stone-900" : ""}`}
+        >
+          €{state.price}
+          <LuChevronDown
+            className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
+          />
+        </button>
       </div>
 
       {/* Desktop / tablet: existing horizontal tab rail */}
       <div className="relative hidden md:block">
-        <div className="filter-rail-scroll mx-auto flex max-w-[1500px] items-stretch gap-1 overflow-x-auto px-8">
-
+        <div className="filter-rail-scroll mx-auto flex max-w-10xl items-stretch gap-1 overflow-x-auto px-8">
           <button
             onClick={() => setAllOpen(true)}
             className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
             title="Open all filters"
           >
-            <LuSlidersHorizontal className="h-3.5 w-3.5" /> {t("filter", "Filter")}
+            <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
+            {t("filter", "Filter")}
             {totalActive > 0 && (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case ai-style-change-1">
                 {totalActive}
@@ -1312,7 +1765,9 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
             className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${openKey === "price" ? "bg-white text-stone-900" : ""}`}
           >
             {t("price", "Price")} · €{state.price}
-            <LuChevronDown className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`} />
+            <LuChevronDown
+              className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -1326,7 +1781,14 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
         options={options}
         hasAnimal={hasAnimal}
         onClose={() => setOpenKey(null)}
-        dynamicLists={{ RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench }}
+        dynamicLists={{
+          RANGES_LIST,
+          SIZES_LIST,
+          COLORS_LIST,
+          COLOR_SWATCHES_MAP,
+          translateName,
+          isFrench,
+        }}
       />
 
       {allOpen && (
@@ -1346,7 +1808,17 @@ function FilterRail({ categoriesList, state, setters, options, hasAnimal, hasUni
   );
 }
 
-function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onClose, colorSwatches, translateName, isFrench }) {
+function AllFiltersModal({
+  groups,
+  price,
+  setPrice,
+  totalActive,
+  onClearAll,
+  onClose,
+  colorSwatches,
+  translateName,
+  isFrench,
+}) {
   const { t } = useTranslation("filter");
   const [isClosing, setIsClosing] = useState(false);
 
@@ -1407,16 +1879,22 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-7 py-6">
-          {groups.filter((g) => !g.disabled).map((g) => (
-            <ModalGroupSection key={g.key} g={g} colorSwatches={colorSwatches} translateName={translateName} isFrench={isFrench} />
-          ))}
+          {groups
+            .filter((g) => !g.disabled)
+            .map((g) => (
+              <ModalGroupSection
+                key={g.key}
+                g={g}
+                colorSwatches={colorSwatches}
+                translateName={translateName}
+                isFrench={isFrench}
+              />
+            ))}
 
           {/* Price */}
           <section className="border-t text-stone-900 border-stone-900/10 py-5">
             <div className="mb-3 flex items-baseline justify-between">
-              <h3 className="font-serif text-lg">
-                {t("price", "Price")}
-              </h3>
+              <h3 className="font-serif text-lg">{t("price", "Price")}</h3>
               <span className="font-serif text-xl">€{price}</span>
             </div>
             <input
@@ -1428,7 +1906,8 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
               className="h-1 w-full accent-stone-900 cursor-pointer"
             />
             <div className="mt-2 flex justify-between  text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              <span>€0</span><span>€500</span>
+              <span>€0</span>
+              <span>€500</span>
             </div>
           </section>
         </div>
@@ -1450,12 +1929,18 @@ function AllFiltersModal({ groups, price, setPrice, totalActive, onClearAll, onC
         </div>
       </aside>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 function shouldShowSearchInput(group) {
-  const largeOptionGroups = ["animal", "universe", "family", "specificity", "breed"];
+  const largeOptionGroups = [
+    "animal",
+    "universe",
+    "family",
+    "specificity",
+    "breed",
+  ];
   if (largeOptionGroups.includes(group.key)) {
     return group.options.length > 30;
   }
@@ -1467,12 +1952,15 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
   const { t } = useTranslation("filter");
   const [q, setQ] = useState("");
   const searchable = shouldShowSearchInput(g);
-  const filtered = searchable && q
-    ? g.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
-    : g.options;
+  const filtered =
+    searchable && q
+      ? g.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
+      : g.options;
   const isColor = g.key === "color";
   const displayTitle = t(`labels.${g.key}`, g.label);
-  const searchPlaceholder = t("searchGroupPlaceholder", { label: displayTitle.toLowerCase() });
+  const searchPlaceholder = t("searchGroupPlaceholder", {
+    label: displayTitle.toLowerCase(),
+  });
 
   return (
     <section className="border-b border-stone-900/10 py-5 last:border-b-0">
@@ -1481,7 +1969,9 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
           <h3 className="font-serif text-lg text-stone-900">{displayTitle}</h3>
           {g.values.length > 0 && (
             <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              {t("selectedCount", "{{count}} selected", { count: g.values.length })}
+              {t("selectedCount", "{{count}} selected", {
+                count: g.values.length,
+              })}
             </span>
           )}
         </div>
@@ -1493,19 +1983,26 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-9 w-full rounded-full border border-stone-900/15 bg-white pl-8 pr-8 text-xs placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
+            className="h-9 w-full border border-stone-900/15 bg-white pl-8 pr-8 text-xs placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
           />
           {q && (
-            <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer">
+            <button
+              onClick={() => setQ("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
+            >
               <LuX className="h-3 w-3" />
             </button>
           )}
         </div>
       )}
       {filtered.length === 0 ? (
-        <div className="text-xs text-stone-400">{t("noOptions", "No options")}</div>
+        <div className="text-xs text-stone-400">
+          {t("noOptions", "No options")}
+        </div>
       ) : (
-        <div className={`flex flex-wrap gap-2 ${searchable ? "max-h-60 overflow-y-auto pr-1" : ""}`}>
+        <div
+          className={`flex flex-wrap gap-2 ${searchable ? "max-h-60 overflow-y-auto pr-1" : ""}`}
+        >
           {filtered.map((opt) => {
             const on = g.values.includes(opt);
             const swatch = isColor ? colorSwatches?.[opt] : undefined;
@@ -1520,17 +2017,22 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
                 }`}
               >
                 {swatch ? (
-  <span
-    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
-    style={{ background: swatch, ...(swatch.includes("gradient") ? {} : { backgroundColor: swatch }) }}
-    aria-hidden
-  />
-) : on ? (
-  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
-    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
-  </span>
-) : null}
-              {!isColor && translateName(opt)}
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                    style={{
+                      background: swatch,
+                      ...(swatch.includes("gradient")
+                        ? {}
+                        : { backgroundColor: swatch }),
+                    }}
+                    aria-hidden
+                  />
+                ) : on ? (
+                  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
+                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
+                  </span>
+                ) : null}
+                {!isColor && translateName(opt)}
               </button>
             );
           })}
@@ -1545,29 +2047,55 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
   const count = group.values.length;
   const active = count > 0;
   const displayLabel = t(`labels.${group.key}`, group.label);
-  const displayTip = group.disabled ? t(`tips.${group.key}`, group.tip) : undefined;
+  const displayTip = group.disabled
+    ? t(`tips.${group.key}`, group.tip)
+    : undefined;
 
   return (
     <button
-        onClick={onOpen}
-        disabled={group.disabled}
-        title={group.disabled ? displayTip : undefined}
-        className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer font-semibold ai-style-change-3 ${
-          group.disabled ? "cursor-not-allowed text-stone-300" : active ? "text-stone-900 font-semibold" : "text-stone-600 hover:text-stone-900"
-        } ${open ? "bg-stone-100 text-stone-900" : ""}`}
-      >
-        {displayLabel}
-        {active && (
-          <span className="flex h-5 min-w-5 items-center justify-center border border-white border-opacity-15 rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">{count}</span>
-        )}
-        <LuChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+      onClick={onOpen}
+      disabled={group.disabled}
+      title={group.disabled ? displayTip : undefined}
+      className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer font-semibold ai-style-change-3 ${
+        group.disabled
+          ? "cursor-not-allowed text-stone-300"
+          : active
+            ? "text-stone-900 font-semibold"
+            : "text-stone-600 hover:text-stone-900"
+      } ${open ? "bg-stone-100 text-stone-900" : ""}`}
+    >
+      {displayLabel}
+      {active && (
+        <span className="flex h-5 min-w-5 items-center justify-center border border-white border-opacity-15 rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">
+          {count}
+        </span>
+      )}
+      <LuChevronDown
+        className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`}
+      />
     </button>
   );
 }
 
-function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnimal, onClose, dynamicLists }) {
+function FilterPanel({
+  categoriesList,
+  openKey,
+  state,
+  setters,
+  options,
+  hasAnimal,
+  onClose,
+  dynamicLists,
+}) {
   const { t } = useTranslation("filter");
-  const { RANGES_LIST, SIZES_LIST, COLORS_LIST, COLOR_SWATCHES_MAP, translateName, isFrench } = dynamicLists;
+  const {
+    RANGES_LIST,
+    SIZES_LIST,
+    COLORS_LIST,
+    COLOR_SWATCHES_MAP,
+    translateName,
+    isFrench,
+  } = dynamicLists;
   const [renderedKey, setRenderedKey] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -1596,96 +2124,157 @@ function FilterPanel({ categoriesList, openKey, state, setters, options, hasAnim
   const isPrice = renderedKey === "price";
   const groups = [
     {
-      key: "animal", label: "Category", values: state.animals,
+      key: "animal",
+      label: "Category",
+      values: state.animals,
       options: categoriesList.map((c) => c.name),
       setter: (v) => setters.setAnimals((p) => toggle(p, v)),
     },
     {
-      key: "family", label: "Family", values: state.families, options: options.familyOptions,
+      key: "family",
+      label: "Family",
+      values: state.families,
+      options: options.familyOptions,
       setter: (v) => setters.setFamilies((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
     {
-      key: "specificity", label: "Specificity", values: state.specificity, options: options.specificityOptions,
+      key: "specificity",
+      label: "Specificity",
+      values: state.specificity,
+      options: options.specificityOptions,
       setter: (v) => setters.setSpecificity((p) => toggle(p, v)),
-      disabled: state.families.length === 0, tip: "Select a family first",
+      disabled: state.families.length === 0,
+      tip: "Select a family first",
     },
     {
-      key: "needs", label: "Needs", values: state.needs, options: options.needsOptions,
+      key: "needs",
+      label: "Needs",
+      values: state.needs,
+      options: options.needsOptions,
       setter: (v) => setters.setNeeds((p) => toggle(p, v)),
-      disabled: state.specificity.length === 0, tip: "Select a specificity first",
+      disabled: state.specificity.length === 0,
+      tip: "Select a specificity first",
     },
     {
-      key: "breed", label: "Breed", values: state.breeds, options: options.breedOptions,
+      key: "breed",
+      label: "Breed",
+      values: state.breeds,
+      options: options.breedOptions,
       setter: (v) => setters.setBreeds((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
     {
-      key: "forwhich", label: "For Which", values: state.forWhich, options: options.forWhichOptions,
+      key: "forwhich",
+      label: "For Which",
+      values: state.forWhich,
+      options: options.forWhichOptions,
       setter: (v) => setters.setForWhich((p) => toggle(p, v)),
-      disabled: !hasAnimal, tip: "Select a category first",
+      disabled: !hasAnimal,
+      tip: "Select a category first",
     },
-    { key: "range", label: "Range", values: state.ranges, options: RANGES_LIST, setter: (v) => setters.setRanges((p) => toggle(p, v)) },
-    { key: "size", label: "Size", values: state.sizes, options: SIZES_LIST, setter: (v) => setters.setSizes((p) => toggle(p, v)) },
-    { key: "color", label: "Color", values: state.colors, options: COLORS_LIST, setter: (v) => setters.setColors((p) => toggle(p, v)) },
+    {
+      key: "range",
+      label: "Range",
+      values: state.ranges,
+      options: RANGES_LIST,
+      setter: (v) => setters.setRanges((p) => toggle(p, v)),
+    },
+    {
+      key: "size",
+      label: "Size",
+      values: state.sizes,
+      options: SIZES_LIST,
+      setter: (v) => setters.setSizes((p) => toggle(p, v)),
+    },
+    {
+      key: "color",
+      label: "Color",
+      values: state.colors,
+      options: COLORS_LIST,
+      setter: (v) => setters.setColors((p) => toggle(p, v)),
+    },
   ];
 
   const group = groups.find((g) => g.key === renderedKey);
 
   return (
-    <div 
+    <div
       className={`overflow-hidden transition-all duration-300 ease-in-out border-t border-stone-900/10 bg-stone-100 ${
-        isOpen ? "max-h-[500px] opacity-100 py-6 sm:py-7" : "max-h-0 opacity-0 py-0"
+        isOpen
+          ? "max-h-[500px] opacity-100 py-6 sm:py-7"
+          : "max-h-0 opacity-0 py-0"
       }`}
     >
-      <div className="mx-auto max-w-[1500px] px-8">
+      <div className="mx-auto max-w-10xl px-8">
         {isPrice ? (
-  <div className="flex flex-col gap-4 py-1 md:flex-row md:items-center md:gap-6">
-    {/* Label + value */}
-    <div className="flex items-baseline gap-3 shrink-0">
-      <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-        {t("price", "Price")}
-      </span>
-      <span className="font-serif text-2xl">€{state.price}</span>
-      <span className="text-xs text-stone-500">max</span>
-    </div>
-    {/* Slider + range labels */}
-    <div className="flex flex-1 flex-col gap-1.5">
-      <input
-        type="range" min={0} max={500} value={state.price}
-        onChange={(e) => setters.setPrice(Number(e.target.value))}
-        className="h-1 w-full accent-stone-900 cursor-pointer"
-      />
-      <div className="flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
-        <span>€0</span><span>€500</span>
-      </div>
-    </div>
-    {/* Done button */}
-    <button
-      onClick={onClose}
-      className="self-start rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition md:self-auto"
-    >
-      {t("done", "Done")}
-    </button>
-  </div>
+          <div className="flex flex-col gap-4 py-1 md:flex-row md:items-center md:gap-6">
+            {/* Label + value */}
+            <div className="flex items-baseline gap-3 shrink-0">
+              <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                {t("price", "Price")}
+              </span>
+              <span className="font-serif text-2xl">€{state.price}</span>
+              <span className="text-xs text-stone-500">max</span>
+            </div>
+            {/* Slider + range labels */}
+            <div className="flex flex-1 flex-col gap-1.5">
+              <input
+                type="range"
+                min={0}
+                max={500}
+                value={state.price}
+                onChange={(e) => setters.setPrice(Number(e.target.value))}
+                className="h-1 w-full accent-stone-900 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
+                <span>€0</span>
+                <span>€500</span>
+              </div>
+            </div>
+            {/* Done button */}
+            <button
+              onClick={onClose}
+              className="self-start rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition md:self-auto"
+            >
+              {t("done", "Done")}
+            </button>
+          </div>
         ) : group ? (
-          <FilterSheetContent group={group} onClose={onClose} colorSwatches={COLOR_SWATCHES_MAP} translateName={translateName} isFrench={isFrench} />
+          <FilterSheetContent
+            group={group}
+            onClose={onClose}
+            colorSwatches={COLOR_SWATCHES_MAP}
+            translateName={translateName}
+            isFrench={isFrench}
+          />
         ) : null}
       </div>
     </div>
   );
 }
 
-function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFrench }) {
+function FilterSheetContent({
+  group,
+  onClose,
+  colorSwatches,
+  translateName,
+  isFrench,
+}) {
   const { t } = useTranslation("filter");
   const [q, setQ] = useState("");
   const searchable = shouldShowSearchInput(group);
-  const filtered = searchable && q
-    ? group.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
-    : group.options;
+  const filtered =
+    searchable && q
+      ? group.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
+      : group.options;
   const isColor = group.key === "color";
   const displayTitle = t(`labels.${group.key}`, group.label);
-  const searchPlaceholder = t("searchGroupPlaceholder", { label: displayTitle.toLowerCase() });
+  const searchPlaceholder = t("searchGroupPlaceholder", {
+    label: displayTitle.toLowerCase(),
+  });
 
   useEffect(() => {
     setQ("");
@@ -1701,11 +2290,16 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
           <h3 className="font-serif text-2xl">{displayTitle}</h3>
           {group.values.length > 0 && (
             <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-              {t("selectedCount", "{{count}} selected", { count: group.values.length })}
+              {t("selectedCount", "{{count}} selected", {
+                count: group.values.length,
+              })}
             </span>
           )}
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-900/15 hover:bg-stone-100 cursor-pointer">
+        <button
+          onClick={onClose}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-900/15 hover:bg-stone-100 cursor-pointer"
+        >
           <LuX className="h-4 w-4" />
         </button>
       </div>
@@ -1716,10 +2310,13 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-10 w-full rounded-full border border-stone-900/15 bg-white pl-9 pr-9 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
+            className="h-10 w-full border border-stone-900/15 bg-white pl-9 pr-9 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
           />
           {q && (
-            <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer">
+            <button
+              onClick={() => setQ("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
+            >
               <LuX className="h-3 w-3" />
             </button>
           )}
@@ -1730,7 +2327,9 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
           {t("noOptionsAvailable", "No options available.")}
         </div>
       ) : (
-        <div className={`flex flex-wrap gap-2 ${searchable ? "max-h-[320px] overflow-y-auto pr-1" : ""}`}>
+        <div
+          className={`flex flex-wrap gap-2 ${searchable ? "max-h-[320px] overflow-y-auto pr-1" : ""}`}
+        >
           {filtered.map((opt) => {
             const on = group.values.includes(opt);
             const swatch = isColor ? colorSwatches?.[opt] : undefined;
@@ -1744,18 +2343,23 @@ function FilterSheetContent({ group, onClose, colorSwatches, translateName, isFr
                     : "border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:shadow-sm"
                 }`}
               >
-               {swatch ? (
-  <span
-    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
-    style={{ background: swatch, ...(swatch.includes("gradient") ? {} : { backgroundColor: swatch }) }}
-    aria-hidden
-  />
-) : on ? (
-  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
-    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
-  </span>
-) : null}
-               
+                {swatch ? (
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                    style={{
+                      background: swatch,
+                      ...(swatch.includes("gradient")
+                        ? {}
+                        : { backgroundColor: swatch }),
+                    }}
+                    aria-hidden
+                  />
+                ) : on ? (
+                  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
+                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
+                  </span>
+                ) : null}
+
                 {!isColor && translateName(opt)}
               </button>
             );
@@ -1772,15 +2376,25 @@ function SortMenu({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const ref = useRef(null);
-  const opts = ["Featured", "Newest", "Price · low to high", "Price · high to low"];
+  const opts = [
+    "Featured",
+    "Newest",
+    "Price · low to high",
+    "Price · high to low",
+  ];
 
   const getSortLabel = (key) => {
     switch (key) {
-      case "Featured": return t("sortOptions.featured", "Featured");
-      case "Newest": return t("sortOptions.newest", "Newest");
-      case "Price · low to high": return t("sortOptions.priceLowToHigh", "Price · low to high");
-      case "Price · high to low": return t("sortOptions.priceHighToLow", "Price · high to low");
-      default: return key;
+      case "Featured":
+        return t("sortOptions.featured", "Featured");
+      case "Newest":
+        return t("sortOptions.newest", "Newest");
+      case "Price · low to high":
+        return t("sortOptions.priceLowToHigh", "Price · low to high");
+      case "Price · high to low":
+        return t("sortOptions.priceHighToLow", "Price · high to low");
+      default:
+        return key;
     }
   };
 

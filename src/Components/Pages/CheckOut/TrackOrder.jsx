@@ -974,14 +974,24 @@ function TrackOrder() {
       {/* Social Section */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="border-t border-[#E3E3E3] py-8 md:py-13 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
+          <div className="border-t border-[#E3E3E3] py-8 md:py-13 flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            {/* Left: Image */}
+            <div className="w-full md:w-1/2 shrink-0">
+              <img
+                src="track.jpeg"
+                alt="Pet moment"
+                className="w-full h-64 sm:h-80 md:h-96 object-cover"
+              />
+            </div>
+
+            {/* Right: Text + Buttons */}
+            <div className="w-full md:w-1/2 text-center md:text-left">
               <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-3">
                 Show us your pet's
                 <br />
                 moment.
               </h3>
-              <p className="text-sm  text-gray-500 leading-relaxed max-w-xs">
+              <p className="text-sm text-gray-500 leading-relaxed mb-6">
                 Tag your photos with{" "}
                 <span className="font-semibold text-gray-800">
                   #BioganceNaturally
@@ -989,26 +999,26 @@ function TrackOrder() {
                 and join a community of pet owners who believe in gentler,
                 cleaner care. We share our favourites every week.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-3 shrink-0">
-              <a
-                href="https://www.instagram.com/bioganceofficiel/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center cursor-pointer gap-2 border border-gray-200 hover:border-gray-200  hover:bg-black hover:text-[#fff] text-gray-700 text-sm font-medium py-2.5 px-5 transition-colors"
-              >
-                <CiInstagram size={20} />
-                Instagram
-              </a>
-              <a
-                href="https://www.facebook.com/bioganceofficiel/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 cursor-pointer border border-gray-200 hover:border-gray-200  hover:bg-black hover:text-[#fff] hover:border-gray-400 text-gray-700 text-sm font-medium py-2.5 px-5 transition-colors"
-              >
-                <FaFacebookF size={15} />
-                Facebook
-              </a>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <a
+                  href="https://www.instagram.com/bioganceofficiel/?hl=en"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center cursor-pointer gap-2 border border-gray-200 hover:border-gray-200  hover:bg-black hover:text-[#fff] text-gray-700 text-sm font-medium py-2.5 px-5 transition-colors"
+                >
+                  <CiInstagram size={20} />
+                  Instagram
+                </a>
+                <a
+                  href="https://www.facebook.com/bioganceofficiel/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 cursor-pointer border border-gray-200 hover:border-gray-200  hover:bg-black hover:text-[#fff] hover:border-gray-400 text-gray-700 text-sm font-medium py-2.5 px-5 transition-colors"
+                >
+                  <FaFacebookF size={15} />
+                  Facebook
+                </a>
+              </div>
             </div>
           </div>
         </div>

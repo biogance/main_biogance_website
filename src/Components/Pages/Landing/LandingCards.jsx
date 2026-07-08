@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
@@ -12,7 +11,6 @@ import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
 import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
-import ModalQuickView from "../Modal/ModalQuickView";
 
 
 const toCleanAmount = (val) => {
@@ -67,6 +65,9 @@ export const LandingCards = ({
   compact = false,
   compactButtons = false,
    raisedLabel = false,
+  fillHeight = false,
+  forceVideo = false,
+  promoStyle = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -87,8 +88,10 @@ export const LandingCards = ({
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCardHovered, setIsCardHovered] = useState(false);
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isDropupOpen, setIsDropupOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -198,26 +201,65 @@ export const LandingCards = ({
 
   useEffect(() => {
     if (!videoRef.current || !videoUrl) return;
-    if (isHovered) {
+    if (isHovered || forceVideo) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
     }
-  }, [isHovered, videoUrl]);
+  }, [isHovered, videoUrl, forceVideo]);
 
   // CHANGE 3: title ke pehle 3 letters
   const shortTitle = displayName ? displayName.slice(0, 30) : "";
   const price = safeProduct.price ?? 0;
+
+  const allProducts = safeProduct.products || [];
+  const productType = allProducts[0]?.type || "no-size-color";
+  const uniqueSizes = [...new Set(allProducts.filter((p) => p.size_name).map((p) => p.size_name))];
+  const uniqueColors = [...new Set(allProducts.filter((p) => p.color_name).map((p) => p.color_name))];
+  const hasSizes = (productType === "size" || productType === "size-color") && uniqueSizes.length > 0;
+  const hasColors = (productType === "color" || productType === "size-color") && uniqueColors.length > 0;
+
+  const handleDropupSelect = async (size, color) => {
+    const matchedProduct = allProducts.find((p) => {
+      if (productType === "size-color") return p.size_name === size && p.color_name === color;
+      if (productType === "size") return p.size_name === size;
+      if (productType === "color") return p.color_name === color;
+      return true;
+    }) || allProducts[0];
+    if (!matchedProduct) return;
+    setAddingToCart(true);
+    setIsDropupOpen(false);
+    try {
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await axios.post(
+        `${BASE_URL}/user/cart/create`,
+        token ? { product_id: matchedProduct.id, quantity: 1 } : { device_id: getDeviceId(), product_id: matchedProduct.id, quantity: 1 },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      );
+      if (res.data.status === false) {
+        toast.error(res.data.action || "Could not add to cart.");
+      } else {
+        mergeCartItem(res.data.data);
+        setIsCartOpen(true);
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   return (
     <div className="w-full h-full flex flex-col">
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes btnSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
      <div
-  className={`bg-[#f3f3f3] relative flex flex-col ${compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
+  className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
   onClick={() => {
@@ -248,6 +290,15 @@ export const LandingCards = ({
           // Replace karo:
           <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 z-10`}>
             -20%
+          </div>
+        )}
+
+        {promoStyle && (
+          <div className="absolute top-3 left-3 flex items-center gap-0.5 z-10">
+            {[0, 1, 2, 3].map((s) => (
+              <FaStar key={s} className="w-3 h-3 text-black" />
+            ))}
+            <FaRegStar className="w-3 h-3 text-black" />
           </div>
         )}
 
@@ -348,7 +399,7 @@ export const LandingCards = ({
               className="absolute inset-0 w-full h-full object-cover"
               muted
               playsInline
-              preload="none"
+              preload={forceVideo ? "auto" : "none"}
               loop
               disablePictureInPicture
               disableRemotePlayback
@@ -357,13 +408,13 @@ export const LandingCards = ({
               style={{
                 pointerEvents: "none",
                 zIndex: 2,
-                opacity: isHovered && isVideoReady ? 1 : 0,
+                opacity: (isHovered || forceVideo) && isVideoReady ? 1 : 0,
                 transition: "opacity 0.2s ease",
               }}
             />
           )}
-     
-{isHovered && videoUrl && !isVideoReady && (
+
+{(isHovered || forceVideo) && videoUrl && !isVideoReady && (
   <div
     className="absolute inset-0 flex items-center justify-center"
     style={{ zIndex: 3, background: "#f3f3f3" }}
@@ -404,35 +455,34 @@ export const LandingCards = ({
             </div>
           )} */}
 
-         {/* Title + Price / QuickView overlay */}
+         {/* Title + Price / Add to Cart overlay */}
 <div
    className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
-
   style={{ zIndex: 7 }}
 >
-  {/* Title + Price — hover pe hide */}
+  {/* Title + Price — hover pe hide (promoStyle mein hamesha hidden) */}
   <p
     className="text-black text-xs font-medium truncate cursor-pointer"
     style={{
       margin: 0,
-      opacity: isCardHovered ? 0 : 1,
+      opacity: isCardHovered || promoStyle ? 0 : 1,
       transition: "opacity 0.2s ease",
-      pointerEvents: isCardHovered ? "none" : "auto",
+      pointerEvents: isCardHovered || promoStyle ? "none" : "auto",
     }}
   >
    {shortTitle} — <span style={{ color: "#6d6d6d" }}>{formatPrice(price, i18n.language)} €</span>
   </p>
 
-  {/* QuickView OR Add to Cart button — hover pe show */}
+  {/* QuickView OR Add to Cart button — hover pe show (promoStyle mein hamesha visible) */}
   <div
     style={{
       position: "absolute",
       bottom: 0,
       left: "12px",
       right: "12px",
-      opacity: isCardHovered ? 1 : 0,
+      opacity: isCardHovered || promoStyle ? 1 : 0,
       transition: "opacity 0.2s ease",
-      pointerEvents: isCardHovered ? "auto" : "none",
+      pointerEvents: isCardHovered || promoStyle ? "auto" : "none",
     }}
   >
     {isSingleProduct ? (
@@ -440,10 +490,10 @@ export const LandingCards = ({
       <button
         className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
         style={{
-          backgroundColor: "white",
-          color: "black",
+          backgroundColor: promoStyle ? "black" : "white",
+          color: promoStyle ? "white" : "black",
           border: "none",
-       
+
           transition: "background-color 0.2s ease, color 0.2s ease",
         }}
         onMouseEnter={(e) => {
@@ -451,8 +501,8 @@ export const LandingCards = ({
           e.currentTarget.style.color = "white";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "white";
-          e.currentTarget.style.color = "black";
+          e.currentTarget.style.backgroundColor = promoStyle ? "black" : "white";
+          e.currentTarget.style.color = promoStyle ? "white" : "black";
         }}
         onClick={async (e) => {
   e.stopPropagation();
@@ -502,50 +552,104 @@ export const LandingCards = ({
         )}
       </button>
     ) : (
-      /* Multiple products → Quickview button */
-      <button
-        className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-        style={{
-          backgroundColor: "white",
-          color: "black",
-          border: "none",
-         
-          transition: "background-color 0.2s ease, color 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "black";
-          e.currentTarget.style.color = "white";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "white";
-          e.currentTarget.style.color = "black";
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsQuickViewOpen(true);
-        }}
-      >
-        {t("products.quickview")}
-      </button>
+      /* Multiple products → button click pe dropup in-place expand */
+      <div style={{ position: "relative" }}>
+        <button
+          className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
+          style={{
+            backgroundColor: addingToCart || promoStyle ? "black" : "white",
+            color: addingToCart || promoStyle ? "white" : "black",
+            border: "none",
+            visibility: isDropupOpen ? "hidden" : "visible",
+            transition: "background-color 0.2s ease, color 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "black"; e.currentTarget.style.color = "white"; }}
+          onMouseLeave={(e) => { if (!addingToCart) { e.currentTarget.style.backgroundColor = promoStyle ? "black" : "white"; e.currentTarget.style.color = promoStyle ? "white" : "black"; } }}
+          onClick={(e) => { e.stopPropagation(); setSelectedSize(null); setSelectedColor(null); setIsDropupOpen(true); }}
+        >
+          {addingToCart
+            ? <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: "50%", border: "2px solid white", borderTopColor: "transparent", animation: "btnSpin 0.75s linear infinite", verticalAlign: "middle" }} />
+            : <>{t("products.addToCart")} – {formatPrice(safeProduct.price, i18n.language)} €</>}
+        </button>
+
+        {/* Dropup — maxHeight animation for smooth open/close */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9,
+            maxHeight: isDropupOpen ? "300px" : "0px",
+            overflow: "hidden",
+            transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            backgroundColor: "#fff",
+          }}
+        >
+          <div style={{ padding: "12px", position: "relative" }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsDropupOpen(false); }}
+              style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14, lineHeight: 1, color: "#555" }}
+            >✕</button>
+
+            {hasSizes && (
+              <div style={{ marginBottom: hasColors ? 10 : 0 }}>
+                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "#111", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("products.size") || "Size"}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {uniqueSizes.map((size) => (
+                    <button key={size}
+                      onClick={(e) => { e.stopPropagation(); setSelectedSize(size); if (!hasColors) handleDropupSelect(size, selectedColor); }}
+                      style={{ padding: "5px 12px", fontSize: 12, cursor: "pointer", border: selectedSize === size ? "1.5px solid #111" : "1.5px solid #ddd", backgroundColor: selectedSize === size ? "#111" : "#fff", color: selectedSize === size ? "#fff" : "#111", transition: "all 0.15s" }}
+                    >{size}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hasColors && (
+              <div style={{ marginBottom: hasSizes && hasColors ? 10 : 0 }}>
+                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "#111", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("products.color") || "Color"}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {uniqueColors.map((color) => (
+                    <button key={color}
+                      onClick={(e) => { e.stopPropagation(); setSelectedColor(color); if (!hasSizes) handleDropupSelect(selectedSize, color); }}
+                      style={{ padding: "5px 12px", fontSize: 12, cursor: "pointer", border: selectedColor === color ? "1.5px solid #111" : "1.5px solid #ddd", backgroundColor: selectedColor === color ? "#111" : "#fff", color: selectedColor === color ? "#fff" : "#111", transition: "all 0.15s" }}
+                    >{color}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hasSizes && hasColors && (
+              <button
+                onClick={(e) => { e.stopPropagation(); if (selectedSize && selectedColor) handleDropupSelect(selectedSize, selectedColor); }}
+                disabled={!selectedSize || !selectedColor}
+                style={{ width: "100%", padding: "8px", fontSize: 12, fontWeight: 600, backgroundColor: selectedSize && selectedColor ? "#111" : "#ccc", color: "#fff", border: "none", cursor: selectedSize && selectedColor ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase", transition: "background 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                {addingToCart
+                  ? <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", animation: "lcSpin 0.75s linear infinite" }} />
+                  : t("products.addToCart")}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     )}
   </div>
 </div>
         </div>
+
       </div>
 
-      {/* ModalQuickView */}
-      <ModalQuickView
-        isOpen={isQuickViewOpen}
-        onClose={() => setIsQuickViewOpen(false)}
-        onCartOpen={() => setIsCartOpen(true)}
+      <ModalAddToCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
         product={safeProduct}
-        fullProductData={safeProduct._raw || safeProduct}
       />
-<ModalAddToCart
-  isOpen={isCartOpen}
-  onClose={() => setIsCartOpen(false)}
-  product={safeProduct}
-/>
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">
         <h3
