@@ -32,6 +32,8 @@ const VALID_ROUTES = [
   "/my-account",
   "/my-account/dashboard",
   "/checkout",
+  "/expert-advice",
+  "/expert-detail",
 ];
 
 export function callSplashApi() {
