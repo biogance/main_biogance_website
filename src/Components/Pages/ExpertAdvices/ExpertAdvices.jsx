@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
-import { FiSearch, FiClock, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiSearch, FiClock, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import {
   GoArrowUpRight,
@@ -33,6 +33,15 @@ const TOPICS = [
   "Emergency Care",
   "Seasonal Tips",
   "Product Reviews",
+  "Skin & Coat",
+  "Vaccination",
+  "Weight Management",
+  "Travel Tips",
+  "Adoption Guides",
+  "Exercise & Play",
+  "Allergies",
+  "Parasite Prevention",
+  "Sustainability",
 ];
 
 const ROWS_PER_PAGE = 3;
@@ -282,7 +291,7 @@ function ArticleRow({ label, icon: Icon, items }) {
               key={item.id}
               data-card
               onClick={() => router.push("/expert-detail")}
-              className="border border-gray-200 shrink-0 snap-start cursor-pointer"
+              className="border border-gray-200 shrink-0 snap-start cursor-pointer group overflow-hidden"
               style={{
                 flexBasis: `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
               }}
@@ -290,7 +299,7 @@ function ArticleRow({ label, icon: Icon, items }) {
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-full h-60 object-cover"
+                className="w-full h-60 object-cover group-hover:scale-105  transition-transform duration-300"
               />
               <div className="p-4 flex items-start justify-between gap-3">
                 <p className="text-xs font-bold uppercase text-gray-900 leading-snug">
@@ -313,6 +322,118 @@ function ArticleRow({ label, icon: Icon, items }) {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function ScrollableTabsRow({ items, activeItem, onSelect }) {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = () => {
+    const track = scrollRef.current;
+    if (!track) return;
+    setCanScrollLeft(track.scrollLeft > 4);
+    setCanScrollRight(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 4,
+    );
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const track = scrollRef.current;
+    if (!track) return;
+    track.addEventListener("scroll", updateScrollState);
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      track.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
+
+  // Topics vary in width ("ALL" vs "PUPPIES & KITTENS"), so a fixed scroll
+  // amount would drift off after a few clicks. Instead, find the topic that's
+  // currently cut off at the edge in the direction we're scrolling, and move
+  // the *minimum* distance needed to bring that one topic fully into view —
+  // never overshooting past it, and never leaving it half-shown.
+  const scrollByOne = (direction) => {
+    const track = scrollRef.current;
+    if (!track) return;
+    const topics = Array.from(track.querySelectorAll("[data-topic]"));
+    if (topics.length === 0) return;
+
+    const viewLeft = track.scrollLeft;
+    const viewRight = viewLeft + track.clientWidth;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+
+    if (direction === 1) {
+      // First topic whose right edge isn't fully visible yet
+      const next = topics.find((el) => el.offsetLeft + el.offsetWidth > viewRight + 1);
+      if (next) {
+        const target = next.offsetLeft + next.offsetWidth - track.clientWidth;
+        track.scrollTo({ left: Math.min(target, maxScroll), behavior: "smooth" });
+      } else {
+        track.scrollTo({ left: maxScroll, behavior: "smooth" });
+      }
+    } else {
+      // Last topic whose left edge isn't fully visible yet
+      const prev = [...topics]
+        .reverse()
+        .find((el) => el.offsetLeft < viewLeft - 1);
+      if (prev) {
+        track.scrollTo({ left: Math.max(prev.offsetLeft, 0), behavior: "smooth" });
+      } else {
+        track.scrollTo({ left: 0, behavior: "smooth" });
+      }
+    }
+  };
+
+  return (
+    <div className="relative flex items-center gap-2 min-w-0">
+      {canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => scrollByOne(-1)}
+          aria-label="Scroll left"
+          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+        >
+          <FiChevronLeft className="w-4 h-4" />
+        </button>
+      )}
+      <div className="relative min-w-0 flex-1">
+        <div
+          ref={scrollRef}
+          className="flex items-center gap-2 overflow-x-auto scroll-smooth min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {items.map((label) => (
+            <div key={label} data-topic className="shrink-0">
+              <TabButton
+                label={label}
+                active={activeItem === label}
+                onClick={() => onSelect(label)}
+              />
+            </div>
+          ))}
+        </div>
+        {canScrollLeft && (
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white via-white/90 to-transparent" />
+        )}
+        {canScrollRight && (
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white via-white/90 to-transparent" />
+        )}
+      </div>
+      {canScrollRight && (
+        <button
+          type="button"
+          onClick={() => scrollByOne(1)}
+          aria-label="Scroll right"
+          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+        >
+          <FiChevronRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }
@@ -344,6 +465,7 @@ function ExpertAdvices() {
   const [search, setSearch] = useState("");
   const [pagesLoaded, setPagesLoaded] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isStuck, setIsStuck] = useState(false);
   const columns = useResponsiveColumns();
   const pageSize = columns * ROWS_PER_PAGE;
 
@@ -360,6 +482,27 @@ function ExpertAdvices() {
   useEffect(() => {
     setPagesLoaded(1);
   }, [activeSpecies, activeTopic, search]);
+
+  // Track whether the sticky filter bar is actually "stuck" against the navbar
+  // (i.e. the user has scrolled the cards below it). When it's stuck we hide
+  // the bottom border so it doesn't look detached while scrolling; when it's
+  // still in its natural flow position (page just loaded / scrolled to top)
+  // the border shows normally.
+  useEffect(() => {
+    const checkStuck = () => {
+      if (!filtersRef.current) return;
+      const rect = filtersRef.current.getBoundingClientRect();
+      setIsStuck(rect.top <= NAVBAR_HEIGHT);
+    };
+
+    checkStuck();
+    window.addEventListener("scroll", checkStuck, { passive: true });
+    window.addEventListener("resize", checkStuck);
+    return () => {
+      window.removeEventListener("scroll", checkStuck);
+      window.removeEventListener("resize", checkStuck);
+    };
+  }, []);
 
   const visibleCount = pageSize * pagesLoaded;
   const visibleArticles = filteredArticles.slice(0, visibleCount);
@@ -427,42 +570,51 @@ function ExpertAdvices() {
           and fully masks anything (e.g. row scroll arrows) behind/around it while stuck */}
       <div ref={filtersRef} className="sticky top-[104px] z-30 bg-white">
         <div className="px-6 sm:px-10 lg:px-16 py-8">
-          <div className="flex  flex-wrap items-center gap-2 mb-4">
-            {SPECIES.map((s) => (
-              <TabButton
-                key={s}
-                label={s}
-                active={activeSpecies === s}
-                onClick={() => setActiveSpecies(s)}
-              />
-            ))}
-          </div>
-
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto md:flex-1 md:min-w-0 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              {TOPICS.map((t) => (
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+              {SPECIES.map((s) => (
                 <TabButton
-                  key={t}
-                  label={t}
-                  active={activeTopic === t}
-                  onClick={() => setActiveTopic(t)}
+                  key={s}
+                  label={s}
+                  active={activeSpecies === s}
+                  onClick={() => setActiveSpecies(s)}
                 />
               ))}
             </div>
 
-            <div className="relative w-full md:w-64 shrink-0">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="group relative w-full md:w-72 shrink-0">
+              <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search rituals..."
-                className="w-full border border-gray-300 pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-gray-900"
+                className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                >
+                  <FiX className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          <hr className="border-t border-gray-200 mt-6" />
+          <ScrollableTabsRow
+            items={TOPICS}
+            activeItem={activeTopic}
+            onSelect={setActiveTopic}
+          />
+
+          <hr
+            className={`border-t border-gray-200 transition-all duration-150 overflow-hidden ${
+              isStuck ? "opacity-0 mt-0 h-0 border-t-0" : "opacity-100 mt-6 h-px"
+            }`}
+          />
         </div>
       </div>
 

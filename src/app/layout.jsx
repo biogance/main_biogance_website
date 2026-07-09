@@ -55,7 +55,11 @@ export default function RootLayout({ children }) {
           <I18nProvider>
             <PageLoader />
             <Suspense fallback={null}><RouteTopLoader /></Suspense>
-            <Toaster position="top-right" toastOptions={{ style: { zIndex: 99999 } }} containerStyle={{ zIndex: 99999 }} />
+            <Toaster
+              position="top-right"
+              toastOptions={{ style: { zIndex: 99999 } }}
+              containerStyle={{ zIndex: 99999, position: 'fixed', inset: 0, pointerEvents: 'none' }}
+            />
             {children}
           </I18nProvider>
         </ReduxProvider>

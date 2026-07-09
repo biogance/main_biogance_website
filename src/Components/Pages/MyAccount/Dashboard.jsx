@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { OrderDetailsModal } from "./ModalBox/OrderDetailsModal";
 import { BASE_URL } from "../../API/API";
 
@@ -185,7 +186,9 @@ export default function Dashboard() {
             headers: { Authorization: `Bearer ${getToken()}` }
           });
           const data = await res.json();
-          if (data?.status) {
+          if (data?.status === false) {
+            toast.error(data?.action || 'Something went wrong.');
+          } else if (data?.status) {
             setLoyaltyPoints(data.data?.loyalty_points ?? 0);
             setTotalOrders(data.data?.total_orders ?? 0);
             setWishlistCount(data.data?.wishlist_count ?? 0);

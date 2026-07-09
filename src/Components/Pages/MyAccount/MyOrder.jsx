@@ -207,6 +207,8 @@ export default function MyOrder() {
     try {
       const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
       const token = loginData?.data?.token;
+      console.log('Token:', token); // debug: token exist karta hai ya nahi
+
       const body = {};
       if (keyword) body.keyword = keyword;
       const sort = getSortParam(sortLabel);
@@ -215,25 +217,39 @@ export default function MyOrder() {
       if (status) body.status = status;
 
       const res = await fetch(`${BASE_URL}/user/order/history?page=${page}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (data?.status === false) {
-        toast.error(data.action || 'Something went wrong.');
-        setOrders([]);
-        setPagination({ current_page: 1, last_page: 1 });
-        return;
-      }
-      const pagination = data?.data;
-      const list = pagination?.data;
-      setOrders(Array.isArray(list) ? list : []);
-      setPagination({ current_page: pagination?.current_page ?? 1, last_page: pagination?.last_page ?? 1 });
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify(body),
+});
+
+const data = await res.json().catch(() => null);
+console.log('API response:', res.status, data);
+
+
+if (data && data.status === false) {
+  toast.error(data.action || 'Something went wrong.');
+  setOrders([]);
+  setPagination({ current_page: 1, last_page: 1 });
+  return;
+}
+
+if (!res.ok) {
+  toast.error(data?.action || 'Something went wrong.');
+  setOrders([]);
+  setPagination({ current_page: 1, last_page: 1 });
+  return;
+}
+
+const pagination = data?.data;
+const list = pagination?.data;
+setOrders(Array.isArray(list) ? list : []);
+setPagination({ current_page: pagination?.current_page ?? 1, last_page: pagination?.last_page ?? 1 });
     } catch (e) {
+      console.log('🔥 Catch block hit:', e); // debug: catch chal raha hai ya nahi
+      toast.error(e?.action || 'Something went wrong. Please try again.');
       setOrders([]);
     } finally {
       setLoadingState('loaded');
@@ -305,7 +321,7 @@ export default function MyOrder() {
   };
 
   return (
-    <div className="bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
@@ -317,12 +333,13 @@ export default function MyOrder() {
         }
       `}} />
 
-      <div className="p-4 md:p-8 max-w-10xl mx-auto">
+      <div className="p-4 md:p-8 mt-8 max-w-10xl mx-auto">
         <div className="bg-white  shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">
             <h2 className="text-2xl font-bold text-gray-900">{t('orderHistory.title')}</h2>
             <p className="text-sm text-gray-600 mt-1">{t('orderHistory.subtitle')}</p>
+            
           </div>
 
           {/* Search + Filters */}
@@ -337,7 +354,7 @@ export default function MyOrder() {
                 onChange={handleSearchChange}
                 className="
                   w-full pl-12 pr-5 py-3
-          plz add shimmers         border border-gray-200 
+                 border border-gray-200 
                   text-sm text-black focus:outline-none focus:ring-2 focus:ring-gray-300
                   placeholder-gray-500 transition-all duration-200
                 "

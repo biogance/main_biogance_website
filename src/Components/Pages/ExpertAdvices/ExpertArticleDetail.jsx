@@ -1,10 +1,12 @@
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { LuPackage } from "react-icons/lu";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 // TODO: hardcoded for now — wire up to the article/blog + product API once available.
 const RITUAL_PRODUCTS = [
@@ -49,26 +51,136 @@ const HABITS = [
   },
 ];
 
+// TODO: hardcoded dummy video for now — wire up to the blog/video API once available.
+const RITUAL_VIDEO = {
+  youtubeId: "aqz-KE-bpKQ",
+  title: "The 3-step shedding ritual, demonstrated",
+};
+
 const MORE_ADVICES = [
-  {
-    id: "ma1",
-    category: "Sensitive skin",
-    title: "How to recognize skin discomfort?",
-    image: "/distributorImg.jpg",
-  },
-  {
-    id: "ma2",
-    category: "Routine",
-    title: "How often should you wash your dog?",
-    image: "/wishlist-img.jpg",
-  },
-  {
-    id: "ma3",
-    category: "Education",
-    title: "Why does he eat my shoes?",
-    image: "/partnerImg.jpg",
-  },
+  { id: "ma1", category: "Sensitive skin", title: "How to recognize skin discomfort?", image: "/distributorImg.jpg" },
+  { id: "ma2", category: "Routine", title: "How often should you wash your dog?", image: "/wishlist-img.jpg" },
+  { id: "ma3", category: "Education", title: "Why does he eat my shoes?", image: "/partnerImg.jpg" },
+  { id: "ma4", category: "Grooming", title: "Building a gentle brushing routine for shedding season", image: "/proImg.jpg" },
+  { id: "ma5", category: "Health", title: "Senior dogs and joints: what to add, what to stop", image: "/cat.png" },
+  { id: "ma6", category: "Behavior", title: "Moving day: helping an anxious cat settle in 72 hours", image: "/distributorImg.jpg" },
+  { id: "ma7", category: "Nutrition", title: "The truth about grain-free diets for cats", image: "/wishlist-img.jpg" },
+  { id: "ma8", category: "Wellness", title: "Five enrichment toys vets actually recommend", image: "/partnerImg.jpg" },
 ];
+
+function RitualVideoSection() {
+  return (
+    <section className="bg-white py-12 md:py-16">
+      <div className="px-6 sm:px-10 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative w-full aspect-video bg-gray-900 overflow-hidden">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/kh8rc7ARjHQ?autoplay=1&mute=1&loop=1&playlist=kh8rc7ARjHQ&controls=1&rel=0"
+              title="Ritual Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+function MoreAdvicesRow({ router }) {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollState = () => {
+    const track = scrollRef.current;
+    if (!track) return;
+    setCanScrollLeft(track.scrollLeft > 4);
+    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(updateScrollState, 50);
+    const track = scrollRef.current;
+    if (!track) return;
+    track.addEventListener("scroll", updateScrollState);
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      clearTimeout(timer);
+      track.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, []);
+
+  const scrollByCard = (direction) => {
+    const track = scrollRef.current;
+    if (!track) return;
+    const card = track.querySelector("[data-card]");
+    const gap = 24;
+    const amount = card ? card.offsetWidth + gap : 320;
+    track.scrollBy({ left: direction * amount, behavior: "smooth" });
+  };
+
+  return (
+    <section className="bg-[#fbf9f7] py-12 md:py-16">
+      <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
+        <div>
+          <p className="text-xs text-gray-400 mb-1">
+            <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>{" "}/{" "}
+            <Link href="/expert-advice" className="hover:text-gray-600 transition-colors">Advice</Link>{" "}/ Expert insight
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">More expert advices.</h2>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => scrollByCard(-1)}
+            disabled={!canScrollLeft}
+            aria-label="Scroll left"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <FiChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByCard(1)}
+            disabled={!canScrollRight}
+            aria-label="Scroll right"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <FiChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {MORE_ADVICES.map((item) => (
+          <div
+            key={item.id}
+            data-card
+            onClick={() => router.push("/expert-detail")}
+            className="relative h-72 shrink-0 overflow-hidden cursor-pointer group"
+            style={{ flexBasis: "calc((100% - 48px) / 3)" }}
+          >
+            <img
+              src={item.image}
+              alt={item.title}
+              className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
+              <p className="text-xs text-white/80 mb-1">{item.category}</p>
+              <p className="text-base font-bold text-white leading-snug">{item.title}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function ExpertArticleDetail() {
   const router = useRouter();
@@ -251,54 +363,11 @@ function ExpertArticleDetail() {
         </div>
       </div>
 
-      {/* More expert advices */}
-      <section className="bg-[#fbf9f7] py-12 md:py-16">
-        <div className="px-6 sm:px-10 lg:px-16">
-          <p className="text-xs text-gray-400 mb-1">
-            <Link href="/" className="hover:text-gray-600 transition-colors">
-              Home
-            </Link>{" "}
-            /{" "}
-            <Link
-              href="/expert-advice"
-              className="hover:text-gray-600 transition-colors"
-            >
-              Advice
-            </Link>{" "}
-            / Expert insight
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">
-            More expert advices.
-          </h2>
-        </div>
+      {/* Ritual video */}
+      <RitualVideoSection video={RITUAL_VIDEO} />
 
-        {/* Cards ke liye alag container (no horizontal padding) */}
-        <div className="-mx-6 sm:-mx-10 lg:-mx-16">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-6 sm:px-10 lg:px-16">
-            {MORE_ADVICES.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => router.push("/expert-detail")}
-                className="relative h-72 overflow-hidden cursor-pointer group"
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
-                  <p className="text-xs text-white/80 mb-1">
-                    {item.category}
-                  </p>
-                  <p className="text-base font-bold text-white leading-snug">
-                    {item.title}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* More expert advices */}
+      <MoreAdvicesRow router={router} />
 
       <Footer />
     </div>

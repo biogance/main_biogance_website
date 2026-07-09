@@ -219,7 +219,11 @@ export const LandingCards = ({
   const allProducts = safeProduct.products || [];
   const productType = allProducts[0]?.type || "no-size-color";
   const uniqueSizes = [...new Set(allProducts.filter((p) => p.size_name).map((p) => p.size_name))];
-  const uniqueColors = [...new Set(allProducts.filter((p) => p.color_name).map((p) => p.color_name))];
+  // Once a size is picked, only show the colors available for that size.
+  const colorSourceProducts = selectedSize
+    ? allProducts.filter((p) => p.size_name === selectedSize)
+    : allProducts;
+  const uniqueColors = [...new Set(colorSourceProducts.filter((p) => p.color_name).map((p) => p.color_name))];
   const hasSizes = (productType === "size" || productType === "size-color") && uniqueSizes.length > 0;
   const hasColors = (productType === "color" || productType === "size-color") && uniqueColors.length > 0;
 
@@ -262,7 +266,7 @@ export const LandingCards = ({
         @keyframes btnSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
      <div
-  className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "aspect-[4/5]" : "aspect-[7/10]"} cursor-pointer`}
+  className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
   onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
   onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
   onClick={() => {
@@ -616,13 +620,35 @@ export const LandingCards = ({
             {hasColors && (
               <div style={{ marginBottom: hasSizes && hasColors ? 10 : 0 }}>
                 <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "#111", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("products.color") || "Color"}</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {uniqueColors.map((color) => (
-                    <button key={color}
-                      onClick={(e) => { e.stopPropagation(); setSelectedColor(color); if (!hasSizes) handleDropupSelect(selectedSize, color); }}
-                      style={{ padding: "5px 12px", fontSize: 12, cursor: "pointer", border: selectedColor === color ? "1.5px solid #111" : "1.5px solid #ddd", backgroundColor: selectedColor === color ? "#111" : "#fff", color: selectedColor === color ? "#fff" : "#111", transition: "all 0.15s" }}
-                    >{color}</button>
-                  ))}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {uniqueColors.map((color) => {
+                    const isDual = color.includes(" & ");
+                    const swatchBg = isDual
+                      ? (() => {
+                          const [a, b] = color.split(" & ").map((p) => p.trim());
+                          return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+                        })()
+                      : color;
+                    return (
+                      <button key={color}
+                        type="button"
+                        title={color}
+                        aria-label={color}
+                        onClick={(e) => { e.stopPropagation(); setSelectedColor(color); if (!hasSizes) handleDropupSelect(selectedSize, color); }}
+                        style={{
+                          width: 26,
+                          height: 26,
+                          padding: 0,
+                          borderRadius: "50%",
+                          cursor: "pointer",
+                          background: swatchBg,
+                          border: selectedColor === color ? "2px solid #111" : "1.5px solid #ddd",
+                          boxShadow: selectedColor === color ? "0 0 0 2px #fff inset" : "none",
+                          transition: "all 0.15s",
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}

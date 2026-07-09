@@ -1,142 +1,199 @@
-"use client"
+"use client";
 
-import { FaCheck } from 'react-icons/fa';
-import dog from "../../../../public/loyaltyMain.png"
-import main from "../../../../public/loyaltyvec.svg"
-import Image from 'next/image';
-import Navbar from '../Navbar';
-import Link from 'next/link';
-import tick from "../../../../public/tick.svg"
-import { BsTicket } from 'react-icons/bs';
-import Footer from '../Footer';
-import Forgotpassword from '../Onboarding/ForgetPassword';
-import { useTranslation } from 'react-i18next';
-// import { FaCheck } from 'react-icons/fa';
+import dog from "../../../../public/loyaltybg.jpg";
+import Image from "next/image";
+import Navbar from "../Navbar";
+import Footer from "../Footer";
+import { useTranslation } from "react-i18next";
+import {
+  FaBirthdayCake,
+  FaEnvelopeOpenText,
+  FaClipboardList,
+  FaTrophy,
+} from "react-icons/fa";
 
 export default function Loyalty() {
-    const { t } = useTranslation('ourloyalty');
-    return (
-        <>
-        <div className="fixed top-0 left-0 right-0 z-50 ">
-             <Navbar bgWhite={true} />
-        </div>
-       
-   <div className="relative h-[450px] sm:h-[400px] md:h-[450px] lg:h-[500px] w-[95%] mx-auto  overflow-hidden mt-12 sm:mt-16 md:mt-35">
-    <div className="absolute inset-0 ">
-        <Image
+  const { t } = useTranslation("ourloyalty");
+
+  const steps = [
+    {
+      number: "01",
+      title: t("step1Title"),
+      description: t("step1Description"),
+    },
+    {
+      number: "02",
+      title: t("step2Title"),
+      description: t("step2Description"),
+    },
+    {
+      number: "03",
+      title: t("step3Title"),
+      description: t("step3Description"),
+    },
+  ];
+
+  const bonusWays = [
+    {
+      icon: FaBirthdayCake,
+      title: t("birthdayTitle"),
+      description: t("birthdayDescription"),
+    },
+    {
+      icon: FaEnvelopeOpenText,
+      title: t("newsletterTitle"),
+      description: t("newsletterDescription"),
+    },
+    {
+      icon: FaClipboardList,
+      title: t("satisfactionTitle"),
+      description: t("satisfactionDescription"),
+    },
+    {
+      icon: FaTrophy,
+      title: t("competitionsTitle"),
+      description: t("competitionsDescription"),
+    },
+  ];
+
+  return (
+    <>
+      <div className="fixed top-0 left-0 right-0 z-50 ">
+        <Navbar bgWhite={true} />
+      </div>
+
+      {/* Hero Section — matches the reference image: eyebrow label, a two-line
+                heading, description stacked naturally below it, and a soft left-side
+                fade over the photo so the text stays readable. */}
+      <div className="relative h-[420px] sm:h-[420px] md:h-[460px] lg:h-[600px] w-[100%] mx-auto overflow-hidden ">
+        <div className="absolute inset-0 ">
+          <Image
             src={dog}
             alt="Background"
             className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/30 sm:from-black/100 sm:via-black/40 sm:to-transparent"></div>
-    </div>
-
-    <div className="relative h-full flex flex-col justify-center text-white px-5 sm:px-6 md:px-8 lg:px-12 py-8">
-        <h1 className="text-white mb-4 sm:mb-4 tracking-wide text-[22px] sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight max-w-full sm:max-w-[90%] md:max-w-[70%] lg:max-w-[600px]">
-            {t('joinLoyaltyProgram')}
-        </h1>
-
-        <p className="text-white/90 text-[13px] sm:text-sm md:text-base mb-5 sm:mb-6 md:mb-8 max-w-full sm:max-w-[85%] md:max-w-[65%] lg:max-w-[55%] leading-relaxed pr-4 sm:pr-0">
-            {t('loyaltyDescription')}
-        </p>
-
-        <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
-            <div className="flex items-center gap-2.5 sm:gap-3 text-white">
-                <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('register')}</span>
-            </div>
-            <div className="flex items-center gap-2.5 sm:gap-3 text-white">
-                <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('earnPoints')}</span>
-            </div>
-            <div className="flex items-center gap-2.5 sm:gap-3 text-white">
-                <img src="doubleTick (2).svg" alt="" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                <span className="text-[13px] sm:text-sm md:text-base font-medium">{t('getRewards')}</span>
-            </div>
+          />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-full sm:max-w-[500px]">
-            <button className="bg-white text-gray-900 px-6 py-3  hover:bg-gray-100 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
-                {t('Registernow')}
-            </button>
-            <button className="bg-transparent text-white border-2 border-white px-6 py-3 hover:bg-white/10 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
-                 {t('discoverproduct')}
-            </button>
+        {/* Fade so the photo stays visible on the right while the text on the left stays readable */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/75 via-white to-transparent md:from-white md:via-white/10 md:to-transparent" />
+
+        <div className="relative h-full flex flex-col justify-center text-black px-5 sm:px-6 md:px-8 lg:px-12 py-8">
+          <span className="text-xs tracking-[0.2em] text-black/50 mb-10 -mt-10">
+            {t("eyebrow")}
+          </span>
+          <h1 className="font-normal text-black mb-6 tracking-[-0.01em] text-3xl sm:text-4xl md:text-5xl lg:text-[52px] leading-[1.15] max-w-full sm:max-w-[85%] md:max-w-[60%] lg:max-w-[560px]">
+            {t("heroTitle")}
+          </h1>
+
+          <p className="text-black mt-15 text-[13px] sm:text-sm max-w-full sm:max-w-[65%] md:max-w-[42%] lg:max-w-[420px] leading-relaxed text-justify">
+            {t("heroDescription")}
+          </p>
         </div>
-    </div>
-</div>
+      </div>
 
+      {/* Steps Section */}
+      <div className="bg-[#fff] py-12 sm:py-16 md:py-20 px-5 sm:px-6 md:px-8 lg:px-12">
+        <div className="max-w-6xl mx-auto  grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 ">
+          {steps.map((step, index) => (
+            <div
+              key={index}
+              className=" group border border-stone-400  p-6 md:p-15 hover:bg-black transition-all duration-300 cursor-pointer"
+            >
+              <span className="block text-4xl md:text-5xl text-stone-300 mb-4 group-hover:text-white transition-colors duration-300">
+                {step.number}
+              </span>
+              <h3 className=" text-lg md:text-3xl text-stone-900 mb-3 group-hover:text-white transition-colors duration-300">
+                {step.title}
+              </h3>
+              <p className="text-stone-800 text-sm leading-relaxed group-hover:text-white transition-colors duration-300">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-     <div className="min-h-screen bg-white flex items-center justify-center p-6">
-      <div className="max-w-8xl w-full">
-        <div className="grid md:grid-cols-2  items-center">
-          {/* Left Image */}
-          <div className="flex justify-center">
-            <Image
-              src={main} 
-              alt="Treasure chest with coins illustration" 
-              className="w-[70%] "
-            />
+      {/* Rewards Stats Section */}
+      <div className="bg-[#1a1a1a] py-12 sm:py-16 md:py-20 px-5 sm:px-6 md:px-8 lg:px-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <h2 className="font-serif text-white text-3xl md:text-4xl lg:text-7xl tracking-[-0.01em] leading-[1.05]">
+            <div className="text-sm mb-5 text-white/60">In Summary</div>
+            {t("rewardsSectionTitle")}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-0">
+            <div className="border border-white/15 p-6 md:p-8">
+              <p className="font-serif text-white text-4xl md:text-5xl mb-2">
+                {t("stat1Value")}
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                {t("stat1Description")}
+              </p>
+            </div>
+            <div className="border border-white/15 p-6 md:p-8">
+              <p className="font-serif text-white text-4xl md:text-5xl mb-2">
+                {t("stat2Value")}
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                {t("stat2Description")}
+              </p>
+            </div>
           </div>
-          
-          {/* Right Content */}
-         <div className=" bg-white p-2 md:p-12">
-      <div className="max-w-7xl">
-        <p className="text-xs tracking-widest text-gray-500 mb-4">
-          {t('joinLoyaltyProgramTitle')}
-        </p>
+        </div>
+      </div>
 
-        <h1 className="text-4xl mb-6 text-gray-900">
-          {t('rewardingLoyaltyTitle')}
-        </h1>
-
-        <p className="text-gray-700 leading-relaxed mb-6">
-          {t('loyaltyProgramDescription')}
-        </p>
-        
-        {/* Bullet Points List */}
-        <ul className="space-y-3 mb-6 list-disc pl-5">
-          <li className="text-gray-700 leading-relaxed">
-            {t('earnPointsDescription')}
-          </li>
-          <li className="text-gray-700 leading-relaxed">
-            {t('discountVoucherDescription')}
-          </li>
-          <li className="text-gray-700 leading-relaxed">
-            {t('bonusDescription')}
-          </li>
-        </ul>
-        
-        <p className="text-gray-700 leading-relaxed mb-6 italic">
-          {t('exclusionNote')}
-        </p>
-
-        {/* Summary Box */}
-        <div className="bg-gray-100 p-6 mb-6">
-          <p className="text-gray-900 mb-3">
-            {t('inSummary')}
+      {/* Even More Ways to Collect Section — matches the reference design exactly:
+                white background, small eyebrow label, large two-line heading with the
+                description positioned to its right at the baseline, four bordered cards,
+                then a separate light-gray terms strip below. */}
+      <div className="bg-white py-14 sm:py-16 md:py-20 px-5 sm:px-6 md:px-8 lg:px-12">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-xs text-stone-300 uppercase tracking-[0.15em] mb-6">
+            {t("moreWaysEyebrow", "Bonus points")}
           </p>
 
-          <ul className="space-y-2 list-disc pl-5">
-            <li className="text-gray-700">
-              {t('summaryPoint1')}
-            </li>
-            <li className="text-gray-700">
-              {t('summaryPoint2')}
-            </li>
-          </ul>
-        </div>
+          <div className="mb-12 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl text-stone-900 tracking-[-0.01em] leading-[1.1] max-w-lg">
+              {t("moreWaysTitle")}
+            </h2>
 
-        {/* Button */}
-        <button className="bg-gray-900 text-white px-6 py-3 hover:bg-gray-800 transition-colors cursor-pointer">
-          {t('manageLoyaltyPoints')}
-        </button>
-      </div>
-    </div>
+            <p className=" ml-auto text-stone-600 text-sm leading-relaxed max-w-sm ">
+              {t("moreWaysDescription")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {bonusWays.map((way, index) => (
+              <div
+  key={index}
+  className="group border border-stone-400 bg-white p-6 md:p-7 transition-all duration-300 cursor-pointer hover:bg-black"
+>
+                <div className="min-h-[3.5rem] md:min-h-[4rem] flex items-start mb-8">
+                    <h3 className="text-lg md:text-xl font-medium text-stone-900 leading-snug transition-colors duration-300 group-hover:text-white">
+      {way.title}
+    </h3>
+                </div>
+                <p className="text-stone-600 text-sm leading-relaxed text-justify transition-colors duration-300 group-hover:text-white">
+    {way.description}
+  </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-    <Footer/>
+
+      <div className="bg-[#f3f3f3] py-7 sm:py-8 px-5 sm:px-6 md:px-8 lg:px-12">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-start gap-2 md:gap-120">
+          <p className="text-xs font-semibold tracking-[0.15em] text-stone-900 uppercase shrink-0">
+            {t("termsLabel", "Terms")}
+          </p>
+          <p className="text-stone-700 text-sm leading-relaxed max-w-7xl">
+            {t("exclusionNote")}
+          </p>
+        </div>
+      </div>
+
+      <Footer />
     </>
-    );
+  );
 }

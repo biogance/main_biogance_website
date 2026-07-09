@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { FiExternalLink } from "react-icons/fi"
 import CreateVoucherModal from "./ModalBox/CreateVoucherModal";
 import { FaRegEdit } from "react-icons/fa";
+import toast from 'react-hot-toast';
 import { BASE_URL } from '../../API/API';
 
 // Shimmer Card Component for Voucher Items
@@ -170,7 +171,9 @@ export default function Loyalty() {
       })
         .then(res => res.json())
         .then(data => {
-          if (data?.status) {
+          if (data?.status === false) {
+            toast.error(data?.action || 'Something went wrong.');
+          } else if (data?.status) {
             setUserBalance(data.data.loyalty_points);
             setVouchers(
               (data.data.vouchers?.data || []).map(v => ({
@@ -217,7 +220,7 @@ export default function Loyalty() {
            }
          `}} />
          <div className="min-h-screen bg-gray-100">
-          <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
+          <div className="p-4 mt-9 sm:p-6 md:p-8 max-w-10xl mx-auto">
             <div className="bg-white  shadow-sm p-6 md:p-8">
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8 flex justify-between items-start">
