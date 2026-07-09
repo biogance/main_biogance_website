@@ -20,7 +20,6 @@ import {
   LuFlame,
   LuMegaphone,
   LuBookOpen,
-  LuStar,
 } from "react-icons/lu";
 
 import Navbar from "../Navbar";
@@ -28,13 +27,6 @@ import Footer from "../Footer";
 import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
-
-// TODO: hardcoded until a dedicated "recently viewed" tracking API exists.
-const RECENTLY_VIEWED = [
-  { id: "rv1", name: "Fleas Away", price: "13.00", image: "/wishlist-img.jpg" },
-  { id: "rv2", name: "Repairing shampoo", price: "10.70", image: "/distributorImg.jpg" },
-  { id: "rv3", name: "Repairing shampoo", price: "10.70", image: "/partnerImg.jpg" },
-];
 
 const GROUP_LABELS_FR = {
   Category: "Catégorie",
@@ -418,12 +410,12 @@ function getShopContext(source, q, categoryName, t) {
 }
 
 const SkeletonCard = () => (
-  <div className="w-full animate-pulse min-h-[420px]" aria-hidden>
-    <div className="bg-stone-100 aspect-[7/10] mb-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
+  <div className="w-full bg-[#f3f3f3] relative overflow-hidden aspect-[7/10]" aria-hidden>
+    <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
+    <div className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2.5">
+      <div className="h-3 w-3/5 rounded bg-stone-200 mb-1.5" />
+      <div className="h-3 w-1/4 rounded bg-stone-200" />
     </div>
-    <div className="h-4 bg-stone-100 rounded w-3/4 mb-2" />
-    <div className="h-4 bg-stone-100 rounded w-1/4" />
   </div>
 );
 
@@ -1205,7 +1197,7 @@ export default function FilterProducts() {
           </div>
         </div>
         {/* Editorial header — context aware */}
-        <section ref={headerRef} className=" bg-[#fbf9f7]">
+        <section ref={headerRef} className="-mx-8 bg-[#fbf9f7]">
           <div className="mx-auto max-w-10xl px-8">
             {/* Row 2 — editorial hero */}
             <div className="grid grid-cols-12 gap-x-8 gap-y-8 pt-6 pb-6">
@@ -1264,7 +1256,7 @@ export default function FilterProducts() {
       </section>
 
       {/* Products — grid */}
-      <section className="mx-auto max-w-10xl px-8 pb-24">
+      <section className="mx-auto max-w-10xl pb-24">
         {isSearching ? (
           <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -1397,37 +1389,16 @@ export default function FilterProducts() {
             {t("recentlyViewed", "Recently Viewed")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
-            {RECENTLY_VIEWED.map((item, i) => (
-              <div
-                key={item.id}
-                className="relative aspect-[4/5] bg-[#f3f3f3] overflow-hidden"
-              >
-                {i === 0 && (
-                  <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5">
-                    {[0, 1, 2, 3].map((s) => (
-                      <LuStar key={s} className="h-3 w-3 text-black" fill="currentColor" />
-                    ))}
-                    <LuStar className="h-3 w-3 text-black" />
-                  </div>
-                )}
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="h-full w-full object-cover"
+            {allProducts.slice(0, 3).map((p, i) => (
+              <div key={p.id} className="w-full">
+                <LandingCards
+                  product={p}
+                  showNav={true}
+                  index={i}
+                  compact={false}
+                  compactButtons={true}
+                  raisedLabel={true}
                 />
-                {i === 0 ? (
-                  <button
-                    type="button"
-                    className="absolute bottom-0 left-0 right-0 bg-black py-2.5 text-xs font-semibold uppercase tracking-widest text-white cursor-pointer"
-                  >
-                    {t("addToCart", "Add to Cart")} – {item.price} €
-                  </button>
-                ) : (
-                  <p className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2 text-xs font-medium text-black">
-                    {item.name} —{" "}
-                    <span className="text-stone-500">{item.price} €</span>
-                  </p>
-                )}
               </div>
             ))}
           </div>
@@ -1436,8 +1407,8 @@ export default function FilterProducts() {
 
       {!isSearching && (
         <section className="mx-auto max-w-10xl px-8 pb-20">
-          <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2">
-            <div>
+          <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
+            <div className="lg:sticky lg:top-[200px] lg:self-start">
               <h2 className="mb-6 font-serif text-4xl text-stone-900 sm:text-5xl">
                 {t("ourAdvices.title", "Our Advices")}
               </h2>
@@ -1529,7 +1500,139 @@ export default function FilterProducts() {
                   </li>
                 </ul>
               </div>
-
+ <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step2Title",
+                    "Step 2: Choose the right formulation",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step2Intro",
+                    "Our ranges are designed to suit different needs and lifestyles.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet1",
+                      "For everyday care: choose a gentle, everyday formulation.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet2",
+                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet3",
+                      "For multi-pet households: look for products safe to use across species.",
+                    )}
+                  </li>
+                </ul>
+              </div> <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step2Title",
+                    "Step 2: Choose the right formulation",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step2Intro",
+                    "Our ranges are designed to suit different needs and lifestyles.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet1",
+                      "For everyday care: choose a gentle, everyday formulation.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet2",
+                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet3",
+                      "For multi-pet households: look for products safe to use across species.",
+                    )}
+                  </li>
+                </ul>
+              </div> <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step2Title",
+                    "Step 2: Choose the right formulation",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step2Intro",
+                    "Our ranges are designed to suit different needs and lifestyles.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet1",
+                      "For everyday care: choose a gentle, everyday formulation.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet2",
+                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet3",
+                      "For multi-pet households: look for products safe to use across species.",
+                    )}
+                  </li>
+                </ul>
+              </div> <div>
+                <h4 className="mb-2 text-sm font-bold text-stone-900">
+                  {t(
+                    "ourAdvices.step2Title",
+                    "Step 2: Choose the right formulation",
+                  )}
+                </h4>
+                <p className="mb-2 text-sm leading-relaxed text-stone-600">
+                  {t(
+                    "ourAdvices.step2Intro",
+                    "Our ranges are designed to suit different needs and lifestyles.",
+                  )}
+                </p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet1",
+                      "For everyday care: choose a gentle, everyday formulation.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet2",
+                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      "ourAdvices.step2Bullet3",
+                      "For multi-pet households: look for products safe to use across species.",
+                    )}
+                  </li>
+                </ul>
+              </div>
               <div>
                 <h4 className="mb-2 text-sm font-bold text-stone-900">
                   {t(

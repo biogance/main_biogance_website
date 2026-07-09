@@ -5,7 +5,6 @@ import { useTranslation, Trans } from "react-i18next";
 import { parseCountry, defaultCountries } from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { FaRegUser } from "react-icons/fa";
 import LoginModal from "../Onboarding/Login";
 import toast from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
@@ -546,6 +545,7 @@ function PhoneFieldBox({
   const { t } = useTranslation("checkout");
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [search, setSearch] = useState("");
   const floatedPhone = focused || (value !== undefined && value !== "");
   const wrapRef = useRef(null);
 
@@ -557,10 +557,20 @@ function PhoneFieldBox({
   const flagUrl = (code) =>
     `https://flagcdn.com/24x18/${(code || "fr").toLowerCase()}.png`;
 
+  const filteredCountries = defaultCountries
+    .map((c) => parseCountry(c))
+    .filter((p) => {
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      return p.name.toLowerCase().includes(q) || p.dialCode.includes(q);
+    });
+
   useEffect(() => {
     const h = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target))
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
         setOpen(false);
+        setSearch("");
+      }
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -580,7 +590,11 @@ function PhoneFieldBox({
       }}
     >
       <div
-        onClick={() => !disabled && setOpen((v) => !v)}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((v) => !v);
+          setSearch("");
+        }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -670,44 +684,93 @@ function PhoneFieldBox({
             border: "1px solid #ddd",
             borderRadius: "3px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            maxHeight: "220px",
-            overflowY: "auto",
             minWidth: "240px",
           }}
         >
-          {defaultCountries.map((c) => {
-            const p = parseCountry(c);
-            return (
-              <div
-                key={p.iso2}
-                onClick={() => {
-                  onCountryChange(p.iso2);
-                  setOpen(false);
-                }}
+          <div style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+            <input
+              type="text"
+              autoFocus
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              placeholder={t("searchCountry")}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid #ddd",
+                borderRadius: "3px",
+                padding: "6px 10px",
+                fontSize: "13px",
+                fontFamily: FONT,
+                outline: "none",
+                color: "#111",
+              }}
+            />
+          </div>
+          <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+            {filteredCountries.length === 0 ? (
+              <p
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "8px 14px",
+                  padding: "14px",
                   fontSize: "13px",
-                  cursor: "pointer",
-                  background: p.iso2 === iso2 ? "#f5f5f5" : "#fff",
+                  color: "#999",
+                  textAlign: "center",
                   fontFamily: FONT,
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f5f5f5")
-                }
-                onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
-                  p.iso2 === iso2 ? "#f5f5f5" : "#fff")
-                }
               >
-                <span style={{ fontSize: "16px" }}>{p.flag}</span>
-                <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
-                <span style={{ color: "#888" }}>+{p.dialCode}</span>
-              </div>
-            );
-          })}
+                {t("noCountryFound")}
+              </p>
+            ) : (
+              filteredCountries.map((p) => (
+                <div
+                  key={p.iso2}
+                  onClick={() => {
+                    onCountryChange(p.iso2);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "8px 14px",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                    background: p.iso2 === iso2 ? "#f5f5f5" : "#fff",
+                    fontFamily: FONT,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#000";
+                    const [nameEl, dialEl] = e.currentTarget.querySelectorAll("span");
+                    if (nameEl) nameEl.style.color = "#fff";
+                    if (dialEl) dialEl.style.color = "#ccc";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background =
+                      p.iso2 === iso2 ? "#f5f5f5" : "#fff";
+                    const [nameEl, dialEl] = e.currentTarget.querySelectorAll("span");
+                    if (nameEl) nameEl.style.color = "#111";
+                    if (dialEl) dialEl.style.color = "#888";
+                  }}
+                >
+                  <img
+                    src={flagUrl(p.iso2)}
+                    alt=""
+                    style={{
+                      width: "18px",
+                      height: "14px",
+                      objectFit: "cover",
+                      borderRadius: "1px",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
+                  <span style={{ color: "#888" }}>+{p.dialCode}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -4430,7 +4493,7 @@ function Checkout({ cartItems = [] }) {
         >
           <img src="logo.svg" alt="" style={{ height: "40px" }} />
         </div>
-        {!isLoggedIn ? (
+        {!isLoggedIn && (
           <div
             style={{
               display: "flex",
@@ -4456,22 +4519,6 @@ function Checkout({ cartItems = [] }) {
             >
               {t("signIn")}
             </button>
-          </div>
-        ) : (
-          <div
-            onClick={() => router.push("/my-account")}
-            style={{
-              display: "flex",
-              cursor: "pointer",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "36px",
-              height: "36px",
-              border: "1px solid #F0EEEE",
-              background: "#FAFAFA",
-            }}
-          >
-            <FaRegUser size={16} color="#111" />
           </div>
         )}
       </div>

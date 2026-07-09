@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CiSearch } from "react-icons/ci";
+import toast from 'react-hot-toast';
 import { BASE_URL } from '@/Components/API/API';
 import {
   MdOutlineKeyboardArrowDown,
@@ -222,6 +223,12 @@ export default function MyOrder() {
         body: JSON.stringify(body),
       });
       const data = await res.json();
+      if (data?.status === false) {
+        toast.error(data.action || 'Something went wrong.');
+        setOrders([]);
+        setPagination({ current_page: 1, last_page: 1 });
+        return;
+      }
       const pagination = data?.data;
       const list = pagination?.data;
       setOrders(Array.isArray(list) ? list : []);
@@ -298,7 +305,7 @@ export default function MyOrder() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="bg-gray-100">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
@@ -310,7 +317,7 @@ export default function MyOrder() {
         }
       `}} />
 
-      <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
+      <div className="p-4 md:p-8 max-w-10xl mx-auto">
         <div className="bg-white  shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">

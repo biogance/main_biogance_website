@@ -100,7 +100,7 @@ export default function MyAccount() {
 
     return (
         <>
-            <Navbar isVideoVisible={!isHeaderTouchingNav} />
+            <Navbar isVideoVisible={!isHeaderTouchingNav} bgWhite={true} />
 
             <div className="bg-gray-100 flex flex-col lg:flex-row pt-[104px] lg:h-screen lg:overflow-hidden">
                 <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />

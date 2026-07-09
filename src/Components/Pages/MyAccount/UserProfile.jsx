@@ -1,13 +1,120 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { FiUser, FiX } from "react-icons/fi"
-import { PhoneInput } from 'react-international-phone';
-import 'react-international-phone/style.css';
+import { MdOutlineKeyboardArrowDown } from "react-icons/md"
+import { FlagImage, defaultCountries, parseCountry } from 'react-international-phone';
 import { RiUserLine } from "react-icons/ri";
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
 
+const getDialCodeByIso2 = (iso2) => {
+    const country = defaultCountries.find((c) => parseCountry(c).iso2 === iso2);
+    return country ? `+${parseCountry(country).dialCode}` : '';
+};
+
+const getIso2ByDialCode = (dialCode) => {
+    if (!dialCode) return 'fr';
+    const clean = String(dialCode).replace('+', '').trim();
+    const country = defaultCountries.find((c) => parseCountry(c).dialCode === clean);
+    return country ? parseCountry(country).iso2 : 'fr';
+};
+
+// Flag + dial code box, with a separate number field and a searchable country dropdown
+function PhoneFieldBox({ iso2, onCountryChange, value, onChange, searchPlaceholder, noResultsLabel }) {
+    const [open, setOpen] = useState(false);
+    const [focused, setFocused] = useState(false);
+    const [search, setSearch] = useState('');
+    const wrapRef = useRef(null);
+    const dialCode = getDialCodeByIso2(iso2 || 'fr');
+
+    const filteredCountries = defaultCountries
+        .map((c) => parseCountry(c))
+        .filter((p) => {
+            const q = search.trim().toLowerCase();
+            if (!q) return true;
+            return p.name.toLowerCase().includes(q) || p.dialCode.includes(q);
+        });
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+                setOpen(false);
+                setSearch('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    return (
+        <div
+            ref={wrapRef}
+            className={`relative flex items-stretch bg-gray-50 border transition-colors ${
+                focused ? 'border-gray-400 ring-2 ring-gray-400' : 'border-gray-200'
+            }`}
+        >
+            {/* Flag + dial code */}
+            <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-3 h-[42px] border-r border-gray-200 shrink-0 cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none"
+            >
+                <FlagImage iso2={iso2 || 'fr'} size="20px" />
+                <span className="text-sm text-gray-700">{dialCode}</span>
+                <MdOutlineKeyboardArrowDown
+                    className={`text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                    size={16}
+                />
+            </button>
+
+            {/* Number */}
+            <div className="relative flex-1">
+                <input
+                    type="tel"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    className="w-full h-[42px] px-4 bg-transparent focus:outline-none text-gray-900 text-sm"
+                />
+            </div>
+
+            {open && (
+                <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 shadow-lg z-20">
+                    <div className="p-2 border-b border-gray-100">
+                        <input
+                            type="text"
+                            autoFocus
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={searchPlaceholder}
+                            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                        />
+                    </div>
+                    <div className="max-h-56 overflow-y-auto">
+                        {filteredCountries.length === 0 ? (
+                            <p className="px-3 py-4 text-sm text-gray-400 text-center">{noResultsLabel}</p>
+                        ) : (
+                            filteredCountries.map((p) => (
+                                <button
+                                    key={p.iso2}
+                                    type="button"
+                                    onClick={() => { onCountryChange(p.iso2); setOpen(false); setSearch(''); }}
+                                    className={`group w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-900 hover:bg-black hover:text-white transition-colors cursor-pointer ${p.iso2 === iso2 ? 'bg-gray-100' : ''}`}
+                                >
+                                    <FlagImage iso2={p.iso2} size="18px" />
+                                    <span className="flex-1 truncate">{p.name}</span>
+                                    <span className="text-gray-400 group-hover:text-gray-300">+{p.dialCode}</span>
+                                </button>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function UserProfile() {
     const { t } = useTranslation('myaccount');
@@ -15,9 +122,9 @@ export default function UserProfile() {
         fullName: '',
         email: '',
         country_code: '',
-        phone: '',
         phone_number: ''
     });
+    const [countryIso2, setCountryIso2] = useState('fr');
     const [profileImage, setProfileImage] = useState(null);
     const [imageLoading, setImageLoading] = useState(false);
     const [profileImageFile, setProfileImageFile] = useState(null);
@@ -33,9 +140,9 @@ export default function UserProfile() {
                     fullName: user.name || '',
                     email: user.email || '',
                     country_code: user.country_code || '',
-                    phone: user.phone || '',
                     phone_number: user.phone_number || ''
                 });
+                setCountryIso2(getIso2ByDialCode(user.country_code));
                 if (user.profile_picture) {
                     setImageLoading(true);
                     setProfileImage(`${MEDIA_URL}${user.profile_picture}`);
@@ -43,42 +150,6 @@ export default function UserProfile() {
             }
         }
     }, []);
-
-    // Custom styles for phone input
-    const phoneInputStyles = `
-        .react-international-phone-input-container {
-            background-color: #F9FAFB !important;
-            border: 1px solid #E5E7EB !important;
-            border-radius: 8px !important;
-            height: 42px !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-        .react-international-phone-input-container .react-international-phone-country-selector-button {
-            border: none !important;
-            background-color: transparent !important;
-            padding: 0 8px 0 12px !important;
-            height: 100% !important;
-        }
-        .react-international-phone-input-container .react-international-phone-country-selector-button__button-content {
-            gap: 6px !important;
-        }
-        .react-international-phone-input-container input {
-            border: none !important;
-            background-color: transparent !important;
-            height: 100% !important;
-            padding: 0 16px !important;
-            border-radius: 0 !important;
-        }
-        .react-international-phone-input-container input:focus {
-            outline: none !important;
-            box-shadow: none !important;
-        }
-        .react-international-phone-input-container:focus-within {
-            ring: 2px !important;
-            ring-color: #9CA3AF !important;
-        }
-    `;
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -120,9 +191,9 @@ export default function UserProfile() {
                     fullName: user.name || '',
                     email: user.email || '',
                     country_code: user.country_code || '',
-                    phone: user.phone || '',
                     phone_number: user.phone_number || ''
                 });
+                setCountryIso2(getIso2ByDialCode(user.country_code));
                 if (user.profile_picture) {
                     setImageLoading(true);
                     setProfileImage(`${MEDIA_URL}${user.profile_picture}`);
@@ -143,7 +214,7 @@ export default function UserProfile() {
         body.append('name', formData.fullName);
         body.append('email', formData.email);
         body.append('country_code', formData.country_code);
-        body.append('phone', formData.phone);
+        body.append('phone', `${formData.country_code}${formData.phone_number}`);
         body.append('phone_number', formData.phone_number);
         if (profileImageFile) body.append('profile_picture', profileImageFile);
 
@@ -199,7 +270,6 @@ export default function UserProfile() {
 
     return(
         <>
-            <style>{phoneInputStyles}</style>
             <div className="max-w-10xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
                 <div className="bg-white  p-4 sm:p-8">
                     {/* Header */}
@@ -300,10 +370,16 @@ export default function UserProfile() {
 
                             <div>
                                 <label className="block text-sm text-gray-700 mb-2 font-medium">{t('userProfile.phoneNumber')}</label>
-                                <PhoneInput
-                                    defaultCountry="fr"
-                                    value={formData.phone}
-                                    onChange={(phone) => setFormData(prev => ({ ...prev, phone }))}
+                                <PhoneFieldBox
+                                    iso2={countryIso2}
+                                    onCountryChange={(iso2) => {
+                                        setCountryIso2(iso2);
+                                        setFormData(prev => ({ ...prev, country_code: getDialCodeByIso2(iso2) }));
+                                    }}
+                                    value={formData.phone_number}
+                                    onChange={(phone_number) => setFormData(prev => ({ ...prev, phone_number }))}
+                                    searchPlaceholder={t('userProfile.searchCountry')}
+                                    noResultsLabel={t('userProfile.noCountryFound')}
                                 />
                             </div>
                         </div>

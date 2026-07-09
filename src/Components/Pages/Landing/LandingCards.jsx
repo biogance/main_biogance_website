@@ -193,6 +193,9 @@ export const LandingCards = ({
     clearTimeout(hoverTimeout.current);
     setIsHovered(false);
     setIsCardHovered(false);
+    setIsDropupOpen(false);
+    setSelectedSize(null);
+    setSelectedColor(null);
   };
 
   useEffect(() => {

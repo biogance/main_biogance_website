@@ -344,6 +344,8 @@
     "email": "Email",
     "emailPlaceholder": "Enter your email",
     "phoneNumber": "Phone Number",
+    "searchCountry": "Search country...",
+    "noCountryFound": "No countries found",
     "cancel": "Cancel",
     "updateProfileDetails": "Update Profile Details"
   },
