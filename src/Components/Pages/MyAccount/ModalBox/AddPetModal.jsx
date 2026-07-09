@@ -5,6 +5,7 @@ import { PiPawPrint } from 'react-icons/pi';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import { BASE_URL, MEDIA_URL } from '../../../API/API';
 
 // ── Single Select Custom Dropdown ───────────────────────────────────────────
@@ -477,7 +478,9 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
         body
       });
       const data = await res.json();
-      if (res.ok || data?.status) {
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+      } else if (res.ok || data?.status) {
         if (isEditMode) {
           onSuccess?.();
           onClose();

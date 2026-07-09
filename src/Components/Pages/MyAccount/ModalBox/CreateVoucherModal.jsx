@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { FaRegEdit } from "react-icons/fa";
 import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
+import toast from 'react-hot-toast';
 import { BASE_URL } from "../../../API/API";
 
 export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0, onRedeemSuccess }) {
@@ -42,8 +43,9 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
                 body: JSON.stringify({ point: parseInt(selectedPoints) }),
             });
             const data = await res.json();
-            if (!data.status) {
-                setRedeemError(data.message || "Something went wrong.");
+            if (data?.status === false) {
+                setRedeemError(data?.action || data.message || "Something went wrong.");
+                toast.error(data?.action || data.message || "Something went wrong.");
                 setRedeemLoading(false);
                 return;
             }
