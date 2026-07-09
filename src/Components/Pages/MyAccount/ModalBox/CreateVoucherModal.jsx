@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { FaRegEdit } from "react-icons/fa";
 import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
@@ -15,6 +15,7 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
     const [voucherCode, setVoucherCode] = useState('');
     const [redeemLoading, setRedeemLoading] = useState(false);
     const [redeemError, setRedeemError] = useState(null);
+    const modalCardRef = useRef(null);
 
     const minimumPoints = 10;
     const userBalance = loyaltyPoints;
@@ -68,6 +69,15 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
         navigator.clipboard.writeText(voucherCode);
     };
 
+    const handleBackdropClick = () => {
+        if (modalCardRef.current) {
+            modalCardRef.current.classList.add('modal-shake');
+            modalCardRef.current.addEventListener('animationend', () => {
+                modalCardRef.current?.classList.remove('modal-shake');
+            }, { once: true });
+        }
+    };
+
     const handleCloseAll = () => {
         setIsSuccessModalOpen(false);
         setSelectedPoints('');
@@ -109,15 +119,15 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
         <>
           {/* Main Redeem Modal */}
           {!isSuccessModalOpen && (
-            <div 
+            <div
                 className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden"
-                onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                        onClose();
-                    }
-                }}
+                onClick={handleBackdropClick}
             >
-              <div className="bg-white  shadow-2xl w-full max-w-2xl p-8 ">
+              <div
+                ref={modalCardRef}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white  shadow-2xl w-full max-w-2xl p-8 "
+              >
                 <h2 className="text-xl text-black font-semibold mb-3">{t('createVoucher.title')}</h2>
                 
                 <div className="mb-6">

@@ -13,6 +13,8 @@ import {
   GoHeartFill,
   GoClock,
 } from "react-icons/go";
+import { FaRegStar } from "react-icons/fa";
+import { CiHeart } from "react-icons/ci";
 
 const SPECIES = ["Dogs", "Cats", "Small Mammals", "Birds", "Reptiles", "Horses"];
 const TOPICS = [
@@ -259,7 +261,7 @@ function ArticleRow({ label, icon: Icon, items }) {
         </button>
       </div>
 
-      <div className="relative">
+      <div className="relative isolate z-0">
         {canScrollLeft && (
           <button
             type="button"
@@ -273,7 +275,7 @@ function ArticleRow({ label, icon: Icon, items }) {
 
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory"
+          className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => (
             <div
@@ -332,8 +334,11 @@ function useResponsiveColumns() {
   return columns;
 }
 
+const NAVBAR_HEIGHT = 104; // matches pt-[104px] on the page wrapper / top-[104px] on the sticky filter
+
 function ExpertAdvices() {
   const router = useRouter();
+  const filtersRef = useRef(null);
   const [activeSpecies, setActiveSpecies] = useState("Dogs");
   const [activeTopic, setActiveTopic] = useState("All");
   const [search, setSearch] = useState("");
@@ -370,9 +375,12 @@ function ExpertAdvices() {
 
   const scrollToArticles = () => {
     const section = document.getElementById("all-articles-section");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (!section) return;
+    const filterHeight = filtersRef.current ? filtersRef.current.offsetHeight : 0;
+    const offset = NAVBAR_HEIGHT + filterHeight;
+    const targetY =
+      section.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: targetY, behavior: "smooth" });
   };
 
   return (
@@ -415,9 +423,10 @@ function ExpertAdvices() {
         </div>
       </section>
 
-      <div className="px-6 sm:px-10 lg:px-16">
-        {/* Filters */}
-        <div className="py-8 sticky top-[104px] z-30 bg-white">
+      {/* Filters — full-bleed sticky bar so its white background spans edge-to-edge
+          and fully masks anything (e.g. row scroll arrows) behind/around it while stuck */}
+      <div ref={filtersRef} className="sticky top-[104px] z-30 bg-white">
+        <div className="px-6 sm:px-10 lg:px-16 py-8">
           <div className="flex  flex-wrap items-center gap-2 mb-4">
             {SPECIES.map((s) => (
               <TabButton
@@ -430,7 +439,7 @@ function ExpertAdvices() {
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto md:flex-1 md:min-w-0 pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto md:flex-1 md:min-w-0 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {TOPICS.map((t) => (
                 <TabButton
                   key={t}
@@ -455,14 +464,16 @@ function ExpertAdvices() {
 
           <hr className="border-t border-gray-200 mt-6" />
         </div>
+      </div>
 
+      <div className="px-6 sm:px-10 lg:px-16">
         <ArticleRow
           label="Recommended For Your Pet"
-          icon={GoStarFill}
+          icon={FaRegStar}
           items={RECOMMENDED}
         />
         <ArticleRow label="Trending" icon={GoFlame} items={TRENDING} />
-        <ArticleRow label="Most Liked" icon={GoHeartFill} items={MOST_LIKED} />
+        <ArticleRow label="Most Liked" icon={CiHeart} items={MOST_LIKED} />
         <ArticleRow
           label="Recently Added"
           icon={GoClock}

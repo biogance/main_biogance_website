@@ -343,6 +343,8 @@
     "email": "Email",
     "emailPlaceholder": "Entrez votre email",
     "phoneNumber": "Numéro de téléphone",
+    "searchCountry": "Rechercher un pays...",
+    "noCountryFound": "Aucun pays trouvé",
     "cancel": "Annuler",
     "updateProfileDetails": "Mettre à jour les détails du profil"
   },

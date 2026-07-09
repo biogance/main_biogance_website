@@ -22,8 +22,8 @@ export default function FeedbackForm({ onContinueToDelete, onClose }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4">
-      <div className="bg-white  shadow-lg max-w-4xl w-full p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4" onClick={onClose}>
+      <div className="bg-white  shadow-lg max-w-4xl w-full p-6 relative" onClick={(e) => e.stopPropagation()}>
         {/* Yellow star decoration */}
         
 

@@ -55,8 +55,8 @@ export default function ConfirmDeletionModal({ onClose }) {
     if (isDeleted) {
         return (
             <>
-            <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
-                <div className="bg-white  shadow-2xl max-w-lg w-full p-8 relative">
+            <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4" onClick={onClose}>
+                <div className="bg-white  shadow-2xl max-w-lg w-full p-8 relative" onClick={(e) => e.stopPropagation()}>
 
                     {/* Illustration Placeholder */}
                     <div className="flex justify-center mb-6">
@@ -98,8 +98,8 @@ export default function ConfirmDeletionModal({ onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
-            <div className="bg-white shadow-2xl max-w-lg w-full p-8 relative">
+        <div className="fixed inset-0 z-[60] bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white shadow-2xl max-w-lg w-full p-8 relative" onClick={(e) => e.stopPropagation()}>
 
                 {/* Header */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">

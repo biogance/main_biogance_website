@@ -16,6 +16,8 @@
   "country": "Pays *",
   "selectCountry": "Sélectionner un pays",
   "phoneNumber": "Numéro de téléphone",
+  "searchCountry": "Rechercher un pays...",
+  "noCountryFound": "Aucun pays trouvé",
   "payment": "Paiement",
   "creditCard": "Carte bancaire",
   "cardNumber": "Numéro de carte",

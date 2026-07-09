@@ -16,6 +16,8 @@
   "country": "Country *",
   "selectCountry": "Select country",
   "phoneNumber": "Phone Number",
+  "searchCountry": "Search country...",
+  "noCountryFound": "No countries found",
   "payment": "Payment",
   "creditCard": "Credit card",
   "cardNumber": "Card number",

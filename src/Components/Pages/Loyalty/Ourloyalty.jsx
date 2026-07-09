@@ -18,11 +18,11 @@ export default function Loyalty() {
     return (
         <>
         <div className="fixed top-0 left-0 right-0 z-50 ">
-            <Navbar />
+             <Navbar bgWhite={true} />
         </div>
        
-   <div className="relative h-[450px] sm:h-[400px] md:h-[450px] lg:h-[500px] w-[95%] mx-auto rounded-2xl sm:rounded-3xl overflow-hidden mt-12 sm:mt-16 md:mt-20">
-    <div className="absolute inset-0 rounded-2xl sm:rounded-3xl">
+   <div className="relative h-[450px] sm:h-[400px] md:h-[450px] lg:h-[500px] w-[95%] mx-auto  overflow-hidden mt-12 sm:mt-16 md:mt-35">
+    <div className="absolute inset-0 ">
         <Image
             src={dog}
             alt="Background"
@@ -56,10 +56,10 @@ export default function Loyalty() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-full sm:max-w-[500px]">
-            <button className="bg-white text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
+            <button className="bg-white text-gray-900 px-6 py-3  hover:bg-gray-100 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
                 {t('Registernow')}
             </button>
-            <button className="bg-transparent text-white border-2 border-white px-6 py-3 rounded-lg hover:bg-white/10 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
+            <button className="bg-transparent text-white border-2 border-white px-6 py-3 hover:bg-white/10 transition-colors font-bold cursor-pointer text-[13px] sm:text-sm md:text-base w-full sm:w-auto whitespace-nowrap">
                  {t('discoverproduct')}
             </button>
         </div>
@@ -128,7 +128,7 @@ export default function Loyalty() {
         </div>
 
         {/* Button */}
-        <button className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
+        <button className="bg-gray-900 text-white px-6 py-3 hover:bg-gray-800 transition-colors cursor-pointer">
           {t('manageLoyaltyPoints')}
         </button>
       </div>

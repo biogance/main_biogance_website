@@ -402,6 +402,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const modalCardRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -555,6 +556,15 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     { value: 'behavioral_needs', label: t('addPet.specialNeeds.behavioral') },
   ];
 
+  const handleBackdropClick = () => {
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
+  };
+
   const handleCloseAll = () => {
     setIsSuccessModalOpen(false);
     setFormData({
@@ -576,12 +586,15 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     <>
       {/* Main Add Pet Modal */}
       {!isSuccessModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="
-            bg-white  
-            w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl 
-            h-[90vh] sm:h-auto 
-            flex flex-col 
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={handleBackdropClick}>
+          <div
+            ref={modalCardRef}
+            onClick={(e) => e.stopPropagation()}
+            className="
+            bg-white
+            w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl
+            h-[90vh] sm:h-auto
+            flex flex-col
             overflow-hidden
           ">
             {/* Fixed Header */}

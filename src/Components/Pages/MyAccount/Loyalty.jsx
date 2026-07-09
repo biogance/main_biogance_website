@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from 'react-i18next';
 import { FiExternalLink } from "react-icons/fi"
 import CreateVoucherModal from "./ModalBox/CreateVoucherModal";
@@ -139,6 +140,7 @@ const VoucherShimmer = () => (
 );
 
 export default function Loyalty() {
+    const router = useRouter();
     const { t } = useTranslation('myaccount');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loadingState, setLoadingState] = useState('shimmer');
@@ -227,12 +229,15 @@ export default function Loyalty() {
                 </div>
                 {hasPoints && vouchers.length > 0 && (
                   <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <button className="bg-white text-black border border-gray-300 px-5 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                    <button
+                      onClick={() => router.push('/loyalty')}
+                      className="bg-white text-black border border-gray-300 px-5 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                       {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
-                      className="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm cursor-pointer"
+                      className="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
                     >
                       {t('loyalty.createVoucher')}
                     </button>
@@ -270,6 +275,7 @@ export default function Loyalty() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
+                      onClick={() => router.push('/loyalty')}
                       className="bg-white text-black border border-black px-8 py-3.5  text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
                     >
                       {t('loyalty.pointsDetails')}
@@ -311,13 +317,14 @@ export default function Loyalty() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                     <button
-                      className="bg-white text-black border border-black px-8 py-3.5  text-base font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm cursor-pointer"
+                      onClick={() => router.push('/loyalty')}
+                      className="bg-white text-black border border-black px-8 py-3.5  text-base font-medium hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                     >
                       {t('loyalty.pointsDetails')}
                     </button>
                     <button
                       onClick={handleOpenModal}
-                      className="bg-gray-900 text-white px-8 py-3.5  text-base font-medium hover:bg-gray-800 transition-colors duration-200 shadow-sm cursor-pointer"
+                      className="bg-gray-900 text-white px-8 py-3.5  text-base font-medium hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
                     >
                       {t('loyalty.createVoucher')}
                     </button>

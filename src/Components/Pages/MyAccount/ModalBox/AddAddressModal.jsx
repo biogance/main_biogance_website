@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IoClose } from "react-icons/io5";
 import { MdKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
@@ -24,6 +24,7 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const modalCardRef = useRef(null);
 
   const isEditMode = !!editData;
 
@@ -45,6 +46,15 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
       setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
+
+ const handleBackdropClick = () => {
+  if (modalCardRef.current) {
+    modalCardRef.current.classList.add('modal-shake');
+    modalCardRef.current.addEventListener('animationend', () => {
+      modalCardRef.current?.classList.remove('modal-shake');
+    }, { once: true });
+  }
+ };
 
  const handleCloseModal = () => {
   setFormData({
@@ -213,8 +223,12 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
         }
       `}</style>
 
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50">
-        <div className="bg-white w-full max-w-4xl p-8 relative">
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50" onClick={handleBackdropClick}>
+        <div
+          ref={modalCardRef}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white w-full max-w-4xl p-8 relative"
+        >
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl text-black font-semibold">

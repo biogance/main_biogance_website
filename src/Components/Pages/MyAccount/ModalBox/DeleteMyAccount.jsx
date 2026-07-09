@@ -40,7 +40,7 @@ export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4" onClick={handleClose}>
       <div
         className="w-full max-w-md bg-white  shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
