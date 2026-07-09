@@ -8,6 +8,7 @@ import { LuFilter } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import SupportChat from './SupportChat';
 import CreateTicketModal from './CreateTicketModal';
+import toast from 'react-hot-toast';
 import { BASE_URL } from '../../../API/API';
 
 // Support Ticket Shimmer Component
@@ -158,30 +159,35 @@ export default function Support({ onOpenChat }) {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       const data = await res.json();
-      const raw = data?.data;
-      const list = Array.isArray(raw) ? raw : (raw?.data || []);
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+        setTickets([]);
+      } else {
+        const raw = data?.data;
+        const list = Array.isArray(raw) ? raw : (raw?.data || []);
 
-      const splashCategories = JSON.parse(localStorage.getItem('splashData') || '{}')?.ticket_categories || [];
+        const splashCategories = JSON.parse(localStorage.getItem('splashData') || '{}')?.ticket_categories || [];
 
-      setTickets(list.map((ticket) => {
-        const statusInfo = getStatusInfo(ticket.status);
-        const categoryMeta = splashCategories.find((c) => c.name === ticket.category);
-        const categoryLabel = isFrench
-          ? (categoryMeta?.french_name || ticket.category || '')
-          : (ticket.category || '');
+        setTickets(list.map((ticket) => {
+          const statusInfo = getStatusInfo(ticket.status);
+          const categoryMeta = splashCategories.find((c) => c.name === ticket.category);
+          const categoryLabel = isFrench
+            ? (categoryMeta?.french_name || ticket.category || '')
+            : (ticket.category || '');
 
-        return {
-          id: `#${ticket.id}`,
-          rawId: ticket.id,
-          userId: ticket.user_id,
-          orderRef: ticket.order_id ? `#${ticket.order_id}` : '',
-          createdOn: ticket.time ? formatCreatedOn(new Date(Number(ticket.time) * 1000)) : '',
-          statusKey: statusInfo.key,
-          statusColor: statusInfo.color,
-          title: categoryLabel,
-          description: ticket.message || '',
-        };
-      }));
+          return {
+            id: `#${ticket.id}`,
+            rawId: ticket.id,
+            userId: ticket.user_id,
+            orderRef: ticket.order_id ? `#${ticket.order_id}` : '',
+            createdOn: ticket.time ? formatCreatedOn(new Date(Number(ticket.time) * 1000)) : '',
+            statusKey: statusInfo.key,
+            statusColor: statusInfo.color,
+            title: categoryLabel,
+            description: ticket.message || '',
+          };
+        }));
+      }
     } catch (err) {
       console.error('Fetch tickets error:', err);
       setTickets([]);

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { MdClose } from 'react-icons/md';
 import jsPDF from 'jspdf';
+import toast from 'react-hot-toast';
 import { BASE_URL } from '../../../API/API';
 import { saveCartData } from '../../../../utils/cartStorage';
 import { CancelOrderModal } from './CancelOrderModal';
@@ -187,6 +188,10 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
         body: JSON.stringify({}),
       });
       const data = await res.json();
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+        return;
+      }
       if (data?.status) {
         saveCartData({
           ...data.data,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import toast from 'react-hot-toast';
 import { BASE_URL } from "../../../API/API";
 
 export default function DeletePetModal({
@@ -24,10 +25,15 @@ export default function DeletePetModal({
   const handleConfirm = async () => {
     setIsDeleting(true);
     try {
-      await fetch(`${BASE_URL}/user/pet/delete/${petId}`, {
+      const res = await fetch(`${BASE_URL}/user/pet/delete/${petId}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
-      onSuccess?.();
+      const data = await res.json();
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+      } else {
+        onSuccess?.();
+      }
     } catch (e) {
       console.error('Delete pet error:', e);
     } finally {
