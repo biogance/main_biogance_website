@@ -7,6 +7,7 @@ import { FlagImage, defaultCountries, parseCountry } from 'react-international-p
 import { RiUserLine } from "react-icons/ri";
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
+import toast from 'react-hot-toast';
 
 const getDialCodeByIso2 = (iso2) => {
     const country = defaultCountries.find((c) => parseCountry(c).iso2 === iso2);
@@ -226,7 +227,9 @@ export default function UserProfile() {
                 body
             });
             const data = await res.json();
-            if (data?.user) {
+            if (data?.status === false) {
+              toast.error(data?.action || 'Something went wrong.');
+            } else if (data?.user) {
                 const updated = { ...JSON.parse(localStorage.getItem('splashData')), user: data.user };
                 localStorage.setItem('splashData', JSON.stringify(updated));
             }
@@ -270,7 +273,7 @@ export default function UserProfile() {
 
     return(
         <>
-            <div className="max-w-10xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
+            <div className="max-w-10xl mt-9 mx-auto px-4 py-4 sm:px-6 sm:py-8">
                 <div className="bg-white  p-4 sm:p-8">
                     {/* Header */}
                     <h2 className="text-2xl text-black font-semibold mb-1">{t('userProfile.title')}</h2>

@@ -6,7 +6,7 @@ import { IoClose } from "react-icons/io5";
 import { MdKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
 import ReactFlagsSelect from "react-flags-select";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { BASE_URL } from "../../../API/API";
 import { getDeviceId } from "../../../../utils/deviceId";
 
@@ -165,8 +165,6 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
 
   return (
     <>
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-
       <style jsx global>{`
         .custom-country-select button::after {
           display: none !important;

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import {
   MdOutlineKeyboardArrowLeft,
@@ -129,7 +130,10 @@ export default function Favourite() {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       const data = await res.json();
-      if (data?.status) {
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+        setFavourites([]);
+      } else if (data?.status) {
         const raw = data.data;
         const list = Array.isArray(raw) ? raw : (raw?.data || []);
         setFavourites(list.map(mapFavoriteProduct));
@@ -197,7 +201,7 @@ export default function Favourite() {
 
   return (
     <div className="min-h-screen ">
-      <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-10xl mx-auto px-4 mt-4 sm:px-6 lg:px-8 py-8 md:py-12">
       {/* Wishlist Section */}
         <div className="bg-white  p-6 md:p-8 mb-10">
           <div className="mb-6 md:mb-8 flex items-start justify-between">

@@ -410,11 +410,53 @@ function getShopContext(source, q, categoryName, t) {
 }
 
 const SkeletonCard = () => (
-  <div className="w-full bg-[#f3f3f3] relative overflow-hidden aspect-[7/10]" aria-hidden>
+  <div className="w-full bg-[#f3f3f3] relative overflow-hidden aspect-[3/2]" aria-hidden>
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     <div className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2.5">
       <div className="h-3 w-3/5 rounded bg-stone-200 mb-1.5" />
       <div className="h-3 w-1/4 rounded bg-stone-200" />
+    </div>
+  </div>
+);
+
+// Matches the taller "video" slot in the featured rows (h-64 sm:h-full).
+const SkeletonVideoCard = () => (
+  <div className="w-full h-64 sm:h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+    <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
+    <div className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2.5">
+      <div className="h-3 w-3/5 rounded bg-stone-200 mb-1.5" />
+      <div className="h-3 w-1/4 rounded bg-stone-200" />
+    </div>
+  </div>
+);
+
+// Mirrors the real featured layout: row 1 is a 4-grid + video, row 2 is
+// video + 4-grid, followed by a plain grid — so the shimmer doesn't jump
+// in size once real data replaces it.
+const FeaturedSkeleton = () => (
+  <div className="mb-[3px]">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
+      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonCard key={`row1-${i}`} />
+        ))}
+      </div>
+      <SkeletonVideoCard />
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
+      <SkeletonVideoCard />
+      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonCard key={`row2-${i}`} />
+        ))}
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <SkeletonCard key={`grid-${i}`} />
+      ))}
     </div>
   </div>
 );
@@ -834,15 +876,17 @@ export default function FilterProducts() {
   const filteredProducts = searchedProducts;
   const allProducts = filteredProducts;
 
-  // First 10 products get the featured "4 cards + 1 video card" treatment; the rest use the plain grid.
-  const showFeaturedIntro = filteredProducts.length >= 10;
-  const featuredProducts = showFeaturedIntro
-    ? filteredProducts.slice(0, 10)
-    : [];
-  const restProducts = showFeaturedIntro
-    ? filteredProducts.slice(10)
-    : filteredProducts;
-  const restStartIndex = showFeaturedIntro ? 10 : 0;
+  // First up to 10 products get the featured "grid + video" treatment; the rest use the plain grid.
+  // The pattern adapts to however many products are available: 4-grid, +video, +video, +4-grid —
+  // each slot only renders once there are enough products to fill it.
+  const featuredProducts = filteredProducts.slice(0, 10);
+  const showFeaturedIntro = featuredProducts.length > 0;
+  const restProducts = filteredProducts.slice(featuredProducts.length);
+  const restStartIndex = featuredProducts.length;
+  const featuredRow1Grid = featuredProducts.slice(0, 4);
+  const featuredRow1Video = featuredProducts[4];
+  const featuredRow2Video = featuredProducts[5];
+  const featuredRow2Grid = featuredProducts.slice(6, 10);
 
   const hasAnimal = animals.length > 0;
   const hasUniverse = universe.length > 0;
@@ -1004,7 +1048,6 @@ export default function FilterProducts() {
       [forWhich, setForWhich],
       [ranges, setRanges],
       [sizes, setSizes],
-      [colors, setColors],
     ].forEach(([arr, setter]) => {
       arr.forEach((v) =>
         c.push({
@@ -1012,6 +1055,13 @@ export default function FilterProducts() {
           clear: () => setter((p) => p.filter((x) => x !== v)),
         }),
       );
+    });
+    colors.forEach((v) => {
+      c.push({
+        label: v,
+        swatch: COLOR_SWATCHES_MAP?.[v],
+        clear: () => setColors((p) => p.filter((x) => x !== v)),
+      });
     });
     return c;
   }, [
@@ -1025,6 +1075,7 @@ export default function FilterProducts() {
     ranges,
     sizes,
     colors,
+    COLOR_SWATCHES_MAP,
   ]);
 
   const clearAll = () => {
@@ -1041,7 +1092,7 @@ export default function FilterProducts() {
   };
 
   return (
-    <div className="min-h-screen mt-30 bg-white text-stone-900">
+    <div className="min-h-screen mt-[104px] bg-white text-stone-900">
        <Navbar bgWhite={true} />
 
       <style
@@ -1155,8 +1206,8 @@ export default function FilterProducts() {
       />
 
       {/* Result meta + chips */}
-      <section className="mx-auto max-w-10xl px-8 pt-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-5">
+      <section className="mx-auto max-w-10xl px-8 pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-6">
           <div className="flex items-baseline gap-3">
             <span className="font-serif text-3xl">{totalCount}</span>
             <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
@@ -1235,7 +1286,20 @@ export default function FilterProducts() {
                 key={i}
                 className="group inline-flex items-center gap-1.5 rounded-full bg-stone-100 py-1.5 pl-3.5 pr-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-200"
               >
-                {translateName(c.label)}
+                {c.swatch ? (
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                    style={{
+                      background: c.swatch,
+                      ...(c.swatch.includes("gradient")
+                        ? {}
+                        : { backgroundColor: c.swatch }),
+                    }}
+                    aria-label={c.label}
+                  />
+                ) : (
+                  translateName(c.label)
+                )}
                 <button
                   onClick={c.clear}
                   className="flex h-5 w-5 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
@@ -1258,72 +1322,103 @@ export default function FilterProducts() {
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
         {isSearching ? (
-          <div className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
+          <FeaturedSkeleton />
         ) : (
           <>
             {showFeaturedIntro && (
               <div className="mb-[3px]">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
-                  <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
-                    {featuredProducts.slice(0, 4).map((p, i) => (
+                {/* Row 1: 4-grid, +video once there's a 5th product */}
+                {featuredRow1Video ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
+                    <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+                      {featuredRow1Grid.map((p, i) => (
+                        <div key={p.id} className="w-full">
+                          <LandingCards
+                            product={p}
+                            showNav={true}
+                            index={i}
+                            compact={true}
+                            compactButtons={true}
+                            raisedLabel={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="h-64 sm:h-full">
+                      <LandingCards
+                        product={featuredRow1Video}
+                        showNav={true}
+                        index={4}
+                        compact={false}
+                        compactButtons={true}
+                        raisedLabel={true}
+                        fillHeight
+                        forceVideo
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-[3px] mb-[3px]">
+                    {featuredRow1Grid.map((p, i) => (
                       <div key={p.id} className="w-full">
                         <LandingCards
                           product={p}
                           showNav={true}
                           index={i}
-                          compact={false}
+                          compact={true}
                           compactButtons={true}
                           raisedLabel={true}
                         />
                       </div>
                     ))}
                   </div>
-                  <div className="h-64 sm:h-full">
-                    <LandingCards
-                      product={featuredProducts[4]}
-                      showNav={true}
-                      index={4}
-                      compact={false}
-                      compactButtons={true}
-                      raisedLabel={true}
-                      fillHeight
-                      forceVideo
-                    />
-                  </div>
-                </div>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
-                  <div className="h-64 sm:h-full">
-                    <LandingCards
-                      product={featuredProducts[5]}
-                      showNav={true}
-                      index={5}
-                      compact={false}
-                      compactButtons={true}
-                      raisedLabel={true}
-                      fillHeight
-                      forceVideo
-                    />
-                  </div>
-                  <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
-                    {featuredProducts.slice(6, 10).map((p, i) => (
-                      <div key={p.id} className="w-full">
+                {/* Row 2: only once there's a 6th product for the second video slot */}
+                {featuredRow2Video && (
+                  featuredRow2Grid.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
+                      <div className="h-64 sm:h-full">
                         <LandingCards
-                          product={p}
+                          product={featuredRow2Video}
                           showNav={true}
-                          index={i + 6}
+                          index={5}
                           compact={false}
                           compactButtons={true}
                           raisedLabel={true}
+                          fillHeight
+                          forceVideo
                         />
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+                        {featuredRow2Grid.map((p, i) => (
+                          <div key={p.id} className="w-full">
+                            <LandingCards
+                              product={p}
+                              showNav={true}
+                              index={i + 6}
+                              compact={true}
+                              compactButtons={true}
+                              raisedLabel={true}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full">
+                      <LandingCards
+                        product={featuredRow2Video}
+                        showNav={true}
+                        index={5}
+                        compact={true}
+                        compactButtons={true}
+                        raisedLabel={true}
+                        forceVideo
+                      />
+                    </div>
+                  )
+                )}
               </div>
             )}
 
@@ -1337,7 +1432,7 @@ export default function FilterProducts() {
                     product={p}
                     showNav={true}
                     index={restStartIndex + i}
-                    compact={false}
+                    compact={true}
                     compactButtons={true}
                     raisedLabel={true}
                   />
@@ -1395,7 +1490,7 @@ export default function FilterProducts() {
                   product={p}
                   showNav={true}
                   index={i}
-                  compact={false}
+                  compact={true}
                   compactButtons={true}
                   raisedLabel={true}
                 />

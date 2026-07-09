@@ -247,7 +247,7 @@ export default function Address() {
       `}} />
 
       <div className="min-h-screen bg-gray-100">
-        <div className="p-4 sm:p-6 md:p-8 max-w-10xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-8 mt-9 max-w-10xl mx-auto">
           <div className="bg-white p-6 md:p-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 md:mb-8">

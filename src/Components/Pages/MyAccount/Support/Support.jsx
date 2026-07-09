@@ -247,7 +247,7 @@ export default function Support({ onOpenChat }) {
       `}} />
 
       <div className="min-h-screen bg-gray-100">
-        <div className=" sm:p-6 md:p-8 max-w-10xl mx-auto">
+        <div className=" sm:p-6 md:p-8 mt-9 max-w-10xl mx-auto">
           <div className="bg-white  shadow-sm p-6 md:p-8">
 
           {isChatOpen ? (

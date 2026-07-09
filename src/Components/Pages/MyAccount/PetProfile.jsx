@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiX } from 'react-icons/fi';
 import { TbPencil } from 'react-icons/tb';
 import { PiPawPrint } from 'react-icons/pi';
+import toast from 'react-hot-toast';
 import DeletePetModal from './ModalBox/DeletePetModal';
 import { AddPetModal } from './ModalBox/AddPetModal';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
@@ -263,7 +264,12 @@ export default function PetProfile() {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       const data = await res.json();
-      setPets(data?.data || data?.pets || []);
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+        setPets([]);
+      } else {
+        setPets(data?.data || data?.pets || []);
+      }
     } catch (e) {
       console.error('Failed to fetch pets:', e);
     } finally {
@@ -302,7 +308,7 @@ export default function PetProfile() {
       `}} />
 
       <div className="min-h-screen">
-        <div className="max-w-10xl mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-10xl mt-9 mx-auto px-4 sm:px-6 py-8">
           <div className="bg-white  p-4 sm:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
               <div>

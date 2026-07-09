@@ -330,9 +330,13 @@ export default function ProductDetail() {
   const uniqueSizes = [
     ...new Set(apiProducts.filter((p) => p.size_name).map((p) => p.size_name)),
   ];
+  // Once a size is picked, only show the colors available for that size.
+  const colorSourceProducts = selectedVolume
+    ? apiProducts.filter((p) => p.size_name === selectedVolume)
+    : apiProducts;
   const uniqueColors = [
     ...new Set(
-      apiProducts.filter((p) => p.color_name).map((p) => p.color_name),
+      colorSourceProducts.filter((p) => p.color_name).map((p) => p.color_name),
     ),
   ];
 
@@ -838,20 +842,32 @@ export default function ProductDetail() {
                       {t("color")}
                     </p>
                     <div className="flex items-center gap-3 flex-wrap">
-                      {uniqueColors.map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => handleColorSelect(color)}
-                          title={color}
-                          className={`px-5 py-2 cursor-pointer  text-sm font-medium border transition-all duration-200 ${
-                            selectedColor === color
-                              ? "bg-[#F0F0F0] border-gray-800 text-black shadow-sm ring-1 ring-black"
-                              : "bg-white border-[#A8A8A8] text-[#A8A8A8] hover:border-gray-400"
-                          }`}
-                        >
-                          {color}
-                        </button>
-                      ))}
+                      {uniqueColors.map((color) => {
+                        const isDual = color.includes(" & ");
+                        const swatchBg = isDual
+                          ? (() => {
+                              const [a, b] = color
+                                .split(" & ")
+                                .map((p) => p.trim());
+                              return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+                            })()
+                          : color;
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => handleColorSelect(color)}
+                            title={color}
+                            aria-label={color}
+                            className={`w-9 h-9 rounded-full cursor-pointer border-2 transition-all duration-200 ${
+                              selectedColor === color
+                                ? "border-black ring-1 ring-black"
+                                : "border-[#E8E8E8] hover:border-gray-400"
+                            }`}
+                            style={{ background: swatchBg }}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 )}
