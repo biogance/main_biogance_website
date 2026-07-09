@@ -155,7 +155,7 @@ function ArticleRow({ label, icon: Icon, items, isFr }) {
               key={item.id}
               data-card
               onClick={() => router.push(`/expert-detail`)}
-              className="border border-gray-200 shrink-0 snap-start cursor-pointer group overflow-hidden"
+              className="border border-gray-200 shrink-0 snap-start cursor-pointer group overflow-hidden flex flex-col"
               style={{
                 flexBasis: `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
               }}
@@ -165,8 +165,8 @@ function ArticleRow({ label, icon: Icon, items, isFr }) {
                 alt={item.title}
                 className="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="p-4 flex items-start justify-between gap-3">
-                <p className="text-xs font-bold uppercase text-gray-900 leading-snug">
+              <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
+                <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1">
                   {getBlogField(item, "name", isFr)}
                 </p>
                 <HiOutlineArrowUpRight className="shrink-0 mt-0.5 text-gray-700 w-4 h-4" />
@@ -463,8 +463,8 @@ function ExpertAdvices() {
                 </p>
               )}
               <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
-                {heroArticle.blog.author && <span>By {heroArticle.blog.author}</span>}
-                {heroArticle.blog.read_time && <span>{heroArticle.blog.read_time} min read</span>}
+                <span>By Biogance Laboratory</span>
+                <span>7 min read</span>
                 {heroArticle.blog.updated_at && (
                   <span>Updated {new Date(heroArticle.blog.updated_at).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
                 )}
@@ -632,19 +632,17 @@ function ExpertAdvices() {
                       />
                     </div>
                     <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                      {a.topic?.name ?? a.category?.name ?? ""}
+                      Pets
                     </p>
                     <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2">
                       {getBlogField(a, "name", isFr)}
                     </h3>
                     <div className="flex items-center justify-between text-[11px] text-gray-400">
-                      <span>{a.author ?? ""}</span>
-                      {a.read_time && (
-                        <span className="flex items-center gap-1">
-                          <FiClock className="w-3 h-3" />
-                          {a.read_time}m
-                        </span>
-                      )}
+                      <span>Alex</span>
+                      <span className="flex items-center gap-1">
+                        <FiClock className="w-3 h-3" />
+                        7 min
+                      </span>
                     </div>
                   </div>
                 ))}
