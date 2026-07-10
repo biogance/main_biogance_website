@@ -1,6 +1,28 @@
 {
   "expertAdvice": "Conseils d'experts",
   "seeMore": "Voir plus",
-   "rating":"Évaluation et avis",
-  "getReliableAdvice": "Obtenez des conseils d'experts fiables pour offrir à votre animal les meilleurs soins au quotidien."
+  "rating": "Évaluation et avis",
+  "getReliableAdvice": "Obtenez des conseils d'experts fiables pour offrir à votre animal les meilleurs soins au quotidien.",
+  "home": "Accueil",
+  "advice": "Conseils",
+  "expertInsight": "Avis d'expert",
+  "byAuthor": "Par {{name}}",
+  "minRead": "{{time}} min de lecture",
+  "updatedOn": "Mis à jour le {{date}}",
+  "noContent": "Aucun contenu disponible.",
+  "recommendedRoutine": "Routine recommandée",
+  "recommendedProducts": "Produits recommandés",
+  "addToCart": "Ajouter au panier",
+  "addAll": "Tout ajouter",
+  "moreExpertAdvices": "Plus de conseils d'experts.",
+  "pets": "Animaux",
+  "sectionLabels": {
+    "recommended": "Recommandé pour votre animal",
+    "trending": "Tendances",
+    "mostLiked": "Les plus aimés",
+    "recentlyAdded": "Récemment ajoutés",
+    "petBlogs": "Blogs animaux",
+    "allArticles": "Tous les articles",
+    "moreAdvices": "Plus de conseils d'experts"
+  }
 }

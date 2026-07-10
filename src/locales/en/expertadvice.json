@@ -1,6 +1,28 @@
 {
   "expertAdvice": "Expert Advice",
   "seeMore": "See more",
-  "rating":"Rating & Reviews",
-  "getReliableAdvice": "Get reliable expert advice to give your pet the best care every day."
+  "rating": "Rating & Reviews",
+  "getReliableAdvice": "Get reliable expert advice to give your pet the best care every day.",
+  "home": "Home",
+  "advice": "Advice",
+  "expertInsight": "Expert insight",
+  "byAuthor": "By {{name}}",
+  "minRead": "{{time}} min read",
+  "updatedOn": "Updated {{date}}",
+  "noContent": "No content available.",
+  "recommendedRoutine": "Recommended routine",
+  "recommendedProducts": "Recommended products",
+  "addToCart": "Add to cart",
+  "addAll": "Add all",
+  "moreExpertAdvices": "More expert advices.",
+  "pets": "Pets",
+  "sectionLabels": {
+    "recommended": "Recommended For Your Pet",
+    "trending": "Trending",
+    "mostLiked": "Most Liked",
+    "recentlyAdded": "Recently Added",
+    "petBlogs": "Pet Blogs",
+    "allArticles": "All Articles",
+    "moreAdvices": "More expert advices"
+  }
 }

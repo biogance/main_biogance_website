@@ -26,6 +26,7 @@ const COLUMN_BREAKPOINTS = [
 ];
 const ROWS_PER_PAGE = 3;
 const NAVBAR_HEIGHT = 104;
+const SKELETON_ROW_COUNT = 5;
 
 function getAuthHeaders() {
   try {
@@ -80,8 +81,142 @@ function getBlogField(item, field, isFr) {
   return (isFr && item[frField]) ? item[frField] : (item[field] ?? "");
 }
 
-function ArticleRow({ label, icon: Icon, items, isFr }) {
+// Reads the first category attached to the blog item (item.categories[0].category)
+// and returns its name (french_name if language is French, else name).
+function getCategoryName(item, isFr) {
+  const cat = item?.categories?.[0]?.category;
+  if (!cat) return "";
+  return (isFr && cat.french_name) ? cat.french_name : (cat.name ?? "");
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Shimmer primitives
+   ──────────────────────────────────────────────────────────────────────── */
+function Shimmer({ className = "" }) {
+  return <div className={`bg-gray-200 animate-pulse rounded ${className}`} />;
+}
+
+/* Mirrors the hero section exactly: h1 (2 lines), short_description (2 lines),
+   meta row (company / reading time / updated - 3 items), button, image */
+function HeroSkeleton() {
+  return (
+    <section className="bg-[#f3f3f3]">
+      <div className="flex flex-col lg:flex-row items-stretch">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
+          {/* h1 - text-[42px] leading-tight mb-6, two lines */}
+          <div className="mb-6 space-y-3">
+            <Shimmer className="h-9 sm:h-10 lg:h-11 w-full" />
+            <Shimmer className="h-9 sm:h-10 lg:h-11 w-2/3" />
+          </div>
+          {/* short_description - text-sm leading-relaxed max-w-md mb-8, two lines */}
+          <div className="max-w-md mb-8 space-y-2">
+            <Shimmer className="h-3.5 w-full" />
+            <Shimmer className="h-3.5 w-5/6" />
+          </div>
+          {/* meta row - gap-5 sm:gap-8 mb-8, three items */}
+          <div className="flex items-center gap-5 sm:gap-8 flex-wrap mb-8">
+            <Shimmer className="h-3 w-24" />
+            <Shimmer className="h-3 w-16" />
+            <Shimmer className="h-3 w-36" />
+          </div>
+          {/* button - px-5 py-3 */}
+          <Shimmer className="h-11 w-40" />
+        </div>
+        <div className="relative w-full lg:w-1/2 h-[420px]">
+          <Shimmer className="w-full h-full rounded-none" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Mirrors the sticky filters block: species TabButtons row, search input,
+   topics ScrollableTabsRow, divider */
+function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
+  return (
+    <div className="sticky top-[104px] z-30 bg-white">
+      <div className="px-6 sm:px-10 lg:px-16 py-8">
+        {/* species tabs + search - gap-4 mb-4 */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+          <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+            {Array.from({ length: speciesCount }).map((_, i) => (
+              <Shimmer key={i} className="h-9 w-24" />
+            ))}
+          </div>
+          <Shimmer className="h-11 w-full md:w-72 shrink-0" />
+        </div>
+        {/* topics row - gap-2 */}
+        <div className="flex items-center gap-2">
+          {Array.from({ length: topicsCount }).map((_, i) => (
+            <Shimmer key={i} className="h-9 w-20 shrink-0" />
+          ))}
+        </div>
+        <div className="mt-6 h-px bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
+/* Mirrors ArticleRow exactly: icon+label / "See All", then a row of cards
+   (image h-60, title line, arrow icon) spaced with the same gap-6 / mb-10 */
+function ArticleRowSkeleton({ visibleCount }) {
+  return (
+    <div className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1.5">
+          <Shimmer className="w-3.5 h-3.5 rounded-full" />
+          <Shimmer className="h-3 w-32" />
+        </div>
+        <Shimmer className="h-3 w-16" />
+      </div>
+
+      <div className="flex gap-6 overflow-hidden">
+        {Array.from({ length: visibleCount }).map((_, i) => (
+          <div
+            key={i}
+            className="border border-gray-200 shrink-0 overflow-hidden flex flex-col"
+            style={{ flexBasis: `calc((100% - ${(visibleCount - 1) * 24}px) / ${visibleCount})` }}
+          >
+            <Shimmer className="w-full h-60 rounded-none" />
+            <div className="px-4 py-3 flex items-center justify-between gap-3">
+              <Shimmer className="h-3 w-3/4" />
+              <Shimmer className="w-4 h-4 rounded-full shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Mirrors an "All Articles" grid card exactly: image aspect-[5/6], category
+   line, title (2 lines), meta row (company / reading time) */
+function AllArticlesCardSkeleton() {
+  return (
+    <div>
+      <Shimmer className="w-full aspect-[5/6] mb-3 rounded-none" />
+      <Shimmer className="h-2.5 w-1/3 mb-2" />
+      <div className="space-y-1.5 mb-2">
+        <Shimmer className="h-4 w-full" />
+        <Shimmer className="h-4 w-2/3" />
+      </div>
+      <div className="flex items-center justify-between">
+        <Shimmer className="h-2.5 w-16" />
+        <Shimmer className="h-2.5 w-12" />
+      </div>
+    </div>
+  );
+}
+
+function ArticleRow({ label, type, icon: Icon, items, isFr }) {
   const router = useRouter();
+
+  const navigateToDetail = (item) => {
+    const keyword = isFr
+      ? (item.french_seo_keyword || item.english_seo_keyboard)
+      : (item.english_seo_keyboard || item.french_seo_keyword);
+    router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}`);
+  };
   const scrollRef = useRef(null);
   const visibleCount = useResponsiveColumns();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -127,6 +262,7 @@ function ArticleRow({ label, icon: Icon, items, isFr }) {
         </p>
         <button
           type="button"
+          onClick={() => router.push(`/expert-advice/see-all?type=${type}`)}
           className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer"
         >
           See All
@@ -148,13 +284,13 @@ function ArticleRow({ label, icon: Icon, items, isFr }) {
 
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-6 overflow-x-auto overflow-y-visible scroll-smooth snap-x snap-mandatory py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => (
             <div
               key={item.id}
               data-card
-              onClick={() => router.push(`/expert-detail`)}
+              onClick={() => navigateToDetail(item)}
               className="border border-gray-200 shrink-0 snap-start cursor-pointer group overflow-hidden flex flex-col"
               style={{
                 flexBasis: `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
@@ -163,7 +299,7 @@ function ArticleRow({ label, icon: Icon, items, isFr }) {
               <img
               src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
                 alt={item.title}
-                className="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-60 grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
               />
               <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
                 <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1">
@@ -255,7 +391,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
       <div className="relative min-w-0 flex-1">
         <div
           ref={scrollRef}
-          className="flex items-center gap-2 overflow-x-auto scroll-smooth min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((label) => (
             <div key={label} data-topic className="shrink-0">
@@ -321,13 +457,23 @@ function ExpertAdvices() {
     }
   });
 
-  const [activeSpecies, setActiveSpecies] = useState(() => splashCategories[0] ?? null);
+  const [activeSpecies, setActiveSpecies] = useState(null); // koi category first time select nahi hogi
   const [activeTopic, setActiveTopic] = useState([]); // [] = All
 
   const speciesList = splashCategories;
+
+  // Jab tak koi category select nahi hoti, saare categories ke topics combine karke dikhao
+  // (taake topics row hamesha visible rahe). Category select hone par uske apne topics dikhenge.
   const topicsList = useMemo(() => {
-    return activeSpecies?.topics ?? [];
-  }, [activeSpecies]);
+    if (activeSpecies) return activeSpecies?.topics ?? [];
+    const map = new Map();
+    speciesList.forEach((cat) => {
+      (cat.topics ?? []).forEach((t) => {
+        if (!map.has(t.id)) map.set(t.id, t);
+      });
+    });
+    return Array.from(map.values());
+  }, [activeSpecies, speciesList]);
 
   // ── Search (debounced 1s) ────────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState("");
@@ -351,6 +497,7 @@ function ExpertAdvices() {
 
   const columns = useResponsiveColumns();
   const perPage = columns * ROWS_PER_PAGE;
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
     if (pageNum === 1) setLoading(true);
@@ -379,7 +526,7 @@ function ExpertAdvices() {
 
       if (pageNum === 1) {
         const banner = d?.blogHeaderBanner ?? null;
-        setHeroArticle({ blog: d?.likeBlog?.[0] ?? null, banner });
+        setHeroArticle({ blog: banner?.blog ?? null, banner });
         setSections({
           recommended: d?.recommendedBlog ?? [],
           trending: d?.trendingBlog ?? [],
@@ -400,6 +547,7 @@ function ExpertAdvices() {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      hasLoadedOnceRef.current = true;
     }
   }, [activeSpecies, activeTopic, debouncedSearch, perPage]);
 
@@ -408,6 +556,27 @@ function ExpertAdvices() {
     setPage(1);
     fetchBlogs(1, false);
   }, [activeSpecies, activeTopic, debouncedSearch, columns]);
+
+  // Jab user category/topic choose kare ya search kare aur woh page pe neeche
+  // scrolled ho, to filters ke "stuck" (navbar ke sath chipke) position tak
+  // upar scroll ho jaye — taake naya data (pehli row samet) nazar aa jaye.
+  const isFirstSearchRender = useRef(true);
+  const scrollToFilters = useCallback(() => {
+    const filters = filtersRef.current;
+    if (!filters) return;
+    const targetY = filters.offsetTop - NAVBAR_HEIGHT;
+    if (window.scrollY > targetY) {
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
+    scrollToFilters();
+  }, [activeSpecies, activeTopic, debouncedSearch, scrollToFilters]);
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -439,6 +608,40 @@ function ExpertAdvices() {
     window.scrollTo({ top: targetY, behavior: "smooth" });
   };
 
+  /* ── Full-page shimmer (including filters) only on the very first load ── */
+  if (loading && !hasLoadedOnceRef.current) {
+    return (
+      <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
+        <Navbar bgWhite={true} />
+
+        <HeroSkeleton />
+
+        <FiltersSkeleton speciesCount={Math.max(speciesList.length, 4)} topicsCount={6} />
+
+        <div className="px-6 sm:px-10 lg:px-16">
+          {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (
+            <ArticleRowSkeleton key={i} visibleCount={columns} />
+          ))}
+
+          {/* All Articles skeleton */}
+          <div className="pb-16">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-8">
+              <Shimmer className="h-3 w-24" />
+              <Shimmer className="h-3 w-16" />
+            </div>
+            <div className={CARD_GRID}>
+              {Array.from({ length: perPage }).map((_, i) => (
+                <AllArticlesCardSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
       <Navbar bgWhite={true} />
@@ -451,7 +654,7 @@ function ExpertAdvices() {
             : "#f3f3f3",
         }}
       >
-        {heroArticle.blog ? (
+        {!loading && heroArticle.blog ? (
           <div className="flex flex-col lg:flex-row items-stretch">
             <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
               <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
@@ -463,8 +666,8 @@ function ExpertAdvices() {
                 </p>
               )}
               <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
-                <span>By Biogance Laboratory</span>
-                <span>7 min read</span>
+                <span>by {heroArticle.blog.company_name || "Biogance"}</span>
+                <span>{heroArticle.blog.reading_time || "0"} min read</span>
                 {heroArticle.blog.updated_at && (
                   <span>Updated {new Date(heroArticle.blog.updated_at).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
                 )}
@@ -493,23 +696,14 @@ function ExpertAdvices() {
             </div>
           </div>
         ) : (
-          // Skeleton hero
-          <div className="flex flex-col lg:flex-row items-stretch">
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16 gap-4">
-              <div className="h-10 bg-gray-200 animate-pulse rounded w-3/4" />
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6" />
-              <div className="h-10 bg-gray-200 animate-pulse rounded w-32 mt-4" />
-            </div>
-            <div className="w-full lg:w-1/2 h-[420px] bg-gray-200 animate-pulse" />
-          </div>
+          <HeroSkeleton />
         )}
       </section>
 
       {/* Sticky Filters */}
-      <div ref={filtersRef} className="sticky top-[104px] z-30 bg-white">
+      <div ref={filtersRef} className="sticky top-[104px] scroll-mt-[104px] z-30 bg-white">
         <div className="px-6 sm:px-10 lg:px-16 py-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
             <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
               {speciesList.map((cat) => (
                 <TabButton
@@ -545,7 +739,7 @@ function ExpertAdvices() {
 
           <ScrollableTabsRow
             items={["All", ...topicsList.map((t) => t.name)]}
-            activeItem={activeTopic.length === 0 ? "All" : null}
+            activeItem={activeSpecies && activeTopic.length === 0 ? "All" : null}
             activeItems={activeTopic.map((t) => t.name)}
             onSelect={(name) => {
               if (name === "All") { setActiveTopic([]); return; }
@@ -569,23 +763,16 @@ function ExpertAdvices() {
 
       <div className="px-6 sm:px-10 lg:px-16">
         {loading ? (
-          // Row skeletons
-          <div className="mb-10 space-y-4">
-            {[1, 2, 3, 4].map((r) => (
-              <div key={r} className="flex gap-6">
-                {Array.from({ length: columns }).map((_, i) => (
-                  <div key={i} className="flex-1 h-72 bg-gray-100 animate-pulse rounded" />
-                ))}
-              </div>
-            ))}
-          </div>
+          Array.from({ length: 4 }).map((_, i) => (
+            <ArticleRowSkeleton key={i} visibleCount={columns} />
+          ))
         ) : (
           <>
-            <ArticleRow label="Recommended For Your Pet" icon={FaRegStar} items={sections.recommended} isFr={isFr} />
-            <ArticleRow label="Trending" icon={GoFlame} items={sections.trending} isFr={isFr} />
-            <ArticleRow label="Most Liked" icon={CiHeart} items={sections.most_liked} isFr={isFr} />
-            <ArticleRow label="Recently Added" icon={GoClock} items={sections.recently_added} isFr={isFr} />
-            <ArticleRow label="Pet Blogs" icon={FaRegStar} items={sections.pet} isFr={isFr} />
+            <ArticleRow label="Recommended For Your Pet" type="recommended" icon={FaRegStar} items={sections.recommended} isFr={isFr} />
+            <ArticleRow label="Trending" type="trending" icon={GoFlame} items={sections.trending} isFr={isFr} />
+            <ArticleRow label="Most Liked" type="like" icon={CiHeart} items={sections.most_liked} isFr={isFr} />
+            <ArticleRow label="Recently Added" type="recent" icon={GoClock} items={sections.recently_added} isFr={isFr} />
+            {/* <ArticleRow label="Pet Blogs" type="pet" icon={FaRegStar} items={sections.pet} isFr={isFr} /> */}
           </>
         )}
 
@@ -603,12 +790,7 @@ function ExpertAdvices() {
           {loading ? (
             <div className={CARD_GRID}>
               {Array.from({ length: perPage }).map((_, i) => (
-                <div key={i}>
-                  <div className="w-full aspect-[5/6] bg-gray-100 animate-pulse mb-3" />
-                  <div className="h-3 bg-gray-100 animate-pulse rounded mb-2 w-1/3" />
-                  <div className="h-4 bg-gray-100 animate-pulse rounded mb-2" />
-                  <div className="h-3 bg-gray-100 animate-pulse rounded w-1/2" />
-                </div>
+                <AllArticlesCardSkeleton key={i} />
               ))}
             </div>
           ) : allArticles.length === 0 ? (
@@ -621,7 +803,12 @@ function ExpertAdvices() {
                 {allArticles.map((a) => (
                   <div
                     key={a.id}
-                    onClick={() => router.push(`/expert-detail`)}
+                    onClick={() => {
+                      const keyword = isFr
+                        ? (a.french_seo_keyword || a.english_seo_keyboard)
+                        : (a.english_seo_keyboard || a.french_seo_keyword);
+                      router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}`);
+                    }}
                     className="cursor-pointer"
                   >
                     <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-100">
@@ -632,16 +819,16 @@ function ExpertAdvices() {
                       />
                     </div>
                     <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                      Pets
+                      {getCategoryName(a, isFr) || "Pets"}
                     </p>
-                    <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2">
+                    <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2">
                       {getBlogField(a, "name", isFr)}
                     </h3>
                     <div className="flex items-center justify-between text-[11px] text-gray-400">
-                      <span>Alex</span>
+                      <span>{a.company_name || ""}</span>
                       <span className="flex items-center gap-1">
                         <FiClock className="w-3 h-3" />
-                        7 min
+                        {a.reading_time ? `${a.reading_time} min` : "0 min"}
                       </span>
                     </div>
                   </div>

@@ -1,94 +1,66 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
+import ModalAddToCart from "../Modal/ModalAddToCart";
 import { LuPackage } from "react-icons/lu";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getDeviceId } from "../../../utils/deviceId";
+import { mergeCartItem } from "../../../utils/cartStorage";
 
-// TODO: hardcoded for now — wire up to the article/blog + product API once available.
-const RITUAL_PRODUCTS = [
-  {
-    id: "p1",
-    name: "Activ Hair shampoo",
-    price: "€12",
-    description: "Cleanses the coat without weighing it down",
-  },
-  {
-    id: "p2",
-    name: "Algo Activ spray",
-    price: "€12",
-    description: "Cleanses the coat without weighing it down",
-  },
-  {
-    id: "p3",
-    name: "Card Brush",
-    price: "€12",
-    description: "Cleanses the coat without weighing it down",
-  },
-];
-
-const HABITS = [
-  {
-    number: "01",
-    title: "Brush before bathing",
-    description:
-      "Brushing removes dead hair, helps prevent knots, and prepares the coat to receive cleansing care evenly.",
-  },
-  {
-    number: "02",
-    title: "Choose a gentle formula",
-    description:
-      "A shampoo adapted to the coat type cleanses without stripping. For sensitive skin, choose an extra-gentle formula.",
-  },
-  {
-    number: "03",
-    title: "Finish with protective care",
-    description:
-      "A conditioner or targeted care product helps with detangling, adds shine, and makes the routine more comfortable.",
-  },
-];
-
-// TODO: hardcoded dummy video for now — wire up to the blog/video API once available.
-const RITUAL_VIDEO = {
-  youtubeId: "aqz-KE-bpKQ",
-  title: "The 3-step shedding ritual, demonstrated",
-};
-
-const MORE_ADVICES = [
-  { id: "ma1", category: "Sensitive skin", title: "How to recognize skin discomfort?", image: "/distributorImg.jpg" },
-  { id: "ma2", category: "Routine", title: "How often should you wash your dog?", image: "/wishlist-img.jpg" },
-  { id: "ma3", category: "Education", title: "Why does he eat my shoes?", image: "/partnerImg.jpg" },
-  { id: "ma4", category: "Grooming", title: "Building a gentle brushing routine for shedding season", image: "/proImg.jpg" },
-  { id: "ma5", category: "Health", title: "Senior dogs and joints: what to add, what to stop", image: "/cat.png" },
-  { id: "ma6", category: "Behavior", title: "Moving day: helping an anxious cat settle in 72 hours", image: "/distributorImg.jpg" },
-  { id: "ma7", category: "Nutrition", title: "The truth about grain-free diets for cats", image: "/wishlist-img.jpg" },
-  { id: "ma8", category: "Wellness", title: "Five enrichment toys vets actually recommend", image: "/partnerImg.jpg" },
-];
-
-function RitualVideoSection() {
-  return (
-    <section className="bg-white py-12 md:py-16">
-      <div className="px-6 sm:px-10 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative w-full aspect-video bg-gray-900 overflow-hidden">
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/kh8rc7ARjHQ?autoplay=1&mute=1&loop=1&playlist=kh8rc7ARjHQ&controls=1&rel=0"
-              title="Ritual Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+function getAuthHeaders() {
+  try {
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    if (loginData?.data?.token) return { Authorization: `Bearer ${loginData.data.token}` };
+  } catch {}
+  return {};
 }
-function MoreAdvicesRow({ router }) {
+
+function getAuthBody() {
+  try {
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    if (loginData?.data?.token) return {};
+  } catch {}
+  return { device_id: getDeviceId() };
+}
+
+function getBlogImage(item) {
+  return item?.images?.[0]?.media ?? item?.image ?? null;
+}
+
+function getBlogField(item, field, isFr) {
+  if (!item) return "";
+  if (!isFr) return item[field] ?? "";
+  // Most fields are prefixed (name -> french_name), but the *_description
+  // fields put "french" in the middle (long_description -> long_french_description).
+  const frField = field.endsWith("_description")
+    ? field.replace("_description", "_french_description")
+    : `french_${field}`;
+  return item[frField] || item[field] || "";
+}
+
+function getYoutubeId(url) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (u.searchParams.get("v")) return u.searchParams.get("v");
+    const parts = u.pathname.split("/").filter(Boolean);
+    return parts.pop() || null;
+  } catch {
+    return null;
+  }
+}
+
+function MoreAdvicesRow({ items, isFr, sectionLabel }) {
+  const { t } = useTranslation("expertadvice");
+  const router = useRouter();
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -111,69 +83,60 @@ function MoreAdvicesRow({ router }) {
       track.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, []);
+  }, [items]);
 
   const scrollByCard = (direction) => {
     const track = scrollRef.current;
     if (!track) return;
     const card = track.querySelector("[data-card]");
-    const gap = 24;
-    const amount = card ? card.offsetWidth + gap : 320;
+    const amount = card ? card.offsetWidth + 24 : 320;
     track.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
+
+  const navigateToDetail = (item) => {
+    const keyword = isFr
+      ? (item.french_seo_keyword || item.english_seo_keyboard)
+      : (item.english_seo_keyboard || item.french_seo_keyword);
+    router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}&section=${encodeURIComponent("moreAdvices")}`);
+  };
+
+  if (!items?.length) return null;
 
   return (
     <section className="bg-[#fbf9f7] py-12 md:py-16">
       <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
         <div>
           <p className="text-xs text-gray-400 mb-1">
-            <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>{" "}/{" "}
-            <Link href="/expert-advice" className="hover:text-gray-600 transition-colors">Advice</Link>{" "}/ Expert insight
+            <Link href="/" className="hover:text-gray-600 transition-colors">{t("home")}</Link>{" "}/{" "}
+            <Link href="/expert-advice" className="hover:text-gray-600 transition-colors">{t("advice")}</Link>{" "}/ {sectionLabel}
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">More expert advices.</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("moreExpertAdvices")}</h2>
         </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => scrollByCard(-1)}
-            disabled={!canScrollLeft}
-            aria-label="Scroll left"
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-          >
+          <button type="button" onClick={() => scrollByCard(-1)} disabled={!canScrollLeft} aria-label="Scroll left"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
             <FiChevronLeft className="w-4 h-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => scrollByCard(1)}
-            disabled={!canScrollRight}
-            aria-label="Scroll right"
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-          >
+          <button type="button" onClick={() => scrollByCard(1)} disabled={!canScrollRight} aria-label="Scroll right"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
             <FiChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {MORE_ADVICES.map((item) => (
-          <div
-            key={item.id}
-            data-card
-            onClick={() => router.push("/expert-detail")}
+      <div ref={scrollRef} className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((item) => (
+          <div key={item.id} data-card onClick={() => navigateToDetail(item)}
             className="relative h-72 shrink-0 overflow-hidden cursor-pointer group"
-            style={{ flexBasis: "calc((100% - 48px) / 3)" }}
-          >
+            style={{ flexBasis: "calc((100% - 48px) / 3)" }}>
             <img
-              src={item.image}
-              alt={item.title}
+              src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
+              alt={getBlogField(item, "name", isFr)}
               className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
-              <p className="text-xs text-white/80 mb-1">{item.category}</p>
-              <p className="text-base font-bold text-white leading-snug">{item.title}</p>
+              <p className="text-xs text-white/80 mb-1">{t("pets")}</p>
+              <p className="text-base font-bold text-white leading-snug line-clamp-2">{getBlogField(item, "name", isFr)}</p>
             </div>
           </div>
         ))}
@@ -182,9 +145,191 @@ function MoreAdvicesRow({ router }) {
   );
 }
 
-function ExpertArticleDetail() {
+function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
+  const { t, i18n } = useTranslation("expertadvice");
+  const isFr = i18n.language?.startsWith("fr");
   const router = useRouter();
-  const hasProducts = RITUAL_PRODUCTS.length > 0;
+  const searchParams = useSearchParams();
+  const seoKeyword = seoKeywordProp ?? searchParams.get("seo");
+  const sectionKey = searchParams.get("section");
+  const sectionLabel = sectionKey ? t(`sectionLabels.${sectionKey}`, { defaultValue: sectionKey }) : t("expertInsight");
+
+  const [blog, setBlog] = useState(null);
+  const [bundles, setBundles] = useState([]);
+  const [relatedBlogs, setRelatedBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedSizes, setSelectedSizes] = useState({});
+  const [addingBundleId, setAddingBundleId] = useState(null);
+  // const [addingAll, setAddingAll] = useState(false); // Add all — commented out
+  const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    if (!seoKeyword) return;
+    const fetchDetail = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.post(
+          `${BASE_URL}/blog/detail`,
+          { ...getAuthBody(), seo_keyboard: decodeURIComponent(seoKeyword) },
+          { headers: { ...getAuthHeaders() } }
+        );
+        if (!res.data.status) {
+          toast.error(res.data.action || "Something went wrong.");
+          return;
+        }
+        setBlog(res.data.data?.blog ?? null);
+        setBundles(res.data.data?.bundles ?? []);
+        setRelatedBlogs(res.data.data?.relatedBlogs ?? []);
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [seoKeyword]);
+
+  const hasProducts = bundles.length > 0;
+  const youtubeLink = isFr ? (blog?.french_youtube_link || blog?.youtube_link) : (blog?.youtube_link || blog?.french_youtube_link);
+  const youtubeId = getYoutubeId(youtubeLink);
+
+  const getSelectedProduct = (bundle) => {
+    const products = bundle.products || [];
+    return products.find((p) => p.id === selectedSizes[bundle.id]) || products[0];
+  };
+
+  const addProductToCart = async (productId) => {
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    const token = loginData?.data?.token;
+    const res = await axios.post(
+      `${BASE_URL}/user/cart/create`,
+      token ? { product_id: productId, quantity: 1 } : { device_id: getDeviceId(), product_id: productId, quantity: 1 },
+      token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+    );
+    if (res.data.status === false) {
+      throw new Error(res.data.action || "Could not add to cart.");
+    }
+    mergeCartItem(res.data.data);
+  };
+
+  const handleAddToCart = async (bundle) => {
+    const product = getSelectedProduct(bundle);
+    if (!product || addingBundleId) return;
+    setAddingBundleId(bundle.id);
+    try {
+      await addProductToCart(product.id);
+      setCartOpen(true);
+    } catch (err) {
+      toast.error(err.message || "Something went wrong.");
+    } finally {
+      setAddingBundleId(null);
+    }
+  };
+
+  // const handleAddAll = async () => {
+  //   if (addingAll) return;
+  //   setAddingAll(true);
+  //   try {
+  //     for (const bundle of bundles) {
+  //       const product = getSelectedProduct(bundle);
+  //       if (!product) continue;
+  //       await addProductToCart(product.id);
+  //     }
+  //     setCartOpen(true);
+  //   } catch (err) {
+  //     toast.error(err.message || "Something went wrong.");
+  //   } finally {
+  //     setAddingAll(false);
+  //   }
+  // };
+
+  if (loading) {
+    return (
+      <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
+        <Navbar bgWhite={true} />
+
+        {/* Hero skeleton */}
+        <section className="bg-[#fbf9f7]">
+          <div className="flex flex-col lg:flex-row items-stretch">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16 gap-4">
+              <div className="h-3 bg-gray-200 animate-pulse rounded w-40 mb-2" />
+              <div className="h-10 bg-gray-200 animate-pulse rounded w-full" />
+              <div className="h-10 bg-gray-200 animate-pulse rounded w-2/3" />
+              <div className="h-4 bg-gray-200 animate-pulse rounded w-full mt-2" />
+              <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6" />
+              <div className="flex items-center gap-6 mt-4">
+                <div className="h-3 bg-gray-200 animate-pulse rounded w-28" />
+                <div className="h-3 bg-gray-200 animate-pulse rounded w-20" />
+                <div className="h-3 bg-gray-200 animate-pulse rounded w-36" />
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2 h-[420px] bg-gray-200 animate-pulse" />
+          </div>
+        </section>
+
+        {/* Article body + sidebar skeleton */}
+        <div className="px-6 sm:px-10 lg:px-16 py-12 md:py-16">
+          <div className="flex flex-col lg:flex-row gap-12">
+            <div className="w-full lg:w-2/3 max-w-3xl mx-auto space-y-4">
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-5/6" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-full !mt-8" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-4/6" />
+              <div className="h-40 bg-gray-100 animate-pulse rounded !mt-8" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-full !mt-8" />
+              <div className="h-4 bg-gray-100 animate-pulse rounded w-3/4" />
+            </div>
+
+            <div className="w-full lg:w-1/3 mx-auto lg:mx-0">
+              <div className="border border-gray-200 p-6">
+                <div className="h-3 bg-gray-100 animate-pulse rounded w-28 mb-3" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-44 mb-4" />
+                <hr className="border-gray-200 mb-4" />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4 py-4 border-b border-gray-100 last:border-b-0">
+                    <div className="w-20 h-23 bg-gray-100 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-gray-100 animate-pulse rounded w-3/4" />
+                      <div className="h-3 bg-gray-100 animate-pulse rounded w-1/2" />
+                      <div className="h-8 bg-gray-100 animate-pulse rounded w-full mt-3" />
+                    </div>
+                  </div>
+                ))}
+                <div className="h-10 bg-gray-100 animate-pulse rounded w-full mt-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Video skeleton */}
+        <section className="bg-white py-12 md:py-16">
+          <div className="px-6 sm:px-10 lg:px-16">
+            <div className="w-full max-w-5xl mx-auto aspect-video bg-gray-200 animate-pulse" />
+          </div>
+        </section>
+
+        {/* More advices skeleton */}
+        <section className="bg-[#fbf9f7] py-12 md:py-16">
+          <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
+            <div>
+              <div className="h-3 bg-gray-200 animate-pulse rounded w-32 mb-2" />
+              <div className="h-7 bg-gray-200 animate-pulse rounded w-60" />
+            </div>
+          </div>
+          <div className="flex gap-6 overflow-hidden">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-72 bg-gray-200 animate-pulse shrink-0" style={{ flexBasis: "calc((100% - 48px) / 3)" }} />
+            ))}
+          </div>
+        </section>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
@@ -194,41 +339,31 @@ function ExpertArticleDetail() {
       <section className="bg-[#fbf9f7]">
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-            <p className="text-xs text-gray-400 mb-1">
-              <Link href="/" className="hover:text-gray-600 transition-colors">
-                Home
-              </Link>{" "}
-              /{" "}
-              <Link
-                href="/expert-advice"
-                className="hover:text-gray-600 transition-colors"
-              >
-                Advice
-              </Link>{" "}
-              / Expert insight
-            </p>
             <p className="text-xs text-gray-400 mb-6">
-              Expert insight &bull; Skin &amp; coat
+              <Link href="/" className="hover:text-gray-600 transition-colors">{t("home")}</Link>{" "}/{" "}
+              <Link href="/expert-advice" className="hover:text-gray-600 transition-colors">{t("advice")}</Link>{" "}/ {sectionLabel}
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
-              How to support shedding without irritating the skin?
+              {getBlogField(blog, "name", isFr)}
             </h1>
-            <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
-              During shedding season, the right reflex is not to bathe more
-              often, but to build a gentle routine: brush, cleanse with care,
-              then protect the skin barrier.
-            </p>
+            {getBlogField(blog, "short_description", isFr) && (
+              <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
+                {getBlogField(blog, "short_description", isFr)}
+              </p>
+            )}
             <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap">
-              <span>By Biogance Laboratory</span>
-              <span>7 min read</span>
-              <span>Updated July 3, 2026</span>
+             <span>{t("byAuthor", { name: blog?.company_name || "Biogance" })}</span>
+<span>{t("minRead", { time: blog?.reading_time || "0" })}</span>
+              {blog?.updated_at && (
+                <span>{t("updatedOn", { date: new Date(blog.updated_at).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" }) })}</span>
+              )}
             </div>
           </div>
 
           <div className="relative w-full lg:w-1/2 h-[420px]">
             <img
-              src="/cat.png"
-              alt="How to support shedding without irritating the skin"
+              src={getBlogImage(blog) ? `${MEDIA_URL}${getBlogImage(blog)}` : "/cat.png"}
+              alt={getBlogField(blog, "name", isFr)}
               className="w-full h-full object-cover"
             />
           </div>
@@ -236,140 +371,141 @@ function ExpertArticleDetail() {
       </section>
 
       {/* Article body + product recommendation */}
-      <div className="px-6 sm:px-10 lg:px-16 py-12 md:py-16">
+      <div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Left: article content */}
-          <div
-            className={
-              hasProducts
-                ? "w-full lg:w-2/3 max-w-3xl mx-auto"
-                : "w-full max-w-3xl mx-auto"
-            }
-          >
-            <p className="text-sm text-gray-700 leading-relaxed mb-5">
-              <span className="float-left text-6xl font-bold leading-[0.4] pr-2">
-                S
-              </span>
-              hedding is a natural process. It allows dogs and cats to renew
-              their coat, but it can also make the skin more sensitive and
-              the coat look duller when the routine is not adapted.
-            </p>
-            <p className="text-sm text-gray-700 leading-relaxed mb-8">
-              The goal of an expert routine is simple: remove dead hair
-              without irritation, cleanse only when needed, then apply care
-              that helps the coat regain softness and shine.
-            </p>
-
-            <hr className="border-gray-200 mb-8" />
-
-            <blockquote className="text-lg sm:text-xl font-bold text-gray-900 leading-snug mb-8">
-              &quot;A good shedding routine should respect the skin&apos;s
-              natural balance before looking for visible results.&quot;
-            </blockquote>
-
-            <hr className="border-gray-200 mb-8" />
-
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              The right habits to adopt
-            </h2>
-
-            <div className="mb-10">
-              {HABITS.map((habit) => (
-                <div
-                  key={habit.number}
-                  className="flex gap-5 py-6 border-t border-gray-200 last:border-b"
-                >
-                  <span className="text-2xl font-bold text-gray-900 shrink-0">
-                    {habit.number}
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 mb-1.5">
-                      {habit.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {habit.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              When should you be concerned?
-            </h2>
-            <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              Seasonal hair loss is normal. However, patches, redness,
-              intense itching, or a sudden change in behavior should lead
-              you to seek veterinary advice.
-            </p>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              The page can then naturally lead to a pet profile: breed, age,
-              coat type, and lifestyle. The article becomes an editorial
-              entry point toward personalized recommendations.
-            </p>
+          <div className={hasProducts ? "w-full lg:w-2/3 max-w-3xl mx-auto" : "w-full max-w-3xl mx-auto"}>
+            {getBlogField(blog, "long_description", isFr) ? (
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: getBlogField(blog, "long_description", isFr) }}
+              />
+            ) : (
+              <p className="text-sm text-gray-500">{t("noContent")}</p>
+            )}
           </div>
 
-          {/* Right: recommended routine card */}
+          {/* Right: recommended products */}
           {hasProducts && (
-            <div className="w-full lg:w-1/3 max-w-xl mx-auto lg:mx-0">
-              <div className="sticky top-[130px] border border-gray-200 p-6">
-                <p className="text-xs text-gray-400 mb-2">
-                  Recommended routine
-                </p>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  The 3-product shedding ritual
-                </h3>
+            <div className="w-full lg:w-1/3 mx-auto lg:mx-0">
+              <div className="sticky top-[130px] bottom-[130px] border border-gray-200 p-4 sm:p-6">
+                <p className="text-xs text-gray-400 mb-2">{t("recommendedRoutine")}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">{t("recommendedProducts")}</h3>
                 <hr className="border-gray-200 mb-4" />
-
-                {RITUAL_PRODUCTS.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex gap-4 py-4 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="w-20 h-23 bg-[#f3f3f3] border border-gray-100 shrink-0 flex items-center justify-center">
-                      <LuPackage className="w-6 h-6 text-gray-300" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className="text-sm font-bold text-gray-900">
-                          {product.name}
-                        </p>
-                        <p className="text-sm font-bold text-gray-900 shrink-0">
-                          {product.price}
-                        </p>
+                {bundles.map((bundle) => {
+                  const products = bundle.products || [];
+                  const uniqueSizes = [...new Set(products.filter((p) => p.size_name).map((p) => p.size_name))];
+                  const hasSizes = uniqueSizes.length > 1;
+                  const singleSize = uniqueSizes.length === 1 ? uniqueSizes[0] : null;
+                  const product = getSelectedProduct(bundle);
+                  const productImg = product?.images?.[0]?.media ?? null;
+                  const productName = isFr ? (bundle.french_name || bundle.name) : bundle.name;
+                  const productLabel = isFr ? (bundle.french_product_label || bundle.product_label) : bundle.product_label;
+                  const isAdding = addingBundleId === bundle.id;
+                  return (
+                    <div key={bundle.id} className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0">
+                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
+                        {productImg ? (
+                          <img src={`${MEDIA_URL}${productImg}`} alt={productName} className="w-full h-full object-cover" />
+                        ) : (
+                          <LuPackage className="w-6 h-6 sm:w-7 sm:h-7 text-gray-300" />
+                        )}
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                        {product.description}
-                      </p>
-                      <button
-                        type="button"
-                        className="w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2.5 transition-colors cursor-pointer"
-                      >
-                        Add to cart
-                      </button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2">{productName}</p>
+                          {product?.price && <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">€{product.price}</p>}
+                        </div>
+                        {productLabel && (
+                          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2 line-clamp-1">{productLabel}</p>
+                        )}
+                        {hasSizes && (
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {uniqueSizes.map((size) => {
+                              const sizeProduct = products.find((p) => p.size_name === size);
+                              const isSelected = product?.size_name === size;
+                              return (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() => setSelectedSizes((prev) => ({ ...prev, [bundle.id]: sizeProduct?.id }))}
+                                  className={`px-2 py-1 text-[10px] sm:text-xs font-medium border transition-colors cursor-pointer ${
+                                    isSelected
+                                      ? "bg-gray-900 border-gray-900 text-white"
+                                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
+                                  }`}
+                                >
+                                  {size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {singleSize && (
+                          <div className="mb-2">
+                            <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
+                              {singleSize}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(bundle)}
+                          disabled={isAdding}
+                          className="w-full bg-gray-900 hover:bg-gray-700 text-white text-xs sm:text-sm font-semibold py-2.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                          {isAdding ? (
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            t("addToCart")
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-
-                <button
+                  );
+                })}
+                {/* <button
                   type="button"
-                  className="w-full mt-4 bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-3 transition-colors cursor-pointer"
+                  onClick={handleAddAll}
+                  disabled={addingAll}
+                  className="w-full mt-4 bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-3 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  Add all
-                </button>
+                  {addingAll ? (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    t("addAll")
+                  )}
+                </button> */}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Ritual video */}
-      <RitualVideoSection video={RITUAL_VIDEO} />
+      {/* YouTube video */}
+      {youtubeId && (
+        <section className="bg-white py-12 md:py-16">
+          <div className="px-6 sm:px-10 lg:px-16">
+            <div className="relative w-full max-w-5xl mx-auto aspect-video bg-gray-900  overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
+                title="Blog Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* More expert advices */}
-      <MoreAdvicesRow router={router} />
+      <MoreAdvicesRow items={relatedBlogs} isFr={isFr} sectionLabel={sectionLabel} />
 
       <Footer />
+
+      <ModalAddToCart isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );
 }
