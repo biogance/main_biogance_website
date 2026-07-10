@@ -403,12 +403,6 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
             </div>
           ))}
         </div>
-        {canScrollLeft && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white via-white/90 to-transparent" />
-        )}
-        {canScrollRight && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white via-white/90 to-transparent" />
-        )}
       </div>
       {canScrollRight && (
         <button
@@ -701,7 +695,7 @@ function ExpertAdvices() {
       </section>
 
       {/* Sticky Filters */}
-      <div ref={filtersRef} className="sticky top-[104px] scroll-mt-[104px] z-30 bg-white">
+      <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
         <div className="px-6 sm:px-10 lg:px-16 py-8">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
             <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
