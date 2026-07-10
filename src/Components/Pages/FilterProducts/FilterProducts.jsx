@@ -42,6 +42,9 @@ const GROUP_LABELS_FR = {
   Price: "Prix",
 };
 
+// Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
+const NAVBAR_HEIGHT = 104;
+
 // ───────────── Data Model ─────────────
 const FALLBACK_CATEGORIES = [
   { id: 10, name: "Dogs", sub_categories: [] },
@@ -409,46 +412,75 @@ function getShopContext(source, q, categoryName, t) {
   }
 }
 
-const SkeletonCard = () => (
-  <div className="w-full bg-[#f3f3f3] relative overflow-hidden aspect-[3/2]" aria-hidden>
-    <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
-    <div className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2.5">
-      <div className="h-3 w-3/5 rounded bg-stone-200 mb-1.5" />
-      <div className="h-3 w-1/4 rounded bg-stone-200" />
-    </div>
+// Title + price sit directly on the image with no backing panel on the real
+// card (LandingCards' overlay is `absolute bottom-0 mb-3 left-0 right-0
+// px-3`, no background) — mirror that exactly instead of a solid white bar.
+const CardTextShimmer = () => (
+  <div className="absolute bottom-0 mb-3 left-0 right-0 px-3 py-2" style={{ zIndex: 7 }}>
+    <div className="h-2.5 w-3/5 rounded bg-white/80 mb-1.5" />
+    <div className="h-2.5 w-1/4 rounded bg-white/60" />
   </div>
 );
 
-// Matches the taller "video" slot in the featured rows (h-64 sm:h-full).
-const SkeletonVideoCard = () => (
-  <div className="w-full h-64 sm:h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+// Matches the "New" / "Best" / "-20%" badge LandingCards renders for the
+// first three cards (index 0/1/2), top-left, raisedLabel position.
+const CardBadgeShimmer = () => (
+  <div className="absolute -top-0.5 md:top-3 left-3 h-3 w-8 rounded bg-white/70" style={{ zIndex: 10 }} />
+);
+
+// Real bottom-grid / "Recently Viewed" cards are `compact` without
+// `fillHeight`, which LandingCards renders at a fixed h-140 (not an aspect
+// ratio) — match that exactly so cards don't jump taller once data loads.
+const SkeletonCard = ({ badge = false }) => (
+  <div className="w-full h-140 bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
-    <div className="absolute bottom-0 left-0 right-0 bg-white/90 px-3 py-2.5">
-      <div className="h-3 w-3/5 rounded bg-stone-200 mb-1.5" />
-      <div className="h-3 w-1/4 rounded bg-stone-200" />
-    </div>
+    {badge && <CardBadgeShimmer />}
+    <CardTextShimmer />
+  </div>
+);
+
+// Same as SkeletonCard but stretches to fill its grid cell (viewport-fit rows) instead of a fixed height.
+const SkeletonCardFill = ({ badge = false }) => (
+  <div className="w-full h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+    <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
+    {badge && <CardBadgeShimmer />}
+    <CardTextShimmer />
+  </div>
+);
+
+// Matches the taller "video" slot in the featured rows (viewport-fit height).
+const SkeletonVideoCard = () => (
+  <div className="w-full h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+    <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
+    <CardTextShimmer />
   </div>
 );
 
 // Mirrors the real featured layout: row 1 is a 4-grid + video, row 2 is
-// video + 4-grid, followed by a plain grid — so the shimmer doesn't jump
-// in size once real data replaces it.
-const FeaturedSkeleton = () => (
+// video + 4-grid, each sized to the viewport, followed by a plain grid —
+// so the shimmer doesn't jump in size once real data replaces it. Row 1's
+// first three cards (index 0/1/2) get the same "New" / "Best" / "-20%"
+// badge placeholder the real cards get at those positions.
+const FeaturedSkeleton = ({ row1Height, rowHeight }) => (
   <div className="mb-[3px]">
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
-      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+    <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px]" style={{ height: row1Height }}>
+      <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
         {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonCard key={`row1-${i}`} />
+          <SkeletonCardFill key={`row1-${i}`} badge={i < 3} />
         ))}
       </div>
-      <SkeletonVideoCard />
+      <div className="flex-1 min-h-0">
+        <SkeletonVideoCard />
+      </div>
     </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
-      <SkeletonVideoCard />
-      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+    <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px]" style={{ height: rowHeight }}>
+      <div className="flex-1 min-h-0">
+        <SkeletonVideoCard />
+      </div>
+      <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
         {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonCard key={`row2-${i}`} />
+          <SkeletonCardFill key={`row2-${i}`} />
         ))}
       </div>
     </div>
@@ -487,6 +519,65 @@ export default function FilterProducts() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // The filter rail sticks right below the navbar once scrolled — measure its
+  // real height so the featured rows can size themselves to whatever space is
+  // actually left in the viewport (navbar + rail eat into it) instead of a
+  // guessed constant, which is what left them still needing a scroll.
+  const filterRailRef = useRef(null);
+  const [railHeight, setRailHeight] = useState(0);
+
+  useEffect(() => {
+    const el = filterRailRef.current;
+    if (!el) return;
+    const update = () => setRailHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // Full-size row, held in view with `position: sticky` instead of shrinking it
+  // or snapping the scroll. Each row sits inside a wrapper that's taller than
+  // the row itself (rowHeight + FEATURED_ROW_DWELL); the row is sticky at
+  // `top: reservedTop` inside that wrapper, so it stays pinned — fully framed,
+  // no cut-off — for the whole dwell range, then releases into the next
+  // section on its own once you scroll past. Pure CSS, no scroll listeners,
+  // so it can't fight the user's scroll (unlike the earlier JS auto-scroll)
+  // and doesn't touch anything outside its own wrapper (unlike CSS
+  // scroll-snap, which pulled on the header too).
+  const reservedTop = NAVBAR_HEIGHT + railHeight;
+  const featuredRowHeight = `max(420px, calc(100dvh - ${reservedTop}px))`;
+  const FEATURED_ROW_DWELL = 260;
+  const featuredRowWrapperHeight = `calc(${featuredRowHeight} + ${FEATURED_ROW_DWELL}px)`;
+
+  // Row 1 needs to sit inside the very first screen, right along with the
+  // "products in view / search / title" intro block above it — not just be
+  // reachable after scrolling. Measure that intro block's real height so row 1
+  // can take exactly whatever's left of the first viewport under it, on any
+  // screen size.
+  const introHeaderRef = useRef(null);
+  const [introHeaderHeight, setIntroHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const el = introHeaderRef.current;
+    if (!el) return;
+    const update = () => setIntroHeaderHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  const row1Height = `max(300px, calc(100dvh - ${reservedTop + introHeaderHeight}px))`;
 
   const [animals, setAnimals] = useState([]);
   const [universe, setUniverse] = useState([]);
@@ -1156,6 +1247,7 @@ export default function FilterProducts() {
 
       {/* Sticky filter rail */}
       <FilterRail
+        railRef={filterRailRef}
         categoriesList={categoriesList}
         state={{
           animals,
@@ -1206,7 +1298,7 @@ export default function FilterProducts() {
       />
 
       {/* Result meta + chips */}
-      <section className="mx-auto max-w-10xl px-8 pt-6">
+      <section ref={introHeaderRef} className="mx-auto max-w-10xl px-8 pt-6">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-6">
           <div className="flex items-baseline gap-3">
             <span className="font-serif text-3xl">{totalCount}</span>
@@ -1322,17 +1414,20 @@ export default function FilterProducts() {
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
         {isSearching ? (
-          <FeaturedSkeleton />
+          <FeaturedSkeleton row1Height={row1Height} rowHeight={featuredRowHeight} />
         ) : (
           <>
             {showFeaturedIntro && (
               <div className="mb-[3px]">
-                {/* Row 1: 4-grid, +video once there's a 5th product */}
+                {/* Row 1: 4-grid + video — sized to sit inside the first screen, right along with the intro header above it */}
                 {featuredRow1Video ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px] mb-[3px]">
-                    <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
+                  <div
+                    className="flex flex-col sm:flex-row gap-[3px] mb-[3px]"
+                    style={{ height: row1Height }}
+                  >
+                    <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
                       {featuredRow1Grid.map((p, i) => (
-                        <div key={p.id} className="w-full">
+                        <div key={p.id} className="w-full h-full min-h-0 overflow-hidden">
                           <LandingCards
                             product={p}
                             showNav={true}
@@ -1340,11 +1435,12 @@ export default function FilterProducts() {
                             compact={true}
                             compactButtons={true}
                             raisedLabel={true}
+                            fillHeight
                           />
                         </div>
                       ))}
                     </div>
-                    <div className="h-64 sm:h-full">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                       <LandingCards
                         product={featuredRow1Video}
                         showNav={true}
@@ -1374,35 +1470,41 @@ export default function FilterProducts() {
                   </div>
                 )}
 
-                {/* Row 2: only once there's a 6th product for the second video slot */}
+                {/* Row 2: video + 4-grid — sticky-pinned, same as row 1 */}
                 {featuredRow2Video && (
                   featuredRow2Grid.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
-                      <div className="h-64 sm:h-full">
-                        <LandingCards
-                          product={featuredRow2Video}
-                          showNav={true}
-                          index={5}
-                          compact={false}
-                          compactButtons={true}
-                          raisedLabel={true}
-                          fillHeight
-                          forceVideo
-                        />
-                      </div>
-                      <div className="sm:col-span-2 grid grid-cols-2 gap-[3px]">
-                        {featuredRow2Grid.map((p, i) => (
-                          <div key={p.id} className="w-full">
-                            <LandingCards
-                              product={p}
-                              showNav={true}
-                              index={i + 6}
-                              compact={true}
-                              compactButtons={true}
-                              raisedLabel={true}
-                            />
-                          </div>
-                        ))}
+                    <div style={{ height: featuredRowWrapperHeight }}>
+                      <div
+                        className="flex flex-col sm:flex-row gap-[3px] sticky overflow-hidden"
+                        style={{ height: featuredRowHeight, top: reservedTop }}
+                      >
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                          <LandingCards
+                            product={featuredRow2Video}
+                            showNav={true}
+                            index={5}
+                            compact={false}
+                            compactButtons={true}
+                            raisedLabel={true}
+                            fillHeight
+                            forceVideo
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
+                          {featuredRow2Grid.map((p, i) => (
+                            <div key={p.id} className="w-full h-full min-h-0 overflow-hidden">
+                              <LandingCards
+                                product={p}
+                                showNav={true}
+                                index={i + 6}
+                                compact={true}
+                                compactButtons={true}
+                                raisedLabel={true}
+                                fillHeight
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -1769,6 +1871,7 @@ export default function FilterProducts() {
 
 // ───────────── Filter Rail ─────────────
 function FilterRail({
+  railRef,
   categoriesList,
   state,
   setters,
@@ -1904,7 +2007,10 @@ function FilterRail({
 
   return (
     <div
-      ref={ref}
+      ref={(el) => {
+        ref.current = el;
+        if (railRef) railRef.current = el;
+      }}
       className="sticky top-[104px] z-39 border-b border-stone-900/10 bg-white"
     >
       {/* Mobile: single prominent CTA that opens the full filters modal */}

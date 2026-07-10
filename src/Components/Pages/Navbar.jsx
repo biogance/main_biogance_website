@@ -162,7 +162,7 @@ export default function Navbar({
 
   const navLinks = [
     { href: "/who-are-we", text: t("ourLaboratory"), key: "laboratory" },
-    { href: "/expert-advice", text: t("ourExpertAdvice"), key: "advice" },
+    { href: "/advices", text: t("ourExpertAdvice"), key: "advice" },
     { href: "/navPro", text: "PRO", key: "pro" },
   ];
 
