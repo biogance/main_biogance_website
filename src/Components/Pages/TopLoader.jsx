@@ -7,6 +7,10 @@ export function useTopLoader() {
   return { start };
 }
 
+export function startTopLoader() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("toploader:start"));
+}
+
 function LoaderBar({ finishing }) {
   const [width, setWidth] = useState(0);
   const timerRef = useRef(null);

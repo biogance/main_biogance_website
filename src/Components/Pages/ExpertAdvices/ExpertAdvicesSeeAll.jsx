@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { startTopLoader } from "../TopLoader";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { FiSearch, FiClock, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
@@ -177,6 +178,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     </div>
   );
 }
+
 function useResponsiveColumns() {
   const [columns, setColumns] = useState(1);
   useEffect(() => {
@@ -229,17 +231,18 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   );
 }
 
-function ExpertAdvicesSeeAll() {
+function ExpertAdvicesSeeAll({ type: typeProp }) {
   const { i18n } = useTranslation();
   const isFr = i18n.language?.startsWith("fr");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const type = searchParams.get("type") || "trending";
+  const type = typeProp ?? searchParams.get("type") ?? "trending";
   const sectionLabel = TYPE_LABELS[type] || "Articles";
 
   const filtersRef = useRef(null);
   const searchTimerRef = useRef(null);
 
+  // ── Splash data (same as ExpertAdvices.jsx) ─────────────────────────────
   const [splashCategories] = useState(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -377,7 +380,8 @@ function ExpertAdvicesSeeAll() {
     const keyword = isFr
       ? (item.french_seo_keyword || item.english_seo_keyboard)
       : (item.english_seo_keyboard || item.french_seo_keyword);
-    router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}&section=${encodeURIComponent(sectionLabel)}`);
+    startTopLoader();
+    router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
 
   if (loading && !hasLoadedOnceRef.current) {
@@ -385,8 +389,14 @@ function ExpertAdvicesSeeAll() {
       <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
         <Navbar bgWhite={true} />
 
-        <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-6">
+        {/* Back link */}
+        <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-4">
           <Shimmer className="h-3 w-32" />
+        </div>
+
+        {/* Section label (moved above filters) */}
+        <div className="px-6 sm:px-10 lg:px-16 pb-6">
+          <Shimmer className="h-8 w-64" />
         </div>
 
         <FiltersSkeleton speciesCount={Math.max(speciesList.length, 4)} topicsCount={6} />
@@ -412,10 +422,10 @@ function ExpertAdvicesSeeAll() {
     <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
       <Navbar bgWhite={true} />
 
-      {/* Page header */}
-      <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-6">
+      {/* Back link */}
+      <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-4">
         <Link
-          href="/expert-advice"
+          href="/advices"
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors"
         >
           <FaArrowLeft className="w-3.5 h-3.5" />
@@ -423,7 +433,14 @@ function ExpertAdvicesSeeAll() {
         </Link>
       </div>
 
-      {/* Sticky Filters */}
+      {/* Section label — moved above the filters */}
+      <div className="px-6 sm:px-10 lg:px-16 pb-6">
+        <p className="text-[31px] font-bold tracking-widest text-gray-900 uppercase">
+          {sectionLabel}
+        </p>
+      </div>
+
+      {/* Sticky Filters — moved below the section label */}
       <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
         <div className="px-6 sm:px-10 lg:px-16 pt-8 pb-7">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
@@ -433,7 +450,10 @@ function ExpertAdvicesSeeAll() {
                   key={cat.id}
                   label={cat.name}
                   active={activeSpecies?.id === cat.id}
-                  onClick={() => { setActiveSpecies(cat); setActiveTopic([]); }}
+                  onClick={() => {
+                    setActiveSpecies((prev) => (prev?.id === cat.id ? null : cat));
+                    setActiveTopic([]);
+                  }}
                 />
               ))}
             </div>
@@ -486,10 +506,7 @@ function ExpertAdvicesSeeAll() {
 
       {/* Articles grid — same card design as ExpertAdvices.jsx's "All Articles" */}
       <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-16">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-8">
-          <p className="text-[31px] font-bold tracking-widest text-gray-900 uppercase">
-            {sectionLabel}
-          </p>
+        <div className="flex items-center justify-end border-b border-gray-200 pb-3 mb-8">
           <p className="text-[11px] text-gray-400 uppercase tracking-wide">
             {String(totalArticles).padStart(2, "0")} Entries
           </p>

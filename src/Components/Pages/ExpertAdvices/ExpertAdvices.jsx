@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { FiSearch, FiClock, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
@@ -13,7 +14,7 @@ import { FaRegStar } from "react-icons/fa";
 import { CiHeart } from "react-icons/ci";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
-import { useTranslation } from "react-i18next";
+import { startTopLoader } from "../TopLoader";
 
 const CARD_GRID =
   "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-10";
@@ -215,7 +216,8 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
     const keyword = isFr
       ? (item.french_seo_keyword || item.english_seo_keyboard)
       : (item.english_seo_keyboard || item.french_seo_keyword);
-    router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}`);
+    startTopLoader();
+    router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
   const scrollRef = useRef(null);
   const visibleCount = useResponsiveColumns();
@@ -262,7 +264,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
         </p>
         <button
           type="button"
-          onClick={() => router.push(`/expert-advice/see-all?type=${type}`)}
+          onClick={() => { startTopLoader(); router.push(`/advices/see-all/${type}`); }}
           className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer"
         >
           See All
@@ -296,11 +298,14 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
                 flexBasis: `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
               }}
             >
-              <img
-              src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
-                alt={item.title}
-                className="w-full h-60 grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
-              />
+              <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
+                <img
+                  src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
+                  alt={item.title}
+                  onLoad={(e) => e.currentTarget.previousSibling?.remove()}
+                  className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
+                />
+              </div>
               <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
                 <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1">
                   {getBlogField(item, "name", isFr)}
@@ -641,119 +646,139 @@ function ExpertAdvices() {
       <Navbar bgWhite={true} />
 
       {/* Hero */}
-      <section
-        style={{
-          backgroundColor: heroArticle.banner?.background_color
-            ? `#${heroArticle.banner.background_color}`
-            : "#f3f3f3",
-        }}
-      >
-        {!loading && heroArticle.blog ? (
-          <div className="flex flex-col lg:flex-row items-stretch">
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
-                {getBlogField(heroArticle.blog, "name", isFr)}
-              </h1>
-              {getBlogField(heroArticle.blog, "short_description", isFr) && (
-                <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
-                  {getBlogField(heroArticle.blog, "short_description", isFr)}
-                </p>
-              )}
-              <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
-                <span>by {heroArticle.blog.company_name || "Biogance"}</span>
-                <span>{heroArticle.blog.reading_time || "0"} min read</span>
-                {heroArticle.blog.updated_at && (
-                  <span>Updated {new Date(heroArticle.blog.updated_at).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={scrollToArticles}
-                className="self-start cursor-pointer bg-transparent border border-gray-900 text-gray-900 text-xs font-semibold px-5 py-3 hover:bg-gray-900 hover:text-white transition-colors"
-              >
-                Read this article
-              </button>
-            </div>
-            <div className="relative w-full lg:w-1/2 h-[420px]">
-              {(() => {
-                const bannerImg = isFr && heroArticle.banner?.french_media
-                  ? heroArticle.banner.french_media
-                  : heroArticle.banner?.media;
-                return (
-                  <img
-                    src={bannerImg ? `${MEDIA_URL}${bannerImg}` : getBlogImage(heroArticle.blog) ? `${MEDIA_URL}${getBlogImage(heroArticle.blog)}` : "/cat.png"}
-                    alt={getBlogField(heroArticle.blog, "name", isFr)}
-                    className="w-full h-full object-contain"
-                  />
-                );
-              })()}
-            </div>
-          </div>
-        ) : (
-          <HeroSkeleton />
+    
+<section
+  style={{
+    backgroundColor: heroArticle.banner?.background_color
+      ? `#${heroArticle.banner.background_color}`
+      : "#f3f3f3",
+  }}
+>
+  {heroArticle.blog ? (
+    <div className="flex flex-col lg:flex-row items-stretch">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
+        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
+          {getBlogField(heroArticle.blog, "name", isFr)}
+        </h1>
+        {getBlogField(heroArticle.blog, "short_description", isFr) && (
+          <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
+            {getBlogField(heroArticle.blog, "short_description", isFr)}
+          </p>
         )}
-      </section>
-
-      {/* Sticky Filters */}
-      <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-        <div className="px-6 sm:px-10 lg:px-16 py-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-              {speciesList.map((cat) => (
-                <TabButton
-                  key={cat.id}
-                  label={cat.name}
-                  active={activeSpecies?.id === cat.id}
-                  onClick={() => { setActiveSpecies(cat); setActiveTopic([]); }}
-                />
-              ))}
-            </div>
-
-            <div className="group relative w-full md:w-72 shrink-0">
-              <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search articles..."
-                className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => { setSearchInput(""); setDebouncedSearch(""); }}
-                  aria-label="Clear search"
-                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                >
-                  <FiX className="h-3.5 w-3.5" />
-                </button>
+        <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
+          <span>by {heroArticle.blog.company_name || "Biogance"}</span>
+          <span>{heroArticle.blog.reading_time || "0"} min read</span>
+          {heroArticle.blog.updated_at && (
+            <span>
+              Updated{" "}
+              {new Date(heroArticle.blog.updated_at).toLocaleDateString(
+                isFr ? "fr-FR" : "en-GB",
+                { day: "numeric", month: "long", year: "numeric" }
               )}
-            </div>
-          </div>
-
-          <ScrollableTabsRow
-            items={["All", ...topicsList.map((t) => t.name)]}
-            activeItem={activeSpecies && activeTopic.length === 0 ? "All" : null}
-            activeItems={activeTopic.map((t) => t.name)}
-            onSelect={(name) => {
-              if (name === "All") { setActiveTopic([]); return; }
-              const found = topicsList.find((t) => t.name === name);
-              if (!found) return;
-              setActiveTopic((prev) =>
-                prev.find((t) => t.id === found.id)
-                  ? prev.filter((t) => t.id !== found.id)
-                  : [...prev, found]
-              );
-            }}
-          />
-
-          <hr
-            className={`border-t border-gray-200 transition-all duration-150 overflow-hidden ${
-              isStuck ? "opacity-0 mt-0 h-0 border-t-0" : "opacity-100 mt-6 h-px"
-            }`}
-          />
+            </span>
+          )}
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            const keyword = isFr
+              ? (heroArticle.blog.french_seo_keyword || heroArticle.blog.english_seo_keyboard)
+              : (heroArticle.blog.english_seo_keyboard || heroArticle.blog.french_seo_keyword);
+            startTopLoader();
+            router.push(`/advices/${encodeURIComponent(keyword)}`);
+          }}
+          className="self-start cursor-pointer bg-transparent border border-gray-900 text-gray-900 text-xs font-semibold px-5 py-3 hover:bg-gray-900 hover:text-white transition-colors"
+        >
+          Read this article
+        </button>
       </div>
+      <div className="relative w-full lg:w-1/2 h-[420px] bg-gray-200">
+        {(() => {
+          const bannerImg =
+            isFr && heroArticle.banner?.french_media
+              ? heroArticle.banner.french_media
+              : heroArticle.banner?.media;
+          return (
+            <img
+              src={
+                bannerImg
+                  ? `${MEDIA_URL}${bannerImg}`
+                  : getBlogImage(heroArticle.blog)
+                  ? `${MEDIA_URL}${getBlogImage(heroArticle.blog)}`
+                  : "/cat.png"
+              }
+              alt={getBlogField(heroArticle.blog, "name", isFr)}
+              onLoad={(e) => e.currentTarget.parentElement.classList.remove("bg-gray-200")}
+              className="w-full h-full object-contain"
+            />
+          );
+        })()}
+      </div>
+    </div>
+  ) : (
+    <HeroSkeleton />
+  )}
+</section>
+
+   {/* Sticky Filters */}
+<div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
+  <div className="px-6 sm:px-10 lg:px-16 py-6">
+    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+      <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+      {speciesList.map((cat) => (
+  <TabButton
+    key={cat.id}
+    label={cat.name}
+    active={activeSpecies?.id === cat.id}
+    onClick={() => {
+      setActiveSpecies((prev) => (prev?.id === cat.id ? null : cat));
+      setActiveTopic([]);
+    }}
+  />
+))}
+      </div>
+
+      <div className="group relative w-full md:w-72 shrink-0">
+        <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search articles..."
+          className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+        />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={() => { setSearchInput(""); setDebouncedSearch(""); }}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+          >
+            <FiX className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+
+    <ScrollableTabsRow
+      items={["All", ...topicsList.map((t) => t.name)]}
+      activeItem={activeSpecies && activeTopic.length === 0 ? "All" : null}
+      activeItems={activeTopic.map((t) => t.name)}
+      onSelect={(name) => {
+        if (name === "All") { setActiveTopic([]); return; }
+        const found = topicsList.find((t) => t.name === name);
+        if (!found) return;
+        setActiveTopic((prev) =>
+          prev.find((t) => t.id === found.id)
+            ? prev.filter((t) => t.id !== found.id)
+            : [...prev, found]
+        );
+      }}
+    />
+
+    <hr className="border-t border-gray-200 mt-6" />
+  </div>
+</div>
 
       <div className="px-6 sm:px-10 lg:px-16">
         {loading ? (
@@ -801,14 +826,16 @@ function ExpertAdvices() {
                       const keyword = isFr
                         ? (a.french_seo_keyword || a.english_seo_keyboard)
                         : (a.english_seo_keyboard || a.french_seo_keyword);
-                      router.push(`/expert-detail?seo=${encodeURIComponent(keyword)}`);
+                      startTopLoader();
+                      router.push(`/advices/${encodeURIComponent(keyword)}`);
                     }}
                     className="cursor-pointer"
                   >
-                    <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-100">
+                    <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-200">
                       <img
                         src={a.image ? `${MEDIA_URL}${a.image}` : getBlogImage(a) ? `${MEDIA_URL}${getBlogImage(a)}` : "/cat.png"}
                         alt={a.title ?? a.name}
+                        onLoad={(e) => e.currentTarget.parentElement.classList.replace("bg-gray-200", "bg-gray-100")}
                         className="w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
                       />
                     </div>
