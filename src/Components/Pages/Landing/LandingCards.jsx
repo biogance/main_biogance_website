@@ -393,7 +393,7 @@ export const LandingCards = ({
                     opacity: 1,
                     transition: "opacity 0.3s ease",
                   }}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
             ))}

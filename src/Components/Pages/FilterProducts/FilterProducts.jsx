@@ -604,7 +604,8 @@ export default function FilterProducts() {
     const update = () => {
       const availableHeight = Math.max(420, window.innerHeight - reservedTop);
       const h = availableHeight / 2;
-      const w = h * 0.85;
+      const widthMultiplier = window.innerWidth <= 1440 ? 0.85 : 0.8;
+      const w = h * widthMultiplier;
       setCardDimensions({ height: h, width: w });
       console.log("Card dimensions:", {
         windowInnerHeight: window.innerHeight,
@@ -1678,7 +1679,7 @@ export default function FilterProducts() {
                 <img
                   src="/distributorImg.jpg"
                   alt={t("ourAdvices.title", "Our Advices")}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
