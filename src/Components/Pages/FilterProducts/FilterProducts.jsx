@@ -456,21 +456,32 @@ const SkeletonVideoCard = () => (
   </div>
 );
 
-// Mirrors the real featured layout: row 1 is a 4-grid + video, row 2 is
-// video + 4-grid, each sized to the viewport, followed by a plain grid —
-// so the shimmer doesn't jump in size once real data replaces it. Row 1's
-// first three cards (index 0/1/2) get the same "New" / "Best" / "-20%"
-// badge placeholder the real cards get at those positions.
-const FeaturedSkeleton = ({ row1Height, rowHeight }) => (
+// Grid style mirrors the real featured grid exactly: fixed width/height from
+// cardDimensions (viewport-based), not a 50/50 flex split with the video —
+// otherwise the skeleton jumps in size the moment real cards replace it.
+const featuredGridStyle = (cardDimensions) =>
+  cardDimensions.width
+    ? {
+        width: cardDimensions.width * 3 + 2 * 3 + "px",
+        height: cardDimensions.height * 2 + 1 * 3 + "px",
+        gridTemplateColumns: "repeat(3, " + cardDimensions.width + "px)",
+        gridTemplateRows: "repeat(2, " + cardDimensions.height + "px)",
+        gap: "3px",
+      }
+    : { flex: 1 };
+
+const FeaturedSkeleton = ({ row1WrapperHeight, rowHeight, reservedTop, cardDimensions }) => (
   <div className="mb-[3px]">
-    <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px]" style={{ height: row1Height }}>
-      <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonCardFill key={`row1-${i}`} badge={i < 3} />
-        ))}
-      </div>
-      <div className="flex-1 min-h-0">
-        <SkeletonVideoCard />
+    <div style={{ height: row1WrapperHeight }}>
+      <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px] sticky overflow-hidden" style={{ height: rowHeight, top: reservedTop }}>
+        <div className="grid flex-shrink-0" style={featuredGridStyle(cardDimensions)}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCardFill key={`row1-${i}`} badge={i < 3} />
+          ))}
+        </div>
+        <div className="flex-1 min-h-0">
+          <SkeletonVideoCard />
+        </div>
       </div>
     </div>
 
@@ -478,8 +489,8 @@ const FeaturedSkeleton = ({ row1Height, rowHeight }) => (
       <div className="flex-1 min-h-0">
         <SkeletonVideoCard />
       </div>
-      <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid flex-shrink-0" style={featuredGridStyle(cardDimensions)}>
+        {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonCardFill key={`row2-${i}`} />
         ))}
       </div>
@@ -577,7 +588,36 @@ export default function FilterProducts() {
     };
   }, []);
 
-  const row1Height = `max(300px, calc(100dvh - ${reservedTop + introHeaderHeight}px))`;
+  // Row 1 height = full viewport minus navbar+rail (same as row 2). It sits inside a
+  // wrapper taller than itself (introHeaderHeight + rowHeight + dwell) and is sticky at
+  // reservedTop — so initially the intro header is visible above it, and once you scroll
+  // past the intro, row 1 fills the full viewport just like row 2.
+  const row1Height = featuredRowHeight;
+  const row1WrapperHeight = `calc(${introHeaderHeight}px + ${featuredRowHeight} + ${FEATURED_ROW_DWELL}px)`;
+
+  // Card dimensions: height = (viewport minus navbar/rail) / 2, width = height * 0.75.
+  // Both featured rows are always sized to featuredRowHeight, so they share this one
+  // set of dimensions — the grid always fits its row exactly, and the video (flex-1)
+  // takes whatever width is left over next to it.
+  const [cardDimensions, setCardDimensions] = useState({ height: 0, width: 0 });
+  useEffect(() => {
+    const update = () => {
+      const availableHeight = Math.max(420, window.innerHeight - reservedTop);
+      const h = availableHeight / 2;
+      const w = h * 0.75;
+      setCardDimensions({ height: h, width: w });
+      console.log("Card dimensions:", {
+        windowInnerHeight: window.innerHeight,
+        reservedTop,
+        availableHeight,
+        cardHeight: h,
+        cardWidth: w,
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [reservedTop]);
 
   const [animals, setAnimals] = useState([]);
   const [universe, setUniverse] = useState([]);
@@ -970,14 +1010,14 @@ export default function FilterProducts() {
   // First up to 10 products get the featured "grid + video" treatment; the rest use the plain grid.
   // The pattern adapts to however many products are available: 4-grid, +video, +video, +4-grid —
   // each slot only renders once there are enough products to fill it.
-  const featuredProducts = filteredProducts.slice(0, 10);
+  const featuredProducts = filteredProducts.slice(0, 14);
   const showFeaturedIntro = featuredProducts.length > 0;
   const restProducts = filteredProducts.slice(featuredProducts.length);
   const restStartIndex = featuredProducts.length;
-  const featuredRow1Grid = featuredProducts.slice(0, 4);
-  const featuredRow1Video = featuredProducts[4];
-  const featuredRow2Video = featuredProducts[5];
-  const featuredRow2Grid = featuredProducts.slice(6, 10);
+  const featuredRow1Grid = featuredProducts.slice(0, 6);
+  const featuredRow1Video = featuredProducts[6];
+  const featuredRow2Video = featuredProducts[7];
+  const featuredRow2Grid = featuredProducts.slice(8, 14);
 
   const hasAnimal = animals.length > 0;
   const hasUniverse = universe.length > 0;
@@ -1414,43 +1454,56 @@ export default function FilterProducts() {
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
         {isSearching ? (
-          <FeaturedSkeleton row1Height={row1Height} rowHeight={featuredRowHeight} />
+          <FeaturedSkeleton row1WrapperHeight={row1WrapperHeight} rowHeight={featuredRowHeight} reservedTop={reservedTop} cardDimensions={cardDimensions} />
         ) : (
           <>
             {showFeaturedIntro && (
               <div className="mb-[3px]">
                 {/* Row 1: 4-grid + video — sized to sit inside the first screen, right along with the intro header above it */}
                 {featuredRow1Video ? (
-                  <div
-                    className="flex flex-col sm:flex-row gap-[3px] mb-[3px]"
-                    style={{ height: row1Height }}
-                  >
-                    <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
-                      {featuredRow1Grid.map((p, i) => (
-                        <div key={p.id} className="w-full h-full min-h-0 overflow-hidden">
-                          <LandingCards
-                            product={p}
-                            showNav={true}
-                            index={i}
-                            compact={true}
-                            compactButtons={true}
-                            raisedLabel={true}
-                            fillHeight
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex-1 min-h-0 overflow-hidden">
-                      <LandingCards
-                        product={featuredRow1Video}
-                        showNav={true}
-                        index={4}
-                        compact={false}
-                        compactButtons={true}
-                        raisedLabel={true}
-                        fillHeight
-                        forceVideo
-                      />
+                  <div style={{ height: row1WrapperHeight }}>
+                    <div
+                      className="flex flex-col sm:flex-row gap-[3px] mb-[3px] sticky overflow-hidden"
+                      style={{ height: row1Height, top: reservedTop }}
+                    >
+                      <div
+                        className="grid flex-shrink-0"
+                        style={cardDimensions.width ? {
+                          width: cardDimensions.width * 3 + 2 * 3 + "px",
+                          height: cardDimensions.height * 2 + 1 * 3 + "px",
+                          gridTemplateColumns: "repeat(3, " + cardDimensions.width + "px)",
+                          gridTemplateRows: "repeat(2, " + cardDimensions.height + "px)",
+                          gap: "3px"
+                        } : { flex: 1 }}
+                      >
+                        {featuredRow1Grid.map((p, i) => (
+                          <div key={p.id} className="overflow-hidden"
+                            style={cardDimensions.width ? { width: cardDimensions.width + "px", height: cardDimensions.height + "px" } : {}}
+                          >
+                            <LandingCards
+                              product={p}
+                              showNav={true}
+                              index={i}
+                              compact={true}
+                              compactButtons={true}
+                              raisedLabel={true}
+                              fillHeight
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <LandingCards
+                          product={featuredRow1Video}
+                          showNav={true}
+                          index={6}
+                          compact={false}
+                          compactButtons={true}
+                          raisedLabel={true}
+                          fillHeight
+                          forceVideo
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -1482,7 +1535,7 @@ export default function FilterProducts() {
                           <LandingCards
                             product={featuredRow2Video}
                             showNav={true}
-                            index={5}
+                            index={7}
                             compact={false}
                             compactButtons={true}
                             raisedLabel={true}
@@ -1490,13 +1543,25 @@ export default function FilterProducts() {
                             forceVideo
                           />
                         </div>
-                        <div className="grid grid-cols-2 grid-rows-2 gap-[3px] flex-1 min-h-0">
+                        <div
+                          className="grid flex-shrink-0"
+                          style={cardDimensions.width ? {
+                            width: cardDimensions.width * 3 + 2 * 3 + "px",
+                            height: cardDimensions.height * 2 + 1 * 3 + "px",
+                            gridTemplateColumns: "repeat(3, " + cardDimensions.width + "px)",
+                            gridTemplateRows: "repeat(2, " + cardDimensions.height + "px)",
+                            gap: "3px",
+                            alignSelf: "flex-start"
+                          } : { flex: 1 }}
+                        >
                           {featuredRow2Grid.map((p, i) => (
-                            <div key={p.id} className="w-full h-full min-h-0 overflow-hidden">
+                            <div key={p.id} className="overflow-hidden"
+                              style={cardDimensions.width ? { width: cardDimensions.width + "px", height: cardDimensions.height + "px" } : {}}
+                            >
                               <LandingCards
                                 product={p}
                                 showNav={true}
-                                index={i + 6}
+                                index={i + 8}
                                 compact={true}
                                 compactButtons={true}
                                 raisedLabel={true}
