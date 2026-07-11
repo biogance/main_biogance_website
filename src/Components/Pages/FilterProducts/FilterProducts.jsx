@@ -604,7 +604,7 @@ export default function FilterProducts() {
     const update = () => {
       const availableHeight = Math.max(420, window.innerHeight - reservedTop);
       const h = availableHeight / 2;
-      const w = h * 0.8;
+      const w = h * 0.85;
       setCardDimensions({ height: h, width: w });
       console.log("Card dimensions:", {
         windowInnerHeight: window.innerHeight,
