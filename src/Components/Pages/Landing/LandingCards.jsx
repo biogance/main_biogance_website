@@ -327,7 +327,7 @@ export const LandingCards = ({
             ? safeProduct.french_product_label
             : safeProduct.product_label || "";
           return label ? (
-            <div className="absolute top-3 right-3 text-black text-xs font-semibold px-2 py-1  z-10">
+            <div className="absolute top-3 right-3 max-w-[60%] truncate text-right text-black text-xs font-semibold px-2 py-1 z-10">
               {label}
             </div>
           ) : null;
