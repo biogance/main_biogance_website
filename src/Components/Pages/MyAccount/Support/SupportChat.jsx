@@ -403,7 +403,7 @@ export default function SupportChat({ ticket, onClose }) {
       {!loading && (
         <>
           {/* Header */}
-          <div className="-mx-8 px-1 pl-5 pr-5 pb-4 border-b border-gray-300">
+          <div className="-mx-8 px-1 pl-5 pr-5 pb-4  border-b border-gray-300">
             <div className="max-w-10xl mx-auto flex items-center justify-between">
               <div className="flex items-start gap-4">
                 <button onClick={onClose} className="text-gray-700 cursor-pointer mt-2 hover:text-black transition-colors">
@@ -447,7 +447,7 @@ export default function SupportChat({ ticket, onClose }) {
                       <div className="max-w-xl">
                         <div className="text-black border border-gray-300  rounded-bl-sm px-5 py-4 inline-block">
                           {msg.image && (
-                            <div className={`relative mb-2 max-w-xs border-b border-gray-300 overflow-hidden ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                            <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-3' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
                               {!loadedImages[msg.id] && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -463,9 +463,11 @@ export default function SupportChat({ ticket, onClose }) {
                               />
                             </div>
                           )}
-                          <p className="text-sm leading-relaxed">
-                            {msg.textKey ? t(msg.textKey) : msg.text}
-                          </p>
+                          {msg.text && (
+                            <p className="text-sm leading-relaxed">
+                              {msg.textKey ? t(msg.textKey) : msg.text}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -476,7 +478,7 @@ export default function SupportChat({ ticket, onClose }) {
                         <div className="max-w-xl">
                           <div className="bg-white  rounded-br-sm px-5 py-4 inline-block border border-gray-300">
                             {msg.image && (
-                              <div className={`relative mb-2 max-w-xs border-b border-gray-300 overflow-hidden ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                              <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-3' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
                                 {!loadedImages[msg.id] && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                     <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -492,9 +494,11 @@ export default function SupportChat({ ticket, onClose }) {
                                 />
                               </div>
                             )}
-                            <p className="text-sm leading-relaxed text-gray-800">
-                              {msg.textKey ? t(msg.textKey) : msg.text}
-                            </p>
+                            {msg.text && (
+                              <p className="text-sm leading-relaxed text-gray-800">
+                                {msg.textKey ? t(msg.textKey) : msg.text}
+                              </p>
+                            )}
                           </div>
                         </div>
                         {msg.avatar && (

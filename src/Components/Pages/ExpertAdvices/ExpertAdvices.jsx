@@ -356,30 +356,43 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
-  const scrollByOne = (direction) => {
-    const track = scrollRef.current;
-    if (!track) return;
-    const topics = Array.from(track.querySelectorAll("[data-topic]"));
-    if (!topics.length) return;
-    const viewLeft = track.scrollLeft;
-    const viewRight = viewLeft + track.clientWidth;
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    if (direction === 1) {
-      const next = topics.find((el) => el.offsetLeft + el.offsetWidth > viewRight + 1);
-      if (next) {
-        track.scrollTo({ left: Math.min(next.offsetLeft + next.offsetWidth - track.clientWidth, maxScroll), behavior: "smooth" });
-      } else {
-        track.scrollTo({ left: maxScroll, behavior: "smooth" });
-      }
+ const scrollByOne = (direction) => {
+  const track = scrollRef.current;
+  if (!track) return;
+  const topics = Array.from(track.querySelectorAll("[data-topic]"));
+  if (!topics.length) return;
+
+  const trackRect = track.getBoundingClientRect();
+  const maxScroll = track.scrollWidth - track.clientWidth;
+
+  if (direction === 1) {
+    // Right side jo tab half/cut-off ho raha ha, usko dhoondo
+    const next = topics.find((el) => {
+      const r = el.getBoundingClientRect();
+      return r.right > trackRect.right + 1;
+    });
+    if (next) {
+      const r = next.getBoundingClientRect();
+      const delta = r.right - trackRect.right; // kitna scroll karna ha taake ye tab full dikhe
+      track.scrollTo({ left: Math.min(track.scrollLeft + delta, maxScroll), behavior: "smooth" });
     } else {
-      const prev = [...topics].reverse().find((el) => el.offsetLeft < viewLeft - 1);
-      if (prev) {
-        track.scrollTo({ left: Math.max(prev.offsetLeft, 0), behavior: "smooth" });
-      } else {
-        track.scrollTo({ left: 0, behavior: "smooth" });
-      }
+      track.scrollTo({ left: maxScroll, behavior: "smooth" });
     }
-  };
+  } else {
+    // Left side jo tab half/cut-off ho raha ha, usko dhoondo
+    const prev = [...topics].reverse().find((el) => {
+      const r = el.getBoundingClientRect();
+      return r.left < trackRect.left - 1;
+    });
+    if (prev) {
+      const r = prev.getBoundingClientRect();
+      const delta = r.left - trackRect.left;
+      track.scrollTo({ left: Math.max(track.scrollLeft + delta, 0), behavior: "smooth" });
+    } else {
+      track.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  }
+};
 
   return (
     <div className="relative flex items-center gap-2 min-w-0">
@@ -722,7 +735,7 @@ function ExpertAdvices() {
 
    {/* Sticky Filters */}
 <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-  <div className="px-6 sm:px-10 lg:px-16 py-6">
+  <div className={`px-6 sm:px-10 lg:px-16 pt-6 ${isStuck ? "pb-0" : "pb-6"}`}>
     <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
       <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
       {speciesList.map((cat) => (

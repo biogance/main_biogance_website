@@ -343,7 +343,7 @@ export default function Dashboard() {
             </div>
           ) : (
             /* Empty State */
-            <div className="flex flex-col items-center justify-center py-8 md:py-12">
+            <div className="flex flex-col items-center justify-center py-8 md:py-4">
               <div className="w-48 md:w-64 h-48 md:h-64 mb-4 md:mb-6 flex items-center justify-center">
                <img src="empty.svg" alt="" />
               </div>

@@ -760,11 +760,30 @@ export default function FilterProducts() {
     searchedProductsRef.current = searchedProducts;
   }, [searchedProducts]);
 
+  // Index (within restProducts) of the first card that Load More is about to
+  // fetch — once the new page lands, we scroll that card up into view so the
+  // user sees fresh products immediately instead of the button just moving down.
+  const loadMoreAnchorRef = useRef(null);
+
   const handleLoadMore = () => {
     if (isFetchingRef.current || page >= lastPage) return;
+    loadMoreAnchorRef.current = restProducts.length;
     isFetchingRef.current = true;
     setPage((prev) => prev + 1);
   };
+
+  useEffect(() => {
+    if (isFetchingMore || loadMoreAnchorRef.current === null) return;
+    const anchorIndex = loadMoreAnchorRef.current;
+    loadMoreAnchorRef.current = null;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-rest-index="${anchorIndex}"]`);
+      if (!el) return;
+      const offset = NAVBAR_HEIGHT + railHeight + 16;
+      const targetY = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    });
+  }, [isFetchingMore, railHeight]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
 
@@ -1339,16 +1358,16 @@ export default function FilterProducts() {
       />
 
       {/* Result meta + chips */}
-      <section ref={introHeaderRef} className="mx-auto max-w-10xl px-8 pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-900/10 pb-6">
+      <section ref={introHeaderRef} className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="flex flex-col gap-4 border-b border-stone-900/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-baseline gap-3">
             <span className="font-serif text-3xl">{totalCount}</span>
             <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
               {t("productsInView", "products in view")}
             </span>
           </div>
-          <div className="flex flex-1 items-center justify-end gap-5">
-            <div className="group relative flex w-full max-w-md items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5 md:flex-1 md:justify-end">
+            <div className="group relative flex w-full items-center sm:max-w-md">
               <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
               <input
                 type="text"
@@ -1374,21 +1393,23 @@ export default function FilterProducts() {
                 </button>
               )}
             </div>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-              {t("sort", "Sort")}
-            </span>
-            <SortMenu value={sort} onChange={setSort} />
+            <div className="flex items-center justify-between gap-3 sm:justify-start sm:shrink-0">
+              <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                {t("sort", "Sort")}
+              </span>
+              <SortMenu value={sort} onChange={setSort} />
+            </div>
           </div>
         </div>
         {/* Editorial header — context aware */}
-        <section ref={headerRef} className="-mx-8 bg-[#fbf9f7]">
-          <div className="mx-auto max-w-10xl px-8">
+        <section ref={headerRef} className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[#fbf9f7]">
+          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
             {/* Row 2 — editorial hero */}
             <div className="grid grid-cols-12 gap-x-8 gap-y-8 pt-6 pb-6">
               {/* Left: eyebrow + headline */}
               <div className="col-span-12 lg:col-span-9">
                 <h4
-                  className="mt-6 font-serif text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
+                  className="mt-6 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
                   style={{
                     display: "-webkit-box",
                     WebkitLineClamp: 3,
@@ -1455,11 +1476,40 @@ export default function FilterProducts() {
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
         {isSearching ? (
-          <FeaturedSkeleton row1WrapperHeight={row1WrapperHeight} rowHeight={featuredRowHeight} reservedTop={reservedTop} cardDimensions={cardDimensions} />
+          <>
+            <div className="grid grid-cols-2 gap-[3px] md:grid-cols-3 lg:hidden">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <SkeletonCard key={i} badge={i < 3} />
+              ))}
+            </div>
+            <div className="hidden lg:block">
+              <FeaturedSkeleton row1WrapperHeight={row1WrapperHeight} rowHeight={featuredRowHeight} reservedTop={reservedTop} cardDimensions={cardDimensions} />
+            </div>
+          </>
         ) : (
           <>
             {showFeaturedIntro && (
-              <div className="mb-[3px]">
+              <>
+              {/* Mobile/tablet (below lg): plain responsive grid — the sticky, viewport-pinned
+                  featured layout below is desktop-only math (fixed pixel card sizes derived from
+                  window height), so small/medium screens get the same simple card grid used for
+                  restProducts instead. */}
+              <div className="grid grid-cols-2 gap-[3px] md:grid-cols-3 mb-[3px] lg:hidden">
+                {featuredProducts.map((p, i) => (
+                  <div key={p.id} className="w-full">
+                    <LandingCards
+                      product={p}
+                      showNav={true}
+                      index={i}
+                      compact={true}
+                      compactButtons={true}
+                      raisedLabel={true}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-[3px] hidden lg:block">
                 {/* Row 1: 8-grid + video — sized to sit inside the first screen, right along with the intro header above it */}
                 {featuredRow1Video ? (
                   <div style={{ height: row1WrapperHeight }}>
@@ -1588,6 +1638,7 @@ export default function FilterProducts() {
                   )
                 )}
               </div>
+              </>
             )}
 
             <div
@@ -1595,7 +1646,7 @@ export default function FilterProducts() {
               style={{ overflowAnchor: "none" }}
             >
               {restProducts.map((p, i) => (
-                <div key={p.id} className="w-full">
+                <div key={p.id} className="w-full" data-rest-index={i}>
                   <LandingCards
                     product={p}
                     showNav={true}
@@ -1647,7 +1698,7 @@ export default function FilterProducts() {
       </section>
 
       {!isSearching && (
-        <section className="mx-auto max-w-10xl px-8 pb-16">
+        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-16">
           <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
             {t("recentlyViewed", "Recently Viewed")}
           </h2>
@@ -1669,7 +1720,7 @@ export default function FilterProducts() {
       )}
 
       {!isSearching && (
-        <section className="mx-auto max-w-10xl px-8 pb-20">
+        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-20">
           <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
             <div className="lg:sticky lg:top-[200px] lg:self-start">
               <h2 className="mb-6 font-serif text-4xl text-stone-900 sm:text-5xl">

@@ -121,7 +121,7 @@ export default function Loyalty() {
             {t("rewardsSectionTitle")}
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 bg-white/5 gap-6 md:gap-0">
             <div className="border border-white/15 p-6 md:p-8">
               <p className="font-serif text-white text-4xl md:text-5xl mb-2">
                 {t("stat1Value")}

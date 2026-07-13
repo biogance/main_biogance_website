@@ -59,10 +59,28 @@ function getYoutubeId(url) {
   }
 }
 
+function useCardsPerView() {
+  const [count, setCount] = useState(3);
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth;
+      if (w < 640) return 1;
+      if (w < 1024) return 2;
+      return 3;
+    };
+    const update = () => setCount(calc());
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return count;
+}
+
 function MoreAdvicesRow({ items, isFr, sectionLabel }) {
   const { t } = useTranslation("expertadvice");
   const router = useRouter();
   const scrollRef = useRef(null);
+  const cardsPerView = useCardsPerView();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -130,7 +148,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
         {items.map((item) => (
           <div key={item.id} data-card onClick={() => navigateToDetail(item)}
             className="relative h-72 shrink-0 overflow-hidden cursor-pointer group"
-            style={{ flexBasis: "calc((100% - 48px) / 3)" }}>
+            style={{ flexBasis: `calc((100% - ${(cardsPerView - 1) * 24}px) / ${cardsPerView})` }}>
             <img
               src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
               alt={getBlogField(item, "name", isFr)}
@@ -468,7 +486,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                     type="button"
                     onClick={() => handleAddToCart(bundle)}
                     disabled={isAdding}
-                    className="w-full bg-gray-900 hover:bg-gray-700 text-white text-xs sm:text-sm font-semibold py-2.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {isAdding ? (
                       <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
