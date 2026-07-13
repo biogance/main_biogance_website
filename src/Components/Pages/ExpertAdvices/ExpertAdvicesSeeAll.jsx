@@ -149,7 +149,13 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           <FiChevronLeft className="w-4 h-4" />
         </button>
       )}
-      <div className="relative min-w-0 flex-1">
+      <div
+        className="relative min-w-0 flex-1"
+        style={{
+          WebkitMaskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
+          maskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
+        }}
+      >
         <div
           ref={scrollRef}
           className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -435,14 +441,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
       {/* Section label — moved above the filters */}
       <div className="px-6 sm:px-10 lg:px-16 pb-6">
-        <p className="text-[31px] font-bold tracking-widest text-gray-900 uppercase">
+        <p className="text-2xl sm:text-3xl lg:text-[40px] font-bold font-serif tracking-widest text-gray-900 uppercase">
           {sectionLabel}
         </p>
       </div>
 
       {/* Sticky Filters — moved below the section label */}
       <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-        <div className="px-6 sm:px-10 lg:px-16 pt-8 pb-7">
+        <div className={`px-6 sm:px-10 lg:px-16 pt-8 ${isStuck ? "pb-0" : "pb-7"}`}>
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
             <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
               {speciesList.map((cat) => (
@@ -496,11 +502,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
             }}
           />
 
-          <hr
-            className={`border-t border-gray-200 transition-all duration-150 overflow-hidden ${
-              isStuck ? "opacity-0 mt-0 h-0 border-t-0" : "opacity-100 mt-4 h-px"
-            }`}
-          />
+          <hr className="border-t border-gray-200 mt-6" />
         </div>
       </div>
 
