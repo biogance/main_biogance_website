@@ -7,7 +7,13 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
-import { FiSearch, FiClock, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
+import {
+  FiSearch,
+  FiClock,
+  FiChevronLeft,
+  FiChevronRight,
+  FiX,
+} from "react-icons/fi";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { GoArrowUpRight, GoFlame, GoClock } from "react-icons/go";
 import { FaRegStar } from "react-icons/fa";
@@ -79,7 +85,7 @@ function getBlogImage(item) {
 function getBlogField(item, field, isFr) {
   if (!item) return "";
   const frField = `french_${field}`;
-  return (isFr && item[frField]) ? item[frField] : (item[field] ?? "");
+  return isFr && item[frField] ? item[frField] : (item[field] ?? "");
 }
 
 // Reads the first category attached to the blog item (item.categories[0].category)
@@ -87,7 +93,7 @@ function getBlogField(item, field, isFr) {
 function getCategoryName(item, isFr) {
   const cat = item?.categories?.[0]?.category;
   if (!cat) return "";
-  return (isFr && cat.french_name) ? cat.french_name : (cat.name ?? "");
+  return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
 }
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -176,7 +182,9 @@ function ArticleRowSkeleton({ visibleCount }) {
           <div
             key={i}
             className="border border-gray-200 shrink-0 overflow-hidden flex flex-col"
-            style={{ flexBasis: `calc((100% - ${(visibleCount - 1) * 24}px) / ${visibleCount})` }}
+            style={{
+              flexBasis: `calc((100% - ${(visibleCount - 1) * 24}px) / ${visibleCount})`,
+            }}
           >
             <Shimmer className="w-full h-60 rounded-none" />
             <div className="px-4 py-3 flex items-center justify-between gap-3">
@@ -214,8 +222,8 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
 
   const navigateToDetail = (item) => {
     const keyword = isFr
-      ? (item.french_seo_keyword || item.english_seo_keyboard)
-      : (item.english_seo_keyboard || item.french_seo_keyword);
+      ? item.french_seo_keyword || item.english_seo_keyboard
+      : item.english_seo_keyboard || item.french_seo_keyword;
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -229,7 +237,9 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
     const track = scrollRef.current;
     if (!track) return;
     setCanScrollLeft(track.scrollLeft > 4);
-    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+    setCanScrollRight(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 4,
+    );
   };
 
   useEffect(() => {
@@ -264,7 +274,10 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
         </p>
         <button
           type="button"
-          onClick={() => { startTopLoader(); router.push(`/advices/see-all/${type}`); }}
+          onClick={() => {
+            startTopLoader();
+            router.push(`/advices/see-all/${type}`);
+          }}
           className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer"
         >
           See All
@@ -300,7 +313,11 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
             >
               <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
                 <img
-                  src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
+                  src={
+                    getBlogImage(item)
+                      ? `${MEDIA_URL}${getBlogImage(item)}`
+                      : "/cat.png"
+                  }
                   alt={item.title}
                   onLoad={(e) => e.currentTarget.previousSibling?.remove()}
                   className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
@@ -340,7 +357,9 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     const track = scrollRef.current;
     if (!track) return;
     setCanScrollLeft(track.scrollLeft > 4);
-    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+    setCanScrollRight(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 4,
+    );
   };
 
   useEffect(() => {
@@ -356,43 +375,49 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
- const scrollByOne = (direction) => {
-  const track = scrollRef.current;
-  if (!track) return;
-  const topics = Array.from(track.querySelectorAll("[data-topic]"));
-  if (!topics.length) return;
+  const scrollByOne = (direction) => {
+    const track = scrollRef.current;
+    if (!track) return;
+    const topics = Array.from(track.querySelectorAll("[data-topic]"));
+    if (!topics.length) return;
 
-  const trackRect = track.getBoundingClientRect();
-  const maxScroll = track.scrollWidth - track.clientWidth;
+    const trackRect = track.getBoundingClientRect();
+    const maxScroll = track.scrollWidth - track.clientWidth;
 
-  if (direction === 1) {
-    // Right side jo tab half/cut-off ho raha ha, usko dhoondo
-    const next = topics.find((el) => {
-      const r = el.getBoundingClientRect();
-      return r.right > trackRect.right + 1;
-    });
-    if (next) {
-      const r = next.getBoundingClientRect();
-      const delta = r.right - trackRect.right; // kitna scroll karna ha taake ye tab full dikhe
-      track.scrollTo({ left: Math.min(track.scrollLeft + delta, maxScroll), behavior: "smooth" });
+    if (direction === 1) {
+      // Right side jo tab half/cut-off ho raha ha, usko dhoondo
+      const next = topics.find((el) => {
+        const r = el.getBoundingClientRect();
+        return r.right > trackRect.right + 1;
+      });
+      if (next) {
+        const r = next.getBoundingClientRect();
+        const delta = r.right - trackRect.right; // kitna scroll karna ha taake ye tab full dikhe
+        track.scrollTo({
+          left: Math.min(track.scrollLeft + delta, maxScroll),
+          behavior: "smooth",
+        });
+      } else {
+        track.scrollTo({ left: maxScroll, behavior: "smooth" });
+      }
     } else {
-      track.scrollTo({ left: maxScroll, behavior: "smooth" });
+      // Left side jo tab half/cut-off ho raha ha, usko dhoondo
+      const prev = [...topics].reverse().find((el) => {
+        const r = el.getBoundingClientRect();
+        return r.left < trackRect.left - 1;
+      });
+      if (prev) {
+        const r = prev.getBoundingClientRect();
+        const delta = r.left - trackRect.left;
+        track.scrollTo({
+          left: Math.max(track.scrollLeft + delta, 0),
+          behavior: "smooth",
+        });
+      } else {
+        track.scrollTo({ left: 0, behavior: "smooth" });
+      }
     }
-  } else {
-    // Left side jo tab half/cut-off ho raha ha, usko dhoondo
-    const prev = [...topics].reverse().find((el) => {
-      const r = el.getBoundingClientRect();
-      return r.left < trackRect.left - 1;
-    });
-    if (prev) {
-      const r = prev.getBoundingClientRect();
-      const delta = r.left - trackRect.left;
-      track.scrollTo({ left: Math.max(track.scrollLeft + delta, 0), behavior: "smooth" });
-    } else {
-      track.scrollTo({ left: 0, behavior: "smooth" });
-    }
-  }
-};
+  };
 
   return (
     <div className="relative flex items-center gap-2 min-w-0">
@@ -415,7 +440,11 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
             <div key={label} data-topic className="shrink-0">
               <TabButton
                 label={label}
-                active={label === "All" ? activeItem === "All" : activeItems.includes(label)}
+                active={
+                  label === "All"
+                    ? activeItem === "All"
+                    : activeItems.includes(label)
+                }
                 onClick={() => onSelect(label)}
               />
             </div>
@@ -439,7 +468,8 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
 function useResponsiveColumns() {
   const [columns, setColumns] = useState(1);
   useEffect(() => {
-    const calc = () => COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
+    const calc = () =>
+      COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
     const update = () => setColumns(calc());
     update();
     window.addEventListener("resize", update);
@@ -499,7 +529,13 @@ function ExpertAdvices() {
 
   // ── Blog home API data ───────────────────────────────────────────────────
   const [heroArticle, setHeroArticle] = useState({ blog: null, banner: null });
-  const [sections, setSections] = useState({ recommended: [], trending: [], most_liked: [], recently_added: [], pet: [] });
+  const [sections, setSections] = useState({
+    recommended: [],
+    trending: [],
+    most_liked: [],
+    recently_added: [],
+    pet: [],
+  });
   const [allArticles, setAllArticles] = useState([]);
   const [totalArticles, setTotalArticles] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -511,57 +547,68 @@ function ExpertAdvices() {
   const perPage = columns * ROWS_PER_PAGE;
   const hasLoadedOnceRef = useRef(false);
 
-  const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
-    if (pageNum === 1) setLoading(true);
-    else setLoadingMore(true);
+  const fetchBlogs = useCallback(
+    async (pageNum = 1, append = false) => {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
 
-    try {
-      const body = {
-        ...getAuthBody(),
-        collection_id: activeSpecies?.id,
-        per_page: perPage,
-        page: pageNum,
-      };
-      if (activeTopic.length) body.topic_id = activeTopic.map((t) => t.id).join(",");
-      if (debouncedSearch.trim()) body.keyword = debouncedSearch.trim();
+      try {
+        const body = {
+          ...getAuthBody(),
+          collection_id: activeSpecies?.id,
+          per_page: perPage,
+          page: pageNum,
+        };
+        if (activeTopic.length)
+          body.topic_id = activeTopic.map((t) => t.id).join(",");
+        if (debouncedSearch.trim()) body.keyword = debouncedSearch.trim();
 
-      const res = await axios.post(`${BASE_URL}/blog/home`, body, {
-        headers: { ...getAuthHeaders() },
-      });
-
-      if (!res.data.status) {
-        toast.error(res.data.action || "Something went wrong.");
-        return;
-      }
-
-      const d = res.data.data;
-
-      if (pageNum === 1) {
-        const banner = d?.blogHeaderBanner ?? null;
-        setHeroArticle({ blog: banner?.blog ?? null, banner });
-        setSections({
-          recommended: d?.recommendedBlog ?? [],
-          trending: d?.trendingBlog ?? [],
-          most_liked: d?.likeBlog ?? [],
-          recently_added: d?.recentBlog ?? [],
-          pet: d?.petBlog ?? [],
+        const res = await axios.post(`${BASE_URL}/blog/home`, body, {
+          headers: { ...getAuthHeaders() },
         });
-        setAllArticles(d?.blogs?.data ?? []);
-        setTotalArticles(d?.blogs?.total ?? 0);
-        setHasMore((d?.blogs?.current_page ?? 1) < (d?.blogs?.last_page ?? 1));
-      } else {
-        const newItems = d?.blogs?.data ?? [];
-        setAllArticles((prev) => append ? [...prev, ...newItems] : newItems);
-        setHasMore((d?.blogs?.current_page ?? pageNum) < (d?.blogs?.last_page ?? pageNum));
+
+        if (!res.data.status) {
+          toast.error(res.data.action || "Something went wrong.");
+          return;
+        }
+
+        const d = res.data.data;
+
+        if (pageNum === 1) {
+          const banner = d?.blogHeaderBanner ?? null;
+          setHeroArticle({ blog: banner?.blog ?? null, banner });
+          setSections({
+            recommended: d?.recommendedBlog ?? [],
+            trending: d?.trendingBlog ?? [],
+            most_liked: d?.likeBlog ?? [],
+            recently_added: d?.recentBlog ?? [],
+            pet: d?.petBlog ?? [],
+          });
+          setAllArticles(d?.blogs?.data ?? []);
+          setTotalArticles(d?.blogs?.total ?? 0);
+          setHasMore(
+            (d?.blogs?.current_page ?? 1) < (d?.blogs?.last_page ?? 1),
+          );
+        } else {
+          const newItems = d?.blogs?.data ?? [];
+          setAllArticles((prev) =>
+            append ? [...prev, ...newItems] : newItems,
+          );
+          setHasMore(
+            (d?.blogs?.current_page ?? pageNum) <
+              (d?.blogs?.last_page ?? pageNum),
+          );
+        }
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        hasLoadedOnceRef.current = true;
       }
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      hasLoadedOnceRef.current = true;
-    }
-  }, [activeSpecies, activeTopic, debouncedSearch, perPage]);
+    },
+    [activeSpecies, activeTopic, debouncedSearch, perPage],
+  );
 
   // Reset to page 1 when filters/search change
   useEffect(() => {
@@ -601,7 +648,9 @@ function ExpertAdvices() {
   useEffect(() => {
     const checkStuck = () => {
       if (!filtersRef.current) return;
-      setIsStuck(filtersRef.current.getBoundingClientRect().top <= NAVBAR_HEIGHT);
+      setIsStuck(
+        filtersRef.current.getBoundingClientRect().top <= NAVBAR_HEIGHT,
+      );
     };
     checkStuck();
     window.addEventListener("scroll", checkStuck, { passive: true });
@@ -616,7 +665,11 @@ function ExpertAdvices() {
     const section = document.getElementById("all-articles-section");
     if (!section) return;
     const filterHeight = filtersRef.current?.offsetHeight ?? 0;
-    const targetY = section.getBoundingClientRect().top + window.scrollY - NAVBAR_HEIGHT - filterHeight;
+    const targetY =
+      section.getBoundingClientRect().top +
+      window.scrollY -
+      NAVBAR_HEIGHT -
+      filterHeight;
     window.scrollTo({ top: targetY, behavior: "smooth" });
   };
 
@@ -628,7 +681,10 @@ function ExpertAdvices() {
 
         <HeroSkeleton />
 
-        <FiltersSkeleton speciesCount={Math.max(speciesList.length, 4)} topicsCount={6} />
+        <FiltersSkeleton
+          speciesCount={Math.max(speciesList.length, 4)}
+          topicsCount={6}
+        />
 
         <div className="px-6 sm:px-10 lg:px-16">
           {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (
@@ -659,139 +715,164 @@ function ExpertAdvices() {
       <Navbar bgWhite={true} />
 
       {/* Hero */}
-    
-<section
-  style={{
-    backgroundColor: heroArticle.banner?.background_color
-      ? `#${heroArticle.banner.background_color}`
-      : "#f3f3f3",
-  }}
->
-  {heroArticle.blog ? (
-    <div className="flex flex-col lg:flex-row items-stretch">
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
-          {getBlogField(heroArticle.blog, "name", isFr)}
-        </h1>
-        {getBlogField(heroArticle.blog, "short_description", isFr) && (
-          <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
-            {getBlogField(heroArticle.blog, "short_description", isFr)}
-          </p>
-        )}
-        <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
-          <span>by {heroArticle.blog.company_name || "Biogance"}</span>
-          <span>{heroArticle.blog.reading_time || "0"} min read</span>
-          {heroArticle.blog.updated_at && (
-            <span>
-              Updated{" "}
-              {new Date(heroArticle.blog.updated_at).toLocaleDateString(
-                isFr ? "fr-FR" : "en-GB",
-                { day: "numeric", month: "long", year: "numeric" }
+
+      <section
+        style={{
+          backgroundColor: heroArticle.banner?.background_color
+            ? `#${heroArticle.banner.background_color}`
+            : "#f3f3f3",
+        }}
+      >
+        {heroArticle.blog ? (
+          <div className="flex flex-col lg:flex-row items-stretch">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
+              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
+                {getBlogField(heroArticle.blog, "name", isFr)}
+              </h1>
+              {getBlogField(heroArticle.blog, "short_description", isFr) && (
+                <p className="text-sm text-gray-700 leading-relaxed max-w-md mb-8">
+                  {getBlogField(heroArticle.blog, "short_description", isFr)}
+                </p>
               )}
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            const keyword = isFr
-              ? (heroArticle.blog.french_seo_keyword || heroArticle.blog.english_seo_keyboard)
-              : (heroArticle.blog.english_seo_keyboard || heroArticle.blog.french_seo_keyword);
-            startTopLoader();
-            router.push(`/advices/${encodeURIComponent(keyword)}`);
-          }}
-          className="self-start cursor-pointer bg-transparent border border-gray-900 text-gray-900 text-xs font-semibold px-5 py-3 hover:bg-gray-900 hover:text-white transition-colors"
-        >
-          Read this article
-        </button>
-      </div>
-      <div className="relative w-full lg:w-1/2 h-[420px] bg-gray-200">
-        {(() => {
-          const bannerImg =
-            isFr && heroArticle.banner?.french_media
-              ? heroArticle.banner.french_media
-              : heroArticle.banner?.media;
-          return (
-            <img
-              src={
-                bannerImg
-                  ? `${MEDIA_URL}${bannerImg}`
-                  : getBlogImage(heroArticle.blog)
-                  ? `${MEDIA_URL}${getBlogImage(heroArticle.blog)}`
-                  : "/cat.png"
-              }
-              alt={getBlogField(heroArticle.blog, "name", isFr)}
-              onLoad={(e) => e.currentTarget.parentElement.classList.remove("bg-gray-200")}
-              className="w-full h-full object-contain"
-            />
-          );
-        })()}
-      </div>
-    </div>
-  ) : (
-    <HeroSkeleton />
-  )}
-</section>
-
-   {/* Sticky Filters */}
-<div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-  <div className={`px-6 sm:px-10 lg:px-16 pt-6 ${isStuck ? "pb-0" : "pb-6"}`}>
-    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-      <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-      {speciesList.map((cat) => (
-  <TabButton
-    key={cat.id}
-    label={cat.name}
-    active={activeSpecies?.id === cat.id}
-    onClick={() => {
-      setActiveSpecies((prev) => (prev?.id === cat.id ? null : cat));
-      setActiveTopic([]);
-    }}
-  />
-))}
-      </div>
-
-      <div className="group relative w-full md:w-72 shrink-0">
-        <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder="Search articles..."
-          className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-        />
-        {searchInput && (
-          <button
-            type="button"
-            onClick={() => { setSearchInput(""); setDebouncedSearch(""); }}
-            aria-label="Clear search"
-            className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-          >
-            <FiX className="h-3.5 w-3.5" />
-          </button>
+              <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap mb-8">
+                <span>by {heroArticle.blog.company_name || "Biogance"}</span>
+                <span>{heroArticle.blog.reading_time || "0"} min read</span>
+                {heroArticle.blog.updated_at && (
+                  <span>
+                    Updated{" "}
+                    {new Date(heroArticle.blog.updated_at).toLocaleDateString(
+                      isFr ? "fr-FR" : "en-GB",
+                      { day: "numeric", month: "long", year: "numeric" },
+                    )}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const keyword = isFr
+                    ? heroArticle.blog.french_seo_keyword ||
+                      heroArticle.blog.english_seo_keyboard
+                    : heroArticle.blog.english_seo_keyboard ||
+                      heroArticle.blog.french_seo_keyword;
+                  startTopLoader();
+                  router.push(`/advices/${encodeURIComponent(keyword)}`);
+                }}
+                className="self-start cursor-pointer bg-transparent border border-gray-900 text-gray-900 text-xs font-semibold px-5 py-3 hover:bg-gray-900 hover:text-white transition-colors"
+              >
+                Read this article
+              </button>
+            </div>
+            <div className="relative w-full lg:w-1/2 h-[420px]">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="w-9 h-9 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              </div>
+              {(() => {
+                const bannerImg =
+                  isFr && heroArticle.banner?.french_media
+                    ? heroArticle.banner.french_media
+                    : heroArticle.banner?.media;
+                return (
+                  <img
+                    src={
+                      bannerImg
+                        ? `${MEDIA_URL}${bannerImg}`
+                        : getBlogImage(heroArticle.blog)
+                          ? `${MEDIA_URL}${getBlogImage(heroArticle.blog)}`
+                          : "/cat.png"
+                    }
+                    alt={getBlogField(heroArticle.blog, "name", isFr)}
+                    onLoad={(e) => {
+                      e.currentTarget.parentElement.classList.remove(
+                        "bg-gray-200",
+                      );
+                      e.currentTarget.previousSibling?.remove();
+                    }}
+                    className="relative z-10 w-full h-full object-contain"
+                  />
+                );
+              })()}
+            </div>
+          </div>
+        ) : (
+          <HeroSkeleton />
         )}
+      </section>
+
+      {/* Sticky Filters */}
+      <div
+        ref={filtersRef}
+        className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white"
+      >
+        <div
+          className={`px-6 sm:px-10 lg:px-16 pt-6 ${isStuck ? "pb-0" : "pb-6"}`}
+        >
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+              {speciesList.map((cat) => (
+                <TabButton
+                  key={cat.id}
+                  label={cat.name}
+                  active={activeSpecies?.id === cat.id}
+                  onClick={() => {
+                    setActiveSpecies((prev) =>
+                      prev?.id === cat.id ? null : cat,
+                    );
+                    setActiveTopic([]);
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="group relative w-full md:w-72 shrink-0">
+              <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search articles..."
+                className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchInput("");
+                    setDebouncedSearch("");
+                  }}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                >
+                  <FiX className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <ScrollableTabsRow
+            items={["All", ...topicsList.map((t) => t.name)]}
+            activeItem={
+              activeSpecies && activeTopic.length === 0 ? "All" : null
+            }
+            activeItems={activeTopic.map((t) => t.name)}
+            onSelect={(name) => {
+              if (name === "All") {
+                setActiveTopic([]);
+                return;
+              }
+              const found = topicsList.find((t) => t.name === name);
+              if (!found) return;
+              setActiveTopic((prev) =>
+                prev.find((t) => t.id === found.id)
+                  ? prev.filter((t) => t.id !== found.id)
+                  : [...prev, found],
+              );
+            }}
+          />
+
+          <hr className="border-t border-gray-200 mt-6" />
+        </div>
       </div>
-    </div>
-
-    <ScrollableTabsRow
-      items={["All", ...topicsList.map((t) => t.name)]}
-      activeItem={activeSpecies && activeTopic.length === 0 ? "All" : null}
-      activeItems={activeTopic.map((t) => t.name)}
-      onSelect={(name) => {
-        if (name === "All") { setActiveTopic([]); return; }
-        const found = topicsList.find((t) => t.name === name);
-        if (!found) return;
-        setActiveTopic((prev) =>
-          prev.find((t) => t.id === found.id)
-            ? prev.filter((t) => t.id !== found.id)
-            : [...prev, found]
-        );
-      }}
-    />
-
-    <hr className="border-t border-gray-200 mt-6" />
-  </div>
-</div>
 
       <div className="px-6 sm:px-10 lg:px-16">
         {loading ? (
@@ -800,10 +881,34 @@ function ExpertAdvices() {
           ))
         ) : (
           <>
-            <ArticleRow label="Recommended For Your Pet" type="recommended" icon={FaRegStar} items={sections.recommended} isFr={isFr} />
-            <ArticleRow label="Trending" type="trending" icon={GoFlame} items={sections.trending} isFr={isFr} />
-            <ArticleRow label="Most Liked" type="like" icon={CiHeart} items={sections.most_liked} isFr={isFr} />
-            <ArticleRow label="Recently Added" type="recent" icon={GoClock} items={sections.recently_added} isFr={isFr} />
+            <ArticleRow
+              label="Recommended For Your Pet"
+              type="recommended"
+              icon={FaRegStar}
+              items={sections.recommended}
+              isFr={isFr}
+            />
+            <ArticleRow
+              label="Trending"
+              type="trending"
+              icon={GoFlame}
+              items={sections.trending}
+              isFr={isFr}
+            />
+            <ArticleRow
+              label="Most Liked"
+              type="like"
+              icon={CiHeart}
+              items={sections.most_liked}
+              isFr={isFr}
+            />
+            <ArticleRow
+              label="Recently Added"
+              type="recent"
+              icon={GoClock}
+              items={sections.recently_added}
+              isFr={isFr}
+            />
             {/* <ArticleRow label="Pet Blogs" type="pet" icon={FaRegStar} items={sections.pet} isFr={isFr} /> */}
           </>
         )}
@@ -837,8 +942,8 @@ function ExpertAdvices() {
                     key={a.id}
                     onClick={() => {
                       const keyword = isFr
-                        ? (a.french_seo_keyword || a.english_seo_keyboard)
-                        : (a.english_seo_keyboard || a.french_seo_keyword);
+                        ? a.french_seo_keyword || a.english_seo_keyboard
+                        : a.english_seo_keyboard || a.french_seo_keyword;
                       startTopLoader();
                       router.push(`/advices/${encodeURIComponent(keyword)}`);
                     }}
@@ -846,9 +951,20 @@ function ExpertAdvices() {
                   >
                     <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-200">
                       <img
-                        src={a.image ? `${MEDIA_URL}${a.image}` : getBlogImage(a) ? `${MEDIA_URL}${getBlogImage(a)}` : "/cat.png"}
+                        src={
+                          a.image
+                            ? `${MEDIA_URL}${a.image}`
+                            : getBlogImage(a)
+                              ? `${MEDIA_URL}${getBlogImage(a)}`
+                              : "/cat.png"
+                        }
                         alt={a.title ?? a.name}
-                        onLoad={(e) => e.currentTarget.parentElement.classList.replace("bg-gray-200", "bg-gray-100")}
+                        onLoad={(e) =>
+                          e.currentTarget.parentElement.classList.replace(
+                            "bg-gray-200",
+                            "bg-gray-100",
+                          )
+                        }
                         className="w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
                       />
                     </div>

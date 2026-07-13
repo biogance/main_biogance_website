@@ -12,7 +12,6 @@ import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
 
-
 const toCleanAmount = (val) => {
   if (typeof val === "number") return val;
   return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
@@ -64,10 +63,11 @@ export const LandingCards = ({
   index,
   compact = false,
   compactButtons = false,
-   raisedLabel = false,
+  raisedLabel = false,
   fillHeight = false,
   forceVideo = false,
   promoStyle = false,
+  smallLabel = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -107,13 +107,15 @@ export const LandingCards = ({
   useEffect(() => {
     setImageLoaded(false);
     const url = slides[currentImageIndex]?.url || safeProduct.image;
-    if (!url) { setImageLoaded(true); return; }
+    if (!url) {
+      setImageLoaded(true);
+      return;
+    }
     const img = new window.Image();
     img.onload = () => setImageLoaded(true);
     img.onerror = () => setImageLoaded(true);
     img.src = url;
   }, [currentImageIndex, safeProduct.image]);
-
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
@@ -218,22 +220,34 @@ export const LandingCards = ({
 
   const allProducts = safeProduct.products || [];
   const productType = allProducts[0]?.type || "no-size-color";
-  const uniqueSizes = [...new Set(allProducts.filter((p) => p.size_name).map((p) => p.size_name))];
+  const uniqueSizes = [
+    ...new Set(allProducts.filter((p) => p.size_name).map((p) => p.size_name)),
+  ];
   // Once a size is picked, only show the colors available for that size.
   const colorSourceProducts = selectedSize
     ? allProducts.filter((p) => p.size_name === selectedSize)
     : allProducts;
-  const uniqueColors = [...new Set(colorSourceProducts.filter((p) => p.color_name).map((p) => p.color_name))];
-  const hasSizes = (productType === "size" || productType === "size-color") && uniqueSizes.length > 0;
-  const hasColors = (productType === "color" || productType === "size-color") && uniqueColors.length > 0;
+  const uniqueColors = [
+    ...new Set(
+      colorSourceProducts.filter((p) => p.color_name).map((p) => p.color_name),
+    ),
+  ];
+  const hasSizes =
+    (productType === "size" || productType === "size-color") &&
+    uniqueSizes.length > 0;
+  const hasColors =
+    (productType === "color" || productType === "size-color") &&
+    uniqueColors.length > 0;
 
   const handleDropupSelect = async (size, color) => {
-    const matchedProduct = allProducts.find((p) => {
-      if (productType === "size-color") return p.size_name === size && p.color_name === color;
-      if (productType === "size") return p.size_name === size;
-      if (productType === "color") return p.color_name === color;
-      return true;
-    }) || allProducts[0];
+    const matchedProduct =
+      allProducts.find((p) => {
+        if (productType === "size-color")
+          return p.size_name === size && p.color_name === color;
+        if (productType === "size") return p.size_name === size;
+        if (productType === "color") return p.color_name === color;
+        return true;
+      }) || allProducts[0];
     if (!matchedProduct) return;
     setAddingToCart(true);
     setIsDropupOpen(false);
@@ -242,7 +256,13 @@ export const LandingCards = ({
       const token = loginData?.data?.token;
       const res = await axios.post(
         `${BASE_URL}/user/cart/create`,
-        token ? { product_id: matchedProduct.id, quantity: 1 } : { device_id: getDeviceId(), product_id: matchedProduct.id, quantity: 1 },
+        token
+          ? { product_id: matchedProduct.id, quantity: 1 }
+          : {
+              device_id: getDeviceId(),
+              product_id: matchedProduct.id,
+              quantity: 1,
+            },
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data.status === false) {
@@ -265,37 +285,49 @@ export const LandingCards = ({
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes btnSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
-     <div
-  className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
-  onMouseEnter={() => { setIsCardHovered(true); handleMouseEnter(); }}
-  onMouseLeave={() => { setIsCardHovered(false); handleMouseLeave(); }}
-  onClick={() => {
-    const slug =
-      i18n.language === "fr"
-        ? safeProduct.french_seo_keyword
-        : safeProduct.english_seo_keyword;
-    start();
-    router.push(`/product/${slug}`);
-  }}
->
+      <div
+        className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
+        onMouseEnter={() => {
+          setIsCardHovered(true);
+          handleMouseEnter();
+        }}
+        onMouseLeave={() => {
+          setIsCardHovered(false);
+          handleMouseLeave();
+        }}
+        onClick={() => {
+          const slug =
+            i18n.language === "fr"
+              ? safeProduct.french_seo_keyword
+              : safeProduct.english_seo_keyword;
+          start();
+          router.push(`/product/${slug}`);
+        }}
+      >
         {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
         {index === 0 && (
-      // Replace karo:
-<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 z-10`}>
+          // Replace karo:
+          <div
+            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
+          >
             New
           </div>
         )}
 
         {index === 1 && (
-        // Replace karo:
-<div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1  z-10`}>
+          // Replace karo:
+          <div
+            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1  z-10`}
+          >
             Best
           </div>
         )}
 
         {index === 2 && (
           // Replace karo:
-          <div className={`absolute ${raisedLabel ? '-top-0.7 md:top-3' : 'top-3'} left-3 text-black text-xs font-semibold px-2 py-1 z-10`}>
+          <div
+            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
+          >
             -20%
           </div>
         )}
@@ -323,11 +355,18 @@ export const LandingCards = ({
 
         {/* CHANGE 2: Product Label — from API */}
         {(() => {
-          const label = i18n.language === "fr" && safeProduct.french_product_label
-            ? safeProduct.french_product_label
-            : safeProduct.product_label || "";
+          const label =
+            i18n.language === "fr" && safeProduct.french_product_label
+              ? safeProduct.french_product_label
+              : safeProduct.product_label || "";
           return label ? (
-            <div className="absolute top-3 right-3 max-w-[60%] truncate text-right text-black text-xs font-semibold px-2 py-1 z-10">
+            <div
+              className={`absolute top-3 right-3 text-right text-black font-semibold py-1 z-10 ${
+                smallLabel
+                  ? "max-w-[65%] text-[10px] leading-tight px-1.5"
+                  : "max-w-[60%] truncate text-xs px-2"
+              }`}
+            >
               {label}
             </div>
           ) : null;
@@ -421,25 +460,25 @@ export const LandingCards = ({
             />
           )}
 
-{(isHovered || forceVideo) && videoUrl && !isVideoReady && (
-  <div
-    className="absolute inset-0 flex items-center justify-center"
-    style={{ zIndex: 3, background: "#f3f3f3" }}
-  >
-    <div
-     // Replace karo:
+          {(isHovered || forceVideo) && videoUrl && !isVideoReady && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ zIndex: 3, background: "#f3f3f3" }}
+            >
+              <div
+                // Replace karo:
 
- style={{
+                style={{
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
                   border: "3px solid #aaa",
                   borderTopColor: "transparent",
-                   animation: "spin 0.75s linear infinite",
+                  animation: "spin 0.75s linear infinite",
                 }}
-    />
-  </div>
-)}
+              />
+            </div>
+          )}
 
           {/* CHANGE 1: Dot indicators — commented out (image case mein bhi) */}
           {/* {slides.length > 1 && !(isHovered && videoUrl) && (
@@ -462,222 +501,405 @@ export const LandingCards = ({
             </div>
           )} */}
 
-         {/* Title + Price / Add to Cart overlay */}
-<div
-   className={`absolute bottom-0 ${compactButtons ? 'mb-3' : 'mb-4'} left-0 right-0 px-3 py-2`}
-  style={{ zIndex: 7 }}
->
-  {/* Title + Price — hover pe hide (promoStyle mein hamesha hidden) */}
-  <p
-    className="text-black text-xs font-medium truncate cursor-pointer"
-    style={{
-      margin: 0,
-      opacity: isCardHovered || promoStyle ? 0 : 1,
-      transition: "opacity 0.2s ease",
-      pointerEvents: isCardHovered || promoStyle ? "none" : "auto",
-    }}
-  >
-   {shortTitle} — <span style={{ color: "#6d6d6d" }}>{formatPrice(price, i18n.language)} €</span>
-  </p>
+          {/* Title + Price / Add to Cart overlay */}
+          <div
+            className={`absolute bottom-0 ${compactButtons ? "mb-3" : "mb-4"} left-0 right-0 px-3 py-2`}
+            style={{ zIndex: 7 }}
+          >
+            {/* Title + Price — hover pe hide (promoStyle mein hamesha hidden) */}
+            <p
+              className="text-black text-xs font-medium truncate cursor-pointer"
+              style={{
+                margin: 0,
+                opacity: isCardHovered || promoStyle ? 0 : 1,
+                transition: "opacity 0.2s ease",
+                pointerEvents: isCardHovered || promoStyle ? "none" : "auto",
+              }}
+            >
+              {shortTitle} —{" "}
+              <span style={{ color: "#6d6d6d" }}>
+                {formatPrice(price, i18n.language)} €
+              </span>
+            </p>
 
-  {/* QuickView OR Add to Cart button — hover pe show (promoStyle mein hamesha visible) */}
-  <div
-    style={{
-      position: "absolute",
-      bottom: 0,
-      left: "12px",
-      right: "12px",
-      opacity: isCardHovered || promoStyle ? 1 : 0,
-      transition: "opacity 0.2s ease",
-      pointerEvents: isCardHovered || promoStyle ? "auto" : "none",
-    }}
-  >
-    {isSingleProduct ? (
-      /* Single product → Add to Cart button */
-      <button
-        className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-        style={{
-          backgroundColor: promoStyle ? "black" : "white",
-          color: promoStyle ? "white" : "black",
-          border: "none",
+            {/* QuickView OR Add to Cart button — hover pe show (promoStyle mein hamesha visible) */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: "12px",
+                right: "12px",
+                opacity: isCardHovered || promoStyle ? 1 : 0,
+                transition: "opacity 0.2s ease",
+                pointerEvents: isCardHovered || promoStyle ? "auto" : "none",
+              }}
+            >
+              {isSingleProduct ? (
+                /* Single product → Add to Cart button */
+                <button
+                  className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
+                  style={{
+                    backgroundColor: promoStyle ? "black" : "white",
+                    color: promoStyle ? "white" : "black",
+                    border: "none",
 
-          transition: "background-color 0.2s ease, color 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "black";
-          e.currentTarget.style.color = "white";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = promoStyle ? "black" : "white";
-          e.currentTarget.style.color = promoStyle ? "white" : "black";
-        }}
-        onClick={async (e) => {
-  e.stopPropagation();
-  if (addingToCart) return;
-  const firstProduct = safeProduct.products?.[0];
-  if (firstProduct?.color || firstProduct?.size) {
-    setIsCartOpen(true);
-    return;
-  }
-  setAddingToCart(true);
-  try {
-    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    const token = loginData?.data?.token;
-    const res = await axios.post(
-      `${BASE_URL}/user/cart/create`,
-      token ? { product_id: firstProduct?.id ?? safeProduct.id, quantity: 1 } : { device_id: getDeviceId(), product_id: firstProduct?.id ?? safeProduct.id, quantity: 1 },
-      token ? { headers: { Authorization: `Bearer ${token}` } } : {},
-    );
-    if (res.data.status === false) {
-      toast.error(res.data.action || "Could not add to cart.");
-    } else {
-      mergeCartItem(res.data.data);
-      setIsCartOpen(true);
-    }
-  } catch {
-    toast.error("Something went wrong.");
-  } finally {
-    setAddingToCart(false);
-  }
-}}
-      >
-        {addingToCart ? (
-          <span
-            style={{
-              display: "inline-block",
-              width: 16,
-              height: 16,
-              borderRadius: "50%",
-              border: "2px solid white",
-              borderTopColor: "transparent",
-              animation: "lcSpin 0.75s linear infinite",
-              verticalAlign: "middle",
-            }}
-          />
-        ) : (
-        <>{t("products.addToCart")} – {formatPrice(safeProduct.price, i18n.language)} €</>
-        )}
-      </button>
-    ) : (
-      /* Multiple products → button click pe dropup in-place expand */
-      <div style={{ position: "relative" }}>
-        <button
-          className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-          style={{
-            backgroundColor: addingToCart || promoStyle ? "black" : "white",
-            color: addingToCart || promoStyle ? "white" : "black",
-            border: "none",
-            visibility: isDropupOpen ? "hidden" : "visible",
-            transition: "background-color 0.2s ease, color 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "black"; e.currentTarget.style.color = "white"; }}
-          onMouseLeave={(e) => { if (!addingToCart) { e.currentTarget.style.backgroundColor = promoStyle ? "black" : "white"; e.currentTarget.style.color = promoStyle ? "white" : "black"; } }}
-          onClick={(e) => { e.stopPropagation(); setSelectedSize(null); setSelectedColor(null); setIsDropupOpen(true); }}
-        >
-          {addingToCart
-            ? <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: "50%", border: "2px solid white", borderTopColor: "transparent", animation: "btnSpin 0.75s linear infinite", verticalAlign: "middle" }} />
-            : <>{t("products.addToCart")} – {formatPrice(safeProduct.price, i18n.language)} €</>}
-        </button>
-
-        {/* Dropup — maxHeight animation for smooth open/close */}
-        <div
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 9,
-            maxHeight: isDropupOpen ? "300px" : "0px",
-            overflow: "hidden",
-            transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            backgroundColor: "#fff",
-          }}
-        >
-          <div style={{ padding: "12px", position: "relative" }}>
-            <button
-              onClick={(e) => { e.stopPropagation(); setIsDropupOpen(false); }}
-              style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14, lineHeight: 1, color: "#555" }}
-            >✕</button>
-
-            {hasSizes && (
-              <div style={{ marginBottom: hasColors ? 10 : 0 }}>
-                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "#111", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("products.size") || "Size"}</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {uniqueSizes.map((size) => (
-                    <button key={size}
-                      onClick={(e) => { e.stopPropagation(); setSelectedSize(size); if (!hasColors) handleDropupSelect(size, selectedColor); }}
-                      style={{ padding: "5px 12px", fontSize: 12, cursor: "pointer", border: selectedSize === size ? "1.5px solid #111" : "1.5px solid #ddd", backgroundColor: selectedSize === size ? "#111" : "#fff", color: selectedSize === size ? "#fff" : "#111", transition: "all 0.15s" }}
-                    >{size}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {hasColors && (
-              <div style={{ marginBottom: hasSizes && hasColors ? 10 : 0 }}>
-                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "#111", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("products.color") || "Color"}</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {uniqueColors.map((color) => {
-                    const isDual = color.includes(" & ");
-                    const swatchBg = isDual
-                      ? (() => {
-                          const [a, b] = color.split(" & ").map((p) => p.trim());
-                          return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
-                        })()
-                      : color;
-                    return (
-                      <button key={color}
-                        type="button"
-                        title={color}
-                        aria-label={color}
-                        onClick={(e) => { e.stopPropagation(); setSelectedColor(color); if (!hasSizes) handleDropupSelect(selectedSize, color); }}
+                    transition: "background-color 0.2s ease, color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "black";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = promoStyle
+                      ? "black"
+                      : "white";
+                    e.currentTarget.style.color = promoStyle
+                      ? "white"
+                      : "black";
+                  }}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (addingToCart) return;
+                    const firstProduct = safeProduct.products?.[0];
+                    if (firstProduct?.color || firstProduct?.size) {
+                      setIsCartOpen(true);
+                      return;
+                    }
+                    setAddingToCart(true);
+                    try {
+                      const loginData = JSON.parse(
+                        localStorage.getItem("LoginData") || "null",
+                      );
+                      const token = loginData?.data?.token;
+                      const res = await axios.post(
+                        `${BASE_URL}/user/cart/create`,
+                        token
+                          ? {
+                              product_id: firstProduct?.id ?? safeProduct.id,
+                              quantity: 1,
+                            }
+                          : {
+                              device_id: getDeviceId(),
+                              product_id: firstProduct?.id ?? safeProduct.id,
+                              quantity: 1,
+                            },
+                        token
+                          ? { headers: { Authorization: `Bearer ${token}` } }
+                          : {},
+                      );
+                      if (res.data.status === false) {
+                        toast.error(
+                          res.data.action || "Could not add to cart.",
+                        );
+                      } else {
+                        mergeCartItem(res.data.data);
+                        setIsCartOpen(true);
+                      }
+                    } catch {
+                      toast.error("Something went wrong.");
+                    } finally {
+                      setAddingToCart(false);
+                    }
+                  }}
+                >
+                  {addingToCart ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        border: "2px solid white",
+                        borderTopColor: "transparent",
+                        animation: "lcSpin 0.75s linear infinite",
+                        verticalAlign: "middle",
+                      }}
+                    />
+                  ) : (
+                    <>
+                      {t("products.addToCart")} –{" "}
+                      {formatPrice(safeProduct.price, i18n.language)} €
+                    </>
+                  )}
+                </button>
+              ) : (
+                /* Multiple products → button click pe dropup in-place expand */
+                <div style={{ position: "relative" }}>
+                  <button
+                    className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
+                    style={{
+                      backgroundColor:
+                        addingToCart || promoStyle ? "black" : "white",
+                      color: addingToCart || promoStyle ? "white" : "black",
+                      border: "none",
+                      visibility: isDropupOpen ? "hidden" : "visible",
+                      transition: "background-color 0.2s ease, color 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "black";
+                      e.currentTarget.style.color = "white";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!addingToCart) {
+                        e.currentTarget.style.backgroundColor = promoStyle
+                          ? "black"
+                          : "white";
+                        e.currentTarget.style.color = promoStyle
+                          ? "white"
+                          : "black";
+                      }
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSize(null);
+                      setSelectedColor(null);
+                      setIsDropupOpen(true);
+                    }}
+                  >
+                    {addingToCart ? (
+                      <span
                         style={{
-                          width: 26,
-                          height: 26,
-                          padding: 0,
+                          display: "inline-block",
+                          width: 16,
+                          height: 16,
                           borderRadius: "50%",
-                          cursor: "pointer",
-                          background: swatchBg,
-                          border: selectedColor === color ? "2px solid #111" : "1.5px solid #ddd",
-                          boxShadow: selectedColor === color ? "0 0 0 2px #fff inset" : "none",
-                          transition: "all 0.15s",
+                          border: "2px solid white",
+                          borderTopColor: "transparent",
+                          animation: "btnSpin 0.75s linear infinite",
+                          verticalAlign: "middle",
                         }}
                       />
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    ) : (
+                      <>
+                        {t("products.addToCart")} –{" "}
+                        {formatPrice(safeProduct.price, i18n.language)} €
+                      </>
+                    )}
+                  </button>
 
-            {hasSizes && hasColors && (
-              <button
-                onClick={(e) => { e.stopPropagation(); if (selectedSize && selectedColor) handleDropupSelect(selectedSize, selectedColor); }}
-                disabled={!selectedSize || !selectedColor}
-                style={{ width: "100%", padding: "8px", fontSize: 12, fontWeight: 600, backgroundColor: selectedSize && selectedColor ? "#111" : "#ccc", color: "#fff", border: "none", cursor: selectedSize && selectedColor ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase", transition: "background 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                {addingToCart
-                  ? <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", animation: "lcSpin 0.75s linear infinite" }} />
-                  : t("products.addToCart")}
-              </button>
-            )}
+                  {/* Dropup — maxHeight animation for smooth open/close */}
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 9,
+                      maxHeight: isDropupOpen ? "300px" : "0px",
+                      overflow: "hidden",
+                      transition:
+                        "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      backgroundColor: "#fff",
+                    }}
+                  >
+                    <div style={{ padding: "12px", position: "relative" }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsDropupOpen(false);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 14,
+                          lineHeight: 1,
+                          color: "#555",
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      {hasSizes && (
+                        <div style={{ marginBottom: hasColors ? 10 : 0 }}>
+                          <p
+                            style={{
+                              margin: "0 0 6px",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "#111",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            {t("products.size") || "Size"}
+                          </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 6,
+                            }}
+                          >
+                            {uniqueSizes.map((size) => (
+                              <button
+                                key={size}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedSize(size);
+                                  if (!hasColors)
+                                    handleDropupSelect(size, selectedColor);
+                                }}
+                                style={{
+                                  padding: "5px 12px",
+                                  fontSize: 12,
+                                  cursor: "pointer",
+                                  border:
+                                    selectedSize === size
+                                      ? "1.5px solid #111"
+                                      : "1.5px solid #ddd",
+                                  backgroundColor:
+                                    selectedSize === size ? "#111" : "#fff",
+                                  color:
+                                    selectedSize === size ? "#fff" : "#111",
+                                  transition: "all 0.15s",
+                                }}
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {hasColors && (
+                        <div
+                          style={{
+                            marginBottom: hasSizes && hasColors ? 10 : 0,
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: "0 0 6px",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "#111",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            {t("products.color") || "Color"}
+                          </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 8,
+                            }}
+                          >
+                            {uniqueColors.map((color) => {
+                              const isDual = color.includes(" & ");
+                              const swatchBg = isDual
+                                ? (() => {
+                                    const [a, b] = color
+                                      .split(" & ")
+                                      .map((p) => p.trim());
+                                    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+                                  })()
+                                : color;
+                              return (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  title={color}
+                                  aria-label={color}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedColor(color);
+                                    if (!hasSizes)
+                                      handleDropupSelect(selectedSize, color);
+                                  }}
+                                  style={{
+                                    width: 26,
+                                    height: 26,
+                                    padding: 0,
+                                    borderRadius: "50%",
+                                    cursor: "pointer",
+                                    background: swatchBg,
+                                    border:
+                                      selectedColor === color
+                                        ? "2px solid #111"
+                                        : "1.5px solid #ddd",
+                                    boxShadow:
+                                      selectedColor === color
+                                        ? "0 0 0 2px #fff inset"
+                                        : "none",
+                                    transition: "all 0.15s",
+                                  }}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {hasSizes && hasColors && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedSize && selectedColor)
+                              handleDropupSelect(selectedSize, selectedColor);
+                          }}
+                          disabled={!selectedSize || !selectedColor}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            backgroundColor:
+                              selectedSize && selectedColor ? "#111" : "#ccc",
+                            color: "#fff",
+                            border: "none",
+                            cursor:
+                              selectedSize && selectedColor
+                                ? "pointer"
+                                : "default",
+                            letterSpacing: "0.05em",
+                            textTransform: "uppercase",
+                            transition: "background 0.2s",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {addingToCart ? (
+                            <span
+                              style={{
+                                display: "inline-block",
+                                width: 14,
+                                height: 14,
+                                borderRadius: "50%",
+                                border: "2px solid rgba(255,255,255,0.4)",
+                                borderTopColor: "#fff",
+                                animation: "lcSpin 0.75s linear infinite",
+                              }}
+                            />
+                          ) : (
+                            t("products.addToCart")
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    )}
-  </div>
-</div>
-        </div>
-
       </div>
 
       <ModalAddToCart
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         product={safeProduct}
+        autoCloseOnLeave
       />
       {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
       {/* <div className="flex-shrink-0">
@@ -717,7 +939,7 @@ export default function PopularProducts({
   const { t } = useTranslation("home");
   const router = useRouter();
   const { start } = useTopLoader();
-const currentCardIndexRef = useRef(0);
+  const currentCardIndexRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -734,7 +956,8 @@ const currentCardIndexRef = useRef(0);
       id: item.id,
       name: item.name,
       french_name: item.french_name || "",
-      english_seo_keyword: item.english_seo_keyboard || item.english_seo_keyword || "",
+      english_seo_keyword:
+        item.english_seo_keyboard || item.english_seo_keyword || "",
       french_seo_keyword: item.french_seo_keyword || "",
       price: item.price || item.products?.[0]?.price || "0",
       discount: item.discount || item.products?.[0]?.off || "",
@@ -764,16 +987,17 @@ const currentCardIndexRef = useRef(0);
     ? mapProducts(bestSellerProducts)
     : mapProducts(apiProducts);
 
- const checkScrollPosition = () => {
-  // Sirf tab run karo jab index 0 pe ho (initial state)
-  if (currentCardIndexRef.current > 0) return;
-  
-  if (scrollContainerRef.current) {
-    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-  }
-};
+  const checkScrollPosition = () => {
+    // Sirf tab run karo jab index 0 pe ho (initial state)
+    if (currentCardIndexRef.current > 0) return;
+
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
 
   useEffect(() => {
     if (products.length === 0) return;
@@ -795,41 +1019,41 @@ const currentCardIndexRef = useRef(0);
     }
   }, [isLoading]);
 
-const scroll = (direction) => {
-  if (!scrollContainerRef.current) return;
+  const scroll = (direction) => {
+    if (!scrollContainerRef.current) return;
 
-  const container = scrollContainerRef.current;
-  const cards = container.querySelectorAll(":scope > div");
-  if (!cards.length) return;
+    const container = scrollContainerRef.current;
+    const cards = container.querySelectorAll(":scope > div");
+    if (!cards.length) return;
 
-  const totalCards = cards.length;
-  const firstCard = cards[0];
-  const cardWidth = firstCard.offsetWidth + 3;
-  const visibleCount = Math.round(container.clientWidth / cardWidth);
-  const maxIndex = totalCards - visibleCount;
+    const totalCards = cards.length;
+    const firstCard = cards[0];
+    const cardWidth = firstCard.offsetWidth + 3;
+    const visibleCount = Math.round(container.clientWidth / cardWidth);
+    const maxIndex = totalCards - visibleCount;
 
-  // Ref se current value lo — stale closure problem nahi hogi
-  const currentIndex = currentCardIndexRef.current;
+    // Ref se current value lo — stale closure problem nahi hogi
+    const currentIndex = currentCardIndexRef.current;
 
-  let newIndex;
-  if (direction === "next") {
-    newIndex = Math.min(currentIndex + 1, maxIndex);
-  } else {
-    newIndex = Math.max(currentIndex - 1, 0);
-  }
+    let newIndex;
+    if (direction === "next") {
+      newIndex = Math.min(currentIndex + 1, maxIndex);
+    } else {
+      newIndex = Math.max(currentIndex - 1, 0);
+    }
 
-  // Dono update karo — ref turant, state re-render ke liye
-  currentCardIndexRef.current = newIndex;
+    // Dono update karo — ref turant, state re-render ke liye
+    currentCardIndexRef.current = newIndex;
 
-  const targetCard = cards[newIndex];
-  container.scrollTo({
-    left: targetCard.offsetLeft - 5,
-    behavior: "smooth",
-  });
+    const targetCard = cards[newIndex];
+    container.scrollTo({
+      left: targetCard.offsetLeft - 5,
+      behavior: "smooth",
+    });
 
-  setCanScrollLeft(newIndex > 0);
-  setCanScrollRight(newIndex < maxIndex);
-};
+    setCanScrollLeft(newIndex > 0);
+    setCanScrollRight(newIndex < maxIndex);
+  };
 
   return (
     <div className="w-full bg-white">
@@ -983,7 +1207,6 @@ const scroll = (direction) => {
                 : isHorizontal
                   ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
                   : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
-
           }
         >
           {isLoading

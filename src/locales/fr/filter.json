@@ -14,7 +14,10 @@
   "noResultsDesc": "Essayez d'ajuster vos filtres ou votre mot-clé — une petite modification révèle souvent la bonne formulation.",
   "filters": "Filtres",
   "filter": "Filtrer",
+  "openAllFilters": "Ouvrir tous les filtres",
+  "removeFilter": "Retirer {{label}}",
   "price": "Prix",
+  "max": "max",
   "all": "Tous",
   "selectedCount": "{{count}} sélectionné(s)",
   "searchGroupPlaceholder": "Rechercher {{label}}…",
@@ -22,6 +25,12 @@
   "noOptionsAvailable": "Aucune option disponible.",
   "filterBy": "Filtrer par",
   "done": "Terminé",
+  "loading": "Chargement...",
+  "loadMore": "Voir plus",
+  "recentlyViewed": "Récemment consultés",
+  "careFormulation": "Formulation de soin",
+  "somethingWentWrong": "Une erreur est survenue.",
+  "searchFailed": "Impossible de charger les produits depuis l'API de recherche.",
   "tips": {
     "family": "Sélectionnez d'abord une catégorie",
     "specificity": "Sélectionnez d'abord une famille",
@@ -57,6 +66,10 @@
     "ReptilesTurtles": "Reptiles & Tortues",
     "Horses": "Chevaux"
   },
+  "products": {
+    "title": "Produits",
+    "shopDescription": "Les parasites externes tels que les puces et les tiques peuvent rapidement affecter le confort et le bien-être de votre chien. Les promenades en plein air ou le contact avec d'autres animaux peuvent favoriser les infestations, entraînant des démangeaisons et des irritations cutanées."
+  },
   "category": {
     "eyebrow": "Catégorie · Collection sélectionnée",
     "titlePart1": "Tous les ",
@@ -64,6 +77,8 @@
     "description": "Parcourez notre gamme complète de formulations conçues pour cette catégorie — filtrées par famille, besoin et rituel."
   },
   "recommended": {
+    "crumbLabel": "Recommandé",
+    "title": "Recommandé pour vous",
     "eyebrow": "Recommandé · Sélectionné pour vous",
     "titlePart1": "Choisi ",
     "titlePart2": "pour vos",
@@ -72,6 +87,7 @@
   },
   "best": {
     "crumbLabel": "Meilleurs produits",
+    "title": "Meilleures ventes",
     "eyebrow": "Meilleurs produits · Sélection de l'éditeur",
     "titlePart1": "Le ",
     "titlePart2": "meilleur",
@@ -80,6 +96,7 @@
   },
   "popular": {
     "crumbLabel": "Populaire cette semaine",
+    "title": "Produits populaires",
     "eyebrow": "Populaire cette semaine",
     "titlePart1": "Ce que tout le monde ",
     "titlePart2": "recherche",
@@ -87,6 +104,8 @@
     "description": "Les flacons les plus appréciés de notre communauté au cours des sept derniers jours — affinés par animal, famille et rituel."
   },
   "search": {
+    "crumbLabel": "Recherche",
+    "title": "Résultats de recherche",
     "eyebrowWithQuery": "Résultats de recherche · “{{q}}”",
     "eyebrow": "Résultats de recherche",
     "titleWithQuery": "Résultats pour ",
@@ -96,6 +115,8 @@
     "description": "Utilisez les filtres pour affiner par espèce, race, besoin ou gamme — votre mot-clé reste appliqué."
   },
   "ads": {
+    "crumbLabel": "Campagne",
+    "title": "Sélection en vedette",
     "eyebrow": "Campagne en vedette",
     "titlePart1": "La ",
     "titlePart2": "sélection",
@@ -104,10 +125,29 @@
   },
   "catalogue": {
     "crumbLabel": "Catalogue",
+    "title": "Tous les produits",
     "eyebrow": "Catalogue · Vol. 04",
     "titlePart1": "Soins, ",
     "titlePart2": "raffinés",
     "titlePart3": "pour chaque espèce.",
     "description": "Un index vivant de formulations — filtré par animal, famille, besoin et rituel. Fabriqué en France, certifié par la nature."
+  },
+  "ourAdvices": {
+    "title": "Nos conseils",
+    "introTitle": "Comment choisir le bon soin pour votre animal ?",
+    "introBody": "Chaque animal est différent — son pelage, sa peau et son mode de vie jouent tous un rôle dans le choix de la bonne routine de soin. Nos experts partagent leurs conseils pour vous aider à choisir la formulation la plus adaptée à votre compagnon.",
+    "step1Title": "Étape 1 : évaluez le mode de vie de votre animal",
+    "step1Intro": "Chaque animal a des besoins différents selon son environnement et sa routine quotidienne.",
+    "step1Bullet1": "Animaux d'intérieur : même les animaux d'intérieur bénéficient d'une routine de soin douce et régulière.",
+    "step1Bullet2": "Animaux d'extérieur : les animaux qui marchent, nagent ou jouent dehors ont besoin de soins et d'une protection plus fréquents.",
+    "step2Title": "Étape 2 : choisissez la bonne formulation",
+    "step2Intro": "Nos gammes sont conçues pour s'adapter à différents besoins et modes de vie.",
+    "step2Bullet1": "Pour un soin quotidien : choisissez une formulation douce pour un usage régulier.",
+    "step2Bullet2": "Pour des besoins spécifiques : optez pour un traitement ciblé adapté au pelage ou à la peau de votre animal.",
+    "step2Bullet3": "Pour les foyers multi-animaux : recherchez des produits sûrs à utiliser sur plusieurs espèces.",
+    "whyTitle": "Pourquoi la bonne routine est-elle importante ?",
+    "whyBody": "Les mauvais produits peuvent provoquer inconfort, sécheresse ou irritation. Utiliser une routine adaptée à votre animal contribue à son confort tout en soutenant son bien-être général.",
+    "whenTitle": "Quand appliquer cette routine ?",
+    "whenBody": "Pour de meilleurs résultats, restez constant tout au long de l'année et suivez l'usage recommandé sur le produit choisi, en l'ajustant selon l'évolution des besoins de votre animal."
   }
 }

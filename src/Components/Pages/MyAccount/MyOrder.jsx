@@ -386,7 +386,7 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
                 <OrderItemShimmer key={index} />
               ))
             ) : orders.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">{'No orders found.'}</div>
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-500">No orders found.</div>
             ) : (
               orders.map((order) => (
                 <div

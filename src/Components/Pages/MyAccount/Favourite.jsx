@@ -245,7 +245,7 @@ export default function Favourite() {
               )}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <img src="/favacc.svg" alt="Empty wishlist" className="w-64 md:w-80 h-64 md:h-80 object-contain mb-8" />
               <h3 className="text-2xl font-semibold text-gray-900 mb-3">{t('favourite.empty.title')}</h3>
               <p className="text-gray-500 max-w-md mb-8 leading-relaxed">

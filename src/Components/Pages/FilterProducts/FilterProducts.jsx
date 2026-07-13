@@ -28,20 +28,6 @@ import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
-const GROUP_LABELS_FR = {
-  Category: "Catégorie",
-  Universe: "Univers",
-  Family: "Famille",
-  Specificity: "Spécificité",
-  Needs: "Besoins",
-  Breed: "Race",
-  "For Which": "Pour qui",
-  Range: "Gamme",
-  Size: "Taille",
-  Color: "Couleur",
-  Price: "Prix",
-};
-
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
 
@@ -416,7 +402,10 @@ function getShopContext(source, q, categoryName, t) {
 // card (LandingCards' overlay is `absolute bottom-0 mb-3 left-0 right-0
 // px-3`, no background) — mirror that exactly instead of a solid white bar.
 const CardTextShimmer = () => (
-  <div className="absolute bottom-0 mb-3 left-0 right-0 px-3 py-2" style={{ zIndex: 7 }}>
+  <div
+    className="absolute bottom-0 mb-3 left-0 right-0 px-3 py-2"
+    style={{ zIndex: 7 }}
+  >
     <div className="h-2.5 w-3/5 rounded bg-white/80 mb-1.5" />
     <div className="h-2.5 w-1/4 rounded bg-white/60" />
   </div>
@@ -425,14 +414,20 @@ const CardTextShimmer = () => (
 // Matches the "New" / "Best" / "-20%" badge LandingCards renders for the
 // first three cards (index 0/1/2), top-left, raisedLabel position.
 const CardBadgeShimmer = () => (
-  <div className="absolute -top-0.5 md:top-3 left-3 h-3 w-8 rounded bg-white/70" style={{ zIndex: 10 }} />
+  <div
+    className="absolute -top-0.5 md:top-3 left-3 h-3 w-8 rounded bg-white/70"
+    style={{ zIndex: 10 }}
+  />
 );
 
 // Real bottom-grid / "Recently Viewed" cards are `compact` without
 // `fillHeight`, which LandingCards renders at a fixed h-140 (not an aspect
 // ratio) — match that exactly so cards don't jump taller once data loads.
 const SkeletonCard = ({ badge = false }) => (
-  <div className="w-full h-140 bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+  <div
+    className="w-full h-140 bg-[#f3f3f3] relative overflow-hidden"
+    aria-hidden
+  >
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     {badge && <CardBadgeShimmer />}
     <CardTextShimmer />
@@ -441,7 +436,10 @@ const SkeletonCard = ({ badge = false }) => (
 
 // Same as SkeletonCard but stretches to fill its grid cell (viewport-fit rows) instead of a fixed height.
 const SkeletonCardFill = ({ badge = false }) => (
-  <div className="w-full h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+  <div
+    className="w-full h-full bg-[#f3f3f3] relative overflow-hidden"
+    aria-hidden
+  >
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     {badge && <CardBadgeShimmer />}
     <CardTextShimmer />
@@ -450,7 +448,10 @@ const SkeletonCardFill = ({ badge = false }) => (
 
 // Matches the taller "video" slot in the featured rows (viewport-fit height).
 const SkeletonVideoCard = () => (
-  <div className="w-full h-full bg-[#f3f3f3] relative overflow-hidden" aria-hidden>
+  <div
+    className="w-full h-full bg-[#f3f3f3] relative overflow-hidden"
+    aria-hidden
+  >
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
     <CardTextShimmer />
   </div>
@@ -470,26 +471,36 @@ const featuredGridStyle = (cardDimensions) =>
       }
     : { flex: 1 };
 
-const FeaturedSkeleton = ({ row1WrapperHeight, rowHeight, reservedTop, cardDimensions }) => (
+const FeaturedSkeleton = ({ rowHeight, cardDimensions }) => (
   <div className="mb-[3px]">
-    <div style={{ height: row1WrapperHeight }}>
-      <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px] sticky overflow-hidden" style={{ height: rowHeight, top: reservedTop }}>
-        <div className="grid flex-shrink-0" style={featuredGridStyle(cardDimensions)}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SkeletonCardFill key={`row1-${i}`} badge={i < 3} />
-          ))}
-        </div>
-        <div className="flex-1 min-h-0">
-          <SkeletonVideoCard />
-        </div>
+    <div
+      className="flex flex-col sm:flex-row gap-[3px] mb-[3px]"
+      style={{ height: rowHeight }}
+    >
+      <div
+        className="grid flex-shrink-0"
+        style={featuredGridStyle(cardDimensions)}
+      >
+        {Array.from({ length: 8 }).map((_, i) => (
+          <SkeletonCardFill key={`row1-${i}`} badge={i < 3} />
+        ))}
       </div>
-    </div>
-
-    <div className="flex flex-col sm:flex-row gap-[3px] mb-[3px]" style={{ height: rowHeight }}>
       <div className="flex-1 min-h-0">
         <SkeletonVideoCard />
       </div>
-      <div className="grid flex-shrink-0" style={featuredGridStyle(cardDimensions)}>
+    </div>
+
+    <div
+      className="flex flex-col sm:flex-row gap-[3px] mb-[3px]"
+      style={{ height: rowHeight }}
+    >
+      <div className="flex-1 min-h-0">
+        <SkeletonVideoCard />
+      </div>
+      <div
+        className="grid flex-shrink-0"
+        style={featuredGridStyle(cardDimensions)}
+      >
         {Array.from({ length: 8 }).map((_, i) => (
           <SkeletonCardFill key={`row2-${i}`} />
         ))}
@@ -513,9 +524,21 @@ export default function FilterProducts() {
   const categoryName = searchParams
     ? searchParams.get("category_name")
     : undefined;
+  // OurProducts' family links land here with both category_name and family_name — in that
+  // flow the header should just read "Products", not the category name.
+  const familyDeepLink = searchParams
+    ? searchParams.get("family_name")
+    : undefined;
 
   const { t, i18n } = useTranslation("filter");
-  const ctx = getShopContext(source, q, categoryName, t);
+  const ctx = familyDeepLink
+    ? {
+        key: "products",
+        title: t("products.title", "Products"),
+        Icon: LuBookOpen,
+        accent: "text-stone-700",
+      }
+    : getShopContext(source, q, categoryName, t);
   const isFrench = i18n?.language === "fr";
   const headerRef = useRef(null);
   const [isHeaderTouchingNav, setIsHeaderTouchingNav] = useState(false);
@@ -552,48 +575,14 @@ export default function FilterProducts() {
     };
   }, []);
 
-  // Full-size row, held in view with `position: sticky` instead of shrinking it
-  // or snapping the scroll. Each row sits inside a wrapper that's taller than
-  // the row itself (rowHeight + FEATURED_ROW_DWELL); the row is sticky at
-  // `top: reservedTop` inside that wrapper, so it stays pinned — fully framed,
-  // no cut-off — for the whole dwell range, then releases into the next
-  // section on its own once you scroll past. Pure CSS, no scroll listeners,
-  // so it can't fight the user's scroll (unlike the earlier JS auto-scroll)
-  // and doesn't touch anything outside its own wrapper (unlike CSS
-  // scroll-snap, which pulled on the header too).
+  // Featured rows scroll normally as part of the page (no position:sticky pin) — a
+  // sticky-pinned row used to hold the same content in view for a whole viewport-height's
+  // worth of scroll, which read as the page being "stuck" every time a row reached the
+  // viewport. rowHeight still sizes each row to roughly fill the viewport so the grid+video
+  // layout looks right, it just no longer pins in place while you scroll past it.
   const reservedTop = NAVBAR_HEIGHT + railHeight;
   const featuredRowHeight = `max(420px, calc(100dvh - ${reservedTop}px))`;
-  const FEATURED_ROW_DWELL = 260;
-  const featuredRowWrapperHeight = `calc(${featuredRowHeight} + ${FEATURED_ROW_DWELL}px)`;
-
-  // Row 1 needs to sit inside the very first screen, right along with the
-  // "products in view / search / title" intro block above it — not just be
-  // reachable after scrolling. Measure that intro block's real height so row 1
-  // can take exactly whatever's left of the first viewport under it, on any
-  // screen size.
-  const introHeaderRef = useRef(null);
-  const [introHeaderHeight, setIntroHeaderHeight] = useState(0);
-
-  useEffect(() => {
-    const el = introHeaderRef.current;
-    if (!el) return;
-    const update = () => setIntroHeaderHeight(el.offsetHeight);
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    window.addEventListener("resize", update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
-  // Row 1 height = full viewport minus navbar+rail (same as row 2). It sits inside a
-  // wrapper taller than itself (introHeaderHeight + rowHeight + dwell) and is sticky at
-  // reservedTop — so initially the intro header is visible above it, and once you scroll
-  // past the intro, row 1 fills the full viewport just like row 2.
   const row1Height = featuredRowHeight;
-  const row1WrapperHeight = `calc(${introHeaderHeight}px + ${featuredRowHeight} + ${FEATURED_ROW_DWELL}px)`;
 
   // Card dimensions: height = (viewport minus navbar/rail) / 2, width = height * 0.8.
   // Both featured rows are always sized to featuredRowHeight, so they share this one
@@ -718,7 +707,7 @@ export default function FilterProducts() {
         item.subtitle ||
         (item.products?.[0]?.description
           ? item.products[0].description.slice(0, 50) + "..."
-          : "Care formulation"),
+          : t("careFormulation", "Care formulation")),
       price: parseFloat(item.price || item.products?.[0]?.price || "0"),
       oldPrice: item.products?.[0]?.price
         ? parseFloat(item.products[0].price) * 1.2
@@ -777,7 +766,14 @@ export default function FilterProducts() {
     const anchorIndex = loadMoreAnchorRef.current;
     loadMoreAnchorRef.current = null;
     requestAnimationFrame(() => {
-      const el = document.querySelector(`[data-rest-index="${anchorIndex}"]`);
+      // Two grids share this attribute (desktop lg:grid + mobile lg:hidden fallback) —
+      // only one is ever visible at a given viewport, so skip the display:none one.
+      const candidates = document.querySelectorAll(
+        `[data-rest-index="${anchorIndex}"]`,
+      );
+      const el = Array.from(candidates).find(
+        (node) => node.offsetParent !== null,
+      );
       if (!el) return;
       const offset = NAVBAR_HEIGHT + railHeight + 16;
       const targetY = el.getBoundingClientRect().top + window.scrollY - offset;
@@ -786,17 +782,42 @@ export default function FilterProducts() {
   }, [isFetchingMore, railHeight]);
 
   const catParam = searchParams ? searchParams.get("category_id") : undefined;
+  const familyParam = searchParams
+    ? searchParams.get("family_name")
+    : undefined;
 
+  // Both deep-link effects below must only ever apply once. The URL query string is
+  // never cleared after landing here, so without a "consumed" guard, anything that later
+  // recomputes categoriesList/animals for an unrelated reason (e.g. a splashData refresh)
+  // would re-run these and silently re-select the category/family right after the user
+  // hits Reset — making Reset look like it doesn't work.
+  const catParamAppliedRef = useRef(false);
   useEffect(() => {
+    if (catParamAppliedRef.current) return;
     if (catParam && categoriesList.length > 0) {
       const matchedCat = categoriesList.find(
         (c) => String(c.id) === String(catParam),
       );
       if (matchedCat) {
         setAnimals([matchedCat.name]);
+        catParamAppliedRef.current = true;
       }
     }
   }, [catParam, categoriesList]);
+
+  // Deep-link from OurProducts/Navbar's family links (/shop?category_id=..&family_name=..) —
+  // family options only exist once the matching category above has landed in `animals`, so
+  // this waits on that instead of racing it.
+  const familyParamAppliedRef = useRef(false);
+  useEffect(() => {
+    if (familyParamAppliedRef.current) return;
+    if (familyParam && animals.length > 0) {
+      setFamilies((prev) =>
+        prev.includes(familyParam) ? prev : [familyParam],
+      );
+      familyParamAppliedRef.current = true;
+    }
+  }, [familyParam, animals]);
 
   const getSelectedIds = () => {
     const categoryIds = categoriesList
@@ -887,13 +908,29 @@ export default function FilterProducts() {
 
   const prevFiltersRef = useRef(filtersSerialized);
   const prevPageRef = useRef(page);
+  const prevCategoriesListRef = useRef(categoriesList);
   const hasInitializedRef = useRef(false);
+  const searchRequestSeqRef = useRef(0);
 
   useEffect(() => {
     // Detect if filters changed, reset page to 1
     let targetPage = page;
     const filtersChanged = prevFiltersRef.current !== filtersSerialized;
     const pageChanged = prevPageRef.current !== page;
+    // categoriesList starts out as FALLBACK_CATEGORIES (ids only, no universe/family tree)
+    // until splashData finishes loading. getSelectedIds() below resolves family_id/universe_id
+    // etc. by walking this tree, so a request fired before it's ready silently drops those ids
+    // even though `families`/`universe` state is already set (e.g. from an OurProducts deep
+    // link). Once the real categoriesList lands, that must trigger a refetch too — filters and
+    // page may be unchanged, but the ids they resolve to are not.
+    // Note: this only cares about the one real fallback→real transition, not raw reference
+    // equality — `apiData` gets a brand-new object from JSON.parse() on every "splashDataReady"
+    // refresh even when the underlying data hasn't changed, which would otherwise refetch on
+    // every single refresh forever.
+    const categoriesListChanged =
+      prevCategoriesListRef.current === FALLBACK_CATEGORIES &&
+      categoriesList !== FALLBACK_CATEGORIES;
+    prevCategoriesListRef.current = categoriesList;
 
     if (filtersChanged) {
       prevFiltersRef.current = filtersSerialized;
@@ -902,8 +939,12 @@ export default function FilterProducts() {
       setHasSearched(false);
       searchedProductsRef.current = [];
       setSearchedProducts([]);
-    } else if (!pageChanged && hasInitializedRef.current) {
-      // apiData refreshed but nothing changed — don't re-fire
+    } else if (
+      !pageChanged &&
+      !categoriesListChanged &&
+      hasInitializedRef.current
+    ) {
+      // apiData refreshed but nothing that affects the resolved filter ids changed — don't re-fire
       return;
     }
 
@@ -960,6 +1001,13 @@ export default function FilterProducts() {
       ...(token ? {} : { device_id: getDeviceId() }),
     };
 
+    // Guard against out-of-order responses: with two fetches now able to be in flight close
+    // together (e.g. one fired on filter change, another right after when the real
+    // categoriesList replaces the fallback), a stale request can resolve after a newer one.
+    // Without this, a slow earlier response full of now-irrelevant results can land after a
+    // fresh, correctly-empty response and clobber it back into showing stale cards.
+    const requestSeq = ++searchRequestSeqRef.current;
+
     axios
       .post(
         `${BASE_URL}/web/search`,
@@ -967,6 +1015,7 @@ export default function FilterProducts() {
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       )
       .then((res) => {
+        if (requestSeq !== searchRequestSeqRef.current) return;
         if (res.data.status) {
           const rawItems = Array.isArray(res.data.data)
             ? res.data.data
@@ -1009,15 +1058,19 @@ export default function FilterProducts() {
           toast.error(
             res.data.action_message ||
               res.data.action ||
-              "Something went wrong.",
+              t("somethingWentWrong", "Something went wrong."),
           );
         }
       })
       .catch((err) => {
+        if (requestSeq !== searchRequestSeqRef.current) return;
         console.error("FilterProducts Search Error:", err);
-        toast.error("Failed to load products from search API.");
+        toast.error(
+          t("searchFailed", "Failed to load products from search API."),
+        );
       })
       .finally(() => {
+        if (requestSeq !== searchRequestSeqRef.current) return;
         setIsSearching(false);
         setIsFetchingMore(false);
         isFetchingRef.current = false;
@@ -1038,6 +1091,17 @@ export default function FilterProducts() {
   const featuredRow1Video = featuredProducts[8];
   const featuredRow2Video = featuredProducts[9];
   const featuredRow2Grid = featuredProducts.slice(10, 18);
+
+  // Mobile/tablet (below lg) featured layout: 2-column blocks of 4 instead of the
+  // desktop's 4-column blocks of 8 (a full 8-item block is too tall in 2 columns).
+  // Whatever doesn't fit in the two 4-item blocks falls through into the plain
+  // grid below, alongside restProducts, instead of being dropped.
+  const mobileFeaturedBlockA = featuredRow1Grid.slice(0, 4);
+  const mobileFeaturedBlockB = featuredRow2Grid.slice(0, 4);
+  const mobileFeaturedLeftover = [
+    ...featuredRow1Grid.slice(4),
+    ...featuredRow2Grid.slice(4),
+  ];
 
   const hasAnimal = animals.length > 0;
   const hasUniverse = universe.length > 0;
@@ -1244,7 +1308,7 @@ export default function FilterProducts() {
 
   return (
     <div className="min-h-screen mt-[104px] bg-white text-stone-900">
-       <Navbar bgWhite={true} />
+      <Navbar bgWhite={true} />
 
       <style
         dangerouslySetInnerHTML={{
@@ -1299,7 +1363,7 @@ export default function FilterProducts() {
   -ms-overflow-style: none; /* IE/Edge */
 }
 .filter-rail-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
         `,
         }}
@@ -1355,122 +1419,80 @@ export default function FilterProducts() {
           translateName,
           isFrench,
         }}
+        activeChips={activeChips}
+        onClearAll={clearAll}
       />
 
-      {/* Result meta + chips */}
-      <section ref={introHeaderRef} className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="flex flex-col gap-4 border-b border-stone-900/10 pb-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-baseline gap-3">
-            <span className="font-serif text-3xl">{totalCount}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-              {t("productsInView", "products in view")}
-            </span>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5 md:flex-1 md:justify-end">
-            <div className="group relative flex w-full items-center sm:max-w-md">
-              <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder={t(
-                  "searchPlaceholder",
-                  "Search shampoos, sprays, rituals…",
-                )}
-                className="h-11 w-full border border-stone-900/15 bg-stone-50/60 pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
-              />
-              {query && (
-                <button
-                  onClick={() => {
-                    setQuery("");
-                    setDebouncedQuery("");
-                    clearTimeout(queryDebounceRef.current);
-                  }}
-                  className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
-                  aria-label={t("clearSearch", "Clear search")}
-                >
-                  <LuX className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            <div className="flex items-center justify-between gap-3 sm:justify-start sm:shrink-0">
-              <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-                {t("sort", "Sort")}
-              </span>
-              <SortMenu value={sort} onChange={setSort} />
-            </div>
-          </div>
-        </div>
-        {/* Editorial header — context aware */}
-        <section ref={headerRef} className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[#fbf9f7]">
+      <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
+        <section
+          ref={headerRef}
+          className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[#fbf9f7]"
+        >
           <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-            {/* Row 2 — editorial hero */}
-            <div className="grid grid-cols-12 gap-x-8 gap-y-8 pt-6 pb-6">
-              {/* Left: eyebrow + headline */}
-              <div className="col-span-12 lg:col-span-9">
-                <h4
-                  className="mt-6 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1"
-                  style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {ctx.title}
+            <div className="grid grid-cols-12 gap-x-8 gap-y-6 pt-6 pb-6">
+              {/* Left: headline + count, description underneath */}
+              <div className="col-span-12 lg:col-span-8">
+                <h4 className="mt-6 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
+                  <span
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {ctx.title}
+                  </span>
+                  <span className="font-sans text-lg sm:text-xl lg:text-2xl font-normal text-stone-400">
+                    ({totalCount})
+                  </span>
                 </h4>
-              </div>
-
-              {/* Right: description + meta line */}
-              <aside className="col-span-12 flex flex-col justify-end gap-6 lg:col-span-3">
-                <p className="text-sm text-stone-700">
+                <p className="mt-4 max-w-[50vw] text-sm md:text-base text-stone-700">
                   {t(
-                    "shopDescription",
+                    "products.shopDescription",
                     "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
                   )}
                 </p>
-              </aside>
+              </div>
+
+              {/* Right: search + sort — where the description used to sit */}
+              <div className="col-span-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:col-span-4">
+                <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
+                  <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => handleQueryChange(e.target.value)}
+                    placeholder={t(
+                      "searchPlaceholder",
+                      "Search shampoos, sprays, rituals…",
+                    )}
+                    className="h-11 w-full border border-stone-900/15 bg-white pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
+                  />
+                  {query && (
+                    <button
+                      onClick={() => {
+                        setQuery("");
+                        setDebouncedQuery("");
+                        clearTimeout(queryDebounceRef.current);
+                      }}
+                      className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
+                      aria-label={t("clearSearch", "Clear search")}
+                    >
+                      <LuX className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    {t("sort", "Sort")}
+                  </span>
+                  <SortMenu value={sort} onChange={setSort} />
+                </div>
+              </div>
             </div>
           </div>
         </section>
-        {activeChips.length > 0 && (
-          <div className="mt-5 mb-6 flex flex-wrap items-center gap-2">
-            {activeChips.map((c, i) => (
-              <span
-                key={i}
-                className="group inline-flex items-center gap-1.5 rounded-full bg-stone-100 py-1.5 pl-3.5 pr-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-200"
-              >
-                {c.swatch ? (
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                    style={{
-                      background: c.swatch,
-                      ...(c.swatch.includes("gradient")
-                        ? {}
-                        : { backgroundColor: c.swatch }),
-                    }}
-                    aria-label={c.label}
-                  />
-                ) : (
-                  translateName(c.label)
-                )}
-                <button
-                  onClick={c.clear}
-                  className="flex h-5 w-5 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
-                  aria-label={`Remove ${translateName(c.label)}`}
-                >
-                  <LuX className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-            <button
-              onClick={clearAll}
-              className="ml-1 inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.18em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
-            >
-              {t("resetAll", "Reset all")}
-            </button>
-          </div>
-        )}
       </section>
 
       {/* Products — grid */}
@@ -1483,53 +1505,116 @@ export default function FilterProducts() {
               ))}
             </div>
             <div className="hidden lg:block">
-              <FeaturedSkeleton row1WrapperHeight={row1WrapperHeight} rowHeight={featuredRowHeight} reservedTop={reservedTop} cardDimensions={cardDimensions} />
+              <FeaturedSkeleton
+                rowHeight={featuredRowHeight}
+                cardDimensions={cardDimensions}
+              />
             </div>
           </>
         ) : (
           <>
             {showFeaturedIntro && (
               <>
-              {/* Mobile/tablet (below lg): plain responsive grid — the sticky, viewport-pinned
-                  featured layout below is desktop-only math (fixed pixel card sizes derived from
-                  window height), so small/medium screens get the same simple card grid used for
-                  restProducts instead. */}
-              <div className="grid grid-cols-2 gap-[3px] md:grid-cols-3 mb-[3px] lg:hidden">
-                {featuredProducts.map((p, i) => (
-                  <div key={p.id} className="w-full">
-                    <LandingCards
-                      product={p}
-                      showNav={true}
-                      index={i}
-                      compact={true}
-                      compactButtons={true}
-                      raisedLabel={true}
-                    />
-                  </div>
-                ))}
-              </div>
+                <div className="flex flex-col gap-[3px] mb-[3px] lg:hidden">
+                  {mobileFeaturedBlockA.length > 0 && (
+                    <div className="grid grid-cols-2 gap-[3px]">
+                      {mobileFeaturedBlockA.map((p, i) => (
+                        <div key={p.id} className="w-full">
+                          <LandingCards
+                            product={p}
+                            showNav={true}
+                            index={i}
+                            compact={true}
+                            compactButtons={true}
+                            raisedLabel={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-              <div className="mb-[3px] hidden lg:block">
-                {/* Row 1: 8-grid + video — sized to sit inside the first screen, right along with the intro header above it */}
-                {featuredRow1Video ? (
-                  <div style={{ height: row1WrapperHeight }}>
+                  {featuredRow1Video && (
+                    <div className="w-full">
+                      <LandingCards
+                        product={featuredRow1Video}
+                        showNav={true}
+                        index={8}
+                        compact={false}
+                        compactButtons={true}
+                        raisedLabel={true}
+                        forceVideo
+                      />
+                    </div>
+                  )}
+
+                  {mobileFeaturedBlockB.length > 0 && (
+                    <div className="grid grid-cols-2 gap-[3px]">
+                      {mobileFeaturedBlockB.map((p, i) => (
+                        <div key={p.id} className="w-full">
+                          <LandingCards
+                            product={p}
+                            showNav={true}
+                            index={i + 10}
+                            compact={true}
+                            compactButtons={true}
+                            raisedLabel={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {featuredRow2Video && (
+                    <div className="w-full">
+                      <LandingCards
+                        product={featuredRow2Video}
+                        showNav={true}
+                        index={9}
+                        compact={false}
+                        compactButtons={true}
+                        raisedLabel={true}
+                        forceVideo
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-2 hidden lg:block">
+                  {/* Row 1: 8-grid + video — sized to sit inside the first screen, right along with the intro header above it */}
+                  {featuredRow1Video ? (
                     <div
-                      className="flex flex-col sm:flex-row gap-[3px] mb-[3px] sticky overflow-hidden"
-                      style={{ height: row1Height, top: reservedTop }}
+                      className="flex flex-col sm:flex-row gap-[3px] mb-2"
+                      style={{ height: row1Height }}
                     >
                       <div
                         className="grid flex-shrink-0"
-                        style={cardDimensions.width ? {
-                          width: cardDimensions.width * 4 + 3 * 3 + "px",
-                          height: cardDimensions.height * 2 + 1 * 3 + "px",
-                          gridTemplateColumns: "repeat(4, " + cardDimensions.width + "px)",
-                          gridTemplateRows: "repeat(2, " + cardDimensions.height + "px)",
-                          gap: "3px"
-                        } : { flex: 1 }}
+                        style={
+                          cardDimensions.width
+                            ? {
+                                width: cardDimensions.width * 4 + 3 * 3 + "px",
+                                height:
+                                  cardDimensions.height * 2 + 1 * 3 + "px",
+                                gridTemplateColumns:
+                                  "repeat(4, " + cardDimensions.width + "px)",
+                                gridTemplateRows:
+                                  "repeat(2, " + cardDimensions.height + "px)",
+                                gap: "3px",
+                              }
+                            : { flex: 1 }
+                        }
                       >
                         {featuredRow1Grid.map((p, i) => (
-                          <div key={p.id} className="overflow-hidden"
-                            style={cardDimensions.width ? { width: cardDimensions.width + "px", height: cardDimensions.height + "px" } : {}}
+                          <div
+                            key={p.id}
+                            className="overflow-hidden"
+                            style={
+                              cardDimensions.width
+                                ? {
+                                    width: cardDimensions.width + "px",
+                                    height: cardDimensions.height + "px",
+                                  }
+                                : {}
+                            }
                           >
                             <LandingCards
                               product={p}
@@ -1539,6 +1624,7 @@ export default function FilterProducts() {
                               compactButtons={true}
                               raisedLabel={true}
                               fillHeight
+                              smallLabel
                             />
                           </div>
                         ))}
@@ -1556,31 +1642,29 @@ export default function FilterProducts() {
                         />
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-[3px] mb-[3px]">
-                    {featuredRow1Grid.map((p, i) => (
-                      <div key={p.id} className="w-full">
-                        <LandingCards
-                          product={p}
-                          showNav={true}
-                          index={i}
-                          compact={true}
-                          compactButtons={true}
-                          raisedLabel={true}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  ) : (
+                    <div className="grid grid-cols-2 gap-[3px] mb-2">
+                      {featuredRow1Grid.map((p, i) => (
+                        <div key={p.id} className="w-full">
+                          <LandingCards
+                            product={p}
+                            showNav={true}
+                            index={i}
+                            compact={true}
+                            compactButtons={true}
+                            raisedLabel={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Row 2: video + 8-grid — sticky-pinned, same as row 1 */}
-                {featuredRow2Video && (
-                  featuredRow2Grid.length > 0 ? (
-                    <div style={{ height: featuredRowWrapperHeight }}>
+                  {/* Row 2: video + 8-grid */}
+                  {featuredRow2Video &&
+                    (featuredRow2Grid.length > 0 ? (
                       <div
-                        className="flex flex-col sm:flex-row gap-[3px] sticky overflow-hidden"
-                        style={{ height: featuredRowHeight, top: reservedTop }}
+                        className="flex flex-col sm:flex-row gap-[3px]"
+                        style={{ height: featuredRowHeight }}
                       >
                         <div className="flex-1 min-h-0 overflow-hidden">
                           <LandingCards
@@ -1596,18 +1680,37 @@ export default function FilterProducts() {
                         </div>
                         <div
                           className="grid flex-shrink-0"
-                          style={cardDimensions.width ? {
-                            width: cardDimensions.width * 4 + 3 * 3 + "px",
-                            height: cardDimensions.height * 2 + 1 * 3 + "px",
-                            gridTemplateColumns: "repeat(4, " + cardDimensions.width + "px)",
-                            gridTemplateRows: "repeat(2, " + cardDimensions.height + "px)",
-                            gap: "3px",
-                            alignSelf: "flex-start"
-                          } : { flex: 1 }}
+                          style={
+                            cardDimensions.width
+                              ? {
+                                  width:
+                                    cardDimensions.width * 4 + 3 * 3 + "px",
+                                  height:
+                                    cardDimensions.height * 2 + 1 * 3 + "px",
+                                  gridTemplateColumns:
+                                    "repeat(4, " + cardDimensions.width + "px)",
+                                  gridTemplateRows:
+                                    "repeat(2, " +
+                                    cardDimensions.height +
+                                    "px)",
+                                  gap: "3px",
+                                  alignSelf: "flex-start",
+                                }
+                              : { flex: 1 }
+                          }
                         >
                           {featuredRow2Grid.map((p, i) => (
-                            <div key={p.id} className="overflow-hidden"
-                              style={cardDimensions.width ? { width: cardDimensions.width + "px", height: cardDimensions.height + "px" } : {}}
+                            <div
+                              key={p.id}
+                              className="overflow-hidden"
+                              style={
+                                cardDimensions.width
+                                  ? {
+                                      width: cardDimensions.width + "px",
+                                      height: cardDimensions.height + "px",
+                                    }
+                                  : {}
+                              }
                             >
                               <LandingCards
                                 product={p}
@@ -1617,34 +1720,67 @@ export default function FilterProducts() {
                                 compactButtons={true}
                                 raisedLabel={true}
                                 fillHeight
+                                smallLabel
                               />
                             </div>
                           ))}
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="w-full">
-                      <LandingCards
-                        product={featuredRow2Video}
-                        showNav={true}
-                        index={5}
-                        compact={true}
-                        compactButtons={true}
-                        raisedLabel={true}
-                        forceVideo
-                      />
-                    </div>
-                  )
-                )}
-              </div>
+                    ) : (
+                      <div className="w-full">
+                        <LandingCards
+                          product={featuredRow2Video}
+                          showNav={true}
+                          index={5}
+                          compact={true}
+                          compactButtons={true}
+                          raisedLabel={true}
+                          forceVideo
+                        />
+                      </div>
+                    ))}
+                </div>
               </>
             )}
 
+            {/* Desktop (lg+): restProducts only — everything else already shown in the
+                8-wide featured rows above. */}
             <div
-              className="grid grid-cols-2 gap-[3px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              className="hidden lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-[3px]"
               style={{ overflowAnchor: "none" }}
             >
+              {restProducts.map((p, i) => (
+                <div key={p.id} className="w-full" data-rest-index={i}>
+                  <LandingCards
+                    product={p}
+                    showNav={true}
+                    index={restStartIndex + i}
+                    compact={true}
+                    compactButtons={true}
+                    raisedLabel={true}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile/tablet (below lg): the 4-item featured blocks above only used half of
+                each 8-item group — the leftover half rejoins here, ahead of restProducts. */}
+            <div
+              className="grid grid-cols-2 gap-[3px] md:grid-cols-3 lg:hidden"
+              style={{ overflowAnchor: "none" }}
+            >
+              {mobileFeaturedLeftover.map((p, i) => (
+                <div key={p.id} className="w-full">
+                  <LandingCards
+                    product={p}
+                    showNav={true}
+                    index={i + 4}
+                    compact={true}
+                    compactButtons={true}
+                    raisedLabel={true}
+                  />
+                </div>
+              ))}
               {restProducts.map((p, i) => (
                 <div key={p.id} className="w-full" data-rest-index={i}>
                   <LandingCards
@@ -1814,139 +1950,6 @@ export default function FilterProducts() {
                   </li>
                 </ul>
               </div>
- <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step2Title",
-                    "Step 2: Choose the right formulation",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step2Intro",
-                    "Our ranges are designed to suit different needs and lifestyles.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet1",
-                      "For everyday care: choose a gentle, everyday formulation.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet2",
-                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet3",
-                      "For multi-pet households: look for products safe to use across species.",
-                    )}
-                  </li>
-                </ul>
-              </div> <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step2Title",
-                    "Step 2: Choose the right formulation",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step2Intro",
-                    "Our ranges are designed to suit different needs and lifestyles.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet1",
-                      "For everyday care: choose a gentle, everyday formulation.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet2",
-                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet3",
-                      "For multi-pet households: look for products safe to use across species.",
-                    )}
-                  </li>
-                </ul>
-              </div> <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step2Title",
-                    "Step 2: Choose the right formulation",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step2Intro",
-                    "Our ranges are designed to suit different needs and lifestyles.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet1",
-                      "For everyday care: choose a gentle, everyday formulation.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet2",
-                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet3",
-                      "For multi-pet households: look for products safe to use across species.",
-                    )}
-                  </li>
-                </ul>
-              </div> <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step2Title",
-                    "Step 2: Choose the right formulation",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step2Intro",
-                    "Our ranges are designed to suit different needs and lifestyles.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet1",
-                      "For everyday care: choose a gentle, everyday formulation.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet2",
-                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet3",
-                      "For multi-pet households: look for products safe to use across species.",
-                    )}
-                  </li>
-                </ul>
-              </div>
               <div>
                 <h4 className="mb-2 text-sm font-bold text-stone-900">
                   {t(
@@ -1998,6 +2001,8 @@ function FilterRail({
   hasFamily,
   hasSpec,
   dynamicLists,
+  activeChips,
+  onClearAll,
 }) {
   const { t } = useTranslation("filter");
   const {
@@ -2157,39 +2162,83 @@ function FilterRail({
 
       {/* Desktop / tablet: existing horizontal tab rail */}
       <div className="relative hidden md:block">
-        <div className="filter-rail-scroll mx-auto flex max-w-10xl items-stretch gap-1 overflow-x-auto px-8">
-          <button
-            onClick={() => setAllOpen(true)}
-            className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
-            title="Open all filters"
-          >
-            <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
-            {t("filter", "Filter")}
-            {totalActive > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case ai-style-change-1">
-                {totalActive}
-              </span>
-            )}
-          </button>
-          {groups.map((g) => (
-            <FilterTab
-              key={g.key}
-              group={g}
-              open={openKey === g.key}
-              onOpen={() => setOpenKey(openKey === g.key ? null : g.key)}
-              translateName={translateName}
-              isFrench={isFrench}
-            />
-          ))}
-          <button
-            onClick={() => setOpenKey(openKey === "price" ? null : "price")}
-            className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${openKey === "price" ? "bg-white text-stone-900" : ""}`}
-          >
-            {t("price", "Price")} · €{state.price}
-            <LuChevronDown
-              className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
-            />
-          </button>
+        <div className="mx-auto flex max-w-10xl items-stretch gap-3 px-8">
+          <div className="filter-rail-scroll flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto">
+            <button
+              onClick={() => setAllOpen(true)}
+              className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
+              title={t("openAllFilters", "Open all filters")}
+            >
+              <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
+              {t("filter", "Filter")}
+              {totalActive > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case ai-style-change-1">
+                  {totalActive}
+                </span>
+              )}
+            </button>
+            {groups.map((g) => (
+              <FilterTab
+                key={g.key}
+                group={g}
+                open={openKey === g.key}
+                onOpen={() => setOpenKey(openKey === g.key ? null : g.key)}
+                translateName={translateName}
+                isFrench={isFrench}
+              />
+            ))}
+            <button
+              onClick={() => setOpenKey(openKey === "price" ? null : "price")}
+              className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${openKey === "price" ? "bg-white text-stone-900" : ""}`}
+            >
+              {t("price", "Price")} · €{state.price}
+              <LuChevronDown
+                className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+
+          {/* Active filter chips — pinned to the right of the tab rail, outside the scroll track */}
+          {activeChips.length > 0 && (
+            <div className="filter-rail-scroll flex shrink-0 items-center gap-2 overflow-x-auto py-2 pl-3">
+              {activeChips.map((c, i) => (
+                <span
+                  key={i}
+                  className="group inline-flex shrink-0 items-center gap-1.5 rounded-full bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-200"
+                >
+                  {c.swatch ? (
+                    <span
+                      className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                      style={{
+                        background: c.swatch,
+                        ...(c.swatch.includes("gradient")
+                          ? {}
+                          : { backgroundColor: c.swatch }),
+                      }}
+                      aria-label={c.label}
+                    />
+                  ) : (
+                    translateName(c.label)
+                  )}
+                  <button
+                    onClick={c.clear}
+                    className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
+                    aria-label={t("removeFilter", "Remove {{label}}", {
+                      label: translateName(c.label),
+                    })}
+                  >
+                    <LuX className="h-2.5 w-2.5" />
+                  </button>
+                </span>
+              ))}
+              <button
+                onClick={onClearAll}
+                className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
+              >
+                {t("resetAll", "Reset all")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -2379,7 +2428,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
       : g.options;
   const isColor = g.key === "color";
   const displayTitle = t(`labels.${g.key}`, g.label);
-  const searchPlaceholder = t("searchGroupPlaceholder", {
+  const searchPlaceholder = t("searchGroupPlaceholder", "Search {{label}}…", {
     label: displayTitle.toLowerCase(),
   });
 
@@ -2638,7 +2687,7 @@ function FilterPanel({
                 {t("price", "Price")}
               </span>
               <span className="font-serif text-2xl">€{state.price}</span>
-              <span className="text-xs text-stone-500">max</span>
+              <span className="text-xs text-stone-500">{t("max", "max")}</span>
             </div>
             {/* Slider + range labels */}
             <div className="flex flex-1 flex-col gap-1.5">
@@ -2693,7 +2742,7 @@ function FilterSheetContent({
       : group.options;
   const isColor = group.key === "color";
   const displayTitle = t(`labels.${group.key}`, group.label);
-  const searchPlaceholder = t("searchGroupPlaceholder", {
+  const searchPlaceholder = t("searchGroupPlaceholder", "Search {{label}}…", {
     label: displayTitle.toLowerCase(),
   });
 

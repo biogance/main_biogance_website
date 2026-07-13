@@ -336,7 +336,7 @@ export default function Support({ onOpenChat }) {
 
                   {/* Tickets Grid */}
                   {!isLoading && !hasTickets ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         {t('support.noResults.title')}
                       </h3>
@@ -398,7 +398,7 @@ export default function Support({ onOpenChat }) {
                 </>
               ) : (
                 /* ── Empty State ── */
-                <div className="flex flex-col items-center justify-center py-12 md:py-20">
+                <div className="flex flex-col items-center justify-center min-h-[30vh]">
                   <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
                     <img
                       src="/sr.svg"
