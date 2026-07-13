@@ -354,7 +354,7 @@ export default function Address() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 md:py-24">
+              <div className="flex flex-col items-center justify-center min-h-[30vh]">
                 <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
                   <img src="/address.svg" alt={t('address.emptyAlt')} className="w-full h-full object-contain" />
                 </div>

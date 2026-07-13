@@ -348,7 +348,7 @@ export default function PetProfile() {
                 ))}
               </div>
             ) : pets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 md:py-20">
+              <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 mb-8">
                   <img src="petempty.svg" alt="" />
                 </div>

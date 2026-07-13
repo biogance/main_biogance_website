@@ -14,7 +14,10 @@
   "noResultsDesc": "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.",
   "filters": "Filters",
   "filter": "Filter",
+  "openAllFilters": "Open all filters",
+  "removeFilter": "Remove {{label}}",
   "price": "Price",
+  "max": "max",
   "all": "All",
   "selectedCount": "{{count}} selected",
   "searchGroupPlaceholder": "Search {{label}}…",
@@ -22,6 +25,12 @@
   "noOptionsAvailable": "No options available.",
   "filterBy": "Filter by",
   "done": "Done",
+  "loading": "Loading...",
+  "loadMore": "Load More",
+  "recentlyViewed": "Recently Viewed",
+  "careFormulation": "Care formulation",
+  "somethingWentWrong": "Something went wrong.",
+  "searchFailed": "Failed to load products from search API.",
   "tips": {
     "family": "Select a category first",
     "specificity": "Select a family first",
@@ -57,6 +66,10 @@
     "ReptilesTurtles": "Reptiles & Turtles",
     "Horses": "Horses"
   },
+  "products": {
+    "title": "Products",
+    "shopDescription": "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation."
+  },
   "category": {
     "eyebrow": "Category · Curated collection",
     "titlePart1": "All ",
@@ -64,6 +77,8 @@
     "description": "Browse our complete range of formulations crafted for this category — filtered by family, need and ritual."
   },
   "recommended": {
+    "crumbLabel": "Recommended",
+    "title": "Recommended For You",
     "eyebrow": "Recommended · Curated for you",
     "titlePart1": "Picked ",
     "titlePart2": "for your",
@@ -72,6 +87,7 @@
   },
   "best": {
     "crumbLabel": "Best Products",
+    "title": "Best Seller",
     "eyebrow": "Best products · Editor's selection",
     "titlePart1": "The ",
     "titlePart2": "very best",
@@ -80,6 +96,7 @@
   },
   "popular": {
     "crumbLabel": "Popular This Week",
+    "title": "Popular Products",
     "eyebrow": "Popular this week",
     "titlePart1": "What everyone is ",
     "titlePart2": "reaching",
@@ -87,6 +104,8 @@
     "description": "Most-loved bottles across our community over the last seven days — refined by animal, family and ritual."
   },
   "search": {
+    "crumbLabel": "Search",
+    "title": "Search Results",
     "eyebrowWithQuery": "Search results · “{{q}}”",
     "eyebrow": "Search results",
     "titleWithQuery": "Results for ",
@@ -96,6 +115,8 @@
     "description": "Use the filters to narrow by species, breed, need or range — your keyword stays applied."
   },
   "ads": {
+    "crumbLabel": "Campaign",
+    "title": "Featured Selection",
     "eyebrow": "Featured campaign",
     "titlePart1": "The ",
     "titlePart2": "edit",
@@ -104,10 +125,29 @@
   },
   "catalogue": {
     "crumbLabel": "Catalogue",
+    "title": "All Products",
     "eyebrow": "Catalogue · Vol. 04",
     "titlePart1": "Care, ",
     "titlePart2": "refined",
     "titlePart3": "for every species.",
     "description": "A living index of formulations — filtered by animal, family, need and ritual. Made in France, certified by nature."
+  },
+  "ourAdvices": {
+    "title": "Our Advices",
+    "introTitle": "How to choose the right care for your pet?",
+    "introBody": "Every pet is different — their coat, skin and lifestyle all play a role in choosing the right care routine. Our experts share their advice to help you pick the most suitable formulation for your companion.",
+    "step1Title": "Step 1: Assess your pet's lifestyle",
+    "step1Intro": "Every pet has different needs depending on their environment and daily routine.",
+    "step1Bullet1": "Indoor pets: even indoor pets benefit from a gentle, regular care routine.",
+    "step1Bullet2": "Outdoor pets: pets that walk, swim or play outside need more frequent care and protection.",
+    "step2Title": "Step 2: Choose the right formulation",
+    "step2Intro": "Our ranges are designed to suit different needs and lifestyles.",
+    "step2Bullet1": "For everyday care: choose a gentle, everyday formulation.",
+    "step2Bullet2": "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
+    "step2Bullet3": "For multi-pet households: look for products safe to use across species.",
+    "whyTitle": "Why does the right routine matter?",
+    "whyBody": "The wrong products can cause discomfort, dryness or irritation. Using a routine adapted to your pet helps keep them comfortable while supporting their overall well-being.",
+    "whenTitle": "When should you apply this routine?",
+    "whenBody": "For best results, stay consistent throughout the year and follow the recommended usage on your chosen product, adjusting as your pet's needs evolve."
   }
 }

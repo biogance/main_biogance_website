@@ -1,4 +1,4 @@
-import ExpertArticleDetail from "@/Components/Pages/ExpertAdvices/ExpertArticleDetail";
+import ExpertArticleDetail from "@/Components/Pages/ExpertAdvices/ExpertAdvicesDetail";
 
 export default async function ExpertDetailPage({ searchParams }) {
   const params = await searchParams;

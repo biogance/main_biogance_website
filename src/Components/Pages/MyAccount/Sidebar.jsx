@@ -12,7 +12,7 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
   const { t } = useTranslation('sidebar');
 
   return (
-    <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10 lg:h-full lg:flex-shrink-0">
+    <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10 lg:flex-shrink-0">
       {/* Menu Items */}
       <nav className="flex-1">
         <ul className="flex overflow-x-auto lg:flex-col lg:overflow-visible px-4 py-6 lg:px-0 lg:py-6 space-x-2 lg:space-x-0 lg:space-y-5">

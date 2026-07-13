@@ -9,7 +9,13 @@ import { useTranslation } from "react-i18next";
 import { startTopLoader } from "../TopLoader";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
-import { FiSearch, FiClock, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
+import {
+  FiSearch,
+  FiClock,
+  FiChevronLeft,
+  FiChevronRight,
+  FiX,
+} from "react-icons/fi";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { FaArrowLeft } from "react-icons/fa";
@@ -38,7 +44,8 @@ const TYPE_LABELS = {
 function getAuthHeaders() {
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    if (loginData?.data?.token) return { Authorization: `Bearer ${loginData.data.token}` };
+    if (loginData?.data?.token)
+      return { Authorization: `Bearer ${loginData.data.token}` };
   } catch {}
   return {};
 }
@@ -58,13 +65,13 @@ function getBlogImage(item) {
 function getBlogField(item, field, isFr) {
   if (!item) return "";
   const frField = `french_${field}`;
-  return (isFr && item[frField]) ? item[frField] : (item[field] ?? "");
+  return isFr && item[frField] ? item[frField] : (item[field] ?? "");
 }
 
 function getCategoryName(item, isFr) {
   const cat = item?.categories?.[0]?.category;
   if (!cat) return "";
-  return (isFr && cat.french_name) ? cat.french_name : (cat.name ?? "");
+  return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
 }
 
 function Shimmer({ className = "" }) {
@@ -96,7 +103,9 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     const track = scrollRef.current;
     if (!track) return;
     setCanScrollLeft(track.scrollLeft > 4);
-    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+    setCanScrollRight(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 4,
+    );
   };
 
   useEffect(() => {
@@ -121,16 +130,29 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     const viewRight = viewLeft + track.clientWidth;
     const maxScroll = track.scrollWidth - track.clientWidth;
     if (direction === 1) {
-      const next = topics.find((el) => el.offsetLeft + el.offsetWidth > viewRight + 1);
+      const next = topics.find(
+        (el) => el.offsetLeft + el.offsetWidth > viewRight + 1,
+      );
       if (next) {
-        track.scrollTo({ left: Math.min(next.offsetLeft + next.offsetWidth - track.clientWidth, maxScroll), behavior: "smooth" });
+        track.scrollTo({
+          left: Math.min(
+            next.offsetLeft + next.offsetWidth - track.clientWidth,
+            maxScroll,
+          ),
+          behavior: "smooth",
+        });
       } else {
         track.scrollTo({ left: maxScroll, behavior: "smooth" });
       }
     } else {
-      const prev = [...topics].reverse().find((el) => el.offsetLeft < viewLeft - 1);
+      const prev = [...topics]
+        .reverse()
+        .find((el) => el.offsetLeft < viewLeft - 1);
       if (prev) {
-        track.scrollTo({ left: Math.max(prev.offsetLeft, 0), behavior: "smooth" });
+        track.scrollTo({
+          left: Math.max(prev.offsetLeft, 0),
+          behavior: "smooth",
+        });
       } else {
         track.scrollTo({ left: 0, behavior: "smooth" });
       }
@@ -164,7 +186,11 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
             <div key={label} data-topic className="shrink-0">
               <TabButton
                 label={label}
-                active={label === "All" ? activeItem === "All" : activeItems.includes(label)}
+                active={
+                  label === "All"
+                    ? activeItem === "All"
+                    : activeItems.includes(label)
+                }
                 onClick={() => onSelect(label)}
               />
             </div>
@@ -188,7 +214,8 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
 function useResponsiveColumns() {
   const [columns, setColumns] = useState(1);
   useEffect(() => {
-    const calc = () => COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
+    const calc = () =>
+      COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
     const update = () => setColumns(calc());
     update();
     window.addEventListener("resize", update);
@@ -296,43 +323,49 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const perPage = columns * ROWS_PER_PAGE;
   const hasLoadedOnceRef = useRef(false);
 
-  const fetchArticles = useCallback(async (pageNum = 1, append = false) => {
-    if (pageNum === 1) setLoading(true);
-    else setLoadingMore(true);
+  const fetchArticles = useCallback(
+    async (pageNum = 1, append = false) => {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
 
-    try {
-      const body = {
-        ...getAuthBody(),
-        type,
-        collection_id: activeSpecies?.id,
-        per_page: perPage,
-        page: pageNum,
-      };
-      if (activeTopic.length) body.topic_id = activeTopic.map((t) => t.id).join(",");
-      if (debouncedSearch.trim()) body.keyword = debouncedSearch.trim();
+      try {
+        const body = {
+          ...getAuthBody(),
+          type,
+          collection_id: activeSpecies?.id,
+          per_page: perPage,
+          page: pageNum,
+        };
+        if (activeTopic.length)
+          body.topic_id = activeTopic.map((t) => t.id).join(",");
+        if (debouncedSearch.trim()) body.keyword = debouncedSearch.trim();
 
-      const res = await axios.post(`${BASE_URL}/blog/list`, body, {
-        headers: { ...getAuthHeaders() },
-      });
+        const res = await axios.post(`${BASE_URL}/blog/list`, body, {
+          headers: { ...getAuthHeaders() },
+        });
 
-      if (!res.data.status) {
-        toast.error(res.data.action || "Something went wrong.");
-        return;
+        if (!res.data.status) {
+          toast.error(res.data.action || "Something went wrong.");
+          return;
+        }
+
+        const d = res.data.data;
+        const items = d?.data ?? [];
+        setArticles((prev) =>
+          pageNum === 1 ? items : append ? [...prev, ...items] : items,
+        );
+        setTotalArticles(d?.total ?? 0);
+        setHasMore((d?.current_page ?? pageNum) < (d?.last_page ?? pageNum));
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        hasLoadedOnceRef.current = true;
       }
-
-      const d = res.data.data;
-      const items = d?.data ?? [];
-      setArticles((prev) => (pageNum === 1 ? items : (append ? [...prev, ...items] : items)));
-      setTotalArticles(d?.total ?? 0);
-      setHasMore((d?.current_page ?? pageNum) < (d?.last_page ?? pageNum));
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      hasLoadedOnceRef.current = true;
-    }
-  }, [type, activeSpecies, activeTopic, debouncedSearch, perPage]);
+    },
+    [type, activeSpecies, activeTopic, debouncedSearch, perPage],
+  );
 
   useEffect(() => {
     setPage(1);
@@ -371,7 +404,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   useEffect(() => {
     const checkStuck = () => {
       if (!filtersRef.current) return;
-      setIsStuck(filtersRef.current.getBoundingClientRect().top <= NAVBAR_HEIGHT);
+      setIsStuck(
+        filtersRef.current.getBoundingClientRect().top <= NAVBAR_HEIGHT,
+      );
     };
     checkStuck();
     window.addEventListener("scroll", checkStuck, { passive: true });
@@ -384,8 +419,8 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
   const navigateToDetail = (item) => {
     const keyword = isFr
-      ? (item.french_seo_keyword || item.english_seo_keyboard)
-      : (item.english_seo_keyboard || item.french_seo_keyword);
+      ? item.french_seo_keyword || item.english_seo_keyboard
+      : item.english_seo_keyboard || item.french_seo_keyword;
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -405,13 +440,12 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           <Shimmer className="h-8 w-64" />
         </div>
 
-        <FiltersSkeleton speciesCount={Math.max(speciesList.length, 4)} topicsCount={6} />
+        <FiltersSkeleton
+          speciesCount={Math.max(speciesList.length, 4)}
+          topicsCount={6}
+        />
 
-        <div className="px-6 sm:px-10 lg:px-16 py-10">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-8">
-            <Shimmer className="h-3 w-24" />
-            <Shimmer className="h-3 w-16" />
-          </div>
+        <div className="px-6 sm:px-10 lg:px-16 ">
           <div className={CARD_GRID}>
             {Array.from({ length: perPage || 6 }).map((_, i) => (
               <AllArticlesCardSkeleton key={i} />
@@ -447,8 +481,13 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       </div>
 
       {/* Sticky Filters — moved below the section label */}
-      <div ref={filtersRef} className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-        <div className={`px-6 sm:px-10 lg:px-16 pt-8 ${isStuck ? "pb-0" : "pb-7"}`}>
+      <div
+        ref={filtersRef}
+        className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white"
+      >
+        <div
+          className={`px-6 sm:px-10 lg:px-16 pt-8 ${isStuck ? "pb-0" : "pb-7"}`}
+        >
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
             <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
               {speciesList.map((cat) => (
@@ -457,7 +496,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   label={cat.name}
                   active={activeSpecies?.id === cat.id}
                   onClick={() => {
-                    setActiveSpecies((prev) => (prev?.id === cat.id ? null : cat));
+                    setActiveSpecies((prev) =>
+                      prev?.id === cat.id ? null : cat,
+                    );
                     setActiveTopic([]);
                   }}
                 />
@@ -476,7 +517,10 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
               {searchInput && (
                 <button
                   type="button"
-                  onClick={() => { setSearchInput(""); setDebouncedSearch(""); }}
+                  onClick={() => {
+                    setSearchInput("");
+                    setDebouncedSearch("");
+                  }}
                   aria-label="Clear search"
                   className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
                 >
@@ -488,16 +532,21 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
           <ScrollableTabsRow
             items={["All", ...topicsList.map((t) => t.name)]}
-            activeItem={activeSpecies && activeTopic.length === 0 ? "All" : null}
+            activeItem={
+              activeSpecies && activeTopic.length === 0 ? "All" : null
+            }
             activeItems={activeTopic.map((t) => t.name)}
             onSelect={(name) => {
-              if (name === "All") { setActiveTopic([]); return; }
+              if (name === "All") {
+                setActiveTopic([]);
+                return;
+              }
               const found = topicsList.find((t) => t.name === name);
               if (!found) return;
               setActiveTopic((prev) =>
                 prev.find((t) => t.id === found.id)
                   ? prev.filter((t) => t.id !== found.id)
-                  : [...prev, found]
+                  : [...prev, found],
               );
             }}
           />
@@ -507,13 +556,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       </div>
 
       {/* Articles grid — same card design as ExpertAdvices.jsx's "All Articles" */}
-      <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-16">
-        <div className="flex items-center justify-end border-b border-gray-200 pb-3 mb-8">
-          <p className="text-[11px] text-gray-400 uppercase tracking-wide">
-            {String(totalArticles).padStart(2, "0")} Entries
-          </p>
-        </div>
-
+      <div className="px-6 sm:px-10 lg:px-16 pb-16">
         {loading ? (
           <div className={CARD_GRID}>
             {Array.from({ length: perPage || 6 }).map((_, i) => (
@@ -528,10 +571,18 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           <>
             <div className={CARD_GRID}>
               {articles.map((a) => (
-                <div key={a.id} onClick={() => navigateToDetail(a)} className="cursor-pointer">
+                <div
+                  key={a.id}
+                  onClick={() => navigateToDetail(a)}
+                  className="cursor-pointer"
+                >
                   <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-100">
                     <img
-                      src={getBlogImage(a) ? `${MEDIA_URL}${getBlogImage(a)}` : "/cat.png"}
+                      src={
+                        getBlogImage(a)
+                          ? `${MEDIA_URL}${getBlogImage(a)}`
+                          : "/cat.png"
+                      }
                       alt={getBlogField(a, "name", isFr)}
                       className="w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
                     />

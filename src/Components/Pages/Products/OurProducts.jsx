@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { MEDIA_URL, BASE_URL } from '../../API/API';
 import axios from 'axios';
@@ -12,10 +13,23 @@ import { getDeviceId } from '../../../utils/deviceId';
 export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange, isMobileModal = false }) {
   const { i18n } = useTranslation();
   const isFrench = i18n.language === 'fr';
+  const router = useRouter();
 
   const getName = (item) => {
     if (!item) return '';
     return isFrench ? (item.french_name || item.name || '') : (item.name || '');
+  };
+
+  // Family click → /shop with the animal collection (category) and family
+  // pre-selected in the filter rail, so the API call comes back already filtered.
+  const goToFamily = (category, fam) => {
+    onClose?.();
+    const params = new URLSearchParams({
+      category_id: category.id,
+      category_name: getName(category),
+      family_name: getName(fam),
+    });
+    router.push(`/shop?${params.toString()}`);
   };
 
   const [activeCategory, setActiveCategory] = useState(null);
@@ -247,7 +261,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                           <div
                             key={fam.id}
                             style={{ fontSize: '13px', color: '#444', padding: '10px 0', cursor: 'pointer', borderBottom: '1px solid #f2f2f2' }}
-                            onClick={onClose}
+                            onClick={() => goToFamily(activeCategory, fam)}
                           >
                             {getName(fam)}
                           </div>
@@ -346,7 +360,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                         <div
                           key={fam.id}
                           className="text-[13px] text-gray-600 hover:text-black hover:underline cursor-pointer transition-colors duration-150 py-1.5 "
-                          onClick={onClose}
+                          onClick={() => goToFamily(activeCategory, fam)}
                         >
                           {getName(fam)}
                         </div>

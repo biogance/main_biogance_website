@@ -19,7 +19,8 @@ import { startTopLoader } from "../TopLoader";
 function getAuthHeaders() {
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    if (loginData?.data?.token) return { Authorization: `Bearer ${loginData.data.token}` };
+    if (loginData?.data?.token)
+      return { Authorization: `Bearer ${loginData.data.token}` };
   } catch {}
   return {};
 }
@@ -88,7 +89,9 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
     const track = scrollRef.current;
     if (!track) return;
     setCanScrollLeft(track.scrollLeft > 4);
-    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+    setCanScrollRight(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 4,
+    );
   };
 
   useEffect(() => {
@@ -114,8 +117,8 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
 
   const navigateToDetail = (item) => {
     const keyword = isFr
-      ? (item.french_seo_keyword || item.english_seo_keyboard)
-      : (item.english_seo_keyboard || item.french_seo_keyword);
+      ? item.french_seo_keyword || item.english_seo_keyboard
+      : item.english_seo_keyboard || item.french_seo_keyword;
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -127,36 +130,72 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
       <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
         <div>
           <p className="text-xs text-gray-400 mb-1">
-            <Link href="/" className="hover:text-gray-600 transition-colors">{t("home")}</Link>{" "}/{" "}
-            <Link href="/advices" className="hover:text-gray-600 transition-colors">{t("advice")}</Link>{" "}/ {sectionLabel}
+            <Link href="/" className="hover:text-gray-600 transition-colors">
+              {t("home")}
+            </Link>{" "}
+            /{" "}
+            <Link
+              href="/advices"
+              className="hover:text-gray-600 transition-colors"
+            >
+              {t("advice")}
+            </Link>{" "}
+            / {sectionLabel}
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("moreExpertAdvices")}</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {t("moreExpertAdvices")}
+          </h2>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => scrollByCard(-1)} disabled={!canScrollLeft} aria-label="Scroll left"
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+          <button
+            type="button"
+            onClick={() => scrollByCard(-1)}
+            disabled={!canScrollLeft}
+            aria-label="Scroll left"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          >
             <FiChevronLeft className="w-4 h-4" />
           </button>
-          <button type="button" onClick={() => scrollByCard(1)} disabled={!canScrollRight} aria-label="Scroll right"
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+          <button
+            type="button"
+            onClick={() => scrollByCard(1)}
+            disabled={!canScrollRight}
+            aria-label="Scroll right"
+            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          >
             <FiChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {items.map((item) => (
-          <div key={item.id} data-card onClick={() => navigateToDetail(item)}
+          <div
+            key={item.id}
+            data-card
+            onClick={() => navigateToDetail(item)}
             className="relative h-72 shrink-0 overflow-hidden cursor-pointer group"
-            style={{ flexBasis: `calc((100% - ${(cardsPerView - 1) * 24}px) / ${cardsPerView})` }}>
+            style={{
+              flexBasis: `calc((100% - ${(cardsPerView - 1) * 24}px) / ${cardsPerView})`,
+            }}
+          >
             <img
-              src={getBlogImage(item) ? `${MEDIA_URL}${getBlogImage(item)}` : "/cat.png"}
+              src={
+                getBlogImage(item)
+                  ? `${MEDIA_URL}${getBlogImage(item)}`
+                  : "/cat.png"
+              }
               alt={getBlogField(item, "name", isFr)}
               className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
               <p className="text-xs text-white/80 mb-1">{t("pets")}</p>
-              <p className="text-base font-bold text-white leading-snug line-clamp-2">{getBlogField(item, "name", isFr)}</p>
+              <p className="text-base font-bold text-white leading-snug line-clamp-2">
+                {getBlogField(item, "name", isFr)}
+              </p>
             </div>
           </div>
         ))}
@@ -190,7 +229,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         const res = await axios.post(
           `${BASE_URL}/blog/detail`,
           { ...getAuthBody(), seo_keyboard: decodeURIComponent(seoKeyword) },
-          { headers: { ...getAuthHeaders() } }
+          { headers: { ...getAuthHeaders() } },
         );
         if (!res.data.status) {
           toast.error(res.data.action || "Something went wrong.");
@@ -209,12 +248,16 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   }, [seoKeyword]);
 
   const hasProducts = bundles.length > 0;
-  const youtubeLink = isFr ? (blog?.french_youtube_link || blog?.youtube_link) : (blog?.youtube_link || blog?.french_youtube_link);
+  const youtubeLink = isFr
+    ? blog?.french_youtube_link || blog?.youtube_link
+    : blog?.youtube_link || blog?.french_youtube_link;
   const youtubeId = getYoutubeId(youtubeLink);
 
   const getSelectedProduct = (bundle) => {
     const products = bundle.products || [];
-    return products.find((p) => p.id === selectedSizes[bundle.id]) || products[0];
+    return (
+      products.find((p) => p.id === selectedSizes[bundle.id]) || products[0]
+    );
   };
 
   const addProductToCart = async (productId) => {
@@ -222,8 +265,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     const token = loginData?.data?.token;
     const res = await axios.post(
       `${BASE_URL}/user/cart/create`,
-      token ? { product_id: productId, quantity: 1 } : { device_id: getDeviceId(), product_id: productId, quantity: 1 },
-      token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+      token
+        ? { product_id: productId, quantity: 1 }
+        : { device_id: getDeviceId(), product_id: productId, quantity: 1 },
+      token ? { headers: { Authorization: `Bearer ${token}` } } : {},
     );
     if (res.data.status === false) {
       throw new Error(res.data.action || "Could not add to cart.");
@@ -243,6 +288,33 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     } finally {
       setAddingBundleId(null);
     }
+  };
+
+  const rightColRef = useRef(null);
+  const rightFullyVisible = useRef(false);
+
+  useEffect(() => {
+    const el = rightColRef.current;
+    if (!el) return;
+    const check = () => {
+      const rect = el.getBoundingClientRect();
+      rightFullyVisible.current =
+        rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+      const atTop = window.scrollY <= 0;
+      const atBottom =
+        window.scrollY + window.innerHeight >= document.body.scrollHeight - 2;
+      if (atTop) el.scrollTop = 0;
+      if (atBottom) el.scrollTop = el.scrollHeight;
+    };
+    check();
+    window.addEventListener("scroll", check);
+    return () => window.removeEventListener("scroll", check);
+  }, [loading]);
+
+  const handleRightWheel = (e) => {
+    if (!rightFullyVisible.current) return;
+    e.stopPropagation();
   };
 
   // const handleAddAll = async () => {
@@ -307,7 +379,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 <div className="h-6 bg-gray-100 animate-pulse rounded w-44 mb-4" />
                 <hr className="border-gray-200 mb-4" />
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0">
+                  <div
+                    key={i}
+                    className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0"
+                  >
                     <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-100 animate-pulse shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -350,7 +425,11 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
           </div>
           <div className="flex gap-6 overflow-hidden">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="relative h-72 bg-gray-200 animate-pulse shrink-0" style={{ flexBasis: "calc((100% - 48px) / 3)" }}>
+              <div
+                key={i}
+                className="relative h-72 bg-gray-200 animate-pulse shrink-0"
+                style={{ flexBasis: "calc((100% - 48px) / 3)" }}
+              >
                 <div className="absolute inset-x-0 bottom-0 p-4 pt-10 space-y-2">
                   <div className="h-2.5 bg-gray-300/70 rounded w-1/4" />
                   <div className="h-3.5 bg-gray-300/70 rounded w-3/4" />
@@ -374,8 +453,17 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
             <p className="text-xs text-gray-400 mb-6">
-              <Link href="/" className="hover:text-gray-600 transition-colors">{t("home")}</Link>{" "}/{" "}
-              <Link href="/advices" className="hover:text-gray-600 transition-colors">{t("advice")}</Link>{" "}/ {sectionLabel}
+              <Link href="/" className="hover:text-gray-600 transition-colors">
+                {t("home")}
+              </Link>{" "}
+              /{" "}
+              <Link
+                href="/advices"
+                className="hover:text-gray-600 transition-colors"
+              >
+                {t("advice")}
+              </Link>{" "}
+              / {sectionLabel}
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
               {getBlogField(blog, "name", isFr)}
@@ -386,135 +474,193 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               </p>
             )}
             <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap">
-             <span>{t("byAuthor", { name: blog?.company_name || "Biogance" })}</span>
-<span>{t("minRead", { time: blog?.reading_time || "0" })}</span>
+              <span>
+                {t("byAuthor", { name: blog?.company_name || "Biogance" })}
+              </span>
+              <span>{t("minRead", { time: blog?.reading_time || "0" })}</span>
               {blog?.updated_at && (
-                <span>{t("updatedOn", { date: new Date(blog.updated_at).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" }) })}</span>
+                <span>
+                  {t("updatedOn", {
+                    date: new Date(blog.updated_at).toLocaleDateString(
+                      isFr ? "fr-FR" : "en-GB",
+                      { day: "numeric", month: "long", year: "numeric" },
+                    ),
+                  })}
+                </span>
               )}
             </div>
           </div>
 
-          <div className="relative w-full lg:w-1/2 h-[420px]">
+          <div className="relative w-full lg:w-1/2 flex items-center justify-center">
             <img
-              src={getBlogImage(blog) ? `${MEDIA_URL}${getBlogImage(blog)}` : "/cat.png"}
+              src={
+                getBlogImage(blog)
+                  ? `${MEDIA_URL}${getBlogImage(blog)}`
+                  : "/cat.png"
+              }
               alt={getBlogField(blog, "name", isFr)}
-              className="w-full h-full object-contain"
+              className="max-h-[420px] w-full object-contain"
             />
           </div>
         </div>
       </section>
 
-    {/* Article body + product recommendation */}
-<div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
-  {hasProducts ? (
-    <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
-      {/* Left: article content */}
-      <div className="w-full lg:w-2/3">
-        {getBlogField(blog, "long_description", isFr) ? (
-          <div
-            className="prose prose-sm max-w-none text-gray-700"
-            dangerouslySetInnerHTML={{ __html: getBlogField(blog, "long_description", isFr) }}
-          />
+      {/* Article body + product recommendation */}
+      <div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
+        {hasProducts ? (
+          <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
+            {/* Left: article content */}
+            <div className="w-full lg:w-2/3">
+              {getBlogField(blog, "long_description", isFr) ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{
+                    __html: getBlogField(blog, "long_description", isFr),
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">{t("noContent")}</p>
+              )}
+            </div>
+
+            {/* Right: recommended products */}
+            <div
+              ref={rightColRef}
+              className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              onWheel={handleRightWheel}
+            >
+              <div className="border border-gray-200 p-4 sm:p-6">
+                <p className="text-xs text-gray-400 mb-2">
+                  {t("recommendedRoutine")}
+                </p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+                  {t("recommendedProducts")}
+                </h3>
+                <hr className="border-gray-200 mb-4" />
+                {bundles.map((bundle) => {
+                  const products = bundle.products || [];
+                  const uniqueSizes = [
+                    ...new Set(
+                      products
+                        .filter((p) => p.size_name)
+                        .map((p) => p.size_name),
+                    ),
+                  ];
+                  const hasSizes = uniqueSizes.length > 1;
+                  const singleSize =
+                    uniqueSizes.length === 1 ? uniqueSizes[0] : null;
+                  const product = getSelectedProduct(bundle);
+                  const productImg = product?.images?.[0]?.media ?? null;
+                  const productName = isFr
+                    ? bundle.french_name || bundle.name
+                    : bundle.name;
+                  const productLabel = isFr
+                    ? bundle.french_product_label || bundle.product_label
+                    : bundle.product_label;
+                  const isAdding = addingBundleId === bundle.id;
+                  return (
+                    <div
+                      key={bundle.id}
+                      className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
+                        {productImg ? (
+                          <img
+                            src={`${MEDIA_URL}${productImg}`}
+                            alt={productName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <LuPackage className="w-6 h-6 sm:w-7 sm:h-7 text-gray-300" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2">
+                            {productName}
+                          </p>
+                          {product?.price && (
+                            <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">
+                              €{product.price}
+                            </p>
+                          )}
+                        </div>
+                        {productLabel && (
+                          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2 line-clamp-1">
+                            {productLabel}
+                          </p>
+                        )}
+                        {hasSizes && (
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {uniqueSizes.map((size) => {
+                              const sizeProduct = products.find(
+                                (p) => p.size_name === size,
+                              );
+                              const isSelected = product?.size_name === size;
+                              return (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedSizes((prev) => ({
+                                      ...prev,
+                                      [bundle.id]: sizeProduct?.id,
+                                    }))
+                                  }
+                                  className={`px-2 py-1 text-[10px] sm:text-xs font-medium border transition-colors cursor-pointer ${
+                                    isSelected
+                                      ? "bg-gray-900 border-gray-900 text-white"
+                                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
+                                  }`}
+                                >
+                                  {size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {singleSize && (
+                          <div className="mb-2">
+                            <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
+                              {singleSize}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(bundle)}
+                          disabled={isAdding}
+                          className="w-full text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                          {isAdding ? (
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            t("addToCart")
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         ) : (
-          <p className="text-sm text-gray-500">{t("noContent")}</p>
+          /* No products: plain centered content, no flex wrapper involved */
+          <div className="max-w-3xl mx-auto">
+            {getBlogField(blog, "long_description", isFr) ? (
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{
+                  __html: getBlogField(blog, "long_description", isFr),
+                }}
+              />
+            ) : (
+              <p className="text-sm text-gray-500">{t("noContent")}</p>
+            )}
+          </div>
         )}
       </div>
-
-      {/* Right: recommended products */}
-      <div className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0">
-        <div className="sticky top-[130px] bottom-[130px] border border-gray-200 p-4 sm:p-6">
-          <p className="text-xs text-gray-400 mb-2">{t("recommendedRoutine")}</p>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">{t("recommendedProducts")}</h3>
-          <hr className="border-gray-200 mb-4" />
-          {bundles.map((bundle) => {
-            const products = bundle.products || [];
-            const uniqueSizes = [...new Set(products.filter((p) => p.size_name).map((p) => p.size_name))];
-            const hasSizes = uniqueSizes.length > 1;
-            const singleSize = uniqueSizes.length === 1 ? uniqueSizes[0] : null;
-            const product = getSelectedProduct(bundle);
-            const productImg = product?.images?.[0]?.media ?? null;
-            const productName = isFr ? (bundle.french_name || bundle.name) : bundle.name;
-            const productLabel = isFr ? (bundle.french_product_label || bundle.product_label) : bundle.product_label;
-            const isAdding = addingBundleId === bundle.id;
-            return (
-              <div key={bundle.id} className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0">
-                <div className="w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
-                  {productImg ? (
-                    <img src={`${MEDIA_URL}${productImg}`} alt={productName} className="w-full h-full object-cover" />
-                  ) : (
-                    <LuPackage className="w-6 h-6 sm:w-7 sm:h-7 text-gray-300" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2">{productName}</p>
-                    {product?.price && <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">€{product.price}</p>}
-                  </div>
-                  {productLabel && (
-                    <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2 line-clamp-1">{productLabel}</p>
-                  )}
-                  {hasSizes && (
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {uniqueSizes.map((size) => {
-                        const sizeProduct = products.find((p) => p.size_name === size);
-                        const isSelected = product?.size_name === size;
-                        return (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => setSelectedSizes((prev) => ({ ...prev, [bundle.id]: sizeProduct?.id }))}
-                            className={`px-2 py-1 text-[10px] sm:text-xs font-medium border transition-colors cursor-pointer ${
-                              isSelected
-                                ? "bg-gray-900 border-gray-900 text-white"
-                                : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
-                            }`}
-                          >
-                            {size}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {singleSize && (
-                    <div className="mb-2">
-                      <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
-                        {singleSize}
-                      </span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleAddToCart(bundle)}
-                    disabled={isAdding}
-                    className="w-full text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {isAdding ? (
-                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      t("addToCart")
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  ) : (
-    /* No products: plain centered content, no flex wrapper involved */
-    <div className="max-w-3xl mx-auto">
-      {getBlogField(blog, "long_description", isFr) ? (
-        <div
-          className="prose prose-sm max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: getBlogField(blog, "long_description", isFr) }}
-        />
-      ) : (
-        <p className="text-sm text-gray-500">{t("noContent")}</p>
-      )}
-    </div>
-  )}
-</div>
 
       {/* YouTube video */}
       {youtubeId && (
@@ -535,7 +681,11 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       )}
 
       {/* More expert advices */}
-      <MoreAdvicesRow items={relatedBlogs} isFr={isFr} sectionLabel={sectionLabel} />
+      <MoreAdvicesRow
+        items={relatedBlogs}
+        isFr={isFr}
+        sectionLabel={sectionLabel}
+      />
 
       <Footer />
 

@@ -345,7 +345,7 @@ function UpsellCard({ item, onAdd, isAdding }) {
   );
 }
 
-export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
+export default function ModalAddToCart({ isOpen, onClose, product = {}, autoCloseOnLeave = false }) {
   const { t, i18n } = useTranslation("modaladdtocart");
   const lang = i18n.language;
   const [cartItems, setCartItems] = useState([]);
@@ -418,6 +418,35 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
   const router = useRouter();
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
+
+  // Opened from LandingCards (add-to-cart), the cursor is usually still over the card, not the
+  // panel that slides in from the right — so start the 3s close timer immediately, and only
+  // cancel it while the cursor is actually over the panel. Opened from Navbar (viewing the
+  // cart), autoCloseOnLeave stays false and none of this runs — it never self-closes.
+  const autoCloseTimerRef = useRef(null);
+  const clearAutoCloseTimer = () => {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
+  };
+  const startAutoCloseTimer = () => {
+    if (!autoCloseOnLeave) return;
+    clearAutoCloseTimer();
+    autoCloseTimerRef.current = setTimeout(() => {
+      onClose();
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (isOpen && autoCloseOnLeave) {
+      startAutoCloseTimer();
+    } else {
+      clearAutoCloseTimer();
+    }
+    return clearAutoCloseTimer;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, autoCloseOnLeave]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -1076,7 +1105,10 @@ export default function ModalAddToCart({ isOpen, onClose, product = {} }) {
       />
 
       {/* Slide-in panel */}
-      <div style={{
+      <div
+        onMouseEnter={clearAutoCloseTimer}
+        onMouseLeave={startAutoCloseTimer}
+        style={{
         position: "fixed", top: 0, right: 0, bottom: 0, width: "100%", maxWidth: "520px",
         backgroundColor: "#fff", zIndex: 1001, display: "flex", flexDirection: "column",
         transform: isOpen ? "translateX(0)" : "translateX(100%)",

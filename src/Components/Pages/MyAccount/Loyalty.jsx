@@ -259,7 +259,7 @@ export default function Loyalty() {
 
               {/* Conditional Rendering: No Points State */}
               {!isLoading && !hasPoints && (
-                <div className="flex flex-col items-center justify-center py-12 md:py-20">
+                <div className="flex flex-col items-center justify-center min-h-[30vh]">
                   <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
                     <img
                       src="/loyalty.svg"
@@ -294,7 +294,7 @@ export default function Loyalty() {
 
               {/* Conditional Rendering: Has Points but No Vouchers */}
               {!isLoading && hasPoints && vouchers.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 md:py-20">
+                <div className="flex flex-col items-center justify-center min-h-[30vh]">
                   <div className="bg-[#FFFBEC] w-full text-center p-4 border-dotted border-2 border-yellow-500 mb-8">
                     <p className="text-black">{t('loyalty.hasPoints.pointsMessage', { points: userBalance })}</p>
                   </div>

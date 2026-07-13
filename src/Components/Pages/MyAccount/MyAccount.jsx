@@ -102,9 +102,16 @@ export default function MyAccount() {
         <>
             <Navbar isVideoVisible={!isHeaderTouchingNav} bgWhite={true} />
 
-            <div className="bg-gray-100 flex flex-col lg:flex-row pt-[104px]">
-                <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
-                <div className="flex-1">
+            <div className="bg-gray-100 flex flex-col lg:flex-row pt-[104px] min-h-screen">
+                <div className="hidden lg:block lg:w-80 flex-shrink-0">
+                    <div className="sticky top-[104px] h-[calc(100vh-104px)] overflow-y-auto">
+                        <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
+                    </div>
+                </div>
+                <div className="lg:hidden">
+                    <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
+                </div>
+                <div className="flex-1 min-w-0">
                     {renderContent()}
                 </div>
             </div>
