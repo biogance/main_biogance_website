@@ -31,6 +31,39 @@ import { saveCartData, getCartData } from "../../../utils/cartStorage";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import ModalPickLocation from "./ModalPickLocation";
 import ModalChangeAddress from "./ModalChangeAddress";
+
+// Common abbreviations/aliases users type into the free-text address
+// country field that don't match react-international-phone's iso2 code or
+// official country name directly (e.g. "UK" instead of "United Kingdom").
+const COUNTRY_ALIASES = {
+  uk: "gb",
+  "u.k.": "gb",
+  "united kingdom": "gb",
+  usa: "us",
+  "u.s.a.": "us",
+  "u.s.": "us",
+  "united states of america": "us",
+  uae: "ae",
+  "u.a.e.": "ae",
+};
+
+// Resolves a free-text country string (iso2 code, full name, or common
+// alias like "UK") to the iso2 code used by the country <select>. Returns
+// "" when nothing matches, instead of leaving the field on its stale value.
+function resolveCountryIso2(countryRaw) {
+  const countryVal = (countryRaw || "").trim().toLowerCase();
+  if (!countryVal) return "";
+  const aliasIso2 = COUNTRY_ALIASES[countryVal];
+  const found =
+    defaultCountries.find((c) => parseCountry(c).iso2 === countryVal) ||
+    defaultCountries.find(
+      (c) => parseCountry(c).name.toLowerCase() === countryVal,
+    ) ||
+    (aliasIso2 &&
+      defaultCountries.find((c) => parseCountry(c).iso2 === aliasIso2));
+  return found ? parseCountry(found).iso2 : "";
+}
+
 function usePaymentVisibility() {
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -3318,11 +3351,7 @@ function Checkout({ cartItems = [] }) {
         setStreet(addr.full_address || "");
         setPostcode(addr.postal_code || "");
         setCity(addr.city || "");
-        const countryVal = (addr.country || "").toLowerCase();
-        const foundByIso2 =
-          defaultCountries.find((c) => parseCountry(c).iso2 === countryVal) ||
-          defaultCountries.find((c) => parseCountry(c).name.toLowerCase() === countryVal);
-        if (foundByIso2) setDeliveryCountryIso2(parseCountry(foundByIso2).iso2);
+        setDeliveryCountryIso2(resolveCountryIso2(addr.country));
       }
 
       const bill = user.invoice_address;
@@ -3330,13 +3359,7 @@ function Checkout({ cartItems = [] }) {
         setBillingStreet(bill.full_address || "");
         setBillingPostcode(bill.postal_code || "");
         setBillingCity(bill.city || "");
-        const countryVal = (bill.country || "").toLowerCase();
-        const foundBill =
-          defaultCountries.find((c) => parseCountry(c).iso2 === countryVal) ||
-          defaultCountries.find(
-            (c) => parseCountry(c).name.toLowerCase() === countryVal,
-          );
-        if (foundBill) setBillingCountryIso2(parseCountry(foundBill).iso2);
+        setBillingCountryIso2(resolveCountryIso2(bill.country));
       }
     } catch {
       /* silent */
