@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
@@ -16,9 +16,25 @@ const StarRating = ({ rating = 5 }) => (
 
 const ReviewCard = ({ name, date, message, rating, readMore, showLess, googleAlt }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef(null);
 
   // Format date — API format is "03/06/2026" which is already readable
   const displayDate = date || '';
+
+  // Only show the Read More/Show Less toggle when the message actually
+  // overflows the 3-line clamp. Measured while collapsed (clamped) —
+  // skipped while expanded since the element isn't clamped then.
+  useEffect(() => {
+    const checkTruncation = () => {
+      const el = textRef.current;
+      if (!el || isExpanded) return;
+      setIsTruncated(el.scrollHeight > el.clientHeight + 1);
+    };
+    checkTruncation();
+    window.addEventListener('resize', checkTruncation);
+    return () => window.removeEventListener('resize', checkTruncation);
+  }, [message, isExpanded]);
 
   return (
     <div className="bg-white p-4 md:p-6 shadow-sm border border-[#E3E3E380] flex flex-col hover:shadow-md transition-shadow duration-300 flex-shrink-0 w-[85vw] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] review-card snap-start">
@@ -39,15 +55,20 @@ const ReviewCard = ({ name, date, message, rating, readMore, showLess, googleAlt
       <StarRating rating={rating} />
 
       <div className="flex-grow">
-        <p className={`text-sm md:text-base text-gray-700 leading-relaxed transition-all duration-300 ${isExpanded ? 'mb-2 md:mb-3' : 'line-clamp-3 mb-2'}`}>
+        <p
+          ref={textRef}
+          className={`text-sm md:text-base text-gray-700 leading-relaxed transition-all duration-300 ${isExpanded ? 'mb-2 md:mb-3' : 'line-clamp-3 mb-2'}`}
+        >
           {message}
         </p>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-xs md:text-sm cursor-pointer font-medium text-gray-600 underline hover:text-gray-800 transition-colors"
-        >
-          {isExpanded ? showLess : readMore}
-        </button>
+        {isTruncated && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs md:text-sm cursor-pointer font-medium text-gray-600 underline hover:text-gray-800 transition-colors"
+          >
+            {isExpanded ? showLess : readMore}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { HiArrowRight } from 'react-icons/hi2';
 
 export function IngredientCard({ image, title, tag, description }) {
   return (
-   <div className="bg-white rounded-lg p-6 shadow-sm">
+   <div className="bg-white p-6 cursor-pointer hover:shadow-md transition-shadow ">
       {/* Regular img tag - no configuration needed */}
       <div className="w-32 h-32 mb-2">
         <img 
@@ -18,7 +18,7 @@ export function IngredientCard({ image, title, tag, description }) {
       {/* Title and Tag */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-bold text-[#393939]">{title}</h3>
-        <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap ml-3">
+        <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs whitespace-nowrap ml-3">
           {tag}
         </span>
       </div>
@@ -29,7 +29,7 @@ export function IngredientCard({ image, title, tag, description }) {
       </p>
       
       {/* Learn More Button */}
-      <button className="w-full py-3 border border-gray-300 rounded-lg text-sm text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer ">
+      <button className="w-full py-3 border border-gray-300 text-sm text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer ">
         Learn More
       </button>
     </div>

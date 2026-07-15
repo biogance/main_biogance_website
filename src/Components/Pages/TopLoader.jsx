@@ -41,7 +41,7 @@ function LoaderBar({ finishing }) {
         height: "3px",
         width: `${width}%`,
         background: "white",
-        boxShadow: "0 0 10px rgba(255,255,255,0.9)",
+       
         zIndex: 99999,
         opacity: finishing ? 0 : 1,
         transition: finishing ? "width 0.2s ease-out, opacity 0.3s ease 0.2s" : "width 0.15s ease-out",

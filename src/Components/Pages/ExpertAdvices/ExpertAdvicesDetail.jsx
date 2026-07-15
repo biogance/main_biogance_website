@@ -260,6 +260,15 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     );
   };
 
+  const navigateToProduct = (bundle) => {
+    const slug = isFr
+      ? bundle.french_seo_keyword || bundle.english_seo_keyboard
+      : bundle.english_seo_keyboard || bundle.french_seo_keyword;
+    if (!slug) return;
+    startTopLoader();
+    router.push(`/product/${slug}`);
+  };
+
   const addProductToCart = async (productId) => {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
     const token = loginData?.data?.token;
@@ -599,7 +608,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   return (
                     <div
                       key={bundle.id}
-                      className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0"
+                      onClick={() => navigateToProduct(bundle)}
+                      className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0 cursor-pointer"
                     >
                       <div className="w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
                         {productImg ? (
@@ -617,11 +627,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2">
                             {productName}
                           </p>
-                          {product?.price && (
-                            <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">
-                              €{product.price}
-                            </p>
-                          )}
                         </div>
                         {productLabel && (
                           <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2 line-clamp-1">
@@ -629,7 +634,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           </p>
                         )}
                         {hasSizes && (
-                          <div className="flex flex-wrap gap-1.5 mb-2">
+                          <div className="flex flex-wrap gap-1.5 mt-2 mb-3.5">
                             {uniqueSizes.map((size) => {
                               const sizeProduct = products.find(
                                 (p) => p.size_name === size,
@@ -639,12 +644,13 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                                 <button
                                   key={size}
                                   type="button"
-                                  onClick={() =>
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setSelectedSizes((prev) => ({
                                       ...prev,
                                       [bundle.id]: sizeProduct?.id,
-                                    }))
-                                  }
+                                    }));
+                                  }}
                                   className={`px-2 py-1 text-[10px] sm:text-xs font-medium border transition-colors cursor-pointer ${
                                     isSelected
                                       ? "bg-gray-900 border-gray-900 text-white"
@@ -658,7 +664,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           </div>
                         )}
                         {singleSize && (
-                          <div className="mb-2">
+                          <div className="mt-2 mb-2">
                             <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
                               {singleSize}
                             </span>
@@ -666,14 +672,17 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                         )}
                         <button
                           type="button"
-                          onClick={() => handleAddToCart(bundle)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(bundle);
+                          }}
                           disabled={isAdding}
-                          className="w-full text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                          className="w-full mt-2 text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                           {isAdding ? (
                             <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            t("addToCart")
+                            `${t("addToCart")}${product?.price ? ` - €${product.price}` : ""}`
                           )}
                         </button>
                       </div>

@@ -11,11 +11,11 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import {
   FiSearch,
-  FiClock,
   FiChevronLeft,
   FiChevronRight,
   FiX,
 } from "react-icons/fi";
+import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { FaArrowLeft } from "react-icons/fa";
@@ -66,12 +66,6 @@ function getBlogField(item, field, isFr) {
   if (!item) return "";
   const frField = `french_${field}`;
   return isFr && item[frField] ? item[frField] : (item[field] ?? "");
-}
-
-function getCategoryName(item, isFr) {
-  const cat = item?.categories?.[0]?.category;
-  if (!cat) return "";
-  return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
 }
 
 function Shimmer({ className = "" }) {
@@ -226,16 +220,11 @@ function useResponsiveColumns() {
 
 function AllArticlesCardSkeleton() {
   return (
-    <div>
-      <Shimmer className="w-full aspect-[5/6] mb-3 rounded-none" />
-      <Shimmer className="h-2.5 w-1/3 mb-2" />
-      <div className="space-y-1.5 mb-2">
-        <Shimmer className="h-4 w-full" />
-        <Shimmer className="h-4 w-2/3" />
-      </div>
-      <div className="flex items-center justify-between">
-        <Shimmer className="h-2.5 w-16" />
-        <Shimmer className="h-2.5 w-12" />
+    <div className="border border-gray-200 overflow-hidden flex flex-col">
+      <Shimmer className="w-full h-60 rounded-none" />
+      <div className="px-4 py-3 flex items-center justify-between gap-3">
+        <Shimmer className="h-3 w-3/4" />
+        <Shimmer className="w-4 h-4 rounded-full shrink-0" />
       </div>
     </div>
   );
@@ -555,7 +544,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         </div>
       </div>
 
-      {/* Articles grid — same card design as ExpertAdvices.jsx's "All Articles" */}
+      {/* Articles grid — same card design as ExpertAdvices.jsx's Recommended/Trending rows (ArticleRow) */}
       <div className="px-6 sm:px-10 lg:px-16 pb-16">
         {loading ? (
           <div className={CARD_GRID}>
@@ -574,9 +563,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                 <div
                   key={a.id}
                   onClick={() => navigateToDetail(a)}
-                  className="cursor-pointer"
+                  className="border border-gray-200 cursor-pointer group overflow-hidden flex flex-col"
                 >
-                  <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-100">
+                  <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
                     <img
                       src={
                         getBlogImage(a)
@@ -584,21 +573,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                           : "/cat.png"
                       }
                       alt={getBlogField(a, "name", isFr)}
-                      className="w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
+                      className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
                     />
                   </div>
-                  <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                    {getCategoryName(a, isFr) || "Pets"}
-                  </p>
-                  <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2">
-                    {getBlogField(a, "name", isFr)}
-                  </h3>
-                  <div className="flex items-center justify-between text-[11px] text-gray-400">
-                    <span>{a.company_name || ""}</span>
-                    <span className="flex items-center gap-1">
-                      <FiClock className="w-3 h-3" />
-                      {a.reading_time ? `${a.reading_time} min` : "0 min"}
-                    </span>
+                  <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
+                    <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1">
+                      {getBlogField(a, "name", isFr)}
+                    </p>
+                    <HiOutlineArrowUpRight className="shrink-0 mt-0.5 text-gray-700 w-4 h-4" />
                   </div>
                 </div>
               ))}

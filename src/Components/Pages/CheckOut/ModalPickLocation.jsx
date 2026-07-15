@@ -56,7 +56,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
       const res = await fetch(`${BASE_URL}/user/order/get/service/point`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...params, radius: 5000 }),
+        body: JSON.stringify({ ...params, radius: 50000 }),
       });
       return res.json();
     };
@@ -327,10 +327,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
                         }}
                         title={`${t("latLng", { lat: loc.lat, lng: loc.lng })} • ${loc.address}`}
                       >
-                        <span style={{ fontWeight: 500, color: "#444" }}>
-                          {t("latLng", { lat: loc.lat, lng: loc.lng })}
-                        </span>
-                        {" • "}
+                       
                         {loc.address}
                       </div>
                     </div>

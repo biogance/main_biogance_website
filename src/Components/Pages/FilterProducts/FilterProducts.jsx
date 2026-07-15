@@ -25,11 +25,34 @@ import {
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { LandingCards } from "../Landing/LandingCards";
-import { BASE_URL } from "../../API/API";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
+
+// Matches the restProducts grid's actual column counts (grid-cols-2 below md,
+// md:grid-cols-3, lg:grid-cols-3, xl:grid-cols-4) — same responsive-per_page
+// approach as ExpertAdvices.jsx, so a fetched page always fills whole rows.
+const COLUMN_BREAKPOINTS = [
+  { minWidth: 1280, columns: 4 },
+  { minWidth: 768, columns: 3 },
+  { minWidth: 0, columns: 2 },
+];
+const ROWS_PER_PAGE = 3;
+
+function useResponsiveColumns() {
+  const [columns, setColumns] = useState(2);
+  useEffect(() => {
+    const calc = () =>
+      COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
+    const update = () => setColumns(calc());
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return columns;
+}
 
 // ───────────── Data Model ─────────────
 const FALLBACK_CATEGORIES = [
@@ -412,10 +435,10 @@ const CardTextShimmer = () => (
 );
 
 // Matches the "New" / "Best" / "-20%" badge LandingCards renders for the
-// first three cards (index 0/1/2), top-left, raisedLabel position.
+// first three cards (index 0/1/2), top-left.
 const CardBadgeShimmer = () => (
   <div
-    className="absolute -top-0.5 md:top-3 left-3 h-3 w-8 rounded bg-white/70"
+    className="absolute top-3 left-3 h-3 w-8 rounded bg-white/70"
     style={{ zIndex: 10 }}
   />
 );
@@ -737,6 +760,8 @@ export default function FilterProducts() {
 
   const [searchedProducts, setSearchedProducts] = useState([]);
   const searchedProductsRef = useRef([]);
+  const [recentViews, setRecentViews] = useState([]);
+  const [featuredBlog, setFeaturedBlog] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -744,6 +769,13 @@ export default function FilterProducts() {
   const [lastPage, setLastPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
+  // Same value is used for every page of a given query — the API paginates
+  // by page*per_page offset, so changing per_page between page 1 and later
+  // pages would skip/duplicate items and break `last_page`/hasMore. The
+  // fixed 18-item featured layout just slices however many have
+  // accumulated across page(s) so far; it isn't tied to this per-request size.
+  const columns = useResponsiveColumns();
+  const perPage = 18 + columns * ROWS_PER_PAGE;
 
   useEffect(() => {
     searchedProductsRef.current = searchedProducts;
@@ -997,7 +1029,7 @@ export default function FilterProducts() {
       max_price: price,
       sort: sortParam,
       page: targetPage,
-      per_page: 12,
+      per_page: perPage,
       ...(token ? {} : { device_id: getDeviceId() }),
     };
 
@@ -1017,10 +1049,14 @@ export default function FilterProducts() {
       .then((res) => {
         if (requestSeq !== searchRequestSeqRef.current) return;
         if (res.data.status) {
-          const rawItems = Array.isArray(res.data.data)
-            ? res.data.data
-            : res.data.data?.data && Array.isArray(res.data.data.data)
-              ? res.data.data.data
+          // /web/search now nests the paginated product results under
+          // data.bundles (alongside a suggested data.blog and
+          // data.recent_view) instead of returning them directly on data.
+          const bundlesPage = res.data.data?.bundles;
+          const rawItems = Array.isArray(bundlesPage?.data)
+            ? bundlesPage.data
+            : Array.isArray(res.data.data)
+              ? res.data.data
               : [];
 
           const mapped = mapProducts(rawItems);
@@ -1044,16 +1080,18 @@ export default function FilterProducts() {
               );
             }
           }
-          const hasMore = res.data.data?.last_page
-            ? targetPage < res.data.data.last_page
-            : rawItems.length >= 12;
+          const hasMore = bundlesPage?.last_page
+            ? targetPage < bundlesPage.last_page
+            : rawItems.length >= perPage;
 
           setSearchedProducts(unique);
           setHasSearched(true);
-          setTotalCount(res.data.data?.total ?? unique.length);
+          setTotalCount(bundlesPage?.total ?? unique.length);
           setLastPage(
-            res.data.data?.last_page || (hasMore ? targetPage + 1 : targetPage),
+            bundlesPage?.last_page || (hasMore ? targetPage + 1 : targetPage),
           );
+          setRecentViews(mapProducts(res.data.data?.recent_view ?? []));
+          setFeaturedBlog(res.data.data?.blog ?? null);
         } else {
           toast.error(
             res.data.action_message ||
@@ -1078,7 +1116,6 @@ export default function FilterProducts() {
   }, [apiData, filtersSerialized, page]);
 
   const filteredProducts = searchedProducts;
-  const allProducts = filteredProducts;
 
   // First up to 18 products get the featured "grid + video" treatment; the rest use the plain grid.
   // The pattern adapts to however many products are available: 8-grid, +video, +video, +8-grid —
@@ -1419,8 +1456,6 @@ export default function FilterProducts() {
           translateName,
           isFrench,
         }}
-        activeChips={activeChips}
-        onClearAll={clearAll}
       />
 
       <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
@@ -1448,7 +1483,7 @@ export default function FilterProducts() {
                     ({totalCount})
                   </span>
                 </h4>
-                <p className="mt-4 max-w-[50vw] text-sm md:text-base text-stone-700">
+                <p className="mt-2  max-w-[50vw] text-sm md:text-lg sm:text-xs text-stone-700 rich-text c-desc">
                   {t(
                     "products.shopDescription",
                     "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
@@ -1456,39 +1491,81 @@ export default function FilterProducts() {
                 </p>
               </div>
 
-              {/* Right: search + sort — where the description used to sit */}
-              <div className="col-span-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:col-span-4">
-                <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
-                  <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => handleQueryChange(e.target.value)}
-                    placeholder={t(
-                      "searchPlaceholder",
-                      "Search shampoos, sprays, rituals…",
-                    )}
-                    className="h-11 w-full border border-stone-900/15 bg-white pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
-                  />
-                  {query && (
+              {/* Right: active filter chips + search + sort — where the description used to sit */}
+              <div className="col-span-12 flex flex-col justify-center gap-3 lg:col-span-4">
+                {activeChips.length > 0 && (
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {activeChips.map((c, i) => (
+                      <span
+                        key={i}
+                        className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-200"
+                      >
+                        {c.swatch ? (
+                          <span
+                            className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                            style={{
+                              background: c.swatch,
+                              ...(c.swatch.includes("gradient")
+                                ? {}
+                                : { backgroundColor: c.swatch }),
+                            }}
+                            aria-label={c.label}
+                          />
+                        ) : (
+                          translateName(c.label)
+                        )}
+                        <button
+                          onClick={c.clear}
+                          className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
+                          aria-label={t("removeFilter", "Remove {{label}}", {
+                            label: translateName(c.label),
+                          })}
+                        >
+                          <LuX className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    ))}
                     <button
-                      onClick={() => {
-                        setQuery("");
-                        setDebouncedQuery("");
-                        clearTimeout(queryDebounceRef.current);
-                      }}
-                      className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
-                      aria-label={t("clearSearch", "Clear search")}
+                      onClick={clearAll}
+                      className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
                     >
-                      <LuX className="h-3.5 w-3.5" />
+                      {t("resetAll", "Reset all")}
                     </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-                    {t("sort", "Sort")}
-                  </span>
-                  <SortMenu value={sort} onChange={setSort} />
+                  </div>
+                )}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                  <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
+                    <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => handleQueryChange(e.target.value)}
+                      placeholder={t(
+                        "searchPlaceholder",
+                        "Search shampoos, sprays, rituals…",
+                      )}
+                      className="h-11 w-full border border-stone-900/15 bg-white pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
+                    />
+                    {query && (
+                      <button
+                        onClick={() => {
+                          setQuery("");
+                          setDebouncedQuery("");
+                          clearTimeout(queryDebounceRef.current);
+                        }}
+                        className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
+                        aria-label={t("clearSearch", "Clear search")}
+                      >
+                        <LuX className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                      {t("sort", "Sort")}
+                    </span>
+                    <SortMenu value={sort} onChange={setSort} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1527,7 +1604,6 @@ export default function FilterProducts() {
                             index={i}
                             compact={true}
                             compactButtons={true}
-                            raisedLabel={true}
                           />
                         </div>
                       ))}
@@ -1542,7 +1618,6 @@ export default function FilterProducts() {
                         index={8}
                         compact={false}
                         compactButtons={true}
-                        raisedLabel={true}
                         forceVideo
                       />
                     </div>
@@ -1558,7 +1633,6 @@ export default function FilterProducts() {
                             index={i + 10}
                             compact={true}
                             compactButtons={true}
-                            raisedLabel={true}
                           />
                         </div>
                       ))}
@@ -1573,7 +1647,6 @@ export default function FilterProducts() {
                         index={9}
                         compact={false}
                         compactButtons={true}
-                        raisedLabel={true}
                         forceVideo
                       />
                     </div>
@@ -1623,7 +1696,6 @@ export default function FilterProducts() {
                               index={i}
                               compact={true}
                               compactButtons={true}
-                              raisedLabel={true}
                               fillHeight
                               smallLabel
                             />
@@ -1637,7 +1709,6 @@ export default function FilterProducts() {
                           index={8}
                           compact={false}
                           compactButtons={true}
-                          raisedLabel={true}
                           fillHeight
                           forceVideo
                         />
@@ -1653,7 +1724,6 @@ export default function FilterProducts() {
                             index={i}
                             compact={true}
                             compactButtons={true}
-                            raisedLabel={true}
                           />
                         </div>
                       ))}
@@ -1674,7 +1744,6 @@ export default function FilterProducts() {
                             index={9}
                             compact={false}
                             compactButtons={true}
-                            raisedLabel={true}
                             fillHeight
                             forceVideo
                           />
@@ -1719,7 +1788,6 @@ export default function FilterProducts() {
                                 index={i + 10}
                                 compact={true}
                                 compactButtons={true}
-                                raisedLabel={true}
                                 fillHeight
                                 smallLabel
                               />
@@ -1735,7 +1803,6 @@ export default function FilterProducts() {
                           index={5}
                           compact={true}
                           compactButtons={true}
-                          raisedLabel={true}
                           forceVideo
                         />
                       </div>
@@ -1747,8 +1814,8 @@ export default function FilterProducts() {
             {/* Desktop (lg+): restProducts only — everything else already shown in the
                 8-wide featured rows above. */}
             <div
-              className="hidden lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-[3px]"
-              style={{ overflowAnchor: "none" }}
+              className="hidden lg:grid gap-[3px]"
+              style={{ overflowAnchor: "none", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
             >
               {restProducts.map((p, i) => (
                 <div key={p.id} className="w-full" data-rest-index={i}>
@@ -1758,7 +1825,6 @@ export default function FilterProducts() {
                     index={restStartIndex + i}
                     compact={true}
                     compactButtons={true}
-                    raisedLabel={true}
                   />
                 </div>
               ))}
@@ -1767,8 +1833,8 @@ export default function FilterProducts() {
             {/* Mobile/tablet (below lg): the 4-item featured blocks above only used half of
                 each 8-item group — the leftover half rejoins here, ahead of restProducts. */}
             <div
-              className="grid grid-cols-2 gap-[3px] md:grid-cols-3 lg:hidden"
-              style={{ overflowAnchor: "none" }}
+              className="grid gap-[3px] lg:hidden"
+              style={{ overflowAnchor: "none", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
             >
               {mobileFeaturedLeftover.map((p, i) => (
                 <div key={p.id} className="w-full">
@@ -1778,7 +1844,6 @@ export default function FilterProducts() {
                     index={i + 4}
                     compact={true}
                     compactButtons={true}
-                    raisedLabel={true}
                   />
                 </div>
               ))}
@@ -1790,7 +1855,6 @@ export default function FilterProducts() {
                     index={restStartIndex + i}
                     compact={true}
                     compactButtons={true}
-                    raisedLabel={true}
                   />
                 </div>
               ))}
@@ -1834,13 +1898,13 @@ export default function FilterProducts() {
         )}
       </section>
 
-      {!isSearching && (
+      {!isSearching && recentViews.length > 0 && (
         <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-16">
           <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
             {t("recentlyViewed", "Recently Viewed")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
-            {allProducts.slice(0, 3).map((p, i) => (
+            {recentViews.slice(0, 3).map((p, i) => (
               <div key={p.id} className="w-full">
                 <LandingCards
                   product={p}
@@ -1848,7 +1912,6 @@ export default function FilterProducts() {
                   index={i}
                   compact={true}
                   compactButtons={true}
-                  raisedLabel={true}
                 />
               </div>
             ))}
@@ -1856,131 +1919,39 @@ export default function FilterProducts() {
         </section>
       )}
 
-      {!isSearching && (
+      {!isSearching && featuredBlog && (
         <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-20">
           <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
             <div className="lg:sticky lg:top-[200px] lg:self-start">
               <h2 className="mb-6 font-serif text-4xl text-stone-900 sm:text-5xl">
-                {t("ourAdvices.title", "Our Advices")}
+                {isFrench && featuredBlog.french_name
+                  ? featuredBlog.french_name
+                  : featuredBlog.name}
               </h2>
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img
-                  src="/distributorImg.jpg"
-                  alt={t("ourAdvices.title", "Our Advices")}
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              {featuredBlog.images?.[0]?.media && (
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={`${MEDIA_URL}${featuredBlog.images[0].media}`}
+                    alt={
+                      isFrench && featuredBlog.french_name
+                        ? featuredBlog.french_name
+                        : featuredBlog.name
+                    }
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <h3 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.introTitle",
-                    "How to choose the right care for your pet?",
-                  )}
-                </h3>
-                <p className="text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.introBody",
-                    "Every pet is different — their coat, skin and lifestyle all play a role in choosing the right care routine. Our experts share their advice to help you pick the most suitable formulation for your companion.",
-                  )}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step1Title",
-                    "Step 1: Assess your pet's lifestyle",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step1Intro",
-                    "Every pet has different needs depending on their environment and daily routine.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step1Bullet1",
-                      "Indoor pets: even indoor pets benefit from a gentle, regular care routine.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step1Bullet2",
-                      "Outdoor pets: pets that walk, swim or play outside need more frequent care and protection.",
-                    )}
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.step2Title",
-                    "Step 2: Choose the right formulation",
-                  )}
-                </h4>
-                <p className="mb-2 text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.step2Intro",
-                    "Our ranges are designed to suit different needs and lifestyles.",
-                  )}
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-stone-600">
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet1",
-                      "For everyday care: choose a gentle, everyday formulation.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet2",
-                      "For specific needs: opt for a targeted treatment suited to your pet's coat or skin.",
-                    )}
-                  </li>
-                  <li>
-                    {t(
-                      "ourAdvices.step2Bullet3",
-                      "For multi-pet households: look for products safe to use across species.",
-                    )}
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.whyTitle",
-                    "Why does the right routine matter?",
-                  )}
-                </h4>
-                <p className="text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.whyBody",
-                    "The wrong products can cause discomfort, dryness or irritation. Using a routine adapted to your pet helps keep them comfortable while supporting their overall well-being.",
-                  )}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="mb-2 text-sm font-bold text-stone-900">
-                  {t(
-                    "ourAdvices.whenTitle",
-                    "When should you apply this routine?",
-                  )}
-                </h4>
-                <p className="text-sm leading-relaxed text-stone-600">
-                  {t(
-                    "ourAdvices.whenBody",
-                    "For best results, stay consistent throughout the year and follow the recommended usage on your chosen product, adjusting as your pet's needs evolve.",
-                  )}
-                </p>
-              </div>
-            </div>
+            <div
+              className="prose prose-sm max-w-none text-stone-600"
+              dangerouslySetInnerHTML={{
+                __html:
+                  (isFrench && featuredBlog.long_french_description) ||
+                  featuredBlog.long_description ||
+                  "",
+              }}
+            />
           </div>
         </section>
       )}
@@ -2002,8 +1973,6 @@ function FilterRail({
   hasFamily,
   hasSpec,
   dynamicLists,
-  activeChips,
-  onClearAll,
 }) {
   const { t } = useTranslation("filter");
   const {
@@ -2145,8 +2114,25 @@ function FilterRail({
           <LuSlidersHorizontal className="h-4 w-4" />
           {t("filters", "Filters")}
           {totalActive > 0 && (
-            <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-semibold text-stone-900">
-              {totalActive}
+            <span
+              className="relative ml-1 shrink-0 rounded-full bg-white"
+              style={{
+                height: "20px",
+                width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+              }}
+            >
+              <span
+                className="absolute text-[10px] font-semibold text-stone-900 tracking-normal normal-case"
+                style={{
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  letterSpacing: "normal",
+                  lineHeight: "1",
+                }}
+              >
+                {totalActive}
+              </span>
             </span>
           )}
         </button>
@@ -2173,8 +2159,25 @@ function FilterRail({
               <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
               {t("filter", "Filter")}
               {totalActive > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case ai-style-change-1">
-                  {totalActive}
+                <span
+                  className="relative shrink-0 rounded-full bg-stone-900 ai-style-change-1"
+                  style={{
+                    height: "20px",
+                    width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+                  }}
+                >
+                  <span
+                    className="absolute text-[10px] text-white tracking-normal normal-case"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      letterSpacing: "normal",
+                      lineHeight: "1",
+                    }}
+                  >
+                    {totalActive}
+                  </span>
                 </span>
               )}
             </button>
@@ -2198,48 +2201,6 @@ function FilterRail({
               />
             </button>
           </div>
-
-          {/* Active filter chips — pinned to the right of the tab rail, outside the scroll track */}
-          {activeChips.length > 0 && (
-            <div className="filter-rail-scroll flex shrink-0 items-center gap-2 overflow-x-auto py-2 pl-3">
-              {activeChips.map((c, i) => (
-                <span
-                  key={i}
-                  className="group inline-flex shrink-0 items-center gap-1.5 rounded-full bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-200"
-                >
-                  {c.swatch ? (
-                    <span
-                      className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                      style={{
-                        background: c.swatch,
-                        ...(c.swatch.includes("gradient")
-                          ? {}
-                          : { backgroundColor: c.swatch }),
-                      }}
-                      aria-label={c.label}
-                    />
-                  ) : (
-                    translateName(c.label)
-                  )}
-                  <button
-                    onClick={c.clear}
-                    className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
-                    aria-label={t("removeFilter", "Remove {{label}}", {
-                      label: translateName(c.label),
-                    })}
-                  >
-                    <LuX className="h-2.5 w-2.5" />
-                  </button>
-                </span>
-              ))}
-              <button
-                onClick={onClearAll}
-                className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
-              >
-                {t("resetAll", "Reset all")}
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -2335,8 +2296,25 @@ function AllFiltersModal({
               {t("filters", "Filters")}
             </h2>
             {totalActive > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1.5 text-[10px] text-white">
-                {totalActive}
+              <span
+                className="relative shrink-0 rounded-full bg-stone-900"
+                style={{
+                  height: "20px",
+                  width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+                }}
+              >
+                <span
+                  className="absolute text-[10px] text-white tracking-normal normal-case"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    letterSpacing: "normal",
+                    lineHeight: "1",
+                  }}
+                >
+                  {totalActive}
+                </span>
               </span>
             )}
           </div>
@@ -2481,7 +2459,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
               <button
                 key={opt}
                 onClick={() => g.setter(opt)}
-                className={`group inline-flex items-center gap-1.5 rounded-full border ${isColor ? "px-1.5 py-1.5" : "px-3.5 py-1.5"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
+                className={`group inline-flex items-center gap-1.5 border ${isColor ? "px-1.5 py-1.5" : "px-3.5 py-1.5"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
                   on
                     ? "border-stone-900 bg-stone-900 text-white shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)]"
                     : "border-stone-300 bg-white text-stone-700 hover:border-stone-900"
@@ -2499,7 +2477,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
                     aria-hidden
                   />
                 ) : on ? (
-                  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
+                  <span className="grid place-items-center overflow-hidden bg-white/15 mr-0.5 h-4 w-4">
                     <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
                   </span>
                 ) : null}
@@ -2537,8 +2515,26 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
     >
       {displayLabel}
       {active && (
-        <span className="flex h-5 min-w-5 items-center justify-center border border-white border-opacity-15 rounded-full bg-stone-900 text-[10px] text-white leading-none tracking-normal normal-case">
-          {count}
+        <span
+          className="relative shrink-0 border border-white border-opacity-15 rounded-full bg-stone-900 box-border"
+          style={{
+            height: "20px",
+            width: count >= 100 ? "34px" : count >= 10 ? "26px" : "20px",
+          }}
+        >
+          <span
+            className="absolute text-[10px] text-white tracking-normal normal-case"
+            style={{
+              top: "50%",
+              left: "50%",
+              marginLeft: "-1px",
+              transform: "translate(-50%, -50%)",
+              letterSpacing: "normal",
+              lineHeight: "1",
+            }}
+          >
+            {count}
+          </span>
         </span>
       )}
       <LuChevronDown
@@ -2808,7 +2804,7 @@ function FilterSheetContent({
               <button
                 key={opt}
                 onClick={() => group.setter(opt)}
-                className={`group inline-flex items-center gap-1.5 rounded-full border ${isColor ? "px-1.5 py-1.5" : "px-4 py-2"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
+                className={`group inline-flex items-center gap-1.5 border ${isColor ? "px-1.5 py-1.5" : "px-4 py-2"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
                   on
                     ? "border-stone-900 bg-stone-900 text-white shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)]"
                     : "border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:shadow-sm"
