@@ -63,7 +63,6 @@ export const LandingCards = ({
   index,
   compact = false,
   compactButtons = false,
-  raisedLabel = false,
   fillHeight = false,
   forceVideo = false,
   promoStyle = false,
@@ -308,7 +307,7 @@ export const LandingCards = ({
         {index === 0 && (
           // Replace karo:
           <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
+            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
           >
             New
           </div>
@@ -317,7 +316,7 @@ export const LandingCards = ({
         {index === 1 && (
           // Replace karo:
           <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1  z-10`}
+            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1  z-10`}
           >
             Best
           </div>
@@ -326,7 +325,7 @@ export const LandingCards = ({
         {index === 2 && (
           // Replace karo:
           <div
-            className={`absolute ${raisedLabel ? "-top-0.7 md:top-3" : "top-3"} left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
+            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
           >
             -20%
           </div>

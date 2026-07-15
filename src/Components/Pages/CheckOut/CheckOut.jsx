@@ -1624,6 +1624,13 @@ function OrderSummary({
     } catch {
       /* silent */
     }
+    try {
+      const savedMethod = localStorage.getItem("checkoutDeliveryMethod");
+      if (savedMethod === "home" || savedMethod === "pickup")
+        setDeliveryMethod(savedMethod);
+    } catch {
+      /* silent */
+    }
   }, []);
 
   const handleSelectLocation = (loc) => {
@@ -3036,6 +3043,11 @@ function OrderSummary({
                       onClick={() => {
                         setDeliveryMethod(opt);
                         setDeliveryDropdownOpen(false);
+                        try {
+                          localStorage.setItem("checkoutDeliveryMethod", opt);
+                        } catch {
+                          /* ignore */
+                        }
                         if (opt === "pickup") {
                           if (!selectedLocation) {
                             setIsLocationModalOpen(true);
@@ -3263,6 +3275,72 @@ function Checkout({ cartItems = [] }) {
   const lang = i18n.language;
   const paymentSectionRef = useRef(null);
 
+  // Express Payment bar — once it scrolls out of view at the top of the left
+  // column (desktop only), pin it to the top of the right sidebar instead of
+  // letting it disappear. Scrolling back up returns it to its normal spot.
+  const expressWrapperRef = useRef(null);
+  const expressBarRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const [pinExpress, setPinExpress] = useState(false);
+  const [expressBarBox, setExpressBarBox] = useState({
+    height: 0,
+    left: 0,
+    width: 0,
+  });
+
+  useEffect(() => {
+    const wrapperEl = expressWrapperRef.current;
+    if (!wrapperEl) return;
+    const isDesktop = () => window.innerWidth >= 1024;
+
+    // Natural (in-flow) size/position — must be measured before the bar is
+    // ever pinned to `position: fixed`, otherwise we'd be measuring our own
+    // fixed box instead of where it should sit.
+    const measureBox = () => {
+      const barEl = expressBarRef.current;
+      const sidebarEl = sidebarRef.current;
+      if (!barEl || !sidebarEl) return;
+      const barRect = barEl.getBoundingClientRect();
+      const sidebarRect = sidebarEl.getBoundingClientRect();
+      setExpressBarBox({
+        height: barRect.height,
+        left: sidebarRect.left,
+        width: sidebarRect.width,
+      });
+    };
+    measureBox();
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Runs before the pin state (and its fixed styling) is applied, so
+        // this still reflects the natural in-flow box.
+        measureBox();
+        // The bar sits right at the top of the page, so it can only ever
+        // leave by being scrolled past (never "not yet reached" from below)
+        // — no need to also check boundingClientRect.top here, and doing so
+        // actually fights the rootMargin adjustment below.
+        setPinExpress(isDesktop() && !entry.isIntersecting);
+      },
+      // Top 80px is where the sticky header sits — the bar is already
+      // visually covered/hidden by the time it reaches that line, not only
+      // once it crosses the very top of the raw viewport. Excluding that
+      // strip from the observer's root makes the pin trigger the instant it
+      // disappears behind the header, instead of noticeably later.
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" },
+    );
+    observer.observe(wrapperEl);
+
+    const handleResize = () => {
+      if (!isDesktop()) setPinExpress(false);
+      measureBox();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -3410,10 +3488,8 @@ function Checkout({ cartItems = [] }) {
       prefillFromSplash();
     };
     window.addEventListener("loginStateChange", handler);
-    window.addEventListener("splashDataReady", prefillFromSplash);
     return () => {
       window.removeEventListener("loginStateChange", handler);
-      window.removeEventListener("splashDataReady", prefillFromSplash);
     };
   }, []);
 
@@ -4510,12 +4586,12 @@ function Checkout({ cartItems = [] }) {
           zIndex: 10,
         }}
       >
-        <div
-          onClick={() => router.back?.()}
-          style={{ cursor: "pointer", display: "inline-block" }}
-        >
-          <img src="logo.svg" alt="" style={{ height: "40px" }} />
-        </div>
+       <div
+  onClick={() => router.push("/")}
+  style={{ cursor: "pointer", display: "inline-block" }}
+>
+  <img src="logo.svg" alt="" style={{ height: "40px" }} />
+</div>
         {!isLoggedIn && (
           <div
             style={{
@@ -4561,13 +4637,34 @@ function Checkout({ cartItems = [] }) {
         >
           {/* ── Left column ── */}
           <div className="checkout-left-column">
-            {/* Express Payment */}
-            <ExpressPaymentBar
-              selectedMethod={paymentMethod}
-              onSelect={handleExpressSelect}
-              paypalExpressNode={payPalExpressButtonNode}
-              isSafari={isSafari}
-            />
+            {/* Express Payment — pins to the top of the right sidebar on
+                desktop once it scrolls out of view here. */}
+            <div
+              ref={expressWrapperRef}
+              style={pinExpress ? { height: expressBarBox.height } : undefined}
+            >
+              <div
+                ref={expressBarRef}
+                style={
+                  pinExpress
+                    ? {
+                        position: "fixed",
+                        top: "80px",
+                        left: expressBarBox.left,
+                        width: expressBarBox.width,
+                        zIndex: 20,
+                      }
+                    : undefined
+                }
+              >
+                <ExpressPaymentBar
+                  selectedMethod={paymentMethod}
+                  onSelect={handleExpressSelect}
+                  paypalExpressNode={payPalExpressButtonNode}
+                  isSafari={isSafari}
+                />
+              </div>
+            </div>
 
             {/* Contact details */}
             <Section title={t("contactDetails")}>
@@ -4994,14 +5091,19 @@ function Checkout({ cartItems = [] }) {
           </div>
 
           <div
+            ref={sidebarRef}
             className="checkout-sidebar-container"
             style={{
               width: "480px",
               flexShrink: 0,
               position: "sticky",
-              top: "80px",
+              // Make room at the top for the pinned Express Payment bar so it
+              // doesn't overlap the order summary.
+              top: pinExpress ? `${80 + expressBarBox.height}px` : "80px",
               alignSelf: "flex-start",
-              maxHeight: "calc(100vh - 80px)",
+              maxHeight: pinExpress
+                ? `calc(100vh - ${80 + expressBarBox.height}px)`
+                : "calc(100vh - 80px)",
               overflowY: "auto",
               scrollbarWidth: "none",
               display: "flex",

@@ -4,10 +4,32 @@ import { AiOutlinePlus } from 'react-icons/ai';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export function LandingProductFinder({ data }) {
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
+  const isFrench = i18n.language === 'fr';
   const [selectedPet, setSelectedPet] = useState('');
   const [expandedSection, setExpandedSection] = useState(null);
-  
+  const [categories, setCategories] = useState([]);
+
+  // Top-level pet categories come from the splash API response, cached in
+  // localStorage as "splashData" (see PageLoader.jsx).
+  useEffect(() => {
+    const loadCategories = () => {
+      try {
+        const splash = JSON.parse(localStorage.getItem('splashData') || 'null');
+        const list = (splash?.categories || [])
+          .filter((cat) => !cat.parent_id)
+          .slice()
+          .sort((a, b) => (a.sorting_number || 0) - (b.sorting_number || 0));
+        setCategories(list);
+      } catch {
+        setCategories([]);
+      }
+    };
+    loadCategories();
+    window.addEventListener('splashDataReady', loadCategories);
+    return () => window.removeEventListener('splashDataReady', loadCategories);
+  }, []);
+
   // Background images array
   const backgroundImages = [
     'https://images.unsplash.com/photo-1764821800130-3b09a6f08cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
@@ -42,16 +64,6 @@ export function LandingProductFinder({ data }) {
       prev === backgroundImages.length - 1 ? 0 : prev + 1
     );
   };
-
-  const petTypes = [
-    { key: 'dog' },
-    { key: 'puppy' },
-    { key: 'cat' },
-    { key: 'horse' },
-    { key: 'reptile' },
-    { key: 'smallMammal' },
-    { key: 'birdFarmyard' },
-  ];
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -91,17 +103,17 @@ export function LandingProductFinder({ data }) {
               {t('productFinder.whoIsYourPet')}
             </h3>
             <div className="flex flex-wrap gap-2 sm:gap-3"> 
-              {petTypes.map((pet) => (
+              {categories.map((cat) => (
                 <button
-                  key={pet.key}
-                  onClick={() => setSelectedPet(pet.key)}
+                  key={cat.id}
+                  onClick={() => setSelectedPet(cat.id)}
                   className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3  cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
-                    selectedPet === pet.key
+                    selectedPet === cat.id
                       ? 'bg-white text-black shadow-lg border border-white'
-                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/30' 
+                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/30'
                   }`}
                 >
-                  {t(`productFinder.petTypes.${pet.key}`)}
+                  {isFrench && cat.french_name ? cat.french_name : cat.name}
                 </button>
               ))}
             </div>
@@ -141,7 +153,7 @@ export function LandingProductFinder({ data }) {
           </div>
 
           {/* View Products Button */}
-          <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-3.5 sm:py-4 md:py-5  hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
+          <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-2.5 sm:py-4 md:py-2.5  hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
             {t('productFinder.viewProducts')}
           </button>
         </div>

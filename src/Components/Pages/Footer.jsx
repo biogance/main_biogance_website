@@ -84,7 +84,7 @@ export default function Footer() {
                     <PiTwitterLogo className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                   <BsTiktok size={15} className="p-[0.9]  border border gray-200   text-[#E3E3E3] rounded-sm" />
+                   <BsTiktok size={15} className="p-[0.9]  border border gray-200   text-[#E3E3E3] " />
                   </a>
                 </div>
               </div>
@@ -100,7 +100,7 @@ export default function Footer() {
                     <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
-                  <BsTiktok size={15} className="p-[0.9]  text-[#E3E3E3] border border gray-200   rounded-sm" />
+                  <BsTiktok size={15} className="p-[0.9]  text-[#E3E3E3] border border gray-200" />
                   </a>
                 </div>
               </div> 
@@ -141,7 +141,7 @@ export default function Footer() {
           </div>
 
           {/* Middle Section - Product Categories */}
-          <div className="lg:col-span-6 bg-[#1c1c1c] px-6 sm:px-8 rounded-lg">
+          <div className="lg:col-span-6 bg-[#1c1c1c] px-6 sm:px-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
               
               {/* Dogs & Puppies */}

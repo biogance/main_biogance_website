@@ -407,6 +407,13 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
   const deliveryDropdownRef = useRef(null);
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem("checkoutDeliveryMethod");
+      if (saved === "home" || saved === "pickup") setDeliveryMethod(saved);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
     const handler = (e) => {
       if (deliveryDropdownRef.current && !deliveryDropdownRef.current.contains(e.target))
         setDeliveryDropdownOpen(false);
@@ -1305,7 +1312,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
                         {["home", "pickup"].map((opt) => (
                           <div
                             key={opt}
-                            onClick={() => { setDeliveryMethod(opt); setDeliveryDropdownOpen(false); }}
+                            onClick={() => {
+                              setDeliveryMethod(opt);
+                              setDeliveryDropdownOpen(false);
+                              try { localStorage.setItem("checkoutDeliveryMethod", opt); } catch { /* ignore */ }
+                            }}
                             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#111"; e.currentTarget.style.color = "#fff"; }}
                             onMouseLeave={(e) => {
                               if (deliveryMethod === opt) { e.currentTarget.style.backgroundColor = "#f3f3f3"; e.currentTarget.style.color = "#111"; }

@@ -98,7 +98,7 @@ export default function WishlistPage() {
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white">
-        <Navbar />
+         <Navbar bgWhite={true} />
       </div>
 
       <div className="bg-white min-h-screen">
@@ -144,7 +144,7 @@ export default function WishlistPage() {
           <div className="flex gap-4 border-b border-gray-200">
             <button
               onClick={() => handleTabSwitch('favorite')}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap cursor-pointer ${
                 activeTab === 'favorite' ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-50'
               }`}
             >
@@ -152,7 +152,7 @@ export default function WishlistPage() {
             </button>
             <button
               onClick={() => handleTabSwitch('advice')}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap cursor-pointer ${
                 activeTab === 'advice' ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-50'
               }`}
             >
