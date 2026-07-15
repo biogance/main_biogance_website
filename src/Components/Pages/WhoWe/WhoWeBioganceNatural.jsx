@@ -54,7 +54,7 @@ export default function WhoWeBioganceNatural() {
       {/* Content Container */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
         {/* Glass Card */}
-        <div className="w-full max-w-10xl bg-white/10 backdrop-blur-xs rounded-3xl border border-white/20 p-6 sm:p-8 lg:p-8">
+        <div className="w-full max-w-10xl bg-white/10 backdrop-blur-xs  border border-white/20 p-6 sm:p-8 lg:p-8">
           
           {/* Header */}
           <div className="text-center mb-8 sm:mb-12">
@@ -95,10 +95,10 @@ export default function WhoWeBioganceNatural() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full cursor-pointer sm:w-auto bg-white text-gray-900 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg">
+            <button className="w-full cursor-pointer sm:w-auto bg-white text-gray-900 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold  hover:bg-gray-100 transition-all duration-200 shadow-lg">
               {t('natural.buttons.shopNow')}
             </button>
-            <button className="w-full cursor-pointer sm:w-auto bg-transparent text-white px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold border-2 border-white rounded-lg hover:bg-white/10 transition-all duration-200">
+            <button className="w-full cursor-pointer sm:w-auto bg-transparent text-white px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-semibold border-2 border-white hover:bg-white/10 transition-all duration-200">
               {t('natural.buttons.discover')}
             </button>
           </div>

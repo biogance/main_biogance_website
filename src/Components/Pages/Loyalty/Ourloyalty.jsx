@@ -153,16 +153,16 @@ export default function Loyalty() {
           </p>
 
           <div className="mb-12 md:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl text-stone-900 tracking-[-0.01em] leading-[1.1] max-w-lg">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl text-stone-900">
               {t("moreWaysTitle")}
             </h2>
 
-            <p className=" ml-auto text-stone-600 text-sm leading-relaxed max-w-sm ">
+            <p className=" mt-5 text-stone-600 text-sm leading-relaxed max-w-sm">
               {t("moreWaysDescription")}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 -mt-5">
             {bonusWays.map((way, index) => (
               <div
   key={index}

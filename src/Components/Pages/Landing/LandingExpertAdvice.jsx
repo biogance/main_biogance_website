@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from 'react-i18next';
 import { BiChevronRight } from "react-icons/bi";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
@@ -9,6 +10,7 @@ import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getDeviceId } from '../../../utils/deviceId';
+import { startTopLoader } from "../TopLoader";
 
 
 const FALLBACK_IMAGES = [
@@ -39,6 +41,7 @@ const ShimmerCard = () => (
 export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
+  const router = useRouter();
   const scrollContainerRef = useRef(null);
 
   const apiAdvice = data?.expert_advice || [];
@@ -48,7 +51,6 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
   );
   const [loadingFav, setLoadingFav] = useState({});
-  const [expanded, setExpanded] = useState({});
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -98,7 +100,13 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     }
   };
 
-  const toggleExpanded = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  const navigateToDetail = (article) => {
+    const keyword = isFrench
+      ? article.french_seo_keyword || article.english_seo_keyboard
+      : article.english_seo_keyboard || article.french_seo_keyword;
+    startTopLoader();
+    router.push(`/advices/${encodeURIComponent(keyword)}`);
+  };
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -167,21 +175,26 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
         <div className="relative overflow-hidden">
           <style>{`.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}</style>
           <div ref={scrollContainerRef} className="overflow-x-auto hide-scrollbar snap-x snap-mandatory">
-            <div className="flex gap-3 md:gap-6 pb-4 items-start">
+            <div className="flex gap-3 md:gap-6 pb-4">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, i) => <ShimmerCard key={i} />)
                 : apiAdvice.map((article, index) => {
                     const apiImagePath = article.images?.[0]?.media;
                     const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-                    const tags = (article.tags || []).slice(0, 3).map((tag) => tag.name);
+                    const tagNames = (article.tags || []).map((tag) => tag.name).filter(Boolean);
+                    // Long tag text wraps the badge row onto a second line, which
+                    // breaks the fixed card height — drop to a single tag when
+                    // the first two together would run long.
+                    const tags = tagNames.slice(0, 2).join(' • ').length > 20
+                      ? tagNames.slice(0, 1)
+                      : tagNames.slice(0, 2);
                     const isFav = favorites[article.id] ?? article.favorites_exists ?? false;
-                    const isExp = expanded[article.id] || false;
 
                     const displayName = isFrench && article.french_name ? article.french_name : article.name;
                     const displayDesc = isFrench && article.short_french_description ? article.short_french_description : article.short_description;
 
                     return (
-                      <article key={article.id} className="article-card bg-[#F7F7F7] overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
+                      <article key={article.id} onClick={() => navigateToDetail(article)} className="article-card bg-[#F7F7F7] overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
                         <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
                             src={imageUrl}
@@ -190,7 +203,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                             onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
                           />
                           <button
-                            onClick={() => toggleFavorite(article.id)}
+                            onClick={(e) => { e.stopPropagation(); toggleFavorite(article.id); }}
                             className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full  flex items-center justify-center hover:bg-gray-50 transition-colors"
                           >
                             {isFav
@@ -201,15 +214,15 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                         </div>
 
                         <div className="p-4 md:p-6 lg:p-7 flex flex-col flex-grow">
-                          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium overflow-hidden">
-                            <span className="text-black border border-white  px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
+                          <div className="flex flex-nowrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium overflow-hidden">
+                            <span className="text-black border border-white shrink-0 px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
                               {t('expertAdvice.expertLabel', { defaultValue: 'Expert Advice' })}
                             </span>
-                            <span className="text-black border border-white px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
+                            <span className="text-black border border-white shrink-0 px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
                               {formatDate(article.created_at)}
                             </span>
                             {tags.length > 0 && (
-                              <span className="text-gray-600 border border-white  px-2.5 py-0.5 md:px-3 md:py-1 bg-white truncate min-w-0">
+                              <span className="text-gray-600 border border-white px-2.5 py-0.5 md:px-3 md:py-1 bg-white truncate min-w-0">
                                 {tags.join(' • ')}
                               </span>
                             )}
@@ -220,16 +233,15 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                           </h3>
 
                           <div className="flex-grow mb-4 md:mb-6">
-                            <p className={`text-xs md:text-sm text-gray-600 leading-relaxed ${isExp ? '' : 'line-clamp-2'}`}>
+                            <p className="text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-2">
                               {displayDesc}
                             </p>
                           </div>
 
                           <button
-                            onClick={() => toggleExpanded(article.id)}
                             className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto mt-auto"
                           >
-                            {isExp ? t('expertAdvice.showLess') : t('expertAdvice.continueReading')}
+                            {t('expertAdvice.continueReading')}
                           </button>
                         </div>
                       </article>

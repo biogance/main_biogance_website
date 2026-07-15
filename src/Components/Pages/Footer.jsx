@@ -232,7 +232,7 @@ export default function Footer() {
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/who-are-we" className="hover:text-white transition">{laboratoryItems[0]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/commitments" className="hover:text-white transition">{laboratoryItems[1]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/certifications" className="hover:text-white transition">{laboratoryItems[2]}</Link></li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><a href="#" className="hover:text-white transition">{laboratoryItems[3]}</a></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/advices" className="hover:text-white transition">{laboratoryItems[3]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/ingredients" className="hover:text-white transition">{laboratoryItems[4]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="loyalty" className="hover:text-white transition">{laboratoryItems[5]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><button onClick={() => setShowModal(true)} className="hover:text-white transition text-left cursor-pointer">{laboratoryItems[6]}</button></li>

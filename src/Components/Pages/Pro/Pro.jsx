@@ -24,7 +24,7 @@ export function Pro() {
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50">
-                <Navbar />
+                  <Navbar bgWhite={true} />
             </div>
 
             {/* Hero Section */}
@@ -56,11 +56,11 @@ export function Pro() {
 
                 {/* Tabs */}
                 <div className="flex justify-center mb-12 px-4">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-gray-100 to-gray-50 p-1 shadow-inner">
+                    <div className="inline-flex items-center gap-1 bg-gradient-to-r from-gray-100 to-gray-50 p-1 shadow-inner">
                         <button
                             onClick={() => setActiveTab('distributor')}
                             className={`
-                relative px-6 sm:px-8 py-3 sm:py-3.5 rounded-full 
+                relative px-6 sm:px-8 py-3 sm:py-3.5 
                 transition-all duration-300 ease-in-out
                 text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
                 ${activeTab === 'distributor'
@@ -75,7 +75,7 @@ export function Pro() {
                         <button
                             onClick={() => setActiveTab('partner')}
                             className={`
-                relative px-6 sm:px-8 py-3 sm:py-3.5 rounded-full 
+                relative px-6 sm:px-8 py-3 sm:py-3.5 
                 transition-all duration-300 ease-in-out
                 text-sm sm:text-base font-semibold cursor-pointer whitespace-nowrap
                 ${activeTab === 'partner'
@@ -141,12 +141,12 @@ export function Pro() {
                                 <div className="flex gap-4">
                                     <Link href="/distributor">
                                         <button
-                                            className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
+                                            className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             {t('distributor.buttons.distributorApp')}
                                         </button>
                                     </Link>
                                     <Link href="/reseller">
-                                        <button className="px-6 py-3 bg-white text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
+                                        <button className="px-6 py-3 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             {t('distributor.buttons.resellerApp')}
                                         </button>
                                     </Link>
@@ -154,7 +154,7 @@ export function Pro() {
                             </div>
 
                             {/* Right Image */}
-                            <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${activeTab === 'distributor' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                            <div className={` overflow-hidden transition-all duration-700 delay-200 ${activeTab === 'distributor' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                                 }`}>
                                 <Image
                                     src={distributor}
@@ -192,7 +192,7 @@ export function Pro() {
                                         {t('partner.ambassadorDescription')}
                                     </p>
                                     <Link href="/ambassador">
-                                        <button className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
+                                        <button className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors cursor-pointer" style={{ fontSize: '14px', fontWeight: 700 }}>
                                             {t('partner.button')}
                                         </button>
                                     </Link>
@@ -202,7 +202,7 @@ export function Pro() {
                             {/* Right Image */}
                             <div className={`relative transition-all duration-700 delay-200 ${activeTab === 'partner' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                                 }`}>
-                                <div className="rounded-lg overflow-hidden shadow-lg">
+                                <div className=" overflow-hidden shadow-lg">
                                     <Image
                                         src={partner}
                                         alt="Person with dog at sunset"

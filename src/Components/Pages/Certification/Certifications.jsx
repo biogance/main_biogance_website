@@ -14,7 +14,7 @@ const CertImage = ({ src, alt, className }) => {
   return (
     <div className="relative flex items-center justify-center w-full md:w-70 min-h-[80px]">
       {imgLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div style={{
             width: 28,
             height: 28,
@@ -79,7 +79,7 @@ export default function Certifications() {
       <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
       <style>{`@keyframes certSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+         <Navbar bgWhite={true} />  
       </div>
 
       {/* ── Hero / Top Section ─────────────────────────────────────────────── */}
@@ -88,13 +88,13 @@ export default function Certifications() {
           {/* Mobile Layout - Image First */}
           <div className="lg:hidden mb-8">
             <div className="relative">
-              <div className="relative rounded-lg overflow-hidden shadow-xl">
+              <div className="relative overflow-hidden shadow-xl">
                 <img
                   src="/C1.svg"
                   alt="Pet care professional"
                   className="w-full h-auto object-cover"
                 />
-                <div className="absolute bottom-4 left-4 right-4 bg-white rounded-2xl shadow-xl p-4">
+                <div className="absolute bottom-4 left-4 right-4 bg-white shadow-xl p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <img src="cc2.svg" alt="" className="w-10 h-10" />
@@ -132,13 +132,13 @@ export default function Certifications() {
 
             {/* Right Content - Desktop Only */}
             <div className="relative hidden lg:block">
-              <div className="relative rounded-lg mt-10 overflow-hidden shadow-xl">
+              <div className="relative  mt-20 overflow-hidden shadow-xl">
                 <img
                   src="/C1.svg"
                   alt="Pet care professional"
                   className="w-full h-auto object-cover"
                 />
-                <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white rounded-2xl shadow-xl p-4 md:p-5 max-w-[calc(100%-2rem)] md:max-w-sm">
+                <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white shadow-xl p-4 md:p-5 max-w-[calc(100%-2rem)] md:max-w-sm">
                   <div className="flex items-start gap-3 md:gap-4">
                     <div className="flex-shrink-0 -mt-2">
                       <img src="cc2.svg" alt="" className="w-10 h-10 md:w-14 md:h-14" />
@@ -166,7 +166,7 @@ export default function Certifications() {
           className={`px-6 py-20 ${index === certificates.length - 1 ? 'mb-20' : ''}`}
         >
           <div className="max-w-10xl mx-auto">
-            <div className="bg-[#f7f7f7] p-8 md:p-12 rounded-2xl">
+            <div className="bg-[#f7f7f7] p-8 md:p-12 ">
               <div className="flex flex-col md:flex-row gap-8">
 
                 {/* Logo / Media */}

@@ -20,6 +20,7 @@ export default function SupportChat({ ticket, onClose }) {
   const [loadedImages, setLoadedImages] = useState({});
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosingTicket, setIsClosingTicket] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const handleImageLoad = (id) => {
     setLoadedImages((prev) => ({ ...prev, [id]: true }));
@@ -77,6 +78,11 @@ export default function SupportChat({ ticket, onClose }) {
       .catch((err) => console.error('Fetch conversation error:', err))
       .finally(() => setLoading(false));
   }, [ticket]);
+
+  useEffect(() => {
+    if (loading) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, loading]);
 
   useEffect(() => {
     if (previewImage) {
@@ -590,6 +596,7 @@ export default function SupportChat({ ticket, onClose }) {
               </button>
             </div>
           </div>
+          <div ref={messagesEndRef} />
         </>
       )}
 
