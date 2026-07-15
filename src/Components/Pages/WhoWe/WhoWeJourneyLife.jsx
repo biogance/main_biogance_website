@@ -172,7 +172,7 @@ export default function WhoWeJourneyLife({ onDataLoaded }) {
 
                     {/* Year badge — line ke bilkul upar, left side pe */}
                     <div className="mb-1 pl-1">
-                      <div className={`inline-block text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors duration-300 ${
+                      <div className={`inline-block text-white text-xs font-bold px-3 py-1.5 transition-colors duration-300 ${
                         activeYears.has(index) ? 'bg-gray-900' : 'bg-gray-400'
                       }`}>
                         {item.year}
@@ -182,7 +182,7 @@ export default function WhoWeJourneyLife({ onDataLoaded }) {
                     <div className="flex gap-6">
                       {/* Dot — line pe centered, left-[16px] se match kare */}
                       <div className="flex-shrink-0 flex justify-center" style={{ width: 34 }}>
-                        <div className={`w-3 h-3 rounded-full border-[3px] transition-all duration-300 mt-1.5 ${
+                        <div className={`w-3 h-3  border-[3px] transition-all duration-300 mt-1.5 ${
                           activeYears.has(index) ? 'bg-white border-black' : 'bg-gray-300 border-gray-300'
                         }`}></div>
                       </div>
@@ -213,7 +213,7 @@ export default function WhoWeJourneyLife({ onDataLoaded }) {
                         {/* Year — left side */}
                         <div className="flex justify-end pr-12">
                           <div className="text-right">
-                            <div className={`inline-block text-white text-sm font-bold px-5 py-2 rounded-full transition-colors duration-300 ${
+                            <div className={`inline-block text-white text-sm font-bold px-5 py-2 transition-colors duration-300 ${
                               activeYears.has(index) ? 'bg-gray-900' : 'bg-gray-400'
                             }`}>
                               {item.year}
@@ -274,7 +274,7 @@ export default function WhoWeJourneyLife({ onDataLoaded }) {
 
                         {/* Year — right side */}
                         <div className="pl-12">
-                          <div className={`inline-block text-white text-sm font-bold px-5 py-2 rounded-full transition-colors duration-300 ${
+                          <div className={`inline-block text-white text-sm font-bold px-5 py-2 transition-colors duration-300 ${
                             activeYears.has(index) ? 'bg-gray-900' : 'bg-gray-400'
                           }`}>
                             {item.year}

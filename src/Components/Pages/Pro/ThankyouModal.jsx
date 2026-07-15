@@ -44,7 +44,7 @@ export default function ThankYouModal({ onClose }) {
             `}</style>
 
             <div className={`fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}>
-                <div className={`bg-white rounded-3xl max-w-md w-full p-8 relative ${isClosing ? 'animate-zoomOut' : 'animate-zoomIn'}`}>
+                <div className={`bg-white max-w-md w-full p-8 relative ${isClosing ? 'animate-zoomOut' : 'animate-zoomIn'}`}>
                     <div className="flex justify-center mb-6">
                         <img
                             src="/thankyouPic.png"
@@ -62,7 +62,7 @@ export default function ThankYouModal({ onClose }) {
                     </div>
                     <button
                         onClick={handleClose}
-                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 rounded-xl transition-colors duration-200 cursor-pointer"
+                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 transition-colors duration-200 cursor-pointer"
                     >
                         Got It!
                     </button>

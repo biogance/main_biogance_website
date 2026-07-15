@@ -24,7 +24,7 @@ export default function WhoWeBioganceHero() {
             {/* Right Column - Image Section */}
             <div className="relative order-1 lg:order-2">
               {/* Stats Badge */}
-              <div className="absolute rounded-2xl top-[-70] right-[-20] bg-black text-white p-4 sm:p-5 lg:p-6 z-10 w-[280px] sm:w-[300px] lg:w-[400px] shadow-lg">
+              <div className="absolute top-[-70] right-[-20] bg-black text-white p-4 sm:p-5 lg:p-6 z-10 w-[280px] sm:w-[300px] lg:w-[400px] shadow-lg">
                 <div className="text-[9px] sm:text-[10px] uppercase mb-1 sm:mb-2 tracking-wider text-gray-300 font-medium">
                   {t('hero.badge.trustedBy')}
                 </div>
@@ -37,7 +37,7 @@ export default function WhoWeBioganceHero() {
               </div>
               
               {/* Image Container */}
-              <div className="relative overflow-hidden rounded-2xl">
+              <div className="relative overflow-hidden ">
                 <img src="DG.svg" alt="Biogance" className='w-full h-full object-cover' />
               </div>
             </div>
@@ -64,10 +64,10 @@ export default function WhoWeBioganceHero() {
               
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button className="bg-black cursor-pointer text-white rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors duration-200 w-full sm:w-auto">
+                <button className="bg-black cursor-pointer text-white px-8 py-3.5 text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors duration-200 w-full sm:w-auto">
                   {t('hero.buttons.shopNow')}
                 </button>
-                <button className="bg-white cursor-pointer text-black rounded-[18px] px-8 py-3.5 text-sm sm:text-base font-semibold border-2 border-black hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto">
+                <button className="bg-white cursor-pointer text-black px-8 py-3.5 text-sm sm:text-base font-semibold border-2 border-black hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto">
                   {t('hero.buttons.discover')}
                 </button>
               </div>

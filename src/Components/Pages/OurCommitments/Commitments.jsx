@@ -34,7 +34,7 @@ export default function Commitments() {
         }
       `}</style>
             <div className="fixed top-0 left-0 right-0 z-50">
-                               <Navbar />
+                                <Navbar bgWhite={true} />
                              </div>
             <div className="min-h-screen bg-gray-100 flex items-center justify-center mt-16 ">
                 <div className="max-w-7xl w-full   overflow-hidden">
@@ -43,7 +43,7 @@ export default function Commitments() {
                         <div className="relative">
 
                             {/* Main Image */}
-                            <div className="relative rounded-lg overflow-hidden  ">
+                            <div className="relative overflow-hidden  ">
                                 <Image
                                     src={container}
                                     alt="Laboratory workers"
@@ -81,10 +81,10 @@ export default function Commitments() {
                             </div>
 
                             <div className="flex gap-4">
-                                <button className="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors cursor-pointer">
+                                <button className="bg-gray-900 text-white px-8 py-3 font-semibold hover:bg-gray-800 transition-colors cursor-pointer">
                                     {t('shopNow')}
                                 </button>
-                                <button className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:border-gray-400 transition-colors cursor-pointer">
+                                <button className="border-2 border-gray-300 text-gray-700 px-8 py-3  font-semibold hover:border-gray-400 transition-colors cursor-pointer">
                                     {t('discover')}
                                 </button>
                             </div>
@@ -108,11 +108,11 @@ export default function Commitments() {
 
         {/* Tabs */}
        <div className="flex justify-center mb-12 px-4">
-    <div className="inline-flex rounded-full bg-gray-50 p-2  max-w-6xl overflow-x-auto">
+    <div className="inline-flex  bg-gray-50 p-2  max-w-6xl overflow-x-auto">
         <div className="flex gap-2 min-w-max lg:min-w-0 lg:flex-wrap lg:justify-center">
             <button
                 onClick={() => setActiveTab('animal')}
-                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === 'animal'
                         ? 'text-white bg-black'
                         : 'text-gray-700'
@@ -123,7 +123,7 @@ export default function Commitments() {
             </button>
             <button
                 onClick={() => setActiveTab('environment')}
-                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3  cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === 'environment'
                         ? 'text-white bg-black'
                         : 'text-gray-700'
@@ -134,7 +134,7 @@ export default function Commitments() {
             </button>
             <button
                 onClick={() => setActiveTab('innovation')}
-                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3  cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === 'innovation'
                         ? 'text-white bg-black'
                         : 'text-gray-700'
@@ -145,7 +145,7 @@ export default function Commitments() {
             </button>
             <button
                 onClick={() => setActiveTab('quality')}
-                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === 'quality'
                         ? 'text-white bg-black'
                         : 'text-gray-700'
@@ -156,7 +156,7 @@ export default function Commitments() {
             </button>
             <button
                 onClick={() => setActiveTab('sharing')}
-                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3  cursor-pointer transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === 'sharing'
                         ? 'text-white bg-black'
                         : 'text-gray-700'
@@ -205,7 +205,7 @@ export default function Commitments() {
                     </div>
 
                     {/* Right - Image */}
-                    <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${
+                    <div className={` overflow-hidden transition-all duration-700 delay-200 ${
                         activeTab === 'animal' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                     }`}>
                         <Image
@@ -255,7 +255,7 @@ export default function Commitments() {
                         </p>
                     </div>
                     {/* Right - Image */}
-                    <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${
+                    <div className={` overflow-hidden transition-all duration-700 delay-200 ${
                         activeTab === 'environment' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                     }`}>
                         <Image
@@ -301,7 +301,7 @@ export default function Commitments() {
                         </p>
                     </div>
                     {/* Right - Image */}
-                    <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${
+                    <div className={` overflow-hidden transition-all duration-700 delay-200 ${
                         activeTab === 'innovation' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                     }`}>
                         <Image
@@ -348,7 +348,7 @@ export default function Commitments() {
                     </div>
 
                     {/* Right - Image */}
-                    <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${
+                    <div className={` overflow-hidden transition-all duration-700 delay-200 ${
                         activeTab === 'quality' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                     }`}>
                         <Image
@@ -395,7 +395,7 @@ export default function Commitments() {
                     </div>
 
                     {/* Right - Image */}
-                    <div className={`rounded-lg overflow-hidden transition-all duration-700 delay-200 ${
+                    <div className={` overflow-hidden transition-all duration-700 delay-200 ${
                         activeTab === 'sharing' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                     }`}>
                         <Image

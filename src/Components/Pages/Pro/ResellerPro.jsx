@@ -350,7 +350,7 @@ export function ResellerForm() {
         <>
             <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
              <div className="fixed top-0 left-0 right-0 z-50">
-                    <Navbar />
+                       <Navbar bgWhite={true} />
                   </div>
             <div className="max-w-4xl mx-auto px-6 py-16 mt-15">
                 {/* Form Header */}
@@ -381,7 +381,7 @@ export function ResellerForm() {
                                         setErrors({ ...errors, companyName: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -403,7 +403,7 @@ export function ResellerForm() {
                                         setErrors({ ...errors, registrationNumber: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -429,7 +429,7 @@ export function ResellerForm() {
                                         setErrors({ ...errors, contactName: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -451,7 +451,7 @@ export function ResellerForm() {
                                         setErrors({ ...errors, jobTitle: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -477,7 +477,7 @@ export function ResellerForm() {
                                         setErrors({ ...errors, email: '' });
                                     }
                                 }}
-                                className={`w-full px-4 py-3  text-black bg-gray-50 border-0 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300  transition'
+                                className={`w-full px-4 py-3 text-black bg-gray-50 border-0 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition'
                                     }`}
                                 style={{ fontSize: '14px' }}
                             />
@@ -492,7 +492,7 @@ export function ResellerForm() {
                             <div className="flex gap-2">
                                 <div className="relative" ref={dropdownRef}>
                                     <div
-                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+                                        className="flex items-center gap-2 px-3 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
                                         onClick={() => setIsOpen(!isOpen)}
                                     >
                                         <img
@@ -507,14 +507,14 @@ export function ResellerForm() {
                                     </div>
 
                                     {isOpen && (
-                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-1 max-h-80 overflow-hidden">
+                                        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 shadow-lg z-1 max-h-80 overflow-hidden">
                                             <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
                                                 <input
                                                     type="text"
                                                     placeholder="Search country..."
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className="w-full px-3 placeholder:text-gray-500 text-black py-2 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
+                                                    className="w-full px-3 placeholder:text-gray-500 text-black py-2 bg-gray-50 border-0 focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm"
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             </div>
@@ -553,7 +553,7 @@ export function ResellerForm() {
                                     placeholder="e.g. 555-777-8888"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="flex-1 px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    className="flex-1 px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 focus:outline-none focus:ring-2 focus:ring-gray-300"
                                     style={{ fontSize: '14px' }}
                                 />
                             </div>
@@ -570,7 +570,7 @@ export function ResellerForm() {
                             placeholder={t('resellerForm.placeholders.website')}
                             value={formData.website}
                             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 focus:outline-none focus:ring-2 focus:ring-gray-300"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -585,7 +585,7 @@ export function ResellerForm() {
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                            className="w-full px-4 py-3 placeholder:text-gray-500 text-black bg-gray-50 border-0 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                             style={{ fontSize: '14px' }}
                         />
                     </div>
@@ -602,7 +602,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.petShop}
                                     onChange={() => handleCheckboxChange('petShop')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer"
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer"
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Pet Shop / Specialty Store')}</span>
                             </label>
@@ -611,7 +611,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.gardenCenter}
                                     onChange={() => handleCheckboxChange('gardenCenter')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer "
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Garden Center')}</span>
                             </label>
@@ -620,7 +620,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.groomingSalon}
                                     onChange={() => handleCheckboxChange('groomingSalon')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer "
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Grooming Salon')}</span>
                             </label>
@@ -629,7 +629,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.professionalBreeder}
                                     onChange={() => handleCheckboxChange('professionalBreeder')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer "
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Professional Breeder')}</span>
                             </label>
@@ -638,7 +638,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.veterinaryClinic}
                                     onChange={() => handleCheckboxChange('veterinaryClinic')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer "
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer "
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Veterinary Clinic')}</span>
                             </label>
@@ -647,7 +647,7 @@ export function ResellerForm() {
                                     type="checkbox"
                                     checked={formData.resellerTypes.onlineStore}
                                     onChange={() => handleCheckboxChange('onlineStore')}
-                                    className="w-5 h-5 rounded border-gray-300 accent-black cursor-pointer  "
+                                    className="w-5 h-5 border-gray-300 accent-black cursor-pointer "
                                 />
                                 <span style={{ fontSize: '14px', fontWeight: '600', color: "black" }}>{t('resellerForm.checkbox.Online Store')}</span>
                             </label>
@@ -659,7 +659,7 @@ export function ResellerForm() {
                         {/* <button
                             type="button"
                             onClick={handleCancel}
-                            className="flex-1 px-8 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                            className="flex-1 px-8 py-3 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
                             style={{ fontSize: '14px', fontWeight: 600 }}
                         >
                             Cancel
@@ -667,7 +667,7 @@ export function ResellerForm() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex-1 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="flex-1 px-8 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                             style={{ fontSize: '14px', fontWeight: 600 }}>
                             {isLoading ? 'Submitting...' : t('resellerForm.buttons.submit')}
                         </button>

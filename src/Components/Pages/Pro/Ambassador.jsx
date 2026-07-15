@@ -640,7 +640,7 @@ export default function BioganceAmbassadorForm() {
         }
       `}</style>
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        <Navbar bgWhite={true} />
       </div>
       <div className=" bg-white p-12 mt-20">
         <div className="max-w-5xl mx-auto">
@@ -662,7 +662,7 @@ export default function BioganceAmbassadorForm() {
                   <button
                     key={tab.key}
                     onClick={() => setSelectedTab(tab.key)}
-                    className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] rounded-t-lg cursor-pointer whitespace-nowrap ${
+                    className={`px-3 sm:px-4 md:px-3 py-2 text-xs sm:text-sm md:text-[14px] font-[550] cursor-pointer whitespace-nowrap ${
                       selectedTab === tab.key
                         ? "bg-black text-white"
                         : "bg-white text-black"
@@ -681,7 +681,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information - Already translated in common section */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -708,7 +708,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.firstName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -734,7 +734,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.lastName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.lastName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -763,7 +763,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.email",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -789,7 +789,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.contact",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -818,7 +818,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -834,8 +834,8 @@ export default function BioganceAmbassadorForm() {
                 {/* Your Universe Section */}
                 <div className="py-8">
                   <div className="max-w-5xl mx-auto">
-                    <div className="bg-white border border-gray-300 rounded-lg">
-                      <div className="px-6 py-4 bg-gray-50 rounded-lg border-b border-gray-300">
+                    <div className="bg-white border border-gray-300 ">
+                      <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
                         <h2 className="text-sm font-semibold text-black">
                           {t("ambassador.contentCreator.yourUniverse")}
                         </h2>
@@ -860,7 +860,7 @@ export default function BioganceAmbassadorForm() {
                             placeholder={t(
                               "ambassador.contentCreator.placeholders.socialMediaLink",
                             )}
-                            className="w-[50%] px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                            className="w-[50%] px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                           />
                           {errors.socialMediaLink && (
                             <p className="mt-1 text-xs text-red-600">
@@ -954,7 +954,7 @@ export default function BioganceAmbassadorForm() {
                             placeholder={t(
                               "ambassador.contentCreator.placeholders.mainThemeText",
                             )}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                            className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                           />
                         </div>
 
@@ -1030,7 +1030,7 @@ export default function BioganceAmbassadorForm() {
                             placeholder={t(
                               "ambassador.contentCreator.placeholders.petMainTheme",
                             )}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                            className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                           />
                         </div>
 
@@ -1157,7 +1157,7 @@ export default function BioganceAmbassadorForm() {
                                   placeholder={t(
                                     "ambassador.contentCreator.placeholders.breed",
                                   )}
-                                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black text-black"
+                                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-black text-black"
                                 />
                               </div>
                             )}
@@ -1180,7 +1180,7 @@ export default function BioganceAmbassadorForm() {
                                 placeholder={t(
                                   "ambassador.contentCreator.placeholders.breed",
                                 )}
-                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
+                                className="w-full px-4 py-3 bg-gray-50 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
                               />
                             </div>
 
@@ -1240,7 +1240,7 @@ export default function BioganceAmbassadorForm() {
                                 placeholder={t(
                                   "ambassador.contentCreator.placeholders.characteristics",
                                 )}
-                                className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
+                                className="w-full px-4 py-3 bg-gray-50 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 text-gray-700"
                               />
                             </div>
                           </div>
@@ -1250,7 +1250,7 @@ export default function BioganceAmbassadorForm() {
                         {animalForms.length < 3 && (
                           <button
                             onClick={addAnimal}
-                            className="mt-6 flex items-center gap-2 px-5 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition cursor-pointer"
+                            className="mt-6 flex items-center gap-2 px-5 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition cursor-pointer"
                           >
                             <span className="text-lg">+</span>
                             {t("ambassador.contentCreator.addAnotherAnimal")}
@@ -1264,8 +1264,8 @@ export default function BioganceAmbassadorForm() {
                 {/* Motivation Section */}
                 <div className="py-8">
                   <div className="max-w-5xl mx-auto">
-                    <div className="bg-white border border-gray-300 rounded-lg mb-6">
-                      <div className="px-6 py-4 rounded-lg border-b border-gray-300 bg-gray-50">
+                    <div className="bg-white border border-gray-300 mb-6">
+                      <div className="px-6 py-4 border-b border-gray-300 bg-gray-50">
                         <h3 className="text-sm font-semibold text-black">
                           {t("ambassador.common.motivation")}
                         </h3>
@@ -1283,7 +1283,7 @@ export default function BioganceAmbassadorForm() {
                           )}
                           maxLength={maxChars}
                           rows={4}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                         />
                         <div className="text-right mt-2">
                           <span className="text-xs text-gray-500">
@@ -1300,7 +1300,7 @@ export default function BioganceAmbassadorForm() {
                           type="checkbox"
                           checked={agreeToReview}
                           onChange={(e) => setAgreeToReview(e.target.checked)}
-                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                         />
                         <span className="ml-3 text-sm text-gray-800">
                           {t("ambassador.common.agreement")}
@@ -1319,7 +1319,7 @@ export default function BioganceAmbassadorForm() {
                         onClick={handleSubmit}
                         type="button"
                         disabled={isLoading}
-                        className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                        className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                       >
                         {isLoading
                           ? "Submitting..."
@@ -1338,7 +1338,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -1365,7 +1365,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.firstName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1391,7 +1391,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.lastName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.lastName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1420,7 +1420,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.email",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1446,7 +1446,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.contact",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1475,7 +1475,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1491,9 +1491,9 @@ export default function BioganceAmbassadorForm() {
                 {/* Your Activity Section */}
                 <div className="py-8">
                   <div className="max-w-5xl mx-auto space-y-6">
-                    <div className="bg-white border border-gray-300 rounded-lg">
+                    <div className="bg-white border border-gray-300 ">
                       <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
-                        <h2 className="text-sm font-semibold text-black rounded-lg">
+                        <h2 className="text-sm font-semibold text-black ">
                           {t("ambassador.breeder.yourActivity")}
                         </h2>
                       </div>
@@ -1501,7 +1501,7 @@ export default function BioganceAmbassadorForm() {
                       <div className="p-6 space-y-6">
                         {/* Species Breed */}
                         <div>
-                          <label className="block  text-sm font-medium text-gray-900 mb-3">
+                          <label className="block text-sm font-medium text-gray-900 mb-3">
                             {t("ambassador.breeder.speciesBreed")}
                           </label>
                           <div className="flex flex-wrap gap-4">
@@ -1538,7 +1538,7 @@ export default function BioganceAmbassadorForm() {
                         {/* Breed Name and Main Breed(s) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div>
-                            <label className="block text-sm font-medium  text-gray-900 mb-2">
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
                               {t("ambassador.breeder.breedName")}
                             </label>
                             <input
@@ -1549,7 +1549,7 @@ export default function BioganceAmbassadorForm() {
                               placeholder={t(
                                 "ambassador.breeder.placeholders.breedName",
                               )}
-                              className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                              className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                             />
                           </div>
                           <div>
@@ -1564,7 +1564,7 @@ export default function BioganceAmbassadorForm() {
                               placeholder={t(
                                 "ambassador.breeder.placeholders.mainBreeds",
                               )}
-                              className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                              className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                             />
                           </div>
                         </div>
@@ -1637,7 +1637,7 @@ export default function BioganceAmbassadorForm() {
                     </div>
 
                     {/* Your Collaboration with Biogance */}
-                    <div className="bg-white border border-gray-300 rounded-lg">
+                    <div className="bg-white border border-gray-300 ">
                       <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
                         <h2 className="text-sm font-semibold text-black">
                           {t("ambassador.breeder.yourCollaboration")}
@@ -1720,8 +1720,8 @@ export default function BioganceAmbassadorForm() {
                 {/* Motivation Section */}
                 <div className="py-8">
                   <div className="max-w-5xl mx-auto">
-                    <div className="bg-white border border-gray-300 rounded-lg mb-6">
-                      <div className="px-6 py-4 rounded-lg border-b border-gray-300 bg-gray-50">
+                    <div className="bg-white border border-gray-300 mb-6">
+                      <div className="px-6 py-4 border-b border-gray-300 bg-gray-50">
                         <h3 className="text-sm font-semibold text-black">
                           {t("ambassador.common.motivation")}
                         </h3>
@@ -1739,7 +1739,7 @@ export default function BioganceAmbassadorForm() {
                           )}
                           maxLength={maxChars}
                           rows={4}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                         />
                         <div className="text-right mt-2">
                           <span className="text-xs text-gray-500">
@@ -1756,7 +1756,7 @@ export default function BioganceAmbassadorForm() {
                           type="checkbox"
                           checked={agreeToReview}
                           onChange={(e) => setAgreeToReview(e.target.checked)}
-                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                         />
                         <span className="ml-3 text-sm text-gray-800">
                           {t("ambassador.common.agreement")}
@@ -1775,7 +1775,7 @@ export default function BioganceAmbassadorForm() {
                         onClick={handleSubmit}
                         type="button"
                         disabled={isLoading}
-                        className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                        className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                       >
                         {isLoading
                           ? "Submitting..."
@@ -1793,7 +1793,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -1815,7 +1815,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.firstName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1836,7 +1836,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.lastName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                         />
                         {errors.lastName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1865,7 +1865,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.email",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1891,7 +1891,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.contact",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1920,7 +1920,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -1936,9 +1936,9 @@ export default function BioganceAmbassadorForm() {
                 {/* Your Activity Section */}
                 <div className="py-8">
                   <div className="max-w-5xl mx-auto space-y-6">
-                    <div className="bg-white border border-gray-300 rounded-lg">
+                    <div className="bg-white border border-gray-300 ">
                       <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
-                        <h2 className="text-sm font-semibold text-black rounded-lg">
+                        <h2 className="text-sm font-semibold text-black ">
                           {t("ambassador.breeder.yourActivity")}
                         </h2>
                       </div>
@@ -1994,7 +1994,7 @@ export default function BioganceAmbassadorForm() {
                               placeholder={t(
                                 "ambassador.groomer.placeholders.mainOtherSpeciality",
                               )}
-                              className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                              className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                             />
                           </div>
                         </div>
@@ -2002,7 +2002,7 @@ export default function BioganceAmbassadorForm() {
                     </div>
 
                     {/* Online Presence Section */}
-                    <div className="bg-white border border-gray-300 rounded-lg">
+                    <div className="bg-white border border-gray-300 ">
                       <div className="px-6 py-4 bg-gray-50 border-b border-gray-300">
                         <h2 className="text-sm font-semibold text-black">
                           {t("ambassador.groomer.onlinePresence")}
@@ -2023,7 +2023,7 @@ export default function BioganceAmbassadorForm() {
                             placeholder={t(
                               "ambassador.groomer.placeholders.linkToMainAccount",
                             )}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                            className="w-full px-4 py-3 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                           />
                         </div>
 
@@ -2061,8 +2061,8 @@ export default function BioganceAmbassadorForm() {
                     {/* Motivation Section */}
                     <div className="py-8">
                       <div className="max-w-5xl mx-auto">
-                        <div className="bg-white border border-gray-300 rounded-lg mb-6">
-                          <div className="px-6 py-4 rounded-lg border-b border-gray-300 bg-gray-50">
+                        <div className="bg-white border border-gray-300 mb-6">
+                          <div className="px-6 py-4 border-b border-gray-300 bg-gray-50">
                             <h3 className="text-sm font-semibold text-black">
                               {t("ambassador.common.motivation")}
                             </h3>
@@ -2080,7 +2080,7 @@ export default function BioganceAmbassadorForm() {
                               )}
                               maxLength={maxChars}
                               rows={4}
-                              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                             />
                             <div className="text-right mt-2">
                               <span className="text-xs text-gray-500">
@@ -2099,7 +2099,7 @@ export default function BioganceAmbassadorForm() {
                               onChange={(e) =>
                                 setAgreeToReview(e.target.checked)
                               }
-                              className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                              className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                             />
                             <span className="ml-3 text-sm text-gray-800">
                               {t("ambassador.common.agreement")}
@@ -2118,7 +2118,7 @@ export default function BioganceAmbassadorForm() {
                             type="button"
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                            className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                           >
                             {isLoading
                               ? "Submitting..."
@@ -2138,7 +2138,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -2165,7 +2165,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.organizationName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2193,7 +2193,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.contactName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2222,7 +2222,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.professionalEmail",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2248,7 +2248,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.common.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2262,8 +2262,8 @@ export default function BioganceAmbassadorForm() {
 
                 {/* Your Structure Section */}
                 <div className="max-w-5xl mx-auto space-y-6 py-8">
-                  <div className="bg-white rounded-lg border border-gray-300">
-                    <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900 p-4 rounded-lg">
+                  <div className="bg-white border border-gray-300">
+                    <h2 className="text-md font-semibold border-b border-gray-200 bg-gray-50 text-gray-900 p-4 ">
                       {t("ambassador.clubAssociation.yourStructure")}
                     </h2>
 
@@ -2323,7 +2323,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.clubAssociation.placeholders.organizationName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                         />
                       </div>
 
@@ -2413,7 +2413,7 @@ export default function BioganceAmbassadorForm() {
 
                   {/* Breeds Represented Section */}
                   {/* Breeds Represented Section */}
-                  <div className="bg-white rounded-lg border border-gray-300">
+                  <div className="bg-white border border-gray-300">
                     <h2 className="text-md font-semibold text-gray-900 mb-2 p-4 bg-gray-50">
                       {t("ambassador.clubAssociation.breedsRepresented")}
                     </h2>
@@ -2492,7 +2492,7 @@ export default function BioganceAmbassadorForm() {
                               placeholder={t(
                                 "ambassador.clubAssociation.placeholders.mainBreeds",
                               )}
-                              className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                              className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                             />
                           </div>
                         </div>
@@ -2502,7 +2502,7 @@ export default function BioganceAmbassadorForm() {
                         <button
                           type="button"
                           onClick={addBreedGroup}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition cursor-pointer"
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition cursor-pointer"
                         >
                           <span className="text-lg">+</span>
                           {t("ambassador.clubAssociation.addAnotherBreedGroup")}
@@ -2513,7 +2513,7 @@ export default function BioganceAmbassadorForm() {
 
                   {/* Collaboration with Biogance Section */}
                   <div className="max-w-5xl mx-auto">
-                    <div className="bg-white rounded-lg border border-gray-300">
+                    <div className="bg-white border border-gray-300">
                       <h2 className="text-lg font-semibold text-gray-900 mb-6 p-4 bg-gray-50">
                         {t(
                           "ambassador.clubAssociation.collaborationWithBiogance",
@@ -2544,7 +2544,7 @@ export default function BioganceAmbassadorForm() {
                               )}
                               rows="4"
                               maxLength={250}
-                              className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1"
+                              className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1"
                             />
                             <div className="absolute bottom-2 right-3 text-xs text-gray-500">
                               {formData.collaborationReason?.length || 0}/250
@@ -2616,7 +2616,7 @@ export default function BioganceAmbassadorForm() {
                               placeholder={t(
                                 "ambassador.clubAssociation.placeholders.otherPromotionActions",
                               )}
-                              className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                              className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                             />
                           </div>
                         </div>
@@ -2636,7 +2636,7 @@ export default function BioganceAmbassadorForm() {
                             setErrors({ ...errors, agreeToReview: "" });
                           }
                         }}
-                        className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                        className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                       />
                       <span className="ml-3 text-sm text-gray-800">
                         {t("ambassador.common.agreement")}
@@ -2655,7 +2655,7 @@ export default function BioganceAmbassadorForm() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={isLoading}
-                      className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                      className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                     >
                       {isLoading
                         ? "Submitting..."
@@ -2672,7 +2672,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -2701,7 +2701,7 @@ export default function BioganceAmbassadorForm() {
                               "ambassador.healthProfessional.placeholders.contact",
                             ).split(" ")[0]
                           }
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2725,7 +2725,7 @@ export default function BioganceAmbassadorForm() {
                             }
                           }}
                           placeholder="e.g. Doe"
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.lastName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2794,7 +2794,7 @@ export default function BioganceAmbassadorForm() {
                         placeholder={t(
                           "ambassador.healthProfessional.placeholders.otherProfessionSpeciality",
                         )}
-                        className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                        className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                       />
                     </div>
 
@@ -2812,7 +2812,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.healthProfessional.placeholders.nameOfClinic",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                         />
                       </div>
 
@@ -2833,7 +2833,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.healthProfessional.placeholders.professionalEmail",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2862,7 +2862,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.healthProfessional.placeholders.contact",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2888,7 +2888,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.healthProfessional.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -2903,8 +2903,8 @@ export default function BioganceAmbassadorForm() {
                 {/* Your Activity Section */}
                 <div className="py-6">
                   <div className="max-w-5xl mx-auto space-y-6">
-                    <div className="bg-white rounded-lg border border-gray-300">
-                      <h2 className="p-6 bg-gray-50 text-md font-bold text-black rounded-lg">
+                    <div className="bg-white border border-gray-300">
+                      <h2 className="p-6 bg-gray-50 text-md font-bold text-black ">
                         {t("ambassador.healthProfessional.yourActivity")}
                       </h2>
 
@@ -2956,7 +2956,7 @@ export default function BioganceAmbassadorForm() {
 
                         {/* You mainly work with */}
                         <div className="mb-6">
-                          <label className="  block mb-3 text-black">
+                          <label className=" block mb-3 text-black">
                             {t(
                               "ambassador.healthProfessional.youMainlyWorkWith",
                             )}
@@ -3019,7 +3019,7 @@ export default function BioganceAmbassadorForm() {
                     </div>
 
                     {/* Collaboration Opportunities Section */}
-                    <div className="bg-white rounded-lg border border-gray-200">
+                    <div className="bg-white border border-gray-200">
                       <h2 className="p-6 bg-gray-50 text-md font-bold text-black">
                         {t(
                           "ambassador.healthProfessional.collaborationOpportunities",
@@ -3074,7 +3074,7 @@ export default function BioganceAmbassadorForm() {
                               )}
                               maxLength={250}
                               rows={4}
-                              className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
+                              className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
                             />
                             <div className="text-right text-gray-500 mt-1">
                               {formData.expertTopics?.length || 0}/250
@@ -3097,7 +3097,7 @@ export default function BioganceAmbassadorForm() {
                               setErrors({ ...errors, agreeToReview: "" });
                             }
                           }}
-                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                          className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                         />
                         <span className="ml-3 text-sm text-gray-800">
                           {t("ambassador.common.agreement")}
@@ -3116,7 +3116,7 @@ export default function BioganceAmbassadorForm() {
                         onClick={handleSubmit}
                         type="button"
                         disabled={isLoading}
-                        className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                        className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                       >
                         {isLoading
                           ? "Submitting..."
@@ -3134,7 +3134,7 @@ export default function BioganceAmbassadorForm() {
             <>
               <div className="animate-fadeIn">
                 {/* Basic Information */}
-                <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                <div className="border border-gray-300 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h2 className="text-sm font-semibold text-black">
                       {t("ambassador.common.basicInformation")}
@@ -3161,7 +3161,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.animalWelfare.placeholders.organizationName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-xs text-red-600">
@@ -3189,7 +3189,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.animalWelfare.placeholders.contactName",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.contact && (
                           <p className="mt-1 text-xs text-red-600">
@@ -3218,7 +3218,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.animalWelfare.placeholders.professionalEmail",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.email && (
                           <p className="mt-1 text-xs text-red-600">
@@ -3244,7 +3244,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.animalWelfare.placeholders.cityRegion",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                         />
                         {errors.cityRegion2 && (
                           <p className="mt-1 text-xs text-red-600">
@@ -3258,8 +3258,8 @@ export default function BioganceAmbassadorForm() {
 
                 {/* Your Structure Section */}
                 <div className="max-w-5xl mx-auto space-y-6 py-8">
-                  <div className="bg-white rounded-lg border border-gray-300">
-                    <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg">
+                  <div className="bg-white border border-gray-300">
+                    <h2 className="p-6 bg-gray-50 text-black text-sm font-bold ">
                       {t("ambassador.animalWelfare.yourStructure")}
                     </h2>
 
@@ -3315,7 +3315,7 @@ export default function BioganceAmbassadorForm() {
                           placeholder={t(
                             "ambassador.animalWelfare.placeholders.rinaSirenNumber",
                           )}
-                          className="w-full px-3 py-2.5 bg-gray-50 border-0 rounded text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                          className="w-full px-3 py-2.5 bg-gray-50 border-0 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                         />
                       </div>
 
@@ -3375,8 +3375,8 @@ export default function BioganceAmbassadorForm() {
                   </div>
 
                   {/* Your Collaboration with Biogance Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 mb-8">
-                    <h2 className="p-6 bg-gray-50 text-black text-sm font-bold rounded-lg">
+                  <div className="bg-white border border-gray-200 mb-8">
+                    <h2 className="p-6 bg-gray-50 text-black text-sm font-bold ">
                       {t("ambassador.animalWelfare.yourCollaboration")}
                     </h2>
 
@@ -3453,7 +3453,7 @@ export default function BioganceAmbassadorForm() {
                             placeholder={t(
                               "ambassador.animalWelfare.placeholders.otherProducts",
                             )}
-                            className="w-full text-black px-3 py-2 rounded bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                            className="w-full text-black px-3 py-2 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                           />
                         </div>
                       </div>
@@ -3491,8 +3491,8 @@ export default function BioganceAmbassadorForm() {
                   </div>
 
                   {/* Your Message Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 mb-6">
-                    <h2 className="p-6 bg-gray-50 text-sm font-bold text-black rounded-lg">
+                  <div className="bg-white border border-gray-200 mb-6">
+                    <h2 className="p-6 bg-gray-50 text-sm font-bold text-black ">
                       {t("ambassador.animalWelfare.yourMessage")}
                     </h2>
 
@@ -3510,7 +3510,7 @@ export default function BioganceAmbassadorForm() {
                           )}
                           maxLength={250}
                           rows={4}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition resize-none"
                         />
                         <div className="text-right text-gray-500 mt-1">
                           {formData.shelterMessage?.length || 0}/250 characters
@@ -3531,7 +3531,7 @@ export default function BioganceAmbassadorForm() {
                             setErrors({ ...errors, agreeToReview: "" });
                           }
                         }}
-                        className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 rounded accent-black cursor-pointer"
+                        className="w-4 h-4 mt-0.5 text-black border-2 border-gray-300 accent-black cursor-pointer"
                       />
                       <span className="ml-3 text-sm text-gray-800">
                         {t("ambassador.common.agreement")}
@@ -3550,7 +3550,7 @@ export default function BioganceAmbassadorForm() {
                       onClick={handleSubmit}
                       type="button"
                       disabled={isLoading}
-                      className="flex-1 bg-black text-white py-4 rounded-md text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
+                      className="flex-1 bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-70"
                     >
                       {isLoading
                         ? "Submitting..."

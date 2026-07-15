@@ -15,6 +15,22 @@ import LandingExpertAdvice from "../Landing/LandingExpertAdvice";
 import { BASE_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
 
+function getAuthHeaders() {
+  try {
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    if (loginData?.data?.token) return { Authorization: `Bearer ${loginData.data.token}` };
+  } catch {}
+  return {};
+}
+
+function getAuthBody() {
+  try {
+    const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+    if (loginData?.data?.token) return {};
+  } catch {}
+  return { device_id: getDeviceId() };
+}
+
 export default function WishlistPage() {
   const { t } = useTranslation('home');
   const [activeTab, setActiveTab] = useState('favorite');
@@ -24,14 +40,8 @@ export default function WishlistPage() {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
-        const payload = { type: 'favorites' };
-        if (loginData?.data?.token) {
-          payload.token = loginData.data.token;
-        } else {
-          payload.device_id = getDeviceId();
-        }
-        const res = await axios.post(`${BASE_URL}/product/list`, payload);
+        const payload = { type: 'favorites', ...getAuthBody() };
+        const res = await axios.post(`${BASE_URL}/product/list`, payload, { headers: getAuthHeaders() });
         if (res.data.status === false) {
           const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
           toast.error(msg);
@@ -50,14 +60,8 @@ export default function WishlistPage() {
   const fetchFavoriteAdvice = async () => {
     if (adviceItems !== null) return;
     try {
-      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
-      const payload = {};
-      if (loginData?.data?.token) {
-        payload.token = loginData.data.token;
-      } else {
-        payload.device_id = getDeviceId();
-      }
-      const res = await axios.post(`${BASE_URL}/blog/list/favorites`, payload);
+      const payload = { ...getAuthBody() };
+      const res = await axios.post(`${BASE_URL}/blog/list/favorites`, payload, { headers: getAuthHeaders() });
       if (res.data.status === false) {
         const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
         toast.error(msg);
