@@ -290,32 +290,68 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     }
   };
 
+  const rowRef = useRef(null);
   const rightColRef = useRef(null);
-  const rightFullyVisible = useRef(false);
 
   useEffect(() => {
     const el = rightColRef.current;
-    if (!el) return;
-    const check = () => {
-      const rect = el.getBoundingClientRect();
-      rightFullyVisible.current =
-        rect.top >= 0 && rect.bottom <= window.innerHeight;
+    const row = rowRef.current;
+    if (!el || !row) return;
 
-      const atTop = window.scrollY <= 0;
-      const atBottom =
-        window.scrollY + window.innerHeight >= document.body.scrollHeight - 2;
-      if (atTop) el.scrollTop = 0;
+    const isDesktop = () => window.innerWidth >= 1024;
+
+    // Reveal the sidebar's first/last card fully once the page has
+    // scrolled to the very start/end of the ROW (not the document — more
+    // sections like "More expert advices" and the footer follow below the
+    // row, so the row ends well before the document does). Scrolling
+    // anywhere in between (e.g. reading the left article) leaves the
+    // sidebar's internal scroll untouched.
+    const syncRowEdges = () => {
+      if (!isDesktop()) return;
+      const overflow = el.scrollHeight - el.clientHeight;
+      if (overflow <= 0) return;
+
+      const rect = row.getBoundingClientRect();
+      const atBottom = window.scrollY > 0 && rect.bottom <= window.innerHeight;
+      const atTop = rect.top >= 0;
       if (atBottom) el.scrollTop = el.scrollHeight;
+      else if (atTop) el.scrollTop = 0;
     };
-    check();
-    window.addEventListener("scroll", check);
-    return () => window.removeEventListener("scroll", check);
-  }, [loading]);
+    syncRowEdges();
+    window.addEventListener("scroll", syncRowEdges);
+    window.addEventListener("resize", syncRowEdges);
 
-  const handleRightWheel = (e) => {
-    if (!rightFullyVisible.current) return;
-    e.stopPropagation();
-  };
+    // Scrolling directly over the sidebar, or the empty whitespace to its
+    // right, moves only the card list — the page itself stays put.
+    const handleWheel = (e) => {
+      if (!isDesktop()) return;
+      const rect = el.getBoundingClientRect();
+      const withinRow = rect.top >= 0 && rect.bottom <= window.innerHeight;
+      if (!withinRow) return;
+      if (
+        e.clientX < rect.left ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
+      )
+        return;
+
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const scrollingDown = e.deltaY > 0;
+      const canScrollDown = scrollTop + clientHeight < scrollHeight - 1;
+      const canScrollUp = scrollTop > 0;
+      if ((scrollingDown && canScrollDown) || (!scrollingDown && canScrollUp)) {
+        e.preventDefault();
+        el.scrollTop += e.deltaY;
+      }
+    };
+    window.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener("scroll", syncRowEdges);
+      window.removeEventListener("resize", syncRowEdges);
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, [loading]);
 
   // const handleAddAll = async () => {
   //   if (addingAll) return;
@@ -508,7 +544,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       {/* Article body + product recommendation */}
       <div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
         {hasProducts ? (
-          <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
+          <div
+            ref={rowRef}
+            className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto"
+          >
             {/* Left: article content */}
             <div className="w-full lg:w-2/3">
               {getBlogField(blog, "long_description", isFr) ? (
@@ -527,7 +566,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             <div
               ref={rightColRef}
               className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              onWheel={handleRightWheel}
             >
               <div className="border border-gray-200 p-4 sm:p-6">
                 <p className="text-xs text-gray-400 mb-2">

@@ -2,73 +2,106 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { IoClose, IoLocationOutline, IoSearch } from "react-icons/io5";
+import { CgSpinner } from "react-icons/cg";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import { BASE_URL } from "../../API/API";
 
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
-const PICKUP_LOCATIONS = [
-  {
-    id: 1,
-    name: "Paris Central Depot",
-    address: "12 Rue de la Paix, 75002 Paris, Île-de-France, France",
-    lat: "48.8698",
-    lng: "2.3312",
-  },
-  {
-    id: 2,
-    name: "Biogance Pickup - Lyon Sud",
-    address: "45 Avenue Jean Jaurès, 69007 Lyon, Auvergne-Rhône-Alpes, France",
-    lat: "45.7485",
-    lng: "4.8357",
-  },
-  {
-    id: 3,
-    name: "Marseille Vieux-Port Point",
-    address: "88 Quai du Port, 13002 Marseille, Provence-Alpes-Côte d'Azur, France",
-    lat: "43.2965",
-    lng: "5.3700",
-  },
-  {
-    id: 4,
-    name: "Nantes Distribution Relay",
-    address: "102 Route de Clisson, 44230 Saint-Sébastien-sur-Loire, Pays de la Loire, France",
-    lat: "47.2081",
-    lng: "-1.5414",
-  },
-  {
-    id: 5,
-    name: "Strasbourg Center Relay",
-    address: "14 Rue du Vieux-Marché-aux-Poissons, 67000 Strasbourg, Grand Est, France",
-    lat: "48.5800",
-    lng: "7.7500",
-  },
-  {
-    id: 6,
-    name: "Lille Grand-Place Hub",
-    address: "5 Rue des Débris Saint-Étienne, 59800 Lille, Hauts-de-France, France",
-    lat: "50.6372",
-    lng: "3.0633",
-  },
-  {
-    id: 7,
-    name: "Bordeaux Chartrons Depot",
-    address: "22 Cours du Portal, 33000 Bordeaux, Nouvelle-Aquitaine, France",
-    lat: "44.8542",
-    lng: "-0.5721",
-  },
-  {
-    id: 8,
-    name: "Toulouse Capitole Express",
-    address: "17 Rue Lafayette, 31000 Toulouse, Occitanie, France",
-    lat: "43.6045",
-    lng: "1.4440",
+const FALLBACK_COUNTRY = "FR";
+const FALLBACK_POSTAL_CODE = "49123";
+
+function mapServicePoint(point) {
+  return {
+    id: point.id,
+    name: point.name,
+    address: [
+      [point.house_number, point.street].filter(Boolean).join(" "),
+      [point.postal_code, point.city].filter(Boolean).join(" "),
+    ]
+      .filter(Boolean)
+      .join(", "),
+    lat: point.latitude,
+    lng: point.longitude,
+  };
+}
+
+// User's own delivery address (from splashData) when available, otherwise
+// the fallback country/postal code.
+function getServicePointParams() {
+  try {
+    const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+    const addr = splash?.user?.delivery_address;
+    if (addr?.country && addr?.postal_code) {
+      return { country: addr.country, postalCode: addr.postal_code };
+    }
+  } catch {
+    /* fall through to default */
   }
-];
+  return { country: FALLBACK_COUNTRY, postalCode: FALLBACK_POSTAL_CODE };
+}
 
 export default function ModalPickLocation({ isOpen, onClose, onSelectLocation }) {
   const { t } = useTranslation("checkout");
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredId, setHoveredId] = useState(null);
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchServicePoints = async (params) => {
+      const res = await fetch(`${BASE_URL}/user/order/get/service/point`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...params, radius: 5000 }),
+      });
+      return res.json();
+    };
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const params = getServicePointParams();
+        let data = await fetchServicePoints(params);
+        if (data.status === false) {
+          toast.error(data.action || "Something went wrong.");
+          setLocations([]);
+          return;
+        }
+
+        let points = data.data || [];
+        const isFallback =
+          params.country === FALLBACK_COUNTRY &&
+          params.postalCode === FALLBACK_POSTAL_CODE;
+
+        // User's own address returned no results — retry with the default
+        // country/postal code so the list isn't left empty.
+        if (points.length === 0 && !isFallback) {
+          data = await fetchServicePoints({
+            country: FALLBACK_COUNTRY,
+            postalCode: FALLBACK_POSTAL_CODE,
+          });
+          if (data.status === false) {
+            toast.error(data.action || "Something went wrong.");
+            setLocations([]);
+            return;
+          }
+          points = data.data || [];
+        }
+
+        setLocations(points.map(mapServicePoint));
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+        setLocations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [isOpen]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -92,7 +125,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
 
 
   // Filter locations based on search query
-  const filteredLocations = PICKUP_LOCATIONS.filter(
+  const filteredLocations = locations.filter(
     (loc) =>
       loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       loc.address.toLowerCase().includes(searchQuery.toLowerCase())
@@ -203,14 +236,32 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
 
         {/* Locations List */}
         <div
+          className="[&::-webkit-scrollbar]:hidden"
           style={{
             flex: 1,
             overflowY: "auto",
             padding: "0 24px 24px",
-            scrollbarWidth: "thin",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
-          {filteredLocations.length > 0 ? (
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "40px 0",
+              }}
+            >
+              <CgSpinner
+                size={38}
+                style={{
+                  color: "#000000",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
+            </div>
+          ) : filteredLocations.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {filteredLocations.map((loc) => {
                 const isHovered = hoveredId === loc.id;
