@@ -1432,13 +1432,14 @@ export default function FilterProducts() {
             <div className="grid grid-cols-12 gap-x-8 gap-y-6 pt-6 pb-6">
               {/* Left: headline + count, description underneath */}
               <div className="col-span-12 lg:col-span-8">
-                <h4 className="mt-6 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
+               <h4 className="mt-0 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
                   <span
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden",
+                      paddingBottom: "0.1em",
                     }}
                   >
                     {ctx.title}
