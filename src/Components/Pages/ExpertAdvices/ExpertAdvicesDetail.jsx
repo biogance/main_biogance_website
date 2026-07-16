@@ -10,11 +10,15 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import { LuPackage } from "react-icons/lu";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiEdit } from "react-icons/fi";
+import { HiOutlineUser, HiOutlineCalendar } from "react-icons/hi2";
+import { TbHourglassFilled } from "react-icons/tb";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { mergeCartItem } from "../../../utils/cartStorage";
 import { startTopLoader } from "../TopLoader";
+import { FaRegHourglassHalf } from "react-icons/fa6";
+import { FaArrowLeft, FaRegUser } from "react-icons/fa";
 
 function getAuthHeaders() {
   try {
@@ -77,7 +81,7 @@ function useCardsPerView() {
   return count;
 }
 
-function MoreAdvicesRow({ items, isFr, sectionLabel }) {
+function MoreAdvicesRow({ items, isFr, backInfo }) {
   const { t } = useTranslation("expertadvice");
   const router = useRouter();
   const scrollRef = useRef(null);
@@ -111,7 +115,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
     const track = scrollRef.current;
     if (!track) return;
     const card = track.querySelector("[data-card]");
-    const amount = card ? card.offsetWidth + 24 : 320;
+    const amount = card ? card.offsetWidth + 12 : 320;
     track.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
 
@@ -126,23 +130,17 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
   if (!items?.length) return null;
 
   return (
-    <section className="bg-[#fbf9f7] py-12 md:py-16">
+    <section className="bg-[#fbf9f7] py-8 sm:py-12 md:py-16">
       <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
         <div>
-          <p className="text-xs text-gray-400 mb-1">
-            <Link href="/" className="hover:text-gray-600 transition-colors">
-              {t("home")}
-            </Link>{" "}
-            /{" "}
-            <Link
-              href="/advices"
-              className="hover:text-gray-600 transition-colors"
-            >
-              {t("advice")}
-            </Link>{" "}
-            / {sectionLabel}
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <button
+            onClick={() => { startTopLoader(); router.push(backInfo.url); }}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase  text-gray-900 hover:text-gray-500 transition-colors mb-1 cursor-pointer bg-transparent border-none p-0"
+          >
+               <FaArrowLeft className="w-3.5 h-3.5" />
+            Back to {backInfo.label}
+          </button>
+       <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
             {t("moreExpertAdvices")}
           </h2>
         </div>
@@ -170,7 +168,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
 
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+     className="flex gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item) => (
           <div
@@ -179,7 +177,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
             onClick={() => navigateToDetail(item)}
             className="relative h-72 shrink-0 overflow-hidden cursor-pointer group"
             style={{
-              flexBasis: `calc((100% - ${(cardsPerView - 1) * 24}px) / ${cardsPerView})`,
+               flexBasis: `calc((100% - ${(cardsPerView - 1) * 12}px) / ${cardsPerView})`,
             }}
           >
             <img
@@ -210,6 +208,14 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   const router = useRouter();
   const seoKeyword = seoKeywordProp;
   const sectionLabel = t("expertInsight");
+
+  const [backInfo, setBackInfo] = useState({ label: "Advices", url: "/advices" });
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("adviceBack");
+      if (stored) setBackInfo(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   const [blog, setBlog] = useState(null);
   const [bundles, setBundles] = useState([]);
@@ -394,9 +400,18 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               <div className="h-4 bg-gray-200 animate-pulse rounded w-full max-w-md mb-2" />
               <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6 max-w-md mb-8" />
               <div className="flex items-center gap-5 sm:gap-8 flex-wrap">
-                <div className="h-3 bg-gray-200 animate-pulse rounded w-28" />
-                <div className="h-3 bg-gray-200 animate-pulse rounded w-20" />
-                <div className="h-3 bg-gray-200 animate-pulse rounded w-36" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
+                  <div className="h-3 bg-gray-200 animate-pulse rounded w-24" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
+                  <div className="h-3 bg-gray-200 animate-pulse rounded w-16" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
+                  <div className="h-3 bg-gray-200 animate-pulse rounded w-32" />
+                </div>
               </div>
             </div>
             <div className="relative w-full lg:w-1/2 h-[420px] bg-gray-200 animate-pulse" />
@@ -404,8 +419,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         </section>
 
         {/* Article body + sidebar skeleton — same container padding + column split as the real layout */}
-        <div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
-          <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
+        <div className="px-6 sm:px-10 lg:px-16 py-12 md:py-16">
+          <div className="flex flex-col lg:flex-row gap-12">
             <div className="w-full lg:w-2/3 space-y-4">
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
@@ -418,7 +433,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               <div className="h-4 bg-gray-100 animate-pulse rounded w-3/4" />
             </div>
 
-            <div className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0">
+            <div className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0 lg:ml-auto">
               <div className="border border-gray-200 p-4 sm:p-6">
                 <div className="h-3 bg-gray-100 animate-pulse rounded w-28 mb-2" />
                 <div className="h-6 bg-gray-100 animate-pulse rounded w-44 mb-4" />
@@ -457,7 +472,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         </section>
 
         {/* More advices skeleton — includes the left/right scroll-arrow placeholders the real header has */}
-        <section className="bg-[#fbf9f7] py-12 md:py-16">
+      <section className="bg-[#fbf9f7] py-8 sm:py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
             <div>
               <div className="h-3 bg-gray-200 animate-pulse rounded w-32 mb-1" />
@@ -473,7 +488,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               <div
                 key={i}
                 className="relative h-72 bg-gray-200 animate-pulse shrink-0"
-                style={{ flexBasis: "calc((100% - 48px) / 3)" }}
+                style={{ flexBasis: "calc((100% - 24px) / 3)" }}
               >
                 <div className="absolute inset-x-0 bottom-0 p-4 pt-10 space-y-2">
                   <div className="h-2.5 bg-gray-300/70 rounded w-1/4" />
@@ -497,20 +512,14 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       <section className="bg-[#fbf9f7]">
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-            <p className="text-xs text-gray-400 mb-6">
-              <Link href="/" className="hover:text-gray-600 transition-colors">
-                {t("home")}
-              </Link>{" "}
-              /{" "}
-              <Link
-                href="/advices"
-                className="hover:text-gray-600 transition-colors"
-              >
-                {t("advice")}
-              </Link>{" "}
-              / {sectionLabel}
-            </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
+            <button
+              onClick={() => { startTopLoader(); router.push(backInfo.url); }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors mb-6 cursor-pointer bg-transparent border-none p-0"
+            >
+            <FaArrowLeft className="w-3.5 h-3.5" />
+              Back to {backInfo.label}
+            </button>
+          <h1 className="text-2xl sm:text-3xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
               {getBlogField(blog, "name", isFr)}
             </h1>
             {getBlogField(blog, "short_description", isFr) && (
@@ -519,18 +528,24 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               </p>
             )}
             <div className="flex items-center gap-5 sm:gap-8 text-xs text-gray-700 font-medium flex-wrap">
-              <span>
+              <span className="flex items-center gap-1.5">
+                <FaRegUser className="w-4 h-4 text-gray-500" />
                 {t("byAuthor", { name: blog?.company_name || "Biogance" })}
               </span>
-              <span>{t("minRead", { time: blog?.reading_time || "0" })}</span>
+              <span className="flex items-center gap-1.5">
+                <FaRegHourglassHalf className="w-4 h-4 text-gray-500" />
+                {t("minRead", { time: blog?.reading_time || "0" })}
+              </span>
               {blog?.updated_at && (
-                <span>
+                <span className="flex items-center gap-1.5">
+                  <FiEdit className="w-4 h-4 text-gray-500" />
                   {t("updatedOn", {
                     date: new Date(blog.updated_at).toLocaleDateString(
                       isFr ? "fr-FR" : "en-GB",
                       { day: "numeric", month: "long", year: "numeric" },
                     ),
                   })}
+                
                 </span>
               )}
             </div>
@@ -544,19 +559,17 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   : "/cat.png"
               }
               alt={getBlogField(blog, "name", isFr)}
-              className="max-h-[420px] w-full object-contain"
+              className="max-h-[420px] w-full object-cover"
             />
           </div>
         </div>
       </section>
 
       {/* Article body + product recommendation */}
-      <div className="px-6 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-12 md:py-16">
+    <div className="px-6 sm:px-10 lg:px-16 py-6 sm:py-10 md:py-16"> 
         {hasProducts ? (
-          <div
-            ref={rowRef}
-            className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto"
-          >
+          <div ref={rowRef} className="flex flex-col lg:flex-row gap-12">
+
             {/* Left: article content */}
             <div className="w-full lg:w-2/3">
               {getBlogField(blog, "long_description", isFr) ? (
@@ -574,7 +587,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             {/* Right: recommended products */}
             <div
               ref={rightColRef}
-              className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="w-full lg:w-1/3 max-w-md mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               <div className="border border-gray-200 p-4 sm:p-6">
                 <p className="text-xs text-gray-400 mb-2">
@@ -693,8 +706,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             </div>
           </div>
         ) : (
-          /* No products: plain centered content, no flex wrapper involved */
-          <div className="max-w-3xl mx-auto">
+          /* No products: plain content, aligned with hero content */
+          <div>
             {getBlogField(blog, "long_description", isFr) ? (
               <div
                 className="prose prose-sm max-w-none text-gray-700"
@@ -731,7 +744,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       <MoreAdvicesRow
         items={relatedBlogs}
         isFr={isFr}
-        sectionLabel={sectionLabel}
+        backInfo={backInfo}
       />
 
       <Footer />

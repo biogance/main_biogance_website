@@ -217,13 +217,18 @@ function AllArticlesCardSkeleton() {
   );
 }
 
-function ArticleRow({ label, type, icon: Icon, items, isFr }) {
+function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activeTopic }) {
   const router = useRouter();
 
   const navigateToDetail = (item) => {
     const keyword = isFr
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
+    const parts = [];
+    if (activeSpecies) parts.push(activeSpecies.name);
+    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(t.name));
+    const backLabel = parts.length ? parts.join(" & ") + " Advices" : "Advices";
+    try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: "/advices" })); } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -276,7 +281,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr }) {
           type="button"
           onClick={() => {
             startTopLoader();
-            router.push(`/advices/see-all/${type}`);
+            router.push(`/advices/${type}`);
           }}
           className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer"
         >
@@ -755,6 +760,7 @@ function ExpertAdvices() {
                       heroArticle.blog.english_seo_keyboard
                     : heroArticle.blog.english_seo_keyboard ||
                       heroArticle.blog.french_seo_keyword;
+                  try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: "Advices", url: "/advices" })); } catch {}
                   startTopLoader();
                   router.push(`/advices/${encodeURIComponent(keyword)}`);
                 }}
@@ -887,6 +893,8 @@ function ExpertAdvices() {
               icon={FaRegStar}
               items={sections.recommended}
               isFr={isFr}
+              activeSpecies={activeSpecies}
+              activeTopic={activeTopic}
             />
             <ArticleRow
               label="Trending"
@@ -894,6 +902,8 @@ function ExpertAdvices() {
               icon={GoFlame}
               items={sections.trending}
               isFr={isFr}
+              activeSpecies={activeSpecies}
+              activeTopic={activeTopic}
             />
             <ArticleRow
               label="Most Liked"
@@ -901,6 +911,8 @@ function ExpertAdvices() {
               icon={CiHeart}
               items={sections.most_liked}
               isFr={isFr}
+              activeSpecies={activeSpecies}
+              activeTopic={activeTopic}
             />
             <ArticleRow
               label="Recently Added"
@@ -908,6 +920,8 @@ function ExpertAdvices() {
               icon={GoClock}
               items={sections.recently_added}
               isFr={isFr}
+              activeSpecies={activeSpecies}
+              activeTopic={activeTopic}
             />
             {/* <ArticleRow label="Pet Blogs" type="pet" icon={FaRegStar} items={sections.pet} isFr={isFr} /> */}
           </>
@@ -944,6 +958,11 @@ function ExpertAdvices() {
                       const keyword = isFr
                         ? a.french_seo_keyword || a.english_seo_keyboard
                         : a.english_seo_keyboard || a.french_seo_keyword;
+                      const parts = [];
+                      if (activeSpecies) parts.push(activeSpecies.name);
+                      if (activeTopic?.length) activeTopic.forEach((t) => parts.push(t.name));
+                      const backLabel = parts.length ? parts.join(" & ") + " Advices" : "Advices";
+                      try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: "/advices" })); } catch {}
                       startTopLoader();
                       router.push(`/advices/${encodeURIComponent(keyword)}`);
                     }}

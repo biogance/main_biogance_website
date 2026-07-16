@@ -114,14 +114,26 @@ const getErrorMsg = (data) => {
   return null;
 };
 
-const SENDCLOUD_VALIDATE_ADDRESS_URL =
-  "https://panel.sendcloud.sc/api/v3/addresses/validate";
-const SENDCLOUD_PUBLIC_KEY = process.env.NEXT_PUBLIC_SENDCLOUD_PUBLIC_KEY;
-const SENDCLOUD_SECRET_KEY = process.env.NEXT_PUBLIC_SENDCLOUD_SECRET_KEY;
+// Maps SendCloud's `changed_attributes` field names to i18n keys used to
+// build a human-readable "please check X" message for the user.
+const ADDRESS_FIELD_LABEL_KEYS = {
+  address_line_1: "fieldAddressLine1",
+  address_line_2: "fieldAddressLine2",
+  house_number: "fieldHouseNumber",
+  postal_code: "fieldPostalCode",
+  city: "fieldCity",
+  state_province_code: "fieldStateProvinceCode",
+  country_code: "fieldCountryCode",
+};
 
-// Validates the delivery address with SendCloud before an order is placed.
-// Only a top-level `input_address_is_valid: true` counts as valid — anything
-// else (false, or the request itself failing) blocks order placement.
+// Validates the delivery address via our backend before an order is placed.
+// The top-level `input_address_is_valid` flips to false whenever SendCloud
+// merely recommends a correction (e.g. filling in a missing state code), so
+// it's too strict to use as the deliverability check. The real signal is
+// `results[0].analysis.validation_result.is_valid` — true means the address
+// is deliverable, false means it isn't.
+// Also surfaces `changed_attributes` from the first result so the caller can
+// tell the user which specific field needs fixing.
 const validateDeliveryAddressWithSendcloud = async ({
   street,
   city,
@@ -129,14 +141,9 @@ const validateDeliveryAddressWithSendcloud = async ({
   region,
   countryIso2,
 }) => {
-  const res = await fetch(SENDCLOUD_VALIDATE_ADDRESS_URL, {
+  const res = await fetch(`${BASE_URL}/user/order/validate/address`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      // SendCloud v3 requires HTTP Basic Auth (Public key = username, Secret key = password)
-      // on every call, otherwise it rejects with 403/401 before even looking at the body.
-      Authorization: `Basic ${btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`)}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       address: {
         address_line_1: street,
@@ -151,7 +158,11 @@ const validateDeliveryAddressWithSendcloud = async ({
     }),
   });
   const data = await res.json();
-  return data?.input_address_is_valid === true;
+  const result = data?.data?.results?.[0];
+  return {
+    valid: result?.analysis?.validation_result?.is_valid === true,
+    changedAttributes: result?.changed_attributes || [],
+  };
 };
 
 // Always normalize any number-like value (comma string, dot string, or number)
@@ -1570,6 +1581,8 @@ function OrderSummary({
   paymentMethod,
   paypalButton,
   expressCheckoutButton,
+  deliveryCountryIso2,
+  postcode,
 }) {
   const { t } = useTranslation("checkout");
   const router = useRouter();
@@ -3275,6 +3288,8 @@ function OrderSummary({
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
         onSelectLocation={handleSelectLocation}
+        initialCountry={deliveryCountryIso2 ? deliveryCountryIso2.toUpperCase() : undefined}
+        initialPostalCode={postcode || undefined}
       />
       <LoginModal
         isOpen={isLoginModalOpen}
@@ -4100,16 +4115,26 @@ function Checkout({ cartItems = [] }) {
 
     try {
       // Step -1: Validate delivery address with SendCloud before anything else
-      const isAddressValid = await validateDeliveryAddressWithSendcloud({
-        street,
-        city,
-        postcode,
-        region,
-        countryIso2: deliveryCountryIso2,
-      });
+      const { valid: isAddressValid, changedAttributes } =
+        await validateDeliveryAddressWithSendcloud({
+          street,
+          city,
+          postcode,
+          region,
+          countryIso2: deliveryCountryIso2,
+        });
       if (!isAddressValid) {
         setIsSubmitting(false);
-        toast.error(t("errorInvalidDeliveryAddress"));
+        if (changedAttributes.length > 0) {
+          const fields = changedAttributes
+            .map((attr) =>
+              t(ADDRESS_FIELD_LABEL_KEYS[attr] || attr, attr),
+            )
+            .join(", ");
+          toast.error(t("errorInvalidDeliveryAddressFields", { fields }));
+        } else {
+          toast.error(t("errorInvalidDeliveryAddress"));
+        }
         return;
       }
 
@@ -5180,6 +5205,8 @@ function Checkout({ cartItems = [] }) {
               paymentMethod={paymentMethod}
               paypalButton={payPalButtonNode}
               expressCheckoutButton={expressCheckoutNode}
+              deliveryCountryIso2={deliveryCountryIso2}
+              postcode={postcode}
             />
             {/* <button
               onClick={handlePlaceOrder}
