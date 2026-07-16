@@ -114,6 +114,46 @@ const getErrorMsg = (data) => {
   return null;
 };
 
+const SENDCLOUD_VALIDATE_ADDRESS_URL =
+  "https://panel.sendcloud.sc/api/v3/addresses/validate";
+const SENDCLOUD_PUBLIC_KEY = process.env.NEXT_PUBLIC_SENDCLOUD_PUBLIC_KEY;
+const SENDCLOUD_SECRET_KEY = process.env.NEXT_PUBLIC_SENDCLOUD_SECRET_KEY;
+
+// Validates the delivery address with SendCloud before an order is placed.
+// Only a top-level `input_address_is_valid: true` counts as valid — anything
+// else (false, or the request itself failing) blocks order placement.
+const validateDeliveryAddressWithSendcloud = async ({
+  street,
+  city,
+  postcode,
+  region,
+  countryIso2,
+}) => {
+  const res = await fetch(SENDCLOUD_VALIDATE_ADDRESS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // SendCloud v3 requires HTTP Basic Auth (Public key = username, Secret key = password)
+      // on every call, otherwise it rejects with 403/401 before even looking at the body.
+      Authorization: `Basic ${btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`)}`,
+    },
+    body: JSON.stringify({
+      address: {
+        address_line_1: street,
+        house_number: "",
+        address_line_2: "",
+        postal_code: postcode,
+        city,
+        state_province_code: region,
+        country_code: (countryIso2 || "").toUpperCase(),
+      },
+      carrier_code: "colissimo",
+    }),
+  });
+  const data = await res.json();
+  return data?.input_address_is_valid === true;
+};
+
 // Always normalize any number-like value (comma string, dot string, or number)
 // to a clean JS float before sending to any API.
 const toCleanAmount = (val) => {
@@ -4059,6 +4099,20 @@ function Checkout({ cartItems = [] }) {
     setPaymentError(null);
 
     try {
+      // Step -1: Validate delivery address with SendCloud before anything else
+      const isAddressValid = await validateDeliveryAddressWithSendcloud({
+        street,
+        city,
+        postcode,
+        region,
+        countryIso2: deliveryCountryIso2,
+      });
+      if (!isAddressValid) {
+        setIsSubmitting(false);
+        toast.error(t("errorInvalidDeliveryAddress"));
+        return;
+      }
+
       let loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       let token = loginData?.data?.token;
 
@@ -5097,12 +5151,14 @@ function Checkout({ cartItems = [] }) {
               width: "480px",
               flexShrink: 0,
               position: "sticky",
-              // Make room at the top for the pinned Express Payment bar so it
-              // doesn't overlap the order summary.
-              top: pinExpress ? `${80 + expressBarBox.height}px` : "80px",
+              // Make room at the top for the pinned Express Payment bar, plus the
+              // same 16px gap the left column uses between its own sections —
+              // otherwise the pinned bar and the order summary below it (same
+              // gray background, no gap) read as one merged card.
+              top: pinExpress ? `${80 + expressBarBox.height + 16}px` : "80px",
               alignSelf: "flex-start",
               maxHeight: pinExpress
-                ? `calc(100vh - ${80 + expressBarBox.height}px)`
+                ? `calc(100vh - ${80 + expressBarBox.height + 16}px)`
                 : "calc(100vh - 80px)",
               overflowY: "auto",
               scrollbarWidth: "none",

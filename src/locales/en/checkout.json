@@ -71,6 +71,7 @@
   "errorFullAddressDelivery": "Please enter the full address for delivery.",
   "errorPostcodeDelivery": "Please enter the postcode for the delivery address.",
   "errorCityDelivery": "Please enter the town/city for the delivery address.",
+  "errorInvalidDeliveryAddress": "The delivery address could not be verified. Please check and correct it before placing your order.",
   "errorSelectCountryInvoice": "Please select a country for the invoice address.",
   "errorFullAddressInvoice": "Please enter the full address for the invoice address.",
   "errorPostcodeInvoice": "Please enter the postcode for the invoice address.",

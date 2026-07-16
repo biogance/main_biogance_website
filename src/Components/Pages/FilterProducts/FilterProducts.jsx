@@ -26,7 +26,6 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
-import { getDeviceId } from "../../../utils/deviceId";
 
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
@@ -1030,7 +1029,9 @@ export default function FilterProducts() {
       sort: sortParam,
       page: targetPage,
       per_page: perPage,
-      ...(token ? {} : { device_id: getDeviceId() }),
+      // Logged-in users are identified via the Authorization header below —
+      // device_id is only sent for guests.
+      ...(token ? {} : { device_id: "Abc" }),
     };
 
     // Guard against out-of-order responses: with two fetches now able to be in flight close
@@ -1903,15 +1904,14 @@ export default function FilterProducts() {
           <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
             {t("recentlyViewed", "Recently Viewed")}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
+          <div className="flex justify-center gap-6 flex-wrap">
             {recentViews.slice(0, 3).map((p, i) => (
-              <div key={p.id} className="w-full">
+              <div key={p.id} className="w-[350px]">
                 <LandingCards
                   product={p}
                   showNav={true}
                   index={i}
-                  compact={true}
-                  compactButtons={true}
+                  compactButtons
                 />
               </div>
             ))}
