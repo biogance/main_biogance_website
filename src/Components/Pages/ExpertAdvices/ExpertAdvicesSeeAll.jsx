@@ -410,6 +410,13 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     const keyword = isFr
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
+    const parts = [];
+    if (activeSpecies) parts.push(activeSpecies.name);
+    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(t.name));
+    const backLabel = parts.length
+      ? parts.join(" & ") + " Advices"
+      : sectionLabel + " Advices";
+    try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: `/advices/${type}` })); } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };

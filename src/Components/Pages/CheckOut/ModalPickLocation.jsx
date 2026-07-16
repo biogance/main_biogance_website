@@ -10,7 +10,38 @@ import { BASE_URL } from "../../API/API";
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 const FALLBACK_COUNTRY = "FR";
-const FALLBACK_POSTAL_CODE = "49123";
+const FALLBACK_POSTAL_CODE = "49000";
+
+async function resolveServicePointParams(initialCountry, initialPostalCode) {
+  // 1. Props from Checkout delivery address
+  if (initialCountry && initialPostalCode) {
+    return { country: initialCountry.toUpperCase(), postalCode: initialPostalCode };
+  }
+
+  // 2. SplashData delivery_address
+  try {
+    const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+    const addr = splash?.user?.delivery_address;
+    if (addr?.country && addr?.postal_code) {
+      return { country: addr.country.toUpperCase(), postalCode: addr.postal_code };
+    }
+  } catch { /* fall through */ }
+
+  // 3. IP-based country detection (via server-side API route)
+  try {
+    const res = await fetch("/api/geoip");
+    const data = await res.json();
+    if (data?.countryCode && data?.zip) {
+      return { country: data.countryCode.toUpperCase(), postalCode: data.zip };
+    }
+    if (data?.countryCode) {
+      return { country: data.countryCode.toUpperCase(), postalCode: FALLBACK_POSTAL_CODE };
+    }
+  } catch { /* fall through */ }
+
+  // 4. Fallback
+  return { country: FALLBACK_COUNTRY, postalCode: FALLBACK_POSTAL_CODE };
+}
 
 function mapServicePoint(point) {
   return {
@@ -27,22 +58,7 @@ function mapServicePoint(point) {
   };
 }
 
-// User's own delivery address (from splashData) when available, otherwise
-// the fallback country/postal code.
-function getServicePointParams() {
-  try {
-    const splash = JSON.parse(localStorage.getItem("splashData") || "null");
-    const addr = splash?.user?.delivery_address;
-    if (addr?.country && addr?.postal_code) {
-      return { country: addr.country, postalCode: addr.postal_code };
-    }
-  } catch {
-    /* fall through to default */
-  }
-  return { country: FALLBACK_COUNTRY, postalCode: FALLBACK_POSTAL_CODE };
-}
-
-export default function ModalPickLocation({ isOpen, onClose, onSelectLocation }) {
+export default function ModalPickLocation({ isOpen, onClose, onSelectLocation, initialCountry, initialPostalCode }) {
   const { t } = useTranslation("checkout");
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredId, setHoveredId] = useState(null);
@@ -64,7 +80,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
     const load = async () => {
       setLoading(true);
       try {
-        const params = getServicePointParams();
+        const params = await resolveServicePointParams(initialCountry, initialPostalCode);
         let data = await fetchServicePoints(params);
         if (data.status === false) {
           toast.error(data.action || "Something went wrong.");
@@ -77,8 +93,6 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
           params.country === FALLBACK_COUNTRY &&
           params.postalCode === FALLBACK_POSTAL_CODE;
 
-        // User's own address returned no results — retry with the default
-        // country/postal code so the list isn't left empty.
         if (points.length === 0 && !isFallback) {
           data = await fetchServicePoints({
             country: FALLBACK_COUNTRY,
@@ -101,7 +115,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation })
       }
     };
     load();
-  }, [isOpen]);
+  }, [isOpen, initialCountry, initialPostalCode]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {

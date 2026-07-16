@@ -1499,7 +1499,7 @@ export default function FilterProducts() {
                     {activeChips.map((c, i) => (
                       <span
                         key={i}
-                        className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-200"
+                        className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-black hover:text-white"
                       >
                         {c.swatch ? (
                           <span
@@ -1517,7 +1517,7 @@ export default function FilterProducts() {
                         )}
                         <button
                           onClick={c.clear}
-                          className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-300 hover:text-stone-700 cursor-pointer"
+                          className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-200 hover:text-black cursor-pointer"
                           aria-label={t("removeFilter", "Remove {{label}}", {
                             label: translateName(c.label),
                           })}
@@ -1878,7 +1878,7 @@ export default function FilterProducts() {
               </div>
             )}
 
-            {page < lastPage && (
+            {filteredProducts.length > 0 && page < lastPage && (
               <div className="flex justify-center pt-10">
                 <button
                   type="button"
@@ -1912,6 +1912,7 @@ export default function FilterProducts() {
                   showNav={true}
                   index={i}
                   compactButtons
+                  smallLabel
                 />
               </div>
             ))}
@@ -2371,7 +2372,7 @@ function AllFiltersModal({
           </button>
           <button
             onClick={handleClose}
-            className="rounded-full bg-stone-900 px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
+            className=" bg-stone-900 px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
           >
             {t("showResults", "Show results")}
           </button>
@@ -2437,7 +2438,7 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
           {q && (
             <button
               onClick={() => setQ("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
+              className="absolute right-2  top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
             >
               <LuX className="h-3 w-3" />
             </button>
@@ -2477,8 +2478,8 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
                     aria-hidden
                   />
                 ) : on ? (
-                  <span className="grid place-items-center overflow-hidden bg-white/15 mr-0.5 h-4 w-4">
-                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
+                  <span className="grid place-items-center rounded-full overflow-hidden bg-stone-300 mr-0.5 h-4 w-4">
+                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-black" />
                   </span>
                 ) : null}
                 {!isColor && translateName(opt)}
@@ -2527,7 +2528,7 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
             style={{
               top: "50%",
               left: "50%",
-              marginLeft: "-1px",
+              marginLeft: "-0.6px",
               transform: "translate(-50%, -50%)",
               letterSpacing: "normal",
               lineHeight: "1",
