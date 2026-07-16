@@ -154,7 +154,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
             aria-label="Scroll left"
             className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <FiChevronLeft className="w-4 h-4" />
+            <FiChevronLeft className="w-6 h-6 mr-0.5" />
           </button>
           <button
             type="button"
@@ -163,7 +163,7 @@ function MoreAdvicesRow({ items, isFr, sectionLabel }) {
             aria-label="Scroll right"
             className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <FiChevronRight className="w-4 h-4" />
+            <FiChevronRight className="w-6 h-6 ml-0.5" />
           </button>
         </div>
       </div>
@@ -664,7 +664,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           </div>
                         )}
                         {singleSize && (
-                          <div className="mt-2 mb-2">
+                          <div className="mt-2 mb-3.5">
                             <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
                               {singleSize}
                             </span>

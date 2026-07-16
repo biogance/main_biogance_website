@@ -212,10 +212,19 @@ export default function ProductDetail() {
     firstImageLoaded.current = false;
     currentSlideRef.current = 0;
 
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    const token = loginData?.data?.token;
+
     fetch(`${BASE_URL}/product/detail`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ device_id: "Abc", seo_keyword: productId }),
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        ...(token ? {} : { device_id: "Abc" }),
+        seo_keyword: productId,
+      }),
     })
       .then((res) => res.json())
       .then((json) => {

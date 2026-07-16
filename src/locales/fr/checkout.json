@@ -71,6 +71,7 @@
   "errorFullAddressDelivery": "Veuillez saisir l'adresse complète de livraison.",
   "errorPostcodeDelivery": "Veuillez saisir le code postal de l'adresse de livraison.",
   "errorCityDelivery": "Veuillez saisir la ville de l'adresse de livraison.",
+  "errorInvalidDeliveryAddress": "L'adresse de livraison n'a pas pu être vérifiée. Veuillez la vérifier et la corriger avant de passer votre commande.",
   "errorSelectCountryInvoice": "Veuillez sélectionner un pays pour l'adresse de facturation.",
   "errorFullAddressInvoice": "Veuillez saisir l'adresse complète de facturation.",
   "errorPostcodeInvoice": "Veuillez saisir le code postal de l'adresse de facturation.",
