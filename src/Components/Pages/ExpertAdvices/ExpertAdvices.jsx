@@ -935,12 +935,12 @@ function ExpertAdvices() {
                    <FaRegUserCircle  size={16} className="text-gray-700 mb-0.3" />
                   {tr("byAuthor", { name: heroArticle.blog.company_name || "Biogance" })}
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-1">
                  <IoHourglassOutline size={16} className="text-gray-700 mb-0.4" />
                   {tr("minRead", { time: heroArticle.blog.reading_time || "0" })}
                 </span>
                 {heroArticle.blog.updated_at && (
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1">
                     <MdUpdate size={18} className="text-gray-700" />
                     {tr("updatedOn", {
                       date: new Date(heroArticle.blog.updated_at).toLocaleDateString(
