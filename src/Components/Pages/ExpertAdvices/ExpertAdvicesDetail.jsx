@@ -495,6 +495,11 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                         <div className="h-5 bg-gray-100 animate-pulse rounded w-9" />
                         <div className="h-5 bg-gray-100 animate-pulse rounded w-9" />
                       </div>
+                      <div className="flex gap-1.5 mb-2">
+                        <div className="w-6 h-6 bg-gray-100 animate-pulse rounded-full" />
+                        <div className="w-6 h-6 bg-gray-100 animate-pulse rounded-full" />
+                        <div className="w-6 h-6 bg-gray-100 animate-pulse rounded-full" />
+                      </div>
                       <div className="h-9 bg-gray-100 animate-pulse rounded w-full" />
                     </div>
                   </div>
