@@ -21,7 +21,7 @@ import { getDeviceId } from "../../../utils/deviceId";
 import { FaArrowLeft } from "react-icons/fa";
 
 const CARD_GRID =
-  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-10";
+  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-6 sm:gap-x-8 sm:gap-y-10";
 const COLUMN_BREAKPOINTS = [
   { minWidth: 1536, columns: 5 },
   { minWidth: 1280, columns: 4 },
@@ -32,13 +32,18 @@ const COLUMN_BREAKPOINTS = [
 const ROWS_PER_PAGE = 3;
 const NAVBAR_HEIGHT = 104;
 
-// Maps the "type" query param (what blog/list expects) to the section's display label.
-const TYPE_LABELS = {
-  recommended: "Recommended For Your Pet",
-  trending: "Trending",
-  like: "Most Liked",
-  recent: "Recently Added",
-  pet: "Pet Blogs",
+// In-memory cache (module scope, not sessionStorage) so filters + results
+// survive a soft navigation to ExpertAdvicesDetail and back, but reset on a
+// real browser refresh — a true reload re-evaluates this module from scratch.
+const seeAllStateCache = new Map();
+
+// Maps the "type" query param (what blog/list expects) to the section's i18n label key.
+const TYPE_LABEL_KEYS = {
+  recommended: "sectionLabels.recommended",
+  trending: "sectionLabels.trending",
+  like: "sectionLabels.mostLiked",
+  recent: "sectionLabels.recentlyAdded",
+  pet: "sectionLabels.petBlogs",
 };
 
 function getAuthHeaders() {
@@ -89,6 +94,7 @@ function TabButton({ label, active, onClick }) {
 }
 
 function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
+  const { t: tr } = useTranslation("expertadvice");
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -159,18 +165,18 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
         <button
           type="button"
           onClick={() => scrollByOne(-1)}
-          aria-label="Scroll left"
-          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          aria-label={tr("scrollLeft")}
+          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronLeft className="w-4 h-4" />
         </button>
       )}
       <div
         className="relative min-w-0 flex-1"
-        style={{
-          WebkitMaskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
-          maskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
-        }}
+        // style={{
+        //   WebkitMaskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
+        //   maskImage: `linear-gradient(to right, ${canScrollLeft ? "transparent" : "black"} 0, black 24px, black calc(100% - 24px), ${canScrollRight ? "transparent" : "black"} 100%)`,
+        // }}
       >
         <div
           ref={scrollRef}
@@ -179,7 +185,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           {items.map((label) => (
             <div key={label} data-topic className="shrink-0">
               <TabButton
-                label={label}
+                label={label === "All" ? tr("all") : label}
                 active={
                   label === "All"
                     ? activeItem === "All"
@@ -195,8 +201,8 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
         <button
           type="button"
           onClick={() => scrollByOne(1)}
-          aria-label="Scroll right"
-          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          aria-label={tr("scrollRight")}
+          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300  flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronRight className="w-4 h-4" />
         </button>
@@ -205,8 +211,28 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
   );
 }
 
+function ScrollableChipRow({ tabs }) {
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      {tabs.map((tab) => (
+        <div key={tab.key} data-chip className="shrink-0">
+          <TabButton label={tab.label} active={tab.active} onClick={tab.onClick} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FilterChip({ label }) {
+  return (
+    <span className="inline-flex items-center text-[11px] font-medium text-gray-700 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full whitespace-nowrap">
+      {label}
+    </span>
+  );
+}
+
 function useResponsiveColumns() {
-  const [columns, setColumns] = useState(1);
+  const [columns, setColumns] = useState(null);
   useEffect(() => {
     const calc = () =>
       COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
@@ -222,10 +248,14 @@ function AllArticlesCardSkeleton() {
   return (
     <div className="border border-gray-200 overflow-hidden flex flex-col">
       <Shimmer className="w-full h-60 rounded-none" />
-      <div className="px-4 py-3 flex items-center justify-between gap-3">
-        <Shimmer className="h-3 w-3/4" />
-        <Shimmer className="w-4 h-4 rounded-full shrink-0" />
-      </div>
+     <div className="px-4 py-3 flex items-center justify-between gap-3">
+  <div className="flex flex-col gap-1.5 flex-1">
+    <Shimmer className="h-3 w-3/3" />
+    <Shimmer className="h-3 w-3/3" />
+  </div>
+
+  <Shimmer className="w-4 h-4 shrink-0" />
+</div>
     </div>
   );
 }
@@ -254,12 +284,13 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
 }
 
 function ExpertAdvicesSeeAll({ type: typeProp }) {
-  const { i18n } = useTranslation();
+  const { t: tr, i18n } = useTranslation("expertadvice");
   const isFr = i18n.language?.startsWith("fr");
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = typeProp ?? searchParams.get("type") ?? "trending";
-  const sectionLabel = TYPE_LABELS[type] || "Articles";
+  const sectionLabel = TYPE_LABEL_KEYS[type] ? tr(TYPE_LABEL_KEYS[type]) : tr("articles");
+  const cachedState = useRef(seeAllStateCache.get(type)).current;
 
   const filtersRef = useRef(null);
   const searchTimerRef = useRef(null);
@@ -278,8 +309,12 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     }
   });
 
-  const [activeSpecies, setActiveSpecies] = useState(null);
-  const [activeTopic, setActiveTopic] = useState([]);
+  const [activeSpecies, setActiveSpecies] = useState(
+    cachedState?.activeSpecies ?? null,
+  );
+  const [activeTopic, setActiveTopic] = useState(
+    cachedState?.activeTopic ?? [],
+  );
   const speciesList = splashCategories;
 
   const topicsList = useMemo(() => {
@@ -293,24 +328,70 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     return Array.from(map.values());
   }, [activeSpecies, speciesList]);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const handleSearchChange = (val) => {
-    setSearchInput(val);
-    clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 1000);
+  const resetAllFilters = () => {
+    setActiveSpecies(null);
+    setActiveTopic([]);
   };
 
-  const [articles, setArticles] = useState([]);
-  const [totalArticles, setTotalArticles] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const mobileSpeciesTabs = speciesList.map((cat) => ({
+    key: `species-${cat.id}`,
+    label: getBlogField(cat, "name", isFr),
+    active: activeSpecies?.id === cat.id,
+    onClick: () => {
+      setActiveSpecies((prev) => (prev?.id === cat.id ? null : cat));
+      setActiveTopic([]);
+    },
+  }));
+
+  const mobileTopicTabs = topicsList.map((t) => ({
+    key: `topic-${t.id}`,
+    label: getBlogField(t, "name", isFr),
+    active: activeTopic.some((x) => x.id === t.id),
+    onClick: () => {
+      setActiveTopic((prev) =>
+        prev.find((x) => x.id === t.id)
+          ? prev.filter((x) => x.id !== t.id)
+          : [...prev, t],
+      );
+    },
+  }));
+
+  const [searchInput, setSearchInput] = useState(
+    cachedState?.searchInput ?? "",
+  );
+  const [debouncedSearch, setDebouncedSearch] = useState(
+    cachedState?.debouncedSearch ?? "",
+  );
+  const [isSearchPending, setIsSearchPending] = useState(false);
+  const handleSearchChange = (val) => {
+    setSearchInput(val);
+    setIsSearchPending(true);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(val);
+    }, 1500);
+  };
+  const clearSearch = () => {
+    clearTimeout(searchTimerRef.current);
+    setIsSearchPending(true);
+    setSearchInput("");
+    setDebouncedSearch("");
+  };
+
+  const [articles, setArticles] = useState(cachedState?.articles ?? []);
+  const [totalArticles, setTotalArticles] = useState(
+    cachedState?.totalArticles ?? 0,
+  );
+  const [loading, setLoading] = useState(!cachedState);
+
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(cachedState?.page ?? 1);
+  const [hasMore, setHasMore] = useState(cachedState?.hasMore ?? false);
 
   const columns = useResponsiveColumns();
-  const perPage = columns * ROWS_PER_PAGE;
-  const hasLoadedOnceRef = useRef(false);
+  const perPage = columns ? columns * ROWS_PER_PAGE : 0;
+  const hasLoadedOnceRef = useRef(!!cachedState);
+  const skipInitialFetchRef = useRef(!!cachedState);
 
   const fetchArticles = useCallback(
     async (pageNum = 1, append = false) => {
@@ -350,17 +431,66 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       } finally {
         setLoading(false);
         setLoadingMore(false);
+        setIsSearchPending(false);
         hasLoadedOnceRef.current = true;
       }
     },
     [type, activeSpecies, activeTopic, debouncedSearch, perPage],
   );
 
+  // Fires once, the first time `columns` resolves after mount — NOT again
+  // when it merely changes later (e.g. resizing the window / DevTools
+  // responsive mode toggling the column count), which used to re-trigger a
+  // full shimmer + refetch on every breakpoint crossing.
+  const columnsResolvedRef = useRef(false);
   useEffect(() => {
+    if (!columns || columnsResolvedRef.current) return;
+    columnsResolvedRef.current = true;
+    if (skipInitialFetchRef.current) {
+      skipInitialFetchRef.current = false;
+      return;
+    }
     setPage(1);
     fetchArticles(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, activeSpecies, activeTopic, debouncedSearch, columns]);
+  }, [columns]);
+
+  // Reset to page 1 when filters/search/type actually change (columns intentionally excluded).
+  const isFirstFilterEffectRef = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterEffectRef.current) {
+      isFirstFilterEffectRef.current = false;
+      return;
+    }
+    if (!columns) return;
+    setPage(1);
+    fetchArticles(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, activeSpecies, activeTopic, debouncedSearch]);
+
+  // Keep the restore-on-back-navigation cache in sync with the latest filters/results.
+  useEffect(() => {
+    seeAllStateCache.set(type, {
+      activeSpecies,
+      activeTopic,
+      searchInput,
+      debouncedSearch,
+      articles,
+      totalArticles,
+      page,
+      hasMore,
+    });
+  }, [
+    type,
+    activeSpecies,
+    activeTopic,
+    searchInput,
+    debouncedSearch,
+    articles,
+    totalArticles,
+    page,
+    hasMore,
+  ]);
 
   // Jab user category/topic choose kare ya search kare aur woh page pe neeche
   // scrolled ho, to filters ke "stuck" (navbar ke sath chipke) position tak
@@ -411,11 +541,12 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
     const parts = [];
-    if (activeSpecies) parts.push(activeSpecies.name);
-    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(t.name));
+    if (activeSpecies) parts.push(getBlogField(activeSpecies, "name", isFr));
+    if (activeTopic?.length)
+      activeTopic.forEach((t) => parts.push(getBlogField(t, "name", isFr)));
     const backLabel = parts.length
-      ? parts.join(" & ") + " Advices"
-      : sectionLabel + " Advices";
+      ? parts.join(" & ") + " " + tr("advicesSuffix")
+      : sectionLabel + " " + tr("advicesSuffix");
     try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: `/advices/${type}` })); } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
@@ -459,19 +590,19 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       <Navbar bgWhite={true} />
 
       {/* Back link */}
-      <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-4">
+      <div className="px-6 sm:px-10 lg:px-16 pt-4 pb-2 sm:pt-10 sm:pb-4">
         <Link
           href="/advices"
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors"
         >
           <FaArrowLeft className="w-3.5 h-3.5" />
-          Back to Advices
+          {tr("backToAdvices")}
         </Link>
       </div>
 
       {/* Section label — moved above the filters */}
-      <div className="px-6 sm:px-10 lg:px-16 pb-6">
-        <p className="text-2xl sm:text-3xl lg:text-[40px] font-bold font-serif tracking-widest text-gray-900 uppercase">
+      <div className="px-6 sm:px-10 lg:px-16 pb-3 sm:pb-6">
+        <p className="text-lg sm:text-3xl lg:text-[40px] font-bold font-serif tracking-widest text-gray-900 uppercase">
           {sectionLabel}
         </p>
       </div>
@@ -482,86 +613,140 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white"
       >
         <div
-          className={`px-6 sm:px-10 lg:px-16 pt-8 ${isStuck ? "pb-0" : "pb-7"}`}
+          className={`px-6 sm:px-10 lg:px-16 pt-3 md:pt-8 transition-[padding-bottom] duration-300 ease-out ${isStuck ? "pb-0" : "pb-3 md:pb-7"}`}
         >
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-              {speciesList.map((cat) => (
-                <TabButton
-                  key={cat.id}
-                  label={cat.name}
-                  active={activeSpecies?.id === cat.id}
-                  onClick={() => {
-                    setActiveSpecies((prev) =>
-                      prev?.id === cat.id ? null : cat,
-                    );
-                    setActiveTopic([]);
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="group relative w-full md:w-72 shrink-0">
-              <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search articles..."
-                className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchInput("");
-                    setDebouncedSearch("");
-                  }}
-                  aria-label="Clear search"
-                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                >
-                  <FiX className="h-3.5 w-3.5" />
-                </button>
-              )}
+          {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}
+          <div className="md:hidden">
+            <ScrollableChipRow tabs={mobileSpeciesTabs} />
+            <div className="mt-2">
+              <ScrollableChipRow tabs={mobileTopicTabs} />
             </div>
           </div>
 
-          <ScrollableTabsRow
-            items={["All", ...topicsList.map((t) => t.name)]}
-            activeItem={
-              activeSpecies && activeTopic.length === 0 ? "All" : null
-            }
-            activeItems={activeTopic.map((t) => t.name)}
-            onSelect={(name) => {
-              if (name === "All") {
-                setActiveTopic([]);
-                return;
-              }
-              const found = topicsList.find((t) => t.name === name);
-              if (!found) return;
-              setActiveTopic((prev) =>
-                prev.find((t) => t.id === found.id)
-                  ? prev.filter((t) => t.id !== found.id)
-                  : [...prev, found],
-              );
-            }}
-          />
+          {/* ── Desktop filters (md and up) ── */}
+          <div className="hidden md:block">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+              <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+                {speciesList.map((cat) => (
+                  <TabButton
+                    key={cat.id}
+                    label={getBlogField(cat, "name", isFr)}
+                    active={activeSpecies?.id === cat.id}
+                    onClick={() => {
+                      setActiveSpecies((prev) =>
+                        prev?.id === cat.id ? null : cat,
+                      );
+                      setActiveTopic([]);
+                    }}
+                  />
+                ))}
+              </div>
 
-          <hr className="border-t border-gray-200 mt-6" />
+              <div className="group relative w-full md:w-72 shrink-0">
+                <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder={tr("searchPlaceholder")}
+                  className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    aria-label={tr("clearSearch")}
+                    className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                  >
+                    <FiX className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <ScrollableTabsRow
+              items={["All", ...topicsList.map((t) => getBlogField(t, "name", isFr))]}
+              activeItem={
+                activeSpecies && activeTopic.length === 0 ? "All" : null
+              }
+              activeItems={activeTopic.map((t) => getBlogField(t, "name", isFr))}
+              onSelect={(name) => {
+                if (name === "All") {
+                  setActiveTopic([]);
+                  return;
+                }
+                const found = topicsList.find(
+                  (t) => getBlogField(t, "name", isFr) === name,
+                );
+                if (!found) return;
+                setActiveTopic((prev) =>
+                  prev.find((t) => t.id === found.id)
+                    ? prev.filter((t) => t.id !== found.id)
+                    : [...prev, found],
+                );
+              }}
+            />
+          </div>
+
+          <hr
+            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-2" : "mt-3 md:mt-6"}`}
+          />
         </div>
+      </div>
+
+      {/* Mobile-only: search + selected filters — scrolls normally, not sticky */}
+      <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+        <div className="group relative w-full">
+          <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={tr("searchPlaceholder")}
+            className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              aria-label={tr("clearSearch")}
+              className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+            >
+              <FiX className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {(activeSpecies || activeTopic.length > 0) && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {activeSpecies && (
+              <FilterChip label={getBlogField(activeSpecies, "name", isFr)} />
+            )}
+            {activeTopic.map((t) => (
+              <FilterChip key={t.id} label={getBlogField(t, "name", isFr)} />
+            ))}
+            <button
+              type="button"
+              onClick={resetAllFilters}
+              className="text-[11px] font-semibold text-gray-900 underline underline-offset-2 cursor-pointer"
+            >
+              {tr("resetAll")}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Articles grid — same card design as ExpertAdvices.jsx's Recommended/Trending rows (ArticleRow) */}
       <div className="px-6 sm:px-10 lg:px-16 pb-16">
-        {loading ? (
+        {loading || isSearchPending ? (
           <div className={CARD_GRID}>
-            {Array.from({ length: perPage || 6 }).map((_, i) => (
+            {Array.from({ length: perPage || 8 }).map((_, i) => (
               <AllArticlesCardSkeleton key={i} />
             ))}
           </div>
         ) : articles.length === 0 ? (
-          <p className="text-sm text-gray-500 py-10 text-center">
-            No articles match these filters yet.
+          <p className="text-sm text-gray-500 py-54 mt-5 text-center">
+            {tr("noArticlesMatch")}
           </p>
         ) : (
           <>
@@ -604,7 +789,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   {loadingMore && (
                     <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   )}
-                  {loadingMore ? "Loading..." : "Load More"}
+                  {loadingMore ? tr("loading") : tr("loadMore")}
                 </button>
               </div>
             )}

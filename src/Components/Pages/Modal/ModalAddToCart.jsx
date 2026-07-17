@@ -426,10 +426,11 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
 
-  // Opened from LandingCards (add-to-cart), the cursor is usually still over the card, not the
-  // panel that slides in from the right — so start the 3s close timer immediately, and only
-  // cancel it while the cursor is actually over the panel. Opened from Navbar (viewing the
-  // cart), autoCloseOnLeave stays false and none of this runs — it never self-closes.
+  // Opened from LandingCards/ExpertAdvicesDetail (add-to-cart), the cursor is usually still over
+  // the card, not the panel that slides in from the right — so start the 2s close timer
+  // immediately, and only cancel it while the cursor is actually over the panel. Opened from
+  // Navbar (viewing the cart), autoCloseOnLeave stays false and none of this runs — it never
+  // self-closes.
   const autoCloseTimerRef = useRef(null);
   const clearAutoCloseTimer = () => {
     if (autoCloseTimerRef.current) {
@@ -442,7 +443,7 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
     clearAutoCloseTimer();
     autoCloseTimerRef.current = setTimeout(() => {
       onClose();
-    }, 3000);
+    }, 2000);
   };
 
   useEffect(() => {
