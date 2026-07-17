@@ -666,13 +666,18 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                       onClick={() => navigateToProduct(bundle)}
                       className="flex gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0 cursor-pointer"
                     >
-                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
+                      <div className="relative w-16 h-20 sm:w-20 sm:h-24 bg-[#f3f3f3] shrink-0 flex items-center justify-center overflow-hidden">
                         {productImg ? (
-                          <img
-                            src={`${MEDIA_URL}${productImg}`}
-                          
-                            className="w-full h-full object-cover"
-                          />
+                          <>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                            </div>
+                            <img
+                              src={`${MEDIA_URL}${productImg}`}
+                              onLoad={(e) => e.currentTarget.previousSibling?.remove()}
+                              className="relative z-10 w-full h-full object-cover"
+                            />
+                          </>
                         ) : (
                           <LuPackage className="w-6 h-6 sm:w-7 sm:h-7 text-gray-300" />
                         )}
