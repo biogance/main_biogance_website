@@ -161,21 +161,35 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   return (
     <div className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
       <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-3 md:pb-6">
-        {/* species tabs + search - gap-4 mb-2 */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-          <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-            {Array.from({ length: speciesCount }).map((_, i) => (
-              <Shimmer key={i} className="h-9 w-24" />
-            ))}
-          </div>
-          <Shimmer className="h-11 w-full md:w-72 shrink-0" />
-        </div>
-        {/* topics row - gap-2 */}
-        <div className="flex items-center gap-2">
-          {Array.from({ length: topicsCount }).map((_, i) => (
+        {/* Mobile (below md): species chip row, then topics chip row, gap-2 each, mt-2 between */}
+        <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
+          {Array.from({ length: Math.min(speciesCount, 4) }).map((_, i) => (
             <Shimmer key={i} className="h-9 w-20 shrink-0" />
           ))}
         </div>
+        <div className="md:hidden mt-2 flex items-center gap-2 overflow-hidden py-0.5">
+          {Array.from({ length: Math.min(topicsCount, 4) }).map((_, i) => (
+            <Shimmer key={i} className="h-9 w-16 shrink-0" />
+          ))}
+        </div>
+
+        {/* Desktop (md and up): species tabs + search - gap-4 mb-2, then topics row */}
+        <div className="hidden md:block">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+              {Array.from({ length: speciesCount }).map((_, i) => (
+                <Shimmer key={i} className="h-9 w-24" />
+              ))}
+            </div>
+            <Shimmer className="h-11 w-full md:w-72 shrink-0" />
+          </div>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: topicsCount }).map((_, i) => (
+              <Shimmer key={i} className="h-9 w-20 shrink-0" />
+            ))}
+          </div>
+        </div>
+
         <div className="mt-3 md:mt-6 h-px bg-gray-200" />
       </div>
     </div>
@@ -222,25 +236,39 @@ function ArticleRowSkeleton({ visibleCount }) {
   );
 }
 
-/* Mirrors an "All Articles" grid card exactly: image aspect-[5/6], category
-   line, title (2 lines), meta row (company / reading time) */
+/* Mirrors the "All Articles" grid card: below md it's the same border/h-60/
+   title+arrow card as ArticleRow's cards; md and up it's image aspect-[5/6],
+   category line, title (2 lines), meta row (company / reading time) */
 function AllArticlesCardSkeleton() {
   return (
-    <div>
-      <Shimmer className="w-full aspect-[5/6] mb-3 rounded-none" />
-      <Shimmer className="h-2.5 w-1/3 mb-1" />
-      <div className="space-y-1.5 mb-2">
-        <Shimmer className="h-4 w-full" />
-        <Shimmer className="h-4 w-2/3" />
-      </div>
-      <div className="flex items-center justify-between">
-        <Shimmer className="h-2.5 w-16" />
-        <div className="flex items-center gap-1">
-          <Shimmer className="w-3 h-3 rounded-full" />
-          <Shimmer className="h-2.5 w-8" />
+    <>
+      <div className="md:hidden border border-gray-200 overflow-hidden flex flex-col">
+        <Shimmer className="w-full h-60 rounded-none" />
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <Shimmer className="h-3 w-full" />
+            <Shimmer className="h-3 w-2/3" />
+          </div>
+          <Shimmer className="w-4 h-4 shrink-0" />
         </div>
       </div>
-    </div>
+
+      <div className="hidden md:block">
+        <Shimmer className="w-full aspect-[5/6] mb-3 rounded-none" />
+        <Shimmer className="h-2.5 w-1/3 mb-1" />
+        <div className="space-y-1.5 mb-2">
+          <Shimmer className="h-4 w-full" />
+          <Shimmer className="h-4 w-2/3" />
+        </div>
+        <div className="flex items-center justify-between">
+          <Shimmer className="h-2.5 w-16" />
+          <div className="flex items-center gap-1">
+            <Shimmer className="w-3 h-3 rounded-full" />
+            <Shimmer className="h-2.5 w-8" />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -842,6 +870,11 @@ function ExpertAdvices() {
           speciesCount={Math.max(speciesList.length, 4)}
           topicsCount={6}
         />
+
+        {/* Mobile-only search bar — mirrors the block below the sticky filters */}
+        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+          <Shimmer className="h-11 w-full" />
+        </div>
 
         <div className="px-6 sm:px-10 lg:px-16">
           {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (

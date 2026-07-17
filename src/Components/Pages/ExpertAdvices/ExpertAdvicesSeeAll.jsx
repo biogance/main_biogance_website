@@ -248,36 +248,51 @@ function AllArticlesCardSkeleton() {
   return (
     <div className="border border-gray-200 overflow-hidden flex flex-col">
       <Shimmer className="w-full h-60 rounded-none" />
-     <div className="px-4 py-3 flex items-center justify-between gap-3">
-  <div className="flex flex-col gap-1.5 flex-1">
-    <Shimmer className="h-3 w-3/3" />
-    <Shimmer className="h-3 w-3/3" />
-  </div>
-
-  <Shimmer className="w-4 h-4 shrink-0" />
-</div>
+      <div className="px-4 py-3 flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-1.5 flex-1">
+          <Shimmer className="h-3 w-full" />
+          <Shimmer className="h-3 w-2/3" />
+        </div>
+        <Shimmer className="w-4 h-4 shrink-0" />
+      </div>
     </div>
   );
 }
 
 function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   return (
-    <div className="sticky top-[104px] z-30 bg-white">
-      <div className="px-6 sm:px-10 lg:px-16 py-8">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-            {Array.from({ length: speciesCount }).map((_, i) => (
-              <Shimmer key={i} className="h-9 w-24" />
-            ))}
-          </div>
-          <Shimmer className="h-11 w-full md:w-72 shrink-0" />
-        </div>
-        <div className="flex items-center gap-2">
-          {Array.from({ length: topicsCount }).map((_, i) => (
+    <div className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
+      <div className="px-6 sm:px-10 lg:px-16 pt-3 md:pt-8 pb-3 md:pb-7">
+        {/* Mobile (below md): species chip row, then topics chip row */}
+        <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
+          {Array.from({ length: Math.min(speciesCount, 4) }).map((_, i) => (
             <Shimmer key={i} className="h-9 w-20 shrink-0" />
           ))}
         </div>
-        <div className="mt-6 h-px bg-gray-200" />
+        <div className="md:hidden mt-2 flex items-center gap-2 overflow-hidden py-0.5">
+          {Array.from({ length: Math.min(topicsCount, 4) }).map((_, i) => (
+            <Shimmer key={i} className="h-9 w-16 shrink-0" />
+          ))}
+        </div>
+
+        {/* Desktop (md and up): species tabs + search, then topics row */}
+        <div className="hidden md:block">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+            <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
+              {Array.from({ length: speciesCount }).map((_, i) => (
+                <Shimmer key={i} className="h-9 w-24" />
+              ))}
+            </div>
+            <Shimmer className="h-11 w-full md:w-72 shrink-0" />
+          </div>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: topicsCount }).map((_, i) => (
+              <Shimmer key={i} className="h-9 w-20 shrink-0" />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3 md:mt-6 h-px bg-gray-200" />
       </div>
     </div>
   );
@@ -558,19 +573,27 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         <Navbar bgWhite={true} />
 
         {/* Back link */}
-        <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-4">
-          <Shimmer className="h-3 w-32" />
+        <div className="px-6 sm:px-10 lg:px-16 pt-4 pb-2 sm:pt-10 sm:pb-4">
+          <div className="inline-flex items-center gap-1.5">
+            <Shimmer className="w-3.5 h-3.5 rounded-full" />
+            <Shimmer className="h-3 w-24" />
+          </div>
         </div>
 
         {/* Section label (moved above filters) */}
-        <div className="px-6 sm:px-10 lg:px-16 pb-6">
-          <Shimmer className="h-8 w-64" />
+        <div className="px-6 sm:px-10 lg:px-16 pb-3 sm:pb-6">
+          <Shimmer className="h-5 sm:h-8 lg:h-10 w-48 sm:w-64 lg:w-80" />
         </div>
 
         <FiltersSkeleton
           speciesCount={Math.max(speciesList.length, 4)}
           topicsCount={6}
         />
+
+        {/* Mobile-only search bar — mirrors the block below the sticky filters */}
+        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+          <Shimmer className="h-11 w-full" />
+        </div>
 
         <div className="px-6 sm:px-10 lg:px-16 ">
           <div className={CARD_GRID}>
