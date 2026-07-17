@@ -429,7 +429,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         </section>
 
         {/* Article body + sidebar skeleton — same container padding + column split as the real layout */}
-        <div className="px-6 sm:px-10 lg:px-16 py-6 sm:py-10 md:py-16">
+        <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
           <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
             <div className="w-full lg:flex-1 space-y-4">
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
@@ -578,7 +578,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       </section>
 
       {/* Article body + product recommendation */}
-    <div className="px-6 sm:px-10 lg:px-16 py-6 sm:py-10 md:py-16"> 
+    <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
         {hasProducts ? (
         <div ref={rowRef} className="flex flex-col lg:flex-row gap-2 lg:gap-12">
 
