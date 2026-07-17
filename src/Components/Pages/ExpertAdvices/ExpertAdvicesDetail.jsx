@@ -652,6 +652,18 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   const singleSize =
                     uniqueSizes.length === 1 ? uniqueSizes[0] : null;
                   const product = getSelectedProduct(bundle);
+                  // Once a size is picked, only show the colors available for that size.
+                  const colorSourceProducts =
+                    hasSizes && product?.size_name
+                      ? products.filter((p) => p.size_name === product.size_name)
+                      : products;
+                  const uniqueColors = [
+                    ...new Set(
+                      colorSourceProducts
+                        .filter((p) => p.color_name)
+                        .map((p) => p.color_name),
+                    ),
+                  ];
                   const productImg = product?.images?.[0]?.media ?? null;
                   const productName = isFr
                     ? bundle.french_name || bundle.name
@@ -728,6 +740,52 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                             <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
                               {singleSize}
                             </span>
+                          </div>
+                        )}
+                        {uniqueColors.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2 mb-3.5">
+                            {uniqueColors.map((color) => {
+                              const isDual = color.includes(" & ");
+                              const swatchBg = isDual
+                                ? (() => {
+                                    const [a, b] = color
+                                      .split(" & ")
+                                      .map((p) => p.trim());
+                                    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+                                  })()
+                                : color;
+                              const isSelected = product?.color_name === color;
+                              return (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const sizeName = hasSizes
+                                      ? product?.size_name
+                                      : null;
+                                    const match =
+                                      products.find(
+                                        (p) =>
+                                          (!sizeName || p.size_name === sizeName) &&
+                                          p.color_name === color,
+                                      ) || products.find((p) => p.color_name === color);
+                                    setSelectedSizes((prev) => ({
+                                      ...prev,
+                                      [bundle.id]: match?.id,
+                                    }));
+                                  }}
+                                  title={color}
+                                  aria-label={color}
+                                  className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-colors ${
+                                    isSelected
+                                      ? "border-gray-900 ring-1 ring-gray-900"
+                                      : "border-gray-200 hover:border-gray-400"
+                                  }`}
+                                  style={{ background: swatchBg }}
+                                />
+                              );
+                            })}
                           </div>
                         )}
                         <button
