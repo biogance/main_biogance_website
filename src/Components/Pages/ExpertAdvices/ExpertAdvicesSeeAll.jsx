@@ -73,6 +73,13 @@ function getBlogField(item, field, isFr) {
   return isFr && item[frField] ? item[frField] : (item[field] ?? "");
 }
 
+// Stores both language variants of a species/topic name so the "Back to X"
+// label on ExpertAdvicesDetail can re-render in whichever language is active
+// at read time, instead of freezing the label in the language captured here.
+function getBackPart(item) {
+  return { name: item?.name ?? "", frenchName: item?.french_name ?? "" };
+}
+
 function Shimmer({ className = "" }) {
   return <div className={`bg-gray-200 animate-pulse rounded ${className}`} />;
 }
@@ -556,13 +563,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
     const parts = [];
-    if (activeSpecies) parts.push(getBlogField(activeSpecies, "name", isFr));
-    if (activeTopic?.length)
-      activeTopic.forEach((t) => parts.push(getBlogField(t, "name", isFr)));
-    const backLabel = parts.length
-      ? parts.join(" & ") + " " + tr("advicesSuffix")
-      : sectionLabel + " " + tr("advicesSuffix");
-    try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: `/advices/${type}` })); } catch {}
+    if (activeSpecies) parts.push(getBackPart(activeSpecies));
+    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
+    try {
+      sessionStorage.setItem(
+        "adviceBack",
+        JSON.stringify({ parts, typeKey: type, url: `/advices/${type}` }),
+      );
+    } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -619,7 +627,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors"
         >
           <FaArrowLeft className="w-3.5 h-3.5" />
-          {tr("backToAdvices")}
+          {tr("backTo", { label: tr("advicesSuffix") })}
         </Link>
       </div>
 
@@ -781,14 +789,18 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   className="border border-gray-200 cursor-pointer group overflow-hidden flex flex-col"
                 >
                   <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                    </div>
                     <img
                       src={
                         getBlogImage(a)
                           ? `${MEDIA_URL}${getBlogImage(a)}`
                           : "/cat.png"
                       }
-                      alt={getBlogField(a, "name", isFr)}
-                      className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
+                     
+                      onLoad={(e) => e.currentTarget.previousSibling?.remove()}
+                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
                     />
                   </div>
                   <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
