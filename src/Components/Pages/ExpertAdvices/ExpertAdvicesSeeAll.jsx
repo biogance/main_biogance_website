@@ -269,7 +269,7 @@ function AllArticlesCardSkeleton() {
 function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   return (
     <div className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
-      <div className="px-6 sm:px-10 lg:px-16 pt-3 md:pt-8 pb-3 md:pb-7">
+      <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-3 md:pb-6">
         {/* Mobile (below md): species chip row, then topics chip row */}
         <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
           {Array.from({ length: Math.min(speciesCount, 4) }).map((_, i) => (
@@ -644,7 +644,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white"
       >
         <div
-          className={`px-6 sm:px-10 lg:px-16 pt-3 md:pt-8 transition-[padding-bottom] duration-300 ease-out ${isStuck ? "pb-0" : "pb-3 md:pb-7"}`}
+          className={`px-6 sm:px-10 lg:px-16 pt-6 transition-[padding-bottom] duration-300 ease-out ${isStuck ? "pb-0" : "pb-3 md:pb-6"}`}
         >
           {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}
           <div className="md:hidden">
@@ -720,7 +720,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           </div>
 
           <hr
-            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-2" : "mt-3 md:mt-6"}`}
+            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-3.5" : "mt-3 md:mt-6"}`}
           />
         </div>
       </div>

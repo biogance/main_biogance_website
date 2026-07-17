@@ -1086,7 +1086,7 @@ function ExpertAdvices() {
           </div>
 
           <hr
-            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-2" : "mt-3 md:mt-6"}`}
+            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-3.5" : "mt-3 md:mt-6"}`}
           />
         </div>
       </div>
