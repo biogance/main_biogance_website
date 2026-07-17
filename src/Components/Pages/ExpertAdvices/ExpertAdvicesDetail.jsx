@@ -22,6 +22,16 @@ import { IoHourglassOutline } from "react-icons/io5";
 import { SlUser } from "react-icons/sl";
 import { PiUser, PiUserLight } from "react-icons/pi";
 
+// Mirrors ExpertAdvicesSeeAll.jsx's TYPE_LABEL_KEYS — needed here to rebuild
+// the "Back to X" label from a stored typeKey in the current language.
+const TYPE_LABEL_KEYS = {
+  recommended: "sectionLabels.recommended",
+  trending: "sectionLabels.trending",
+  like: "sectionLabels.mostLiked",
+  recent: "sectionLabels.recentlyAdded",
+  pet: "sectionLabels.petBlogs",
+};
+
 function getAuthHeaders() {
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -140,7 +150,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
   className="inline-flex items-start sm:items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase text-gray-900 hover:text-gray-500 transition-colors mb-3 cursor-pointer bg-transparent border-none p-0 text-left"
 >
      <FaArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 mt-0.5 sm:mt-0" />
-  Back to {backInfo.label}
+  {t("backTo", { label: backInfo.label })}
 </button>
       <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
             {t("moreExpertAdvices")}
@@ -151,7 +161,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
             type="button"
             onClick={() => scrollByCard(-1)}
             disabled={!canScrollLeft}
-            aria-label="Scroll left"
+            aria-label={t("scrollLeft")}
             className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <FiChevronLeft className="w-6 h-6 mr-0.5" />
@@ -160,7 +170,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
             type="button"
             onClick={() => scrollByCard(1)}
             disabled={!canScrollRight}
-            aria-label="Scroll right"
+            aria-label={t("scrollRight")}
             className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <FiChevronRight className="w-6 h-6 ml-0.5" />
@@ -188,7 +198,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
                   ? `${MEDIA_URL}${getBlogImage(item)}`
                   : "/cat.png"
               }
-              alt={getBlogField(item, "name", isFr)}
+            
               className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
@@ -211,13 +221,33 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   const seoKeyword = seoKeywordProp;
   const sectionLabel = t("expertInsight");
 
-  const [backInfo, setBackInfo] = useState({ label: "Advices", url: "/advices" });
+  // Stored as raw parts/typeKey (not a pre-rendered label) so the label below
+  // can be rebuilt via t()/isFr on every render — a plain string cached in
+  // sessionStorage or a useState initializer would otherwise freeze the label
+  // in whatever language was active when the previous page wrote it, ignoring
+  // any later language switch made while already on this page.
+  const [storedBackInfo, setStoredBackInfo] = useState(null);
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("adviceBack");
-      if (stored) setBackInfo(JSON.parse(stored));
+      if (stored) setStoredBackInfo(JSON.parse(stored));
     } catch {}
   }, []);
+
+  const backParts = storedBackInfo?.parts ?? [];
+  const backPartsLabel = backParts
+    .map((p) => (isFr && p.frenchName ? p.frenchName : p.name))
+    .filter(Boolean)
+    .join(" & ");
+  const backTypeLabel =
+    !backPartsLabel && storedBackInfo?.typeKey
+      ? t(TYPE_LABEL_KEYS[storedBackInfo.typeKey] || "articles")
+      : "";
+  const backPrefix = backPartsLabel || backTypeLabel;
+  const backInfo = {
+    url: storedBackInfo?.url ?? "/advices",
+    label: backPrefix ? `${backPrefix} ${t("advicesSuffix")}` : t("advicesSuffix"),
+  };
 
   const [blog, setBlog] = useState(null);
   const [bundles, setBundles] = useState([]);
@@ -252,7 +282,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         if (status === 404 || message === "Unauthenticated") {
           router.push("/advices");
         } else {
-          toast.error("Something went wrong. Please try again.");
+          toast.error(t("somethingWentWrong"));
         }
       } finally {
         setLoading(false);
@@ -294,7 +324,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       token ? { headers: { Authorization: `Bearer ${token}` } } : {},
     );
     if (res.data.status === false) {
-      throw new Error(res.data.action || "Could not add to cart.");
+      throw new Error(res.data.action || t("couldNotAddToCart"));
     }
     mergeCartItem(res.data.data);
   };
@@ -307,7 +337,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       await addProductToCart(product.id);
       setCartOpen(true);
     } catch (err) {
-      toast.error(err.message || "Something went wrong.");
+      toast.error(err.message || t("somethingWentWrong"));
     } finally {
       setAddingBundleId(null);
     }
@@ -529,7 +559,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors mb-6 cursor-pointer bg-transparent border-none p-0"
             >
             <FaArrowLeft className="w-3.5 h-3.5" />
-              Back to {backInfo.label}
+              {t("backTo", { label: backInfo.label })}
             </button>
           <h1 className="text-2xl sm:text-3xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
               {getBlogField(blog, "name", isFr)}
@@ -563,15 +593,15 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             </div>
           </div>
 
-          <div className="relative w-full lg:w-1/2 flex items-center justify-center">
+          <div className="relative w-full lg:w-1/2">
             <img
               src={
                 getBlogImage(blog)
                   ? `${MEDIA_URL}${getBlogImage(blog)}`
                   : "/cat.png"
               }
-              alt={getBlogField(blog, "name", isFr)}
-              className="max-h-[420px] w-full object-cover"
+          
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
@@ -640,7 +670,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                         {productImg ? (
                           <img
                             src={`${MEDIA_URL}${productImg}`}
-                            alt={productName}
+                          
                             className="w-full h-full object-cover"
                           />
                         ) : (

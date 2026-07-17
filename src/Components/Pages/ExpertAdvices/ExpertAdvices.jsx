@@ -105,6 +105,13 @@ function getCategoryName(item, isFr) {
   return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
 }
 
+// Stores both language variants of a species/topic name so the "Back to X"
+// label on ExpertAdvicesDetail can re-render in whichever language is active
+// at read time, instead of freezing the label in the language captured here.
+function getBackPart(item) {
+  return { name: item?.name ?? "", frenchName: item?.french_name ?? "" };
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    Shimmer primitives
    ──────────────────────────────────────────────────────────────────────── */
@@ -281,13 +288,9 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
     const parts = [];
-    if (activeSpecies) parts.push(getBlogField(activeSpecies, "name", isFr));
-    if (activeTopic?.length)
-      activeTopic.forEach((t) => parts.push(getBlogField(t, "name", isFr)));
-    const backLabel = parts.length
-      ? parts.join(" & ") + " " + tr("advicesSuffix")
-      : tr("advicesSuffix");
-    try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: "/advices" })); } catch {}
+    if (activeSpecies) parts.push(getBackPart(activeSpecies));
+    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
+    try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts, url: "/advices" })); } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -376,15 +379,18 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
               }}
             >
               <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                </div>
                 <img
                   src={
                     getBlogImage(item)
                       ? `${MEDIA_URL}${getBlogImage(item)}`
                       : "/cat.png"
                   }
-                  alt={item.title}
+
                   onLoad={(e) => e.currentTarget.previousSibling?.remove()}
-                  className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
+                  className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
                 />
               </div>
               <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
@@ -953,7 +959,7 @@ function ExpertAdvices() {
                       heroArticle.blog.english_seo_keyboard
                     : heroArticle.blog.english_seo_keyboard ||
                       heroArticle.blog.french_seo_keyword;
-                  try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: tr("advicesSuffix"), url: "/advices" })); } catch {}
+                  try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts: [], url: "/advices" })); } catch {}
                   startTopLoader();
                   router.push(`/advices/${encodeURIComponent(keyword)}`);
                 }}
@@ -1205,12 +1211,9 @@ function ExpertAdvices() {
                       ? a.french_seo_keyword || a.english_seo_keyboard
                       : a.english_seo_keyboard || a.french_seo_keyword;
                     const parts = [];
-                    if (activeSpecies) parts.push(getBlogField(activeSpecies, "name", isFr));
-                    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBlogField(t, "name", isFr)));
-                    const backLabel = parts.length
-                      ? parts.join(" & ") + " " + tr("advicesSuffix")
-                      : tr("advicesSuffix");
-                    try { sessionStorage.setItem("adviceBack", JSON.stringify({ label: backLabel, url: "/advices" })); } catch {}
+                    if (activeSpecies) parts.push(getBackPart(activeSpecies));
+                    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
+                    try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts, url: "/advices" })); } catch {}
                     startTopLoader();
                     router.push(`/advices/${encodeURIComponent(keyword)}`);
                   };
@@ -1228,11 +1231,14 @@ function ExpertAdvices() {
                         className="md:hidden border border-gray-200 cursor-pointer group overflow-hidden flex flex-col"
                       >
                         <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                          </div>
                           <img
                             src={imgSrc}
-                            alt={a.title ?? a.name}
+
                             onLoad={(e) => e.currentTarget.previousSibling?.remove()}
-                            className="w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
+                            className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
                           />
                         </div>
                         <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
@@ -1246,16 +1252,14 @@ function ExpertAdvices() {
                       {/* Desktop (md and up): unchanged existing look */}
                       <div onClick={navigateToArticle} className="hidden md:block cursor-pointer">
                         <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-200">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                          </div>
                           <img
                             src={imgSrc}
-                            alt={a.title ?? a.name}
-                            onLoad={(e) =>
-                              e.currentTarget.parentElement.classList.replace(
-                                "bg-gray-200",
-                                "bg-gray-100",
-                              )
-                            }
-                            className="w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
+
+                            onLoad={(e) => e.currentTarget.previousSibling?.remove()}
+                            className="relative z-10 w-full h-full object-cover grayscale transition-transform duration-300 hover:scale-105 cursor-pointer hover:grayscale-0"
                           />
                         </div>
                         <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
