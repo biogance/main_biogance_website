@@ -2104,7 +2104,7 @@ function FilterRail({
         ref.current = el;
         if (railRef) railRef.current = el;
       }}
-      className="sticky top-[104px] z-39 border-b border-stone-900/10 bg-white"
+      className="sticky top-[64px] lg:top-[104px] z-39 border-b border-stone-900/10 bg-white"
     >
       {/* Mobile: single prominent CTA that opens the full filters modal */}
       <div className="mx-auto flex max-w-10xl items-center gap-3 px-5 py-3 md:hidden">
