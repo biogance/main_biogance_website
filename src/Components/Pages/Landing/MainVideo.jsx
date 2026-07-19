@@ -124,11 +124,23 @@ export default function HeroSection() {
       if (!videoSectionRef.current) return;
       const rect = videoSectionRef.current.getBoundingClientRect();
       // jab video section ka bottom navbar (64px) ko touch kare tab white ho
-      setIsVideoVisible(rect.bottom > 88);
+      const videoStillBehindNav = rect.bottom > 88;
+      // Small screens: navbar sticks to top:0 once the announcement bar
+      // (40px) scrolls fully away — go white immediately at that point
+      // instead of waiting for the whole video section to scroll past.
+      const isSmallScreen = window.innerWidth < 1024;
+      const announcementHidden = window.scrollY >= 40;
+      setIsVideoVisible(
+        videoStillBehindNav && !(isSmallScreen && announcementHidden)
+      );
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   useEffect(() => { preloadHeroVideos(); }, []);

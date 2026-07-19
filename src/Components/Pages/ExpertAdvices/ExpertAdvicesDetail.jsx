@@ -11,6 +11,7 @@ import Footer from "../Footer";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import { LuPackage, LuUser, LuUserRoundPen } from "react-icons/lu";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { mergeCartItem } from "../../../utils/cartStorage";
@@ -162,7 +163,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
             onClick={() => scrollByCard(-1)}
             disabled={!canScrollLeft}
             aria-label={t("scrollLeft")}
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-9 h-9 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <FiChevronLeft className="w-6 h-6 mr-0.5" />
           </button>
@@ -171,7 +172,7 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
             onClick={() => scrollByCard(1)}
             disabled={!canScrollRight}
             aria-label={t("scrollRight")}
-            className="w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-9 h-9 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <FiChevronRight className="w-6 h-6 ml-0.5" />
           </button>
@@ -198,12 +199,15 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
                   ? `${MEDIA_URL}${getBlogImage(item)}`
                   : "/cat.png"
               }
-            
               className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300"
             />
+            {/* Top-right arrow icon on hover */}
+            <div className="absolute top-3 right-3 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
+            </div>
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
               <p className="text-xs text-white/80 mb-1">{t("pets")}</p>
-              <p className="text-base font-bold text-white leading-snug line-clamp-2">
+              <p className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:underline underline-offset-2 decoration-white">
                 {getBlogField(item, "name", isFr)}
               </p>
             </div>
@@ -632,9 +636,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             </div>
 
             {/* Right: recommended products */}
-         <div
+        <div
   ref={rightColRef}
-  className="w-full lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
 >
               <div className="border border-gray-200 p-4 sm:p-6">
                 <p className="text-xs text-gray-400 mb-2">
@@ -701,13 +705,15 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2">
+                          <p className="text-xs sm:text-sm font-bold text-gray-900">
                             {productName}
                           </p>
                         </div>
-                        {productLabel && (
-                          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2 line-clamp-1">
-                            {productLabel}
+                        {(productLabel || singleSize) && (
+                          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2">
+                            {productLabel && singleSize
+                              ? `${productLabel} - ${singleSize}`
+                              : productLabel || singleSize}
                           </p>
                         )}
                         {hasSizes && (
@@ -738,13 +744,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                                 </button>
                               );
                             })}
-                          </div>
-                        )}
-                        {singleSize && (
-                          <div className="mt-2 mb-3.5">
-                            <span className="inline-block px-2 py-1 text-[10px] sm:text-xs font-medium border border-gray-900 bg-gray-900 text-white">
-                              {singleSize}
-                            </span>
                           </div>
                         )}
                         {uniqueColors.length > 0 && (

@@ -21,7 +21,7 @@ import { getDeviceId } from "../../../utils/deviceId";
 import { FaArrowLeft } from "react-icons/fa";
 
 const CARD_GRID =
-  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-6 sm:gap-x-8 sm:gap-y-10";
+  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-4 sm:gap-x-8 sm:gap-y-8";
 const COLUMN_BREAKPOINTS = [
   { minWidth: 1536, columns: 5 },
   { minWidth: 1280, columns: 4 },
@@ -30,7 +30,13 @@ const COLUMN_BREAKPOINTS = [
   { minWidth: 0, columns: 1 },
 ];
 const ROWS_PER_PAGE = 3;
-const NAVBAR_HEIGHT = 104;
+// Single-column (mobile) layout loads a flat 15 cards per page instead of
+// columns * ROWS_PER_PAGE (which would be just 1 * 3 = 3).
+const MOBILE_PER_PAGE = 15;
+// Fixed header shrinks from 104px to 64px on small screens once the
+// announcement bar scrolls away (see Navbar.jsx) — match whichever is live.
+const getNavbarHeight = () =>
+  typeof window !== "undefined" && window.innerWidth >= 1024 ? 104 : 64;
 
 // In-memory cache (module scope, not sessionStorage) so filters + results
 // survive a soft navigation to ExpertAdvicesDetail and back, but reset on a
@@ -89,7 +95,7 @@ function TabButton({ label, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wider border cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+      className={`px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] border cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
         active
           ? "bg-gray-900 border-gray-900 text-white"
           : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
@@ -128,6 +134,30 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
+  // Active topic visible karo on mount (back navigation restore)
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const track = scrollRef.current;
+      if (!track) return;
+      const activeEl = track.querySelector("[data-topic][data-active]");
+      if (!activeEl) return;
+      // Jab row overflow ho rahi ho, scroll arrow buttons (w-8 + gap-2)
+      // is measurement ke baad mount hote hain — unki width pehle se
+      // reserve kar lo taake active tab uske peeche half-cut na ho.
+      const ARROW_RESERVE = 40;
+      const overflowing = track.scrollWidth > track.clientWidth + 4;
+      const trackRect = track.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      const leftBound = trackRect.left + (overflowing ? ARROW_RESERVE : 0);
+      const rightBound = trackRect.right - (overflowing ? ARROW_RESERVE : 0);
+      if (elRect.left < leftBound) {
+        track.scrollLeft -= leftBound - elRect.left + 8;
+      } else if (elRect.right > rightBound) {
+        track.scrollLeft += elRect.right - rightBound + 8;
+      }
+    });
+  }, [items]);
+
   const scrollByOne = (direction) => {
     const track = scrollRef.current;
     if (!track) return;
@@ -136,28 +166,29 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
     const viewLeft = track.scrollLeft;
     const viewRight = viewLeft + track.clientWidth;
     const maxScroll = track.scrollWidth - track.clientWidth;
+    const visibleTopics = topics.filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.right > track.getBoundingClientRect().left && r.left < track.getBoundingClientRect().right;
+    });
+    const step = Math.max(visibleTopics.length, 4);
+
     if (direction === 1) {
-      const next = topics.find(
-        (el) => el.offsetLeft + el.offsetWidth > viewRight + 1,
-      );
-      if (next) {
+      const targets = topics.filter((el) => el.offsetLeft + el.offsetWidth > viewRight + 1);
+      const target = targets[Math.min(3, targets.length - 1)];
+      if (target) {
         track.scrollTo({
-          left: Math.min(
-            next.offsetLeft + next.offsetWidth - track.clientWidth,
-            maxScroll,
-          ),
+          left: Math.min(target.offsetLeft + target.offsetWidth - track.clientWidth, maxScroll),
           behavior: "smooth",
         });
       } else {
         track.scrollTo({ left: maxScroll, behavior: "smooth" });
       }
     } else {
-      const prev = [...topics]
-        .reverse()
-        .find((el) => el.offsetLeft < viewLeft - 1);
-      if (prev) {
+      const targets = [...topics].reverse().filter((el) => el.offsetLeft < viewLeft - 1);
+      const target = targets[Math.min(3, targets.length - 1)];
+      if (target) {
         track.scrollTo({
-          left: Math.max(prev.offsetLeft, 0),
+          left: Math.max(target.offsetLeft, 0),
           behavior: "smooth",
         });
       } else {
@@ -173,7 +204,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           type="button"
           onClick={() => scrollByOne(-1)}
           aria-label={tr("scrollLeft")}
-          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-8 h-8 bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronLeft className="w-4 h-4" />
         </button>
@@ -189,19 +220,18 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           ref={scrollRef}
           className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {items.map((label) => (
-            <div key={label} data-topic className="shrink-0">
-              <TabButton
-                label={label === "All" ? tr("all") : label}
-                active={
-                  label === "All"
-                    ? activeItem === "All"
-                    : activeItems.includes(label)
-                }
-                onClick={() => onSelect(label)}
-              />
-            </div>
-          ))}
+          {items.map((label) => {
+            const isActive = label === "All" ? activeItem === "All" : activeItems.includes(label);
+            return (
+              <div key={label} data-topic {...(isActive ? { "data-active": "" } : {})} className="shrink-0">
+                <TabButton
+                  label={label === "All" ? tr("all") : label}
+                  active={isActive}
+                  onClick={() => onSelect(label)}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
       {canScrollRight && (
@@ -209,7 +239,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           type="button"
           onClick={() => scrollByOne(1)}
           aria-label={tr("scrollRight")}
-          className="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300  flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-8 h-8 bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronRight className="w-4 h-4" />
         </button>
@@ -219,10 +249,29 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
 }
 
 function ScrollableChipRow({ tabs }) {
+  const scrollRef = useRef(null);
+
+  // Active chip visible karo on mount (back navigation restore)
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const track = scrollRef.current;
+      if (!track) return;
+      const activeEl = track.querySelector("[data-active]");
+      if (!activeEl) return;
+      const trackRect = track.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      if (elRect.left < trackRect.left) {
+        track.scrollLeft -= trackRect.left - elRect.left + 8;
+      } else if (elRect.right > trackRect.right) {
+        track.scrollLeft += elRect.right - trackRect.right + 8;
+      }
+    });
+  }, [tabs]);
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div ref={scrollRef} className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map((tab) => (
-        <div key={tab.key} data-chip className="shrink-0">
+        <div key={tab.key} data-chip {...(tab.active ? { "data-active": "" } : {})} className="shrink-0">
           <TabButton label={tab.label} active={tab.active} onClick={tab.onClick} />
         </div>
       ))}
@@ -268,7 +317,7 @@ function AllArticlesCardSkeleton() {
 
 function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   return (
-    <div className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white">
+    <div className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform">
       <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-3 md:pb-6">
         {/* Mobile (below md): species chip row, then topics chip row */}
         <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
@@ -290,7 +339,7 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
                 <Shimmer key={i} className="h-9 w-24" />
               ))}
             </div>
-            <Shimmer className="h-11 w-full md:w-72 shrink-0" />
+            <Shimmer className="h-9 w-full md:w-72 shrink-0" />
           </div>
           <div className="flex items-center gap-2">
             {Array.from({ length: topicsCount }).map((_, i) => (
@@ -411,7 +460,11 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const [hasMore, setHasMore] = useState(cachedState?.hasMore ?? false);
 
   const columns = useResponsiveColumns();
-  const perPage = columns ? columns * ROWS_PER_PAGE : 0;
+  const perPage = columns
+    ? columns === 1
+      ? MOBILE_PER_PAGE
+      : columns * ROWS_PER_PAGE
+    : 0;
   const hasLoadedOnceRef = useRef(!!cachedState);
   const skipInitialFetchRef = useRef(!!cachedState);
 
@@ -521,7 +574,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const scrollToFilters = useCallback(() => {
     const filters = filtersRef.current;
     if (!filters) return;
-    const targetY = filters.offsetTop - NAVBAR_HEIGHT;
+    const targetY = filters.offsetTop - getNavbarHeight();
     if (window.scrollY > targetY) {
       window.scrollTo({ top: targetY, behavior: "smooth" });
     }
@@ -541,22 +594,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     fetchArticles(next, true);
   };
 
-  const [isStuck, setIsStuck] = useState(false);
-  useEffect(() => {
-    const checkStuck = () => {
-      if (!filtersRef.current) return;
-      setIsStuck(
-        filtersRef.current.getBoundingClientRect().top <= NAVBAR_HEIGHT,
-      );
-    };
-    checkStuck();
-    window.addEventListener("scroll", checkStuck, { passive: true });
-    window.addEventListener("resize", checkStuck);
-    return () => {
-      window.removeEventListener("scroll", checkStuck);
-      window.removeEventListener("resize", checkStuck);
-    };
-  }, []);
+
 
   const navigateToDetail = (item) => {
     const keyword = isFr
@@ -600,7 +638,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
         {/* Mobile-only search bar — mirrors the block below the sticky filters */}
         <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
-          <Shimmer className="h-11 w-full" />
+          <Shimmer className="h-9 w-full" />
         </div>
 
         <div className="px-6 sm:px-10 lg:px-16 ">
@@ -641,11 +679,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       {/* Sticky Filters — moved below the section label */}
       <div
         ref={filtersRef}
-        className="sticky top-[95px] scroll-mt-[104px] z-30 bg-white"
+        className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform"
       >
-        <div
-          className={`px-6 sm:px-10 lg:px-16 pt-6 transition-[padding-bottom] duration-300 ease-out ${isStuck ? "pb-0" : "pb-3 md:pb-6"}`}
-        >
+        <div className="px-6 sm:px-10 lg:px-16 pt-6 md:mb-6">
           {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}
           <div className="md:hidden">
             <ScrollableChipRow tabs={mobileSpeciesTabs} />
@@ -674,22 +710,22 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
               </div>
 
               <div className="group relative w-full md:w-72 shrink-0">
-                <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+                <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                  className="h-9 w-full border border-gray-200 bg-gray-50/60 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                 />
                 {searchInput && (
                   <button
                     type="button"
                     onClick={clearSearch}
                     aria-label={tr("clearSearch")}
-                    className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                    className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
                   >
-                    <FiX className="h-3.5 w-3.5" />
+                    <FiX className="h-3 w-3" />
                   </button>
                 )}
               </div>
@@ -697,9 +733,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
             <ScrollableTabsRow
               items={["All", ...topicsList.map((t) => getBlogField(t, "name", isFr))]}
-              activeItem={
-                activeSpecies && activeTopic.length === 0 ? "All" : null
-              }
+              activeItem={activeTopic.length === 0 ? "All" : null}
               activeItems={activeTopic.map((t) => getBlogField(t, "name", isFr))}
               onSelect={(name) => {
                 if (name === "All") {
@@ -719,9 +753,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
             />
           </div>
 
-          <hr
-            className={`border-t border-gray-200 transition-[margin-top] duration-300 ease-out ${isStuck ? "mt-3.5" : "mt-3 md:mt-6"}`}
-          />
+            <hr className="border-t border-gray-200 mt-2 md:mt-3" />
         </div>
       </div>
 
@@ -741,9 +773,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
               type="button"
               onClick={clearSearch}
               aria-label={tr("clearSearch")}
-              className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+              className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
             >
-              <FiX className="h-3.5 w-3.5" />
+              <FiX className="h-3 w-3" />
             </button>
           )}
         </div>
@@ -798,9 +830,11 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                           ? `${MEDIA_URL}${getBlogImage(a)}`
                           : "/cat.png"
                       }
-                     
-                      onLoad={(e) => e.currentTarget.previousSibling?.remove()}
-                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 transition-transform duration-300 hover:grayscale-0"
+                      onLoad={(e) => {
+                        e.currentTarget.previousSibling?.remove();
+                        e.currentTarget.classList.remove("opacity-0");
+                      }}
+                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-300 opacity-0"
                     />
                   </div>
                   <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">

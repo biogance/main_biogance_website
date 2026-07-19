@@ -67,6 +67,62 @@ export default function Navbar({
   const productsRef = useRef(null);
   const productsCloseTimer = useRef(null);
 
+  // Announcement bar height in px — also the max scroll distance it travels.
+  const ANNOUNCEMENT_HEIGHT = 40;
+  const announcementBarRef = useRef(null);
+  const navElRef = useRef(null);
+  const isDesktopRef = useRef(true);
+
+  // Scroll-linked position is applied straight to the DOM (no React state),
+  // so scrolling never triggers a re-render of the whole navbar tree — doing
+  // that every animation frame was competing with native sticky positioning
+  // on the main thread and showing up as jitter on content-heavy pages.
+  useEffect(() => {
+    const lastOffsetRef = { current: -1 };
+
+    const applyOffset = (force = false) => {
+      const scrollOffset = isDesktopRef.current
+        ? 0
+        : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
+      // Once the offset settles (0 on desktop, 40 past the first 40px of
+      // mobile scroll) there's nothing left to animate — skip the DOM
+      // writes so scrolling further doesn't keep doing main-thread work
+      // that competes with the sticky filter bars below the navbar.
+      if (!force && scrollOffset === lastOffsetRef.current) return;
+      lastOffsetRef.current = scrollOffset;
+      if (announcementBarRef.current) {
+        announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
+      }
+      if (navElRef.current) {
+        navElRef.current.style.top = `${ANNOUNCEMENT_HEIGHT - scrollOffset}px`;
+      }
+    };
+
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const updateIsDesktop = () => {
+      isDesktopRef.current = mq.matches;
+      applyOffset(true);
+    };
+    updateIsDesktop();
+    mq.addEventListener("change", updateIsDesktop);
+
+    let ticking = false;
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        applyOffset();
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      mq.removeEventListener("change", updateIsDesktop);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   useEffect(() => {
     const readCount = () => {
       const data = getCartData();
@@ -313,7 +369,10 @@ export default function Navbar({
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]">
+      <div
+        ref={announcementBarRef}
+        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]"
+      >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
             const h = activeHeaders[idx] || activeHeaders[0];
@@ -558,7 +617,8 @@ export default function Navbar({
       />
 
       <nav
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-all duration-300 ${
+        ref={navElRef}
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-300 ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur
