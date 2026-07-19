@@ -838,7 +838,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                     />
                   </div>
                   <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
-                    <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1">
+                    <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1 group-hover:underline underline-offset-2">
                       {getBlogField(a, "name", isFr)}
                     </p>
                     <HiOutlineArrowUpRight className="shrink-0 mt-0.5 text-gray-700 w-4 h-4" />
