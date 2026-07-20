@@ -369,67 +369,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   const cardsPerView = useCardsPerView();
 
-  const rightColRef = useRef(null);
-  const headerRef = useRef(null);
   const cardsScrollRef = useRef(null);
 
-  // `max-height` alone isn't enough here: a `flex-1` child with
-  // overflow-y-auto inside a parent sized only by max-height (not an actual
-  // height) doesn't reliably get its share of that space — the parent's own
-  // natural size is computed independently of the cap, so the flex child can
-  // end up shorter than the cap even while its content overflows. Setting an
-  // explicit `height` (not just max-height) gives it a real, definite space
-  // to grow into. Height = min(real content height, viewport cap): many
-  // cards → hits the cap, card list scrolls internally; few cards → shrinks
-  // to fit them exactly.
-  useEffect(() => {
-    const el = rightColRef.current;
-    const header = headerRef.current;
-    const scrollEl = cardsScrollRef.current;
-    if (!el || !header || !scrollEl) return;
-    const syncHeight = () => {
-      if (window.innerWidth < 1024) {
-        el.style.height = "";
-        return;
-      }
-      const cap = window.innerHeight - 260;
-      const natural = header.offsetHeight + scrollEl.scrollHeight;
-      el.style.height = `${Math.min(natural, cap)}px`;
-    };
-    syncHeight();
-    window.addEventListener("resize", syncHeight);
-    const resizeObserver = new ResizeObserver(syncHeight);
-    resizeObserver.observe(scrollEl);
-    return () => {
-      window.removeEventListener("resize", syncHeight);
-      resizeObserver.disconnect();
-    };
-  }, [loading]);
 
-  useEffect(() => {
-    const scrollEl = cardsScrollRef.current;
-    if (!scrollEl) return;
-    const handleWheel = (e) => {
-      if (window.innerWidth < 1024) return;
-      const rect = scrollEl.getBoundingClientRect();
-      const overCards =
-        e.clientX >= rect.left &&
-        e.clientX <= rect.right &&
-        e.clientY >= rect.top &&
-        e.clientY <= rect.bottom;
-      if (!overCards) return;
-      const { scrollTop, scrollHeight, clientHeight } = scrollEl;
-      const scrollingDown = e.deltaY > 0;
-      const canScrollDown = scrollTop + clientHeight < scrollHeight - 1;
-      const canScrollUp = scrollTop > 0;
-      if ((scrollingDown && canScrollDown) || (!scrollingDown && canScrollUp)) {
-        e.preventDefault();
-        scrollEl.scrollTop += e.deltaY;
-      }
-    };
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [loading]);
 
   // const handleAddAll = async () => {
   //   if (addingAll) return;
@@ -666,25 +608,58 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
 
             {/* Left: article content */}
-           <div className="w-full lg:flex-1">
-              {getBlogField(blog, "long_description", isFr) ? (
+            <div className="w-full lg:flex-1 flex flex-col">
+              <div>
+                {getBlogField(blog, "long_description", isFr) ? (
+                  <div
+                    className="prose prose-sm max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{
+                      __html: getBlogField(blog, "long_description", isFr),
+                    }}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500">{t("noContent")}</p>
+                )}
+              </div>
+
+              {/* YouTube video inside left column when products exist */}
+              {youtubeId && (
+                <div className="mt-12 md:mt-16 relative w-full aspect-video bg-gray-900 overflow-hidden">
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
+                    title="Blog Video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+
+              {/* Tags inside left column when products exist */}
+              {tags.length > 0 && (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700"
-                  dangerouslySetInnerHTML={{
-                    __html: getBlogField(blog, "long_description", isFr),
-                  }}
-                />
-              ) : (
-                <p className="text-sm text-gray-500">{t("noContent")}</p>
+                  className={`${
+                    youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-8"
+                  } flex flex-wrap gap-2`}
+                >
+                  {tags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="text-xs px-3 py-1.5 border border-black/15 text-black/70"
+                    >
+                      #{tag.name}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
 
             {/* Right: recommended products */}
         <div
-  ref={rightColRef}
-  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden"
->
-              <div ref={headerRef} className="p-4 sm:p-6 pb-4 shrink-0">
+          className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar"
+        >
+              <div className="p-4 sm:p-6 pb-4 shrink-0">
                 <p className="text-xs text-gray-400 mb-2">
                   {t("recommendedRoutine")}
                 </p>
@@ -695,7 +670,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               </div>
               <div
                 ref={cardsScrollRef}
-                className="flex-1 min-h-0 overflow-y-auto scroll-smooth px-4 sm:px-6 pb-4 sm:pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="flex-1 min-h-0 -mt-5 overflow-y-auto scroll-smooth px-4 sm:px-6 pb-4 sm:pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               >
                 {bundles.map((bundle) => {
                   const products = bundle.products || [];
@@ -754,12 +729,12 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="text-xs sm:text-sm font-bold text-gray-900">
+                          <p className="text-xs sm:text-sm font-bold  text-gray-900">
                             {productName}
                           </p>
                         </div>
                         {(productLabel || singleSize) && (
-                          <p className="text-[9px] sm:text-[11px] text-gray-500 whitespace-nowrap mb-2">
+                          <p className="text-[9px] sm:text-[11px] text-gray-500 mb-2">
                             {productLabel && singleSize
                               ? `${productLabel} — ${singleSize}`
                               : productLabel || singleSize}
@@ -881,7 +856,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       </div>
 
       {/* YouTube video */}
-      {youtubeId && (
+      {!hasProducts && youtubeId && (
         <section className="bg-white py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16">
             <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
@@ -905,7 +880,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       )}
 
       {/* Tags — shown below the video if there is one, otherwise take its place */}
-      {tags.length > 0 && (
+      {!hasProducts && tags.length > 0 && (
         <section
           className={`bg-white pb-12 md:pb-16 ${youtubeId ? "pt-12 md:pt-16" : "pt-0"}`}
         >

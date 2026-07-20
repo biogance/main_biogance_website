@@ -98,3 +98,9 @@ input:-moz-autofill {
 .modal-shake {
   animation: modalShake 0.4s ease-in-out;
 }
+
+@media (min-width: 1024px) {
+  .sticky-products-sidebar {
+    max-height: calc(100vh - 156px) !important;
+  }
+}
