@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -26,7 +26,7 @@ import { startTopLoader } from "../TopLoader";
 import { IoHourglassOutline } from "react-icons/io5";
 
 const CARD_GRID =
-  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-6 sm:gap-x-8 sm:gap-y-10";
+  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-4 sm:gap-x-8 sm:gap-y-8";
 const COLUMN_BREAKPOINTS = [
   { minWidth: 1536, columns: 5 },
   { minWidth: 1280, columns: 4 },
@@ -387,7 +387,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
                         e.currentTarget.previousSibling?.remove();
                         e.currentTarget.classList.remove("opacity-0");
                       }}
-                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-300 opacity-0"
+                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300 opacity-0"
                     />
               </div>
               <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
@@ -405,17 +405,17 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
             type="button"
             onClick={() => scrollByCard(-1)}
             aria-label={tr("scrollLeft")}
-            className="absolute left-0 top-[120px] -translate-y-1/2 -translate-x-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+            className="absolute left-0 top-[120px] -translate-y-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
           >
             <FiChevronLeft className="w-4 h-4" />
           </button>
-        )}
+        )}     
         {canScrollRight && (
           <button
             type="button"
             onClick={() => scrollByCard(1)}
             aria-label={tr("scrollRight")}
-            className="absolute right-0 top-[120px] -translate-y-1/2 translate-x-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+            className="absolute right-0 top-[120px] -translate-y-1/2 translate-x-1/2 z-10 w-8 h-8 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
           >
             <FiChevronRight className="w-4 h-4" />
           </button>
@@ -599,7 +599,11 @@ function FilterChip({ label }) {
 
 function useResponsiveColumns() {
   const [columns, setColumns] = useState(null);
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the real column count is resolved and
+  // committed before the browser paints — otherwise the first frame renders
+  // with columns=null (every row falling back to a single full-width card)
+  // and only snaps to the real grid on the next frame, showing as a flash.
+  useLayoutEffect(() => {
     const calc = () =>
       COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
     const update = () => setColumns(calc());
@@ -665,18 +669,26 @@ function ExpertAdvices() {
     },
   }));
 
-  const mobileTopicTabs = topicsList.map((t) => ({
-    key: `topic-${t.id}`,
-    label: getBlogField(t, "name", isFr),
-    active: activeTopic.some((x) => x.id === t.id),
-    onClick: () => {
-      setActiveTopic((prev) =>
-        prev.find((x) => x.id === t.id)
-          ? prev.filter((x) => x.id !== t.id)
-          : [...prev, t],
-      );
+  const mobileTopicTabs = [
+    {
+      key: "topic-all",
+      label: tr("all"),
+      active: activeTopic.length === 0,
+      onClick: () => setActiveTopic([]),
     },
-  }));
+    ...topicsList.map((t) => ({
+      key: `topic-${t.id}`,
+      label: getBlogField(t, "name", isFr),
+      active: activeTopic.some((x) => x.id === t.id),
+      onClick: () => {
+        setActiveTopic((prev) =>
+          prev.find((x) => x.id === t.id)
+            ? prev.filter((x) => x.id !== t.id)
+            : [...prev, t],
+        );
+      },
+    })),
+  ];
 
   // ── Search (immediate shimmer, 1.5s debounce before the API call) ───────
   const [searchInput, setSearchInput] = useState(cachedState?.searchInput ?? "");
@@ -1039,7 +1051,7 @@ function ExpertAdvices() {
       {/* Sticky Filters */}
       <div
         ref={filtersRef}
-        className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform"
+        className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur "
       >
         <div className="px-6 sm:px-10 lg:px-16 pt-6 md:mb-6">
           {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}

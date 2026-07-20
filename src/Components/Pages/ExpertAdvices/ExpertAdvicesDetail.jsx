@@ -94,7 +94,7 @@ function useCardsPerView() {
   return count;
 }
 
-function MoreAdvicesRow({ items, isFr, backInfo }) {
+function MoreAdvicesRow({ items, isFr, backInfo, filterLabel }) {
   const { t } = useTranslation("expertadvice");
   const router = useRouter();
   const scrollRef = useRef(null);
@@ -206,7 +206,9 @@ function MoreAdvicesRow({ items, isFr, backInfo }) {
               <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
             </div>
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10">
-              <p className="text-xs text-white/80 mb-1">{t("pets")}</p>
+              {filterLabel && (
+                <p className="text-xs text-white/80 mb-1">{filterLabel}</p>
+              )}
               <p className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:underline underline-offset-2 decoration-white">
                 {getBlogField(item, "name", isFr)}
               </p>
@@ -263,6 +265,23 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   // const [addingAll, setAddingAll] = useState(false); // Add all — commented out
   const [cartOpen, setCartOpen] = useState(false);
 
+  // This component stays mounted across /advices/[keyword] navigations (only
+  // seoKeyword changes), so both a related-card click and a browser back/
+  // forward otherwise just inherit whatever scroll position carried over —
+  // landing near the "More expert advices" row (right above the footer)
+  // since that's where related-card clicks originate. Force every keyword
+  // change back to the top, and stop the browser's native scroll
+  // restoration from fighting that on back/forward.
+  useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+  }, [seoKeyword]);
+
   useEffect(() => {
     if (!seoKeyword) return;
     const fetchDetail = async () => {
@@ -300,6 +319,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     ? blog?.french_youtube_link || blog?.youtube_link
     : blog?.youtube_link || blog?.french_youtube_link;
   const youtubeId = getYoutubeId(youtubeLink);
+  const tags = blog?.tags ?? [];
 
   const getSelectedProduct = (bundle) => {
     const products = bundle.products || [];
@@ -520,6 +540,21 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
           </div>
         </section>
 
+        {/* Tags skeleton */}
+        <section className="bg-white py-12 md:py-16">
+          <div className="px-6 sm:px-10 lg:px-16">
+            <div className="w-full max-w-5xl mx-auto flex flex-wrap gap-2">
+              {[16, 20, 14, 24, 18, 12].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-7 bg-gray-100 animate-pulse"
+                  style={{ width: `${w * 4}px` }}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* More advices skeleton — includes the left/right scroll-arrow placeholders the real header has */}
       <section className="bg-[#fbf9f7] py-8 sm:py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
@@ -638,7 +673,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             {/* Right: recommended products */}
         <div
   ref={rightColRef}
-  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-260px)] lg:overflow-y-auto lg:sticky lg:top-[130px] lg:self-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
 >
               <div className="border border-gray-200 p-4 sm:p-6">
                 <p className="text-xs text-gray-400 mb-2">
@@ -710,9 +745,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           </p>
                         </div>
                         {(productLabel || singleSize) && (
-                          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed mb-2">
+                          <p className="text-[10px] sm:text-[11px] text-gray-500 whitespace-nowrap mb-2">
                             {productLabel && singleSize
-                              ? `${productLabel} - ${singleSize}`
+                              ? `${productLabel} — ${singleSize}`
                               : productLabel || singleSize}
                           </p>
                         )}
@@ -849,11 +884,32 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         </section>
       )}
 
+      {/* Tags — shown below the video if there is one, otherwise take its place */}
+      {tags.length > 0 && (
+        <section
+          className={`bg-white pb-12 md:pb-16 ${youtubeId ? "pt-12 md:pt-16" : "pt-0"}`}
+        >
+          <div className="px-6 sm:px-10 lg:px-16">
+            <div className="w-full max-w-5xl mx-auto flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="bg-transparent border border-gray-300 rounded-none px-3 py-1.5 text-xs font-medium text-gray-900"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* More expert advices */}
       <MoreAdvicesRow
         items={relatedBlogs}
         isFr={isFr}
         backInfo={backInfo}
+        filterLabel={backPartsLabel}
       />
 
       <Footer />

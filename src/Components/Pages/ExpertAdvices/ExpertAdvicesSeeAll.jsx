@@ -414,18 +414,26 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     },
   }));
 
-  const mobileTopicTabs = topicsList.map((t) => ({
-    key: `topic-${t.id}`,
-    label: getBlogField(t, "name", isFr),
-    active: activeTopic.some((x) => x.id === t.id),
-    onClick: () => {
-      setActiveTopic((prev) =>
-        prev.find((x) => x.id === t.id)
-          ? prev.filter((x) => x.id !== t.id)
-          : [...prev, t],
-      );
+  const mobileTopicTabs = [
+    {
+      key: "topic-all",
+      label: tr("all"),
+      active: activeTopic.length === 0,
+      onClick: () => setActiveTopic([]),
     },
-  }));
+    ...topicsList.map((t) => ({
+      key: `topic-${t.id}`,
+      label: getBlogField(t, "name", isFr),
+      active: activeTopic.some((x) => x.id === t.id),
+      onClick: () => {
+        setActiveTopic((prev) =>
+          prev.find((x) => x.id === t.id)
+            ? prev.filter((x) => x.id !== t.id)
+            : [...prev, t],
+        );
+      },
+    })),
+  ];
 
   const [searchInput, setSearchInput] = useState(
     cachedState?.searchInput ?? "",
@@ -834,7 +842,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                         e.currentTarget.previousSibling?.remove();
                         e.currentTarget.classList.remove("opacity-0");
                       }}
-                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-300 opacity-0"
+                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300 opacity-0"
                     />
                   </div>
                   <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
