@@ -348,6 +348,12 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
         <button
           type="button"
           onClick={() => {
+            try {
+              sessionStorage.setItem(
+                "seeAllInitialFilter",
+                JSON.stringify({ activeSpecies, activeTopic }),
+              );
+            } catch {}
             startTopLoader();
             router.push(`/advices/${type}`);
           }}

@@ -371,7 +371,7 @@ export default function Navbar({
     <>
       <div
         ref={announcementBarRef}
-        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px] transition-transform duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white h-[40px] transition-transform duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] shadow-[0_-100px_0_0_#111]"
       >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
