@@ -143,7 +143,7 @@ function MoreAdvicesRow({ items, isFr, backInfo, filterLabel }) {
   if (!items?.length) return null;
 
   return (
-    <section className="bg-[#fbf9f7] border-t border-gray-300 py-8 sm:py-12 md:py-16">
+    <section className="bg-[#fbf9f7] border-t border-gray-200 py-8 sm:py-12 md:py-16">
       <div className="px-6 sm:px-10 lg:px-16 flex items-end justify-between mb-4">
         <div>
         <button
@@ -369,83 +369,55 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   const cardsPerView = useCardsPerView();
 
-  const rowRef = useRef(null);
-  const leftColRef = useRef(null);
   const rightColRef = useRef(null);
+  const headerRef = useRef(null);
   const cardsScrollRef = useRef(null);
 
+  // `max-height` alone isn't enough here: a `flex-1` child with
+  // overflow-y-auto inside a parent sized only by max-height (not an actual
+  // height) doesn't reliably get its share of that space — the parent's own
+  // natural size is computed independently of the cap, so the flex child can
+  // end up shorter than the cap even while its content overflows. Setting an
+  // explicit `height` (not just max-height) gives it a real, definite space
+  // to grow into. Height = min(real content height, viewport cap): many
+  // cards → hits the cap, card list scrolls internally; few cards → shrinks
+  // to fit them exactly.
   useEffect(() => {
     const el = rightColRef.current;
+    const header = headerRef.current;
     const scrollEl = cardsScrollRef.current;
-    const row = rowRef.current;
-    const leftCol = leftColRef.current;
-    if (!el || !scrollEl || !row || !leftCol) return;
-
-    const isDesktop = () => window.innerWidth >= 1024;
-    // Matches the sidebar's lg:top-[130px] sticky offset and an equal gap
-    // reserved at the bottom of the viewport.
-    const TOP_OFFSET = 130;
-    const BOTTOM_GAP = 130;
-
-    // Cap the sidebar's height at whichever is smaller: the article text's
-    // own rendered height, or the available viewport space. Capping it to
-    // the article's height (rather than always maxing out the viewport) is
-    // what gives position:sticky real room to hold the sidebar in place —
-    // if the sidebar were allowed to render as tall as (or taller than) the
-    // row itself, sticky would have no slack to stick with, and the whole
-    // box would just scroll past with the page instead of staying put while
-    // its card list scrolls internally. When there are few cards, the box's
-    // actual height still shrinks to fit them since this is a max-height,
-    // not a fixed height.
-    const syncSidebarHeight = () => {
-      if (!isDesktop()) {
-        el.style.maxHeight = "";
+    if (!el || !header || !scrollEl) return;
+    const syncHeight = () => {
+      if (window.innerWidth < 1024) {
+        el.style.height = "";
         return;
       }
-      const viewportCap = window.innerHeight - TOP_OFFSET - BOTTOM_GAP;
-      const cap = Math.min(leftCol.offsetHeight, viewportCap);
-      el.style.maxHeight = `${Math.max(cap, 0)}px`;
+      const cap = window.innerHeight - 260;
+      const natural = header.offsetHeight + scrollEl.scrollHeight;
+      el.style.height = `${Math.min(natural, cap)}px`;
     };
-    syncSidebarHeight();
-    window.addEventListener("resize", syncSidebarHeight);
-    const resizeObserver = new ResizeObserver(syncSidebarHeight);
-    resizeObserver.observe(leftCol);
-
-    // Reveal the sidebar's first/last card fully once the page has
-    // scrolled to the very start/end of the ROW (not the document — more
-    // sections like "More expert advices" and the footer follow below the
-    // row, so the row ends well before the document does). Scrolling
-    // anywhere in between (e.g. reading the left article) leaves the
-    // sidebar's internal scroll untouched.
-    const syncRowEdges = () => {
-      if (!isDesktop()) return;
-      const overflow = scrollEl.scrollHeight - scrollEl.clientHeight;
-      if (overflow <= 0) return;
-
-      const rect = row.getBoundingClientRect();
-      const atBottom = window.scrollY > 0 && rect.bottom <= window.innerHeight;
-      const atTop = rect.top >= 0;
-      if (atBottom) scrollEl.scrollTop = scrollEl.scrollHeight;
-      else if (atTop) scrollEl.scrollTop = 0;
+    syncHeight();
+    window.addEventListener("resize", syncHeight);
+    const resizeObserver = new ResizeObserver(syncHeight);
+    resizeObserver.observe(scrollEl);
+    return () => {
+      window.removeEventListener("resize", syncHeight);
+      resizeObserver.disconnect();
     };
-    syncRowEdges();
-    window.addEventListener("scroll", syncRowEdges);
-    window.addEventListener("resize", syncRowEdges);
+  }, [loading]);
 
-    // Scrolling directly over the sidebar, or the empty whitespace to its
-    // right, moves only the card list — the page itself stays put.
+  useEffect(() => {
+    const scrollEl = cardsScrollRef.current;
+    if (!scrollEl) return;
     const handleWheel = (e) => {
-      if (!isDesktop()) return;
-      const rect = el.getBoundingClientRect();
-      const withinRow = rect.top >= 0 && rect.bottom <= window.innerHeight;
-      if (!withinRow) return;
-      if (
-        e.clientX < rect.left ||
-        e.clientY < rect.top ||
-        e.clientY > rect.bottom
-      )
-        return;
-
+      if (window.innerWidth < 1024) return;
+      const rect = scrollEl.getBoundingClientRect();
+      const overCards =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+      if (!overCards) return;
       const { scrollTop, scrollHeight, clientHeight } = scrollEl;
       const scrollingDown = e.deltaY > 0;
       const canScrollDown = scrollTop + clientHeight < scrollHeight - 1;
@@ -456,14 +428,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       }
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
-
-    return () => {
-      window.removeEventListener("resize", syncSidebarHeight);
-      resizeObserver.disconnect();
-      window.removeEventListener("scroll", syncRowEdges);
-      window.removeEventListener("resize", syncRowEdges);
-      window.removeEventListener("wheel", handleWheel);
-    };
+    return () => window.removeEventListener("wheel", handleWheel);
   }, [loading]);
 
   // const handleAddAll = async () => {
@@ -574,21 +539,27 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         {/* Video skeleton */}
         <section className="bg-white py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16">
-            <div className="w-full max-w-5xl aspect-video bg-gray-200 animate-pulse" />
+            <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+              <div className="w-full lg:flex-1 aspect-video bg-gray-200 animate-pulse" />
+              <div className="hidden lg:block lg:w-2/5 xl:w-1/4 xl:max-w-sm" aria-hidden="true" />
+            </div>
           </div>
         </section>
 
         {/* Tags skeleton */}
         <section className="bg-white py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16">
-            <div className="w-full max-w-5xl flex flex-wrap gap-2">
-              {[16, 20, 14, 24, 18, 12].map((w, i) => (
-                <div
-                  key={i}
-                  className="h-7 bg-gray-100 animate-pulse"
-                  style={{ width: `${w * 4}px` }}
-                />
-              ))}
+            <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+              <div className="w-full lg:flex-1 flex flex-wrap gap-2">
+                {[16, 20, 14, 24, 18, 12].map((w, i) => (
+                  <div
+                    key={i}
+                    className="h-7 bg-gray-100 animate-pulse"
+                    style={{ width: `${w * 4}px` }}
+                  />
+                ))}
+              </div>
+              <div className="hidden lg:block lg:w-2/5 xl:w-1/4 xl:max-w-sm" aria-hidden="true" />
             </div>
           </div>
         </section>
@@ -692,10 +663,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       {/* Article body + product recommendation */}
     <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
         {hasProducts ? (
-        <div ref={rowRef} className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
 
             {/* Left: article content */}
-           <div ref={leftColRef} className="w-full lg:flex-1">
+           <div className="w-full lg:flex-1">
               {getBlogField(blog, "long_description", isFr) ? (
                 <div
                   className="prose prose-sm max-w-none text-gray-700"
@@ -711,9 +682,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             {/* Right: recommended products */}
         <div
   ref={rightColRef}
-  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col"
+  className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden"
 >
-              <div className="p-4 sm:p-6 pb-4 shrink-0">
+              <div ref={headerRef} className="p-4 sm:p-6 pb-4 shrink-0">
                 <p className="text-xs text-gray-400 mb-2">
                   {t("recommendedRoutine")}
                 </p>
@@ -781,14 +752,14 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                           <LuPackage className="w-6 h-6 sm:w-7 sm:h-7 text-gray-300" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 flex flex-col">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <p className="text-xs sm:text-sm font-bold text-gray-900">
                             {productName}
                           </p>
                         </div>
                         {(productLabel || singleSize) && (
-                          <p className="text-[9px] sm:text-[9px] text-gray-500 whitespace-nowrap mb-2">
+                          <p className="text-[9px] sm:text-[11px] text-gray-500 whitespace-nowrap mb-2">
                             {productLabel && singleSize
                               ? `${productLabel} — ${singleSize}`
                               : productLabel || singleSize}
@@ -877,7 +848,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                             handleAddToCart(bundle);
                           }}
                           disabled={isAdding}
-                          className="w-full mt-2 text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-xs font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                          className="w-full mt-auto pt-2 text-black bg-[#f3f3f3] hover:bg-gray-900 hover:text-white text-xs sm:text-sm font-semibold py-1.5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                           {isAdding ? (
                             <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -913,14 +884,20 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       {youtubeId && (
         <section className="bg-white py-12 md:py-16">
           <div className="px-6 sm:px-10 lg:px-16">
-            <div className="relative w-full max-w-5xl aspect-video bg-gray-900  overflow-hidden">
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
-                title="Blog Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+            <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+              <div className="relative w-full lg:flex-1 aspect-video bg-gray-900 overflow-hidden">
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
+                  title="Blog Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div
+                className="hidden lg:block lg:w-2/5 xl:w-1/4 xl:max-w-sm"
+                aria-hidden="true"
               />
             </div>
           </div>
@@ -933,15 +910,21 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
           className={`bg-white pb-12 md:pb-16 ${youtubeId ? "pt-12 md:pt-16" : "pt-0"}`}
         >
           <div className="px-6 sm:px-10 lg:px-16">
-            <div className="w-full max-w-5xl flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="bg-transparent border border-gray-300 rounded-none px-3 py-1.5 text-xs font-medium text-gray-900"
-                >
-                  # {tag.name}
-                </span>
-              ))}
+            <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+              <div className="w-full lg:flex-1 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="text-xs px-3 py-1.5 border border-black/15 text-black/70"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+              <div
+                className="hidden lg:block lg:w-2/5 xl:w-1/4 xl:max-w-sm"
+                aria-hidden="true"
+              />
             </div>
           </div>
         </section>

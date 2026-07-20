@@ -3858,6 +3858,8 @@ function Checkout({ cartItems = [] }) {
             ? {
               pickup_name: summaryState.selectedLocation.name,
               pickup_address: summaryState.selectedLocation.address,
+              // pick_up_service_point_id: summaryState.selectedLocation.id,
+              // pickup_carrier_service_point_id: summaryState.selectedLocation.code,
             }
             : {}),
         }),
@@ -4042,6 +4044,8 @@ function Checkout({ cartItems = [] }) {
             ? {
               pickup_name: summaryState.selectedLocation.name,
               pickup_address: summaryState.selectedLocation.address,
+              pick_up_service_point_id: summaryState.selectedLocation.id,
+              pickup_carrier_service_point_id: summaryState.selectedLocation.code,
             }
             : {}),
         }),
@@ -4300,6 +4304,8 @@ function Checkout({ cartItems = [] }) {
           ? {
             pickup_name: summaryState.selectedLocation.name,
             pickup_address: summaryState.selectedLocation.address,
+            pick_up_service_point_id: summaryState.selectedLocation.id,
+            pickup_carrier_service_point_id: summaryState.selectedLocation.code,
           }
           : {}),
       };
