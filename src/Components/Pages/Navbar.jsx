@@ -94,7 +94,7 @@ export default function Navbar({
         announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
       }
       if (navElRef.current) {
-        navElRef.current.style.top = `${ANNOUNCEMENT_HEIGHT - scrollOffset}px`;
+        navElRef.current.style.transform = `translateY(-${scrollOffset}px)`;
       }
     };
 
@@ -618,7 +618,7 @@ export default function Navbar({
 
       <nav
         ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,top] duration-300 ease-out ${
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,transform] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur
