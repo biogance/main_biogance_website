@@ -34,6 +34,15 @@ const COLUMN_BREAKPOINTS = [
   { minWidth: 640, columns: 2 },
   { minWidth: 0, columns: 1 },
 ];
+// Descriptive URL slugs for the "See All" pages — must match the map in
+// src/app/advices/[slug]/page.jsx and ExpertAdvicesSeeAll.jsx's backInfo url.
+const SEE_ALL_SLUGS = {
+  recommended: "recommended-pet-care-advice",
+  trending: "trending-pet-care-advice",
+  like: "most-liked-pet-care-advice",
+  recent: "latest-pet-care-advice",
+  pet: "pet-care-blogs",
+};
 const ROWS_PER_PAGE = 3;
 // Single-column (mobile) layout loads a flat 15 cards per page instead of
 // columns * ROWS_PER_PAGE (which would be just 1 * 3 = 3).
@@ -82,7 +91,8 @@ function TabButton({ label, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] border cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+      
+      className={`shrink-0 px-3.5 py-1.5 text-[9px] cursor-pointer uppercase tracking-[0.18em] font-medium transition border border-black/20 text-black/80 ${
         active
           ? "bg-gray-900 border-gray-900 text-white"
           : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
@@ -339,8 +349,8 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
   if (!items?.length) return null;
 
   return (
-    <div className="mb-10">
-      <div className="flex items-center justify-between mb-4">
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
         <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-widest text-gray-500 uppercase">
           {Icon && <Icon className="w-3.5 h-3.5" />}
           {label}
@@ -355,7 +365,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
               );
             } catch {}
             startTopLoader();
-            router.push(`/advices/${type}`);
+            router.push(`/advices/${SEE_ALL_SLUGS[type] || type}`);
           }}
           className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer"
         >
@@ -393,14 +403,14 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
                         e.currentTarget.previousSibling?.remove();
                         e.currentTarget.classList.remove("opacity-0");
                       }}
-                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300 opacity-0"
+                      className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
                     />
               </div>
               <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
                 <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1 group-hover:underline underline-offset-2">
                   {getBlogField(item, "name", isFr)}
                 </p>
-                <HiOutlineArrowUpRight className="shrink-0 mt-0.5 text-gray-700 w-4 h-4" />
+                <HiOutlineArrowUpRight className="shrink-0 mt-0.5 -mr-0.5 text-gray-700 w-4 h-4" />
               </div>
             </div>
           ))}
@@ -411,7 +421,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
             type="button"
             onClick={() => scrollByCard(-1)}
             aria-label={tr("scrollLeft")}
-            className="absolute left-0 top-[120px] -translate-y-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+            className="absolute left-0 top-[120px] -translate-y-1/2 -translate-x-1/2 z-10 w-7.5 h-7.5 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
           >
             <FiChevronLeft className="w-4 h-4" />
           </button>
@@ -421,7 +431,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
             type="button"
             onClick={() => scrollByCard(1)}
             aria-label={tr("scrollRight")}
-            className="absolute right-0 top-[120px] -translate-y-1/2 translate-x-1/2 z-10 w-8 h-8 bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+            className="absolute right-0 top-[120px] -translate-y-1/2 translate-x-1/2 z-10 w-7.5 h-7.5 bg-white border border-gray-300  flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
           >
             <FiChevronRight className="w-4 h-4" />
           </button>
@@ -431,7 +441,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
   );
 }
 
-function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
+function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
   const { t: tr } = useTranslation("expertadvice");
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -526,7 +536,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           type="button"
           onClick={() => scrollByOne(-1)}
           aria-label={tr("scrollLeft")}
-          className="shrink-0 w-8 h-8 bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-6.5 h-6.5 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronLeft className="w-4 h-4" />
         </button>
@@ -536,14 +546,14 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           ref={scrollRef}
           className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {items.map((label) => {
-            const isActive = label === "All" ? activeItem === "All" : activeItems.includes(label);
+          {items.map((item) => {
+            const isActive = activeIds.includes(item.id);
             return (
-              <div key={label} data-topic {...(isActive ? { "data-active": "" } : {})} className="shrink-0">
+              <div key={item.id} data-topic {...(isActive ? { "data-active": "" } : {})} className="shrink-0">
                 <TabButton
-                  label={label === "All" ? tr("all") : label}
+                  label={item.label}
                   active={isActive}
-                  onClick={() => onSelect(label)}
+                  onClick={() => onSelect(item.id)}
                 />
               </div>
             );
@@ -555,7 +565,7 @@ function ScrollableTabsRow({ items, activeItem, activeItems = [], onSelect }) {
           type="button"
           onClick={() => scrollByOne(1)}
           aria-label={tr("scrollRight")}
-          className="shrink-0 w-8 h-8 bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-6.5 h-6.5 bg-white border border-gray-300  flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronRight className="w-4 h-4" />
         </button>
@@ -1059,7 +1069,7 @@ function ExpertAdvices() {
         ref={filtersRef}
         className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur "
       >
-        <div className="px-6 sm:px-10 lg:px-16 pt-6 md:mb-6">
+        <div className="px-6 sm:px-10 lg:px-16 pt-3 md:mb-6">
           {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}
           <div className="md:hidden">
             <ScrollableChipRow tabs={mobileSpeciesTabs} />
@@ -1070,21 +1080,23 @@ function ExpertAdvices() {
 
           {/* ── Desktop filters (md and up) ── */}
           <div className="hidden md:block">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-              <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
-                {speciesList.map((cat) => (
-                  <TabButton
-                    key={cat.id}
-                    label={getBlogField(cat, "name", isFr)}
-                    active={activeSpecies?.id === cat.id}
-                    onClick={() => {
-                      setActiveSpecies((prev) =>
-                        prev?.id === cat.id ? null : cat,
-                      );
-                      setActiveTopic([]);
-                    }}
-                  />
-                ))}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1">
+              <div className="md:flex-1 md:min-w-0">
+                <ScrollableTabsRow
+                  items={speciesList.map((cat) => ({
+                    id: cat.id,
+                    label: getBlogField(cat, "name", isFr),
+                  }))}
+                  activeIds={activeSpecies ? [activeSpecies.id] : []}
+                  onSelect={(id) => {
+                    const found = speciesList.find((cat) => cat.id === id);
+                    if (!found) return;
+                    setActiveSpecies((prev) =>
+                      prev?.id === found.id ? null : found,
+                    );
+                    setActiveTopic([]);
+                  }}
+                />
               </div>
 
               <div className="group relative w-full md:w-72 shrink-0">
@@ -1094,7 +1106,7 @@ function ExpertAdvices() {
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-9 w-full border border-gray-200 bg-gray-50/60 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                  className="h-7 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
@@ -1110,17 +1122,22 @@ function ExpertAdvices() {
             </div>
 
             <ScrollableTabsRow
-              items={["All", ...topicsList.map((t) => getBlogField(t, "name", isFr))]}
-              activeItem={activeTopic.length === 0 ? "All" : null}
-              activeItems={activeTopic.map((t) => getBlogField(t, "name", isFr))}
-              onSelect={(name) => {
-                if (name === "All") {
+              items={[
+                { id: "all", label: tr("all") },
+                ...topicsList.map((t) => ({
+                  id: t.id,
+                  label: getBlogField(t, "name", isFr),
+                })),
+              ]}
+              activeIds={
+                activeTopic.length === 0 ? ["all"] : activeTopic.map((t) => t.id)
+              }
+              onSelect={(id) => {
+                if (id === "all") {
                   setActiveTopic([]);
                   return;
                 }
-                const found = topicsList.find(
-                  (t) => getBlogField(t, "name", isFr) === name,
-                );
+                const found = topicsList.find((t) => t.id === id);
                 if (!found) return;
                 setActiveTopic((prev) =>
                   prev.find((t) => t.id === found.id)
@@ -1131,7 +1148,7 @@ function ExpertAdvices() {
             />
           </div>
 
-          <hr className="border-t border-gray-200 mt-2 md:mt-3" />
+          <hr className="border-t border-gray-200 mt-3 md:mt-3" />
         </div>
       </div>
 
@@ -1231,11 +1248,12 @@ function ExpertAdvices() {
 
         {/* All Articles */}
         <div id="all-articles-section" className="scroll-mt-28 pb-16">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-8">
-            <p className="text-[11px] font-semibold tracking-widest text-gray-900 uppercase">
+          <div className="flex items-center justify-between  mb-3">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-widest text-gray-500 uppercase">
               {tr("sectionLabels.allArticles")}
             </p>
-            <p className="text-[11px] text-gray-400 uppercase tracking-wide">
+            <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-900 "
+>
               {tr("entries", { count: String(totalArticles).padStart(2, "0") })}
             </p>
           </div>
@@ -1288,14 +1306,14 @@ function ExpertAdvices() {
                               e.currentTarget.previousSibling?.remove();
                               e.currentTarget.classList.remove("opacity-0");
                             }}
-                            className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-300 opacity-0"
+                            className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-700 opacity-0"
                           />
                         </div>
                         <div className="px-4 py-3 flex items-center justify-between gap-3 flex-1">
                           <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1 group-hover:underline underline-offset-2">
                             {getBlogField(a, "name", isFr)}
                           </p>
-                          <HiOutlineArrowUpRight className="shrink-0 mt-0.5 text-gray-700 w-4 h-4" />
+                          <HiOutlineArrowUpRight className="shrink-0 mt-0.5 -mr-0.5 text-gray-700 w-4 h-4" />
                         </div>
                       </div>
 
@@ -1311,14 +1329,14 @@ function ExpertAdvices() {
                               e.currentTarget.previousSibling?.remove();
                               e.currentTarget.classList.remove("opacity-0");
                             }}
-                            className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-300 cursor-pointer opacity-0"
+                            className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 cursor-pointer opacity-0"
                           />
                           <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
                           </div>
                         </div>
                         <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                          {getCategoryName(a, isFr) || tr("pets")}
+                          {getCategoryName(a, isFr) || " "}
                         </p>
                         <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2 min-h-[2.5rem] group-hover:underline underline-offset-2">
                           {getBlogField(a, "name", isFr)}
