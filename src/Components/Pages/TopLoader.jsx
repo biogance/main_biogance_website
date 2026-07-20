@@ -93,15 +93,33 @@ export function RouteTopLoader() {
 
   // start on link click or manual event
   useEffect(() => {
+    // iOS Safari synthesizes a "click" on release even when the gesture was
+    // actually a scroll/drag over a link (no real tap intent) — without this
+    // guard, that ghost click fires the loader bar for a moment on every
+    // such scroll, which is the white line flashing at the top on iOS.
+    let touchStartY = null;
+    let touchMoved = false;
+
+    const onTouchStart = (e) => {
+      touchStartY = e.touches?.[0]?.clientY ?? null;
+      touchMoved = false;
+    };
+    const onTouchMove = (e) => {
+      if (touchStartY == null) return;
+      const y = e.touches?.[0]?.clientY;
+      if (y != null && Math.abs(y - touchStartY) > 10) touchMoved = true;
+    };
+
     const onLinkClick = (e) => {
+      if (touchMoved) return;
       const anchor = e.target.closest("a[href]");
       if (!anchor) return;
       const href = anchor.getAttribute("href");
-      
+
       if (
-        !href || 
-        href.startsWith("#") || 
-        href.startsWith("mailto:") || 
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("mailto:") ||
         href.startsWith("tel:") ||
         anchor.target === "_blank"
       ) return;
@@ -120,9 +138,13 @@ export function RouteTopLoader() {
 
     const onStart = () => triggerStart();
 
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
     document.addEventListener("click", onLinkClick, true);
     window.addEventListener("toploader:start", onStart);
     return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
       document.removeEventListener("click", onLinkClick, true);
       window.removeEventListener("toploader:start", onStart);
       clearTimeout(finishTimer.current);
