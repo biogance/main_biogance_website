@@ -93,8 +93,16 @@ export default function Navbar({
       if (announcementBarRef.current) {
         announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
       }
+      // Only mobile actually needs this transform (scrollOffset is always 0
+      // on desktop, so it's a no-op move there) — skip setting it on desktop
+      // entirely. Any active transform value, even translateY(0), makes nav
+      // the CSS containing block for its position:fixed descendants (like
+      // the OurProducts dropdown), so leaving it unset on desktop is what
+      // keeps that dropdown positioned against the viewport instead of nav.
       if (navElRef.current) {
-        navElRef.current.style.transform = `translateY(-${scrollOffset}px)`;
+        navElRef.current.style.transform = isDesktopRef.current
+          ? ""
+          : `translateY(-${scrollOffset}px)`;
       }
     };
 
@@ -618,7 +626,7 @@ export default function Navbar({
 
       <nav
         ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,transform] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,transform] duration-300 ease-out ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur

@@ -46,6 +46,7 @@ async function resolveServicePointParams(initialCountry, initialPostalCode) {
 function mapServicePoint(point) {
   return {
     id: point.id,
+    code: point.code,
     name: point.name,
     address: [
       [point.house_number, point.street].filter(Boolean).join(" "),

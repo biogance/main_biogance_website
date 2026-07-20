@@ -338,39 +338,41 @@ function AllArticlesCardSkeleton() {
 }
 
 function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
+  // Real TabButton: px-3.5 py-1.5 text-[9px] → ~h-7; real desktop search input: h-9; real mobile search: h-11
   return (
     <div className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform">
-      <div className="px-6 sm:px-10 lg:px-16 pt-6 pb-3 md:pb-6">
+      <div className="px-6 sm:px-10 lg:px-16 pt-3 md:mb-6">
         {/* Mobile (below md): species chip row, then topics chip row */}
         <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
           {Array.from({ length: Math.min(speciesCount, 4) }).map((_, i) => (
-            <Shimmer key={i} className="h-9 w-20 shrink-0" />
+            <Shimmer key={i} className="h-7 w-20 shrink-0" />
           ))}
         </div>
         <div className="md:hidden mt-2 flex items-center gap-2 overflow-hidden py-0.5">
-          {Array.from({ length: Math.min(topicsCount, 4) }).map((_, i) => (
-            <Shimmer key={i} className="h-9 w-16 shrink-0" />
+          {Array.from({ length: Math.min(topicsCount, 5) }).map((_, i) => (
+            <Shimmer key={i} className="h-7 w-16 shrink-0" />
           ))}
         </div>
 
-        {/* Desktop (md and up): species tabs + search, then topics row */}
+        {/* Desktop (md and up): species tabs + search input (h-9), then topics row */}
         <div className="hidden md:block">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1">
             <div className="flex flex-wrap items-center gap-2 md:flex-1 md:min-w-0">
               {Array.from({ length: speciesCount }).map((_, i) => (
-                <Shimmer key={i} className="h-9 w-24" />
+                <Shimmer key={i} className="h-7 w-24" />
               ))}
             </div>
+            {/* Search input shimmer — same h-9 as the real input */}
             <Shimmer className="h-9 w-full md:w-72 shrink-0" />
           </div>
           <div className="flex items-center gap-2">
             {Array.from({ length: topicsCount }).map((_, i) => (
-              <Shimmer key={i} className="h-9 w-20 shrink-0" />
+              <Shimmer key={i} className="h-7 w-20 shrink-0" />
             ))}
           </div>
         </div>
 
-        <div className="mt-3 md:mt-6 h-px bg-gray-200" />
+        <div className="mt-3 h-px bg-gray-200" />
       </div>
     </div>
   );
@@ -685,10 +687,10 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       <div className="bg-white text-gray-900 min-h-screen pt-[104px]">
         <Navbar bgWhite={true} />
 
-        {/* Back link */}
+        {/* Back link — arrow icon is square, not circle */}
         <div className="px-6 sm:px-10 lg:px-16 pt-4 pb-2 sm:pt-10 sm:pb-4">
           <div className="inline-flex items-center gap-1.5">
-            <Shimmer className="w-3.5 h-3.5 rounded-full" />
+            <Shimmer className="w-3.5 h-3.5" />
             <Shimmer className="h-3 w-24" />
           </div>
         </div>
@@ -703,9 +705,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           topicsCount={6}
         />
 
-        {/* Mobile-only search bar — mirrors the block below the sticky filters */}
+        {/* Mobile-only search bar — h-11 matches the real mobile input */}
         <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
-          <Shimmer className="h-9 w-full" />
+          <Shimmer className="h-11 w-full" />
         </div>
 
         <div className="px-6 sm:px-10 lg:px-16 ">
@@ -785,7 +787,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-7 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  className="h-9 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
