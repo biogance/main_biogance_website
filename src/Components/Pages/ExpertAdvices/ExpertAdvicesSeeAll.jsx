@@ -86,6 +86,19 @@ function getBackPart(item) {
   return { name: item?.name ?? "", frenchName: item?.french_name ?? "" };
 }
 
+// Compares a carried-over filter (from a "See All" click) against a cached
+// filter snapshot for the same type — species by id, topics by id set
+// (order-independent) — so a refetch is only forced when the filter
+// actually differs from what's cached.
+function isSameFilter(a, b) {
+  const aSpeciesId = a?.activeSpecies?.id ?? null;
+  const bSpeciesId = b?.activeSpecies?.id ?? null;
+  if (aSpeciesId !== bSpeciesId) return false;
+  const aTopics = (a?.activeTopic ?? []).map((t) => t.id).sort().join(",");
+  const bTopics = (b?.activeTopic ?? []).map((t) => t.id).sort().join(",");
+  return aTopics === bTopics;
+}
+
 function Shimmer({ className = "" }) {
   return <div className={`bg-gray-200 animate-pulse rounded ${className}`} />;
 }
@@ -380,11 +393,37 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     }
   });
 
+  // One-time carry-over from ExpertAdvices.jsx's "See All" click — consumed
+  // (and removed) immediately so it never leaks into an unrelated later
+  // navigation. Takes priority over cachedState: cachedState persists for
+  // this type across the whole session, so without this a fresh "See All"
+  // click with a newly-changed filter would otherwise keep showing whatever
+  // filter was cached from an earlier visit to this same type.
+  const [carriedFilter] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = sessionStorage.getItem("seeAllInitialFilter");
+      if (stored) {
+        sessionStorage.removeItem("seeAllInitialFilter");
+        return JSON.parse(stored);
+      }
+    } catch {}
+    return null;
+  });
+
+  // carriedFilter's own fields are authoritative once it exists at all — a
+  // "??" chained straight through carriedFilter?.activeSpecies would treat a
+  // legitimately-cleared (null) species as "not provided" and wrongly fall
+  // back to a stale cached species instead of respecting "no filter".
   const [activeSpecies, setActiveSpecies] = useState(
-    cachedState?.activeSpecies ?? null,
+    carriedFilter
+      ? (carriedFilter.activeSpecies ?? null)
+      : (cachedState?.activeSpecies ?? null),
   );
   const [activeTopic, setActiveTopic] = useState(
-    cachedState?.activeTopic ?? [],
+    carriedFilter
+      ? (carriedFilter.activeTopic ?? [])
+      : (cachedState?.activeTopic ?? []),
   );
   const speciesList = splashCategories;
 
@@ -461,7 +500,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const [totalArticles, setTotalArticles] = useState(
     cachedState?.totalArticles ?? 0,
   );
-  const [loading, setLoading] = useState(!cachedState);
+  // No cache yet → always fetch. Cache exists → only refetch if a fresh
+  // carriedFilter actually differs from what's cached; if it's the same
+  // filter (or there's no carriedFilter, e.g. plain back-navigation), reuse
+  // the cached articles as-is with no API call.
+  const willRefetchOnMount =
+    !cachedState ||
+    (!!carriedFilter && !isSameFilter(carriedFilter, cachedState));
+  const [loading, setLoading] = useState(willRefetchOnMount);
 
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(cachedState?.page ?? 1);
@@ -474,7 +520,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       : columns * ROWS_PER_PAGE
     : 0;
   const hasLoadedOnceRef = useRef(!!cachedState);
-  const skipInitialFetchRef = useRef(!!cachedState);
+  const skipInitialFetchRef = useRef(!willRefetchOnMount);
 
   const fetchArticles = useCallback(
     async (pageNum = 1, append = false) => {
