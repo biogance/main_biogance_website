@@ -605,60 +605,26 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       {/* Article body + product recommendation */}
     <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
         {hasProducts ? (
-        <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_40%] xl:grid-cols-[1fr_25%] gap-2 lg:gap-x-12">
 
-            {/* Left: article content */}
-            <div className="w-full lg:flex-1 flex flex-col">
-              <div>
-                {getBlogField(blog, "long_description", isFr) ? (
-                  <div
-                    className="prose prose-sm max-w-none text-gray-700"
-                    dangerouslySetInnerHTML={{
-                      __html: getBlogField(blog, "long_description", isFr),
-                    }}
-                  />
-                ) : (
-                  <p className="text-sm text-gray-500">{t("noContent")}</p>
-                )}
-              </div>
-
-              {/* YouTube video inside left column when products exist */}
-              {youtubeId && (
-                <div className="mt-12 md:mt-16 relative w-full aspect-video bg-gray-900 overflow-hidden">
-                  <iframe
-                    className="absolute inset-0 w-full h-full"
-                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
-                    title="Blog Video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
-
-              {/* Tags inside left column when products exist */}
-              {tags.length > 0 && (
+            {/* 1. Left: article content */}
+            <div className="w-full order-1 lg:col-start-1">
+              {getBlogField(blog, "long_description", isFr) ? (
                 <div
-                  className={`${
-                    youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-8"
-                  } flex flex-wrap gap-2`}
-                >
-                  {tags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="text-xs px-3 py-1.5 border border-black/15 text-black/70"
-                    >
-                      #{tag.name}
-                    </span>
-                  ))}
-                </div>
+                  className="prose prose-sm max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{
+                    __html: getBlogField(blog, "long_description", isFr),
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">{t("noContent")}</p>
               )}
             </div>
 
-            {/* Right: recommended products */}
-        <div
-          className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 lg:w-2/5 xl:w-1/4 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar"
-        >
+            {/* 2. Right: recommended products */}
+            <div
+              className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3"
+            >
               <div className="p-4 sm:p-6 pb-4 shrink-0">
                 <p className="text-xs text-gray-400 mb-2">
                   {t("recommendedRoutine")}
@@ -837,6 +803,38 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 })}
               </div>
             </div>
+
+            {/* 3. YouTube video */}
+            {youtubeId && (
+              <div className="w-full order-3 lg:col-start-1 mt-12 md:mt-16 relative aspect-video bg-gray-900 overflow-hidden">
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
+                  title="Blog Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            {/* 4. Tags */}
+            {tags.length > 0 && (
+              <div
+                className={`w-full order-4 lg:col-start-1 ${
+                  youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-8"
+                } flex flex-wrap gap-2`}
+              >
+                {tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="text-xs px-3 py-1.5 border border-black/15 text-black/70"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           /* No products: plain content, aligned with hero content */
