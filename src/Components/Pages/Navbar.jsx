@@ -371,7 +371,7 @@ export default function Navbar({
     <>
       <div
         ref={announcementBarRef}
-        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px]"
+        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white overflow-hidden h-[40px] transition-transform duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
       >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
@@ -618,7 +618,7 @@ export default function Navbar({
 
       <nav
         ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-colors duration-300 ${
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,top] duration-300 ease-out ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur
