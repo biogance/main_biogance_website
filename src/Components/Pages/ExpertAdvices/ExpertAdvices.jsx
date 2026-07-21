@@ -1070,11 +1070,14 @@ function ExpertAdvices() {
       </section>
 
       {/* Sticky Filters */}
-      <div
-        ref={filtersRef}
-        className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur "
-      >
-        <div className="px-6 sm:px-10 lg:px-16 pt-3 md:mb-6">
+   <div
+  ref={filtersRef}
+  className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 transform-gpu will-change-transform"
+>
+
+  <div className="absolute -inset-x-0 -top-px -bottom-px bg-white/95 backdrop-blur -z-10" />
+
+  <div className="px-6 sm:px-10 lg:px-16 pt-3 md:mb-6">
           {/* ── Mobile filters (below md) — only the tabs stay sticky; search moves below ── */}
           <div className="md:hidden">
             <ScrollableChipRow tabs={mobileSpeciesTabs} />
