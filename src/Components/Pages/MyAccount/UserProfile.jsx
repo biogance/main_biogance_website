@@ -7,7 +7,17 @@ import { FlagImage, defaultCountries, parseCountry } from 'react-international-p
 import { RiUserLine } from "react-icons/ri";
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
+import { getPhoneValidationErrorCode } from '../../../utils/phoneValidation';
 import toast from 'react-hot-toast';
+
+// Maps getPhoneValidationErrorCode's return value to a myaccount.json
+// userProfile.* key.
+const PHONE_ERROR_KEYS = {
+    required: 'errorPhoneRequired',
+    tooShort: 'errorPhoneTooShort',
+    tooLong: 'errorPhoneTooLong',
+    invalid: 'errorPhoneInvalid',
+};
 
 const getDialCodeByIso2 = (iso2) => {
     const country = defaultCountries.find((c) => parseCountry(c).iso2 === iso2);
@@ -22,7 +32,7 @@ const getIso2ByDialCode = (dialCode) => {
 };
 
 // Flag + dial code box, with a separate number field and a searchable country dropdown
-function PhoneFieldBox({ iso2, onCountryChange, value, onChange, searchPlaceholder, noResultsLabel }) {
+function PhoneFieldBox({ iso2, onCountryChange, value, onChange, onBlur, error, searchPlaceholder, noResultsLabel }) {
     const [open, setOpen] = useState(false);
     const [focused, setFocused] = useState(false);
     const [search, setSearch] = useState('');
@@ -49,10 +59,11 @@ function PhoneFieldBox({ iso2, onCountryChange, value, onChange, searchPlacehold
     }, []);
 
     return (
+        <div>
         <div
             ref={wrapRef}
             className={`relative flex items-stretch bg-gray-50 border transition-colors ${
-                focused ? 'border-gray-400 ring-2 ring-gray-400' : 'border-gray-200'
+                error ? 'border-red-500 ring-2 ring-red-200' : focused ? 'border-gray-400 ring-2 ring-gray-400' : 'border-gray-200'
             }`}
         >
             {/* Flag + dial code */}
@@ -76,7 +87,10 @@ function PhoneFieldBox({ iso2, onCountryChange, value, onChange, searchPlacehold
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
+                    onBlur={() => {
+                        setFocused(false);
+                        onBlur?.();
+                    }}
                     className="w-full h-[42px] px-4 bg-transparent focus:outline-none text-gray-900 text-sm"
                 />
             </div>
@@ -114,6 +128,10 @@ function PhoneFieldBox({ iso2, onCountryChange, value, onChange, searchPlacehold
                 </div>
             )}
         </div>
+        {error && (
+            <p className="mt-1.5 text-xs text-red-600">{error}</p>
+        )}
+        </div>
     );
 }
 
@@ -126,6 +144,7 @@ export default function UserProfile() {
         phone_number: ''
     });
     const [countryIso2, setCountryIso2] = useState('fr');
+    const [phoneError, setPhoneError] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const [imageLoading, setImageLoading] = useState(false);
     const [profileImageFile, setProfileImageFile] = useState(null);
@@ -141,7 +160,12 @@ export default function UserProfile() {
                     fullName: user.name || '',
                     email: user.email || '',
                     country_code: user.country_code || '',
-                    phone_number: user.phone_number || ''
+                    // NOTE: `phone` is the local number without the dial code
+                    // (e.g. "743453453"). `phone_number` is the FULL number
+                    // with dial code already prefixed (e.g. "+33743453453")
+                    // — that one must NOT go into the number input, since the
+                    // dial code is already shown separately by the flag box.
+                    phone_number: user.phone || ''
                 });
                 setCountryIso2(getIso2ByDialCode(user.country_code));
                 if (user.profile_picture) {
@@ -192,7 +216,9 @@ export default function UserProfile() {
                     fullName: user.name || '',
                     email: user.email || '',
                     country_code: user.country_code || '',
-                    phone_number: user.phone_number || ''
+                    // Same fix as above — use the local `phone`, not the
+                    // dial-code-prefixed `phone_number`.
+                    phone_number: user.phone || ''
                 });
                 setCountryIso2(getIso2ByDialCode(user.country_code));
                 if (user.profile_picture) {
@@ -207,7 +233,19 @@ export default function UserProfile() {
         setShowPreview(false);
     };
 
+    // Validates the phone number's digit count and leading-digit pattern
+    // against whichever country is currently selected (e.g. a French number
+    // needs 9 digits after +33 starting 6/7; a Pakistani number needs 10
+    // digits after +92 starting 3) — returns true when valid.
+    const validatePhone = () => {
+        const code = getPhoneValidationErrorCode(formData.phone_number, countryIso2 || 'fr');
+        setPhoneError(code ? t(`userProfile.${PHONE_ERROR_KEYS[code]}`) : null);
+        return !code;
+    };
+
     const handleSubmit = async () => {
+        if (!validatePhone()) return;
+
         const splashData = localStorage.getItem('splashData');
         const token = splashData ? JSON.parse(splashData)?.user?.token : null;
 
@@ -378,9 +416,15 @@ export default function UserProfile() {
                                     onCountryChange={(iso2) => {
                                         setCountryIso2(iso2);
                                         setFormData(prev => ({ ...prev, country_code: getDialCodeByIso2(iso2) }));
+                                        setPhoneError(null);
                                     }}
                                     value={formData.phone_number}
-                                    onChange={(phone_number) => setFormData(prev => ({ ...prev, phone_number }))}
+                                    onChange={(phone_number) => {
+                                        setFormData(prev => ({ ...prev, phone_number }));
+                                        if (phoneError) setPhoneError(null);
+                                    }}
+                                    onBlur={validatePhone}
+                                    error={phoneError}
                                     searchPlaceholder={t('userProfile.searchCountry')}
                                     noResultsLabel={t('userProfile.noCountryFound')}
                                 />

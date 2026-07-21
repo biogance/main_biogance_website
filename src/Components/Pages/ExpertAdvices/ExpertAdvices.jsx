@@ -37,10 +37,10 @@ const COLUMN_BREAKPOINTS = [
 // Descriptive URL slugs for the "See All" pages — must match the map in
 // src/app/advices/[slug]/page.jsx and ExpertAdvicesSeeAll.jsx's backInfo url.
 const SEE_ALL_SLUGS = {
-  recommended: "recommended-pet-care-advice",
-  trending: "trending-pet-care-advice",
-  like: "most-liked-pet-care-advice",
-  recent: "latest-pet-care-advice",
+  recommended: "recommended-pet-care",
+  trending: "trending-pet-care",
+  like: "most-liked-pet-care",
+  recent: "latest-pet-care",
   pet: "pet-care-blogs",
 };
 const ROWS_PER_PAGE = 3;
@@ -113,10 +113,12 @@ function getBlogField(item, field, isFr) {
   return isFr && item[frField] ? item[frField] : (item[field] ?? "");
 }
 
-// Reads the first category attached to the blog item (item.categories[0].category)
-// and returns its name (french_name if language is French, else name).
+// Reads the categories entry whose type is "topic" (not just categories[0],
+// since a blog can have multiple category types — collection, for_which,
+// topic — in any order) and returns that topic's name.
 function getCategoryName(item, isFr) {
-  const cat = item?.categories?.[0]?.category;
+  const topicEntry = item?.categories?.find((c) => c?.type === "topic");
+  const cat = topicEntry?.category;
   if (!cat) return "";
   return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
 }
@@ -206,7 +208,7 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
               ))}
             </div>
             {/* Search input shimmer — same h-9 as the real input */}
-            <Shimmer className="h-9 w-full md:w-72 shrink-0" />
+            <Shimmer className="h-9 w-full md:w-72 shrink-0 mb-3 md:mb-0" />
           </div>
           <div className="flex items-center gap-2">
             {Array.from({ length: 15 }).map((_, i) => (
@@ -305,10 +307,9 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
     const keyword = isFr
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
-    const parts = [];
-    if (activeSpecies) parts.push(getBackPart(activeSpecies));
-    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
-    try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts, url: "/advices" })); } catch {}
+    const species = activeSpecies ? getBackPart(activeSpecies) : null;
+    const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
+    try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -448,6 +449,15 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  // With multiple topics active, querying "[data-active]" alone always
+  // returns the first one in DOM order — not whichever one the user just
+  // clicked. Tracking the actual click keeps the just-selected tab (even one
+  // near the end) in view instead of jumping back to an earlier active tab.
+  const lastClickedIdRef = useRef(null);
+  const handleSelect = (id) => {
+    lastClickedIdRef.current = id;
+    onSelect(id);
+  };
 
   const updateScrollState = () => {
     const track = scrollRef.current;
@@ -476,7 +486,11 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
     requestAnimationFrame(() => {
       const track = scrollRef.current;
       if (!track) return;
-      const activeEl = track.querySelector("[data-topic][data-active]");
+      const clickedId = lastClickedIdRef.current;
+      const activeEl =
+        (clickedId != null &&
+          track.querySelector(`[data-topic][data-id="${CSS.escape(String(clickedId))}"]`)) ||
+        track.querySelector("[data-topic][data-active]");
       if (!activeEl) return;
       // Jab row overflow ho rahi ho, scroll arrow buttons (w-8 + gap-2)
       // is measurement ke baad mount hote hain — unki width pehle se
@@ -551,11 +565,17 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
           {items.map((item) => {
             const isActive = activeIds.includes(item.id);
             return (
-              <div key={item.id} data-topic {...(isActive ? { "data-active": "" } : {})} className="shrink-0">
+              <div
+                key={item.id}
+                data-topic
+                data-id={item.id}
+                {...(isActive ? { "data-active": "" } : {})}
+                className="shrink-0"
+              >
                 <TabButton
                   label={item.label}
                   active={isActive}
-                  onClick={() => onSelect(item.id)}
+                  onClick={() => handleSelect(item.id)}
                 />
               </div>
             );
@@ -887,6 +907,48 @@ function ExpertAdvices() {
     hasMore,
   ]);
 
+  // Snapshot scroll position on every click's capture phase — which runs
+  // before React's (bubble-phase) onClick, i.e. before router.push. Deliberately
+  // NOT a passive "scroll" listener: router.push resets window.scrollY to 0
+  // synchronously as part of starting the navigation, still within the same
+  // click, and that reset itself fires a "scroll" event — so a scroll listener
+  // sharing this ref would just get overwritten back to 0 by that event right
+  // after the correct value was captured, before the component ever unmounts.
+  const lastScrollYRef = useRef(0);
+  useEffect(() => {
+    const captureScroll = () => {
+      lastScrollYRef.current = window.scrollY;
+    };
+    captureScroll();
+    document.addEventListener("click", captureScroll, true);
+    return () => document.removeEventListener("click", captureScroll, true);
+  }, []);
+
+  // Capture that last-known scroll position at the moment we navigate away
+  // (article click, See All, etc.) so returning via back button lands where
+  // the user left off instead of resetting to the top —
+  // window.history.scrollRestoration is forced to "manual" (see
+  // ExpertAdvicesDetail.jsx) so the browser won't do this on its own.
+  useEffect(() => {
+    return () => {
+      if (expertAdvicesStateCache) {
+        expertAdvicesStateCache.scrollY = lastScrollYRef.current;
+      }
+    };
+  }, []);
+
+  // Restore that position only once columns (and therefore the real grid
+  // layout/page height) have resolved, so the target offset lines up with
+  // what's actually rendered instead of the pre-layout fallback height.
+  const scrollRestoredRef = useRef(false);
+  useEffect(() => {
+    if (scrollRestoredRef.current || !columns || cachedState?.scrollY == null) return;
+    scrollRestoredRef.current = true;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: cachedState.scrollY });
+    });
+  }, [columns, cachedState]);
+
   // Jab user category/topic choose kare ya search kare aur woh page pe neeche
   // scrolled ho, to filters ke "stuck" (navbar ke sath chipke) position tak
   // upar scroll ho jaye — taake naya data (pehli row samet) nazar aa jaye.
@@ -940,7 +1002,7 @@ function ExpertAdvices() {
         />
 
         {/* Mobile-only search bar — h-11 matches the real mobile input */}
-        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-3 pb-3">
           <Shimmer className="h-11 w-full" />
         </div>
 
@@ -1021,7 +1083,7 @@ function ExpertAdvices() {
                       heroArticle.blog.english_seo_keyboard
                     : heroArticle.blog.english_seo_keyboard ||
                       heroArticle.blog.french_seo_keyword;
-                  try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts: [], url: "/advices" })); } catch {}
+                  try { sessionStorage.setItem("adviceBack", JSON.stringify({ species: null, topics: [], url: "/advices" })); } catch {}
                   startTopLoader();
                   router.push(`/advices/${encodeURIComponent(keyword)}`);
                 }}
@@ -1107,14 +1169,14 @@ function ExpertAdvices() {
                 />
               </div>
 
-              <div className="group relative w-full md:w-72 shrink-0">
+              <div className="group relative w-full md:w-72 shrink-0 mb-3 md:mb-0">
                 <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-9 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  className="h-9 mb-1.5 w-full border border-gray-300 pl-9 pr-8 py-2 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
@@ -1161,7 +1223,7 @@ function ExpertAdvices() {
       </div>
 
       {/* Mobile-only: search + selected filters — scrolls normally, not sticky */}
-      <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+      <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-3 pb-3">
         <div className="group relative w-full">
           <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
           <input
@@ -1284,10 +1346,9 @@ function ExpertAdvices() {
                     const keyword = isFr
                       ? a.french_seo_keyword || a.english_seo_keyboard
                       : a.english_seo_keyboard || a.french_seo_keyword;
-                    const parts = [];
-                    if (activeSpecies) parts.push(getBackPart(activeSpecies));
-                    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
-                    try { sessionStorage.setItem("adviceBack", JSON.stringify({ parts, url: "/advices" })); } catch {}
+                    const species = activeSpecies ? getBackPart(activeSpecies) : null;
+                    const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
+                    try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}
                     startTopLoader();
                     router.push(`/advices/${encodeURIComponent(keyword)}`);
                   };
@@ -1344,7 +1405,7 @@ function ExpertAdvices() {
                           </div>
                         </div>
                         <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                          {getCategoryName(a, isFr) || " "}
+                          {getCategoryName(a, isFr) || tr("pets")}
                         </p>
                         <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2 min-h-[2.5rem] group-hover:underline underline-offset-2">
                           {getBlogField(a, "name", isFr)}

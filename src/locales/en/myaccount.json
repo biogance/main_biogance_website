@@ -346,6 +346,10 @@
     "phoneNumber": "Phone Number",
     "searchCountry": "Search country...",
     "noCountryFound": "No countries found",
+    "errorPhoneRequired": "Please enter a phone number.",
+    "errorPhoneTooShort": "This phone number is too short for the selected country.",
+    "errorPhoneTooLong": "This phone number is too long for the selected country.",
+    "errorPhoneInvalid": "This doesn't look like a valid phone number for the selected country.",
     "cancel": "Cancel",
     "updateProfileDetails": "Update Profile Details"
   },

@@ -32,10 +32,10 @@ const COLUMN_BREAKPOINTS = [
 // Descriptive URL slugs for the "See All" pages — must match the map in
 // src/app/advices/[slug]/page.jsx and ExpertAdvices.jsx's SEE_ALL_SLUGS.
 const SEE_ALL_SLUGS = {
-  recommended: "recommended-pet-care-advice",
-  trending: "trending-pet-care-advice",
-  like: "most-liked-pet-care-advice",
-  recent: "latest-pet-care-advice",
+  recommended: "recommended-pet-care",
+  trending: "trending-pet-care",
+  like: "most-liked-pet-care",
+  recent: "latest-pet-care",
   pet: "pet-care-blogs",
 };
 const ROWS_PER_PAGE = 3;
@@ -133,6 +133,15 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  // With multiple topics active, querying "[data-active]" alone always
+  // returns the first one in DOM order — not whichever one the user just
+  // clicked. Tracking the actual click keeps the just-selected tab (even one
+  // near the end) in view instead of jumping back to an earlier active tab.
+  const lastClickedIdRef = useRef(null);
+  const handleSelect = (id) => {
+    lastClickedIdRef.current = id;
+    onSelect(id);
+  };
 
   const updateScrollState = () => {
     const track = scrollRef.current;
@@ -161,7 +170,11 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
     requestAnimationFrame(() => {
       const track = scrollRef.current;
       if (!track) return;
-      const activeEl = track.querySelector("[data-topic][data-active]");
+      const clickedId = lastClickedIdRef.current;
+      const activeEl =
+        (clickedId != null &&
+          track.querySelector(`[data-topic][data-id="${CSS.escape(String(clickedId))}"]`)) ||
+        track.querySelector("[data-topic][data-active]");
       if (!activeEl) return;
       // Jab row overflow ho rahi ho, scroll arrow buttons (w-8 + gap-2)
       // is measurement ke baad mount hote hain — unki width pehle se
@@ -245,11 +258,17 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
           {items.map((item) => {
             const isActive = activeIds.includes(item.id);
             return (
-              <div key={item.id} data-topic {...(isActive ? { "data-active": "" } : {})} className="shrink-0">
+              <div
+                key={item.id}
+                data-topic
+                data-id={item.id}
+                {...(isActive ? { "data-active": "" } : {})}
+                className="shrink-0"
+              >
                 <TabButton
                   label={item.label}
                   active={isActive}
-                  onClick={() => onSelect(item.id)}
+                  onClick={() => handleSelect(item.id)}
                 />
               </div>
             );
@@ -363,7 +382,7 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
               ))}
             </div>
             {/* Search input shimmer — same h-9 as the real input */}
-            <Shimmer className="h-9 w-full md:w-72 shrink-0" />
+            <Shimmer className="h-9 w-full md:w-72 shrink-0 mb-3 md:mb-0" />
           </div>
           <div className="flex items-center gap-2">
             {Array.from({ length: 15 }).map((_, i) => (
@@ -635,6 +654,58 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     hasMore,
   ]);
 
+  // Track scroll position continuously (not just read once at unmount) —
+  // by the time an unmount cleanup runs after a route change, the browser/
+  // Next.js has often already reset window.scrollY to 0, so reading it then
+  // would always capture 0 instead of where the user actually was.
+  // Snapshot scroll position on every click's capture phase — which runs
+  // before React's (bubble-phase) onClick, i.e. before router.push. Deliberately
+  // NOT a passive "scroll" listener: router.push resets window.scrollY to 0
+  // synchronously as part of starting the navigation, still within the same
+  // click, and that reset itself fires a "scroll" event — so a scroll listener
+  // sharing this ref would just get overwritten back to 0 by that event right
+  // after the correct value was captured, before the component ever unmounts.
+  const lastScrollYRef = useRef(0);
+  useEffect(() => {
+    const captureScroll = () => {
+      lastScrollYRef.current = window.scrollY;
+    };
+    captureScroll();
+    document.addEventListener("click", captureScroll, true);
+    return () => document.removeEventListener("click", captureScroll, true);
+  }, []);
+
+  // Capture that last-known scroll position at the moment we navigate away
+  // (article click, back to ExpertAdvices, etc.) so returning via back
+  // button lands where the user left off instead of resetting to the top —
+  // window.history.scrollRestoration is forced to "manual" (see
+  // ExpertAdvicesDetail.jsx) so the browser won't do this on its own.
+  useEffect(() => {
+    return () => {
+      const current = seeAllStateCache.get(type);
+      if (current) current.scrollY = lastScrollYRef.current;
+    };
+  }, [type]);
+
+  // Restore that position only once columns (real grid layout/page height)
+  // have resolved, and only when we're reusing cached results rather than
+  // fetching a fresh carried-over filter — a fresh filter has no meaningful
+  // old scroll position to return to.
+  const scrollRestoredRef = useRef(false);
+  useEffect(() => {
+    if (
+      scrollRestoredRef.current ||
+      !columns ||
+      willRefetchOnMount ||
+      cachedState?.scrollY == null
+    )
+      return;
+    scrollRestoredRef.current = true;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: cachedState.scrollY });
+    });
+  }, [columns, cachedState, willRefetchOnMount]);
+
   // Jab user category/topic choose kare ya search kare aur woh page pe neeche
   // scrolled ho, to filters ke "stuck" (navbar ke sath chipke) position tak
   // upar scroll ho jaye — taake naya data nazar aa jaye.
@@ -668,14 +739,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     const keyword = isFr
       ? item.french_seo_keyword || item.english_seo_keyboard
       : item.english_seo_keyboard || item.french_seo_keyword;
-    const parts = [];
-    if (activeSpecies) parts.push(getBackPart(activeSpecies));
-    if (activeTopic?.length) activeTopic.forEach((t) => parts.push(getBackPart(t)));
+    const species = activeSpecies ? getBackPart(activeSpecies) : null;
+    const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
     try {
       sessionStorage.setItem(
         "adviceBack",
         JSON.stringify({
-          parts,
+          species,
+          topics,
           typeKey: type,
           url: `/advices/${SEE_ALL_SLUGS[type] || type}`,
         }),
@@ -709,7 +780,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         />
 
         {/* Mobile-only search bar — h-11 matches the real mobile input */}
-        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+        <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-3 pb-3">
           <Shimmer className="h-11 w-full" />
         </div>
 
@@ -787,14 +858,14 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                 />
               </div>
 
-              <div className="group relative w-full md:w-72 shrink-0">
+              <div className="group relative w-full md:w-72 shrink-0 mb-3 md:mb-0">
                 <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-9 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  className="h-9 mb-1.5 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
@@ -841,7 +912,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       </div>
 
       {/* Mobile-only: search + selected filters — scrolls normally, not sticky */}
-      <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-2 pb-6">
+      <div className="md:hidden px-6 sm:px-10 lg:px-16 pt-3 pb-3">
         <div className="group relative w-full">
           <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
           <input

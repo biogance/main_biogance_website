@@ -345,6 +345,10 @@
     "phoneNumber": "Numéro de téléphone",
     "searchCountry": "Rechercher un pays...",
     "noCountryFound": "Aucun pays trouvé",
+    "errorPhoneRequired": "Veuillez saisir un numéro de téléphone.",
+    "errorPhoneTooShort": "Ce numéro de téléphone est trop court pour le pays sélectionné.",
+    "errorPhoneTooLong": "Ce numéro de téléphone est trop long pour le pays sélectionné.",
+    "errorPhoneInvalid": "Ce numéro ne semble pas valide pour le pays sélectionné.",
     "cancel": "Annuler",
     "updateProfileDetails": "Mettre à jour les détails du profil"
   },
