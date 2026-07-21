@@ -22,6 +22,7 @@ import { MdOutlineUpdate, MdUpdate } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
+import { sanitizeSeoKeyword } from "../../../utils/seoKeyword";
 import { startTopLoader } from "../TopLoader";
 import { IoHourglassOutline } from "react-icons/io5";
 
@@ -304,9 +305,11 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
   const { t: tr } = useTranslation("expertadvice");
 
   const navigateToDetail = (item) => {
-    const keyword = isFr
-      ? item.french_seo_keyword || item.english_seo_keyboard
-      : item.english_seo_keyboard || item.french_seo_keyword;
+    const keyword = sanitizeSeoKeyword(
+      isFr
+        ? item.french_seo_keyword || item.english_seo_keyboard
+        : item.english_seo_keyboard || item.french_seo_keyword,
+    );
     const species = activeSpecies ? getBackPart(activeSpecies) : null;
     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
     try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}
@@ -1078,11 +1081,13 @@ function ExpertAdvices() {
               <button
                 type="button"
                 onClick={() => {
-                  const keyword = isFr
-                    ? heroArticle.blog.french_seo_keyword ||
-                      heroArticle.blog.english_seo_keyboard
-                    : heroArticle.blog.english_seo_keyboard ||
-                      heroArticle.blog.french_seo_keyword;
+                  const keyword = sanitizeSeoKeyword(
+                    isFr
+                      ? heroArticle.blog.french_seo_keyword ||
+                        heroArticle.blog.english_seo_keyboard
+                      : heroArticle.blog.english_seo_keyboard ||
+                        heroArticle.blog.french_seo_keyword,
+                  );
                   try { sessionStorage.setItem("adviceBack", JSON.stringify({ species: null, topics: [], url: "/advices" })); } catch {}
                   startTopLoader();
                   router.push(`/advices/${encodeURIComponent(keyword)}`);
@@ -1343,9 +1348,11 @@ function ExpertAdvices() {
               <div className={CARD_GRID}>
                 {allArticles.map((a) => {
                   const navigateToArticle = () => {
-                    const keyword = isFr
-                      ? a.french_seo_keyword || a.english_seo_keyboard
-                      : a.english_seo_keyboard || a.french_seo_keyword;
+                    const keyword = sanitizeSeoKeyword(
+                      isFr
+                        ? a.french_seo_keyword || a.english_seo_keyboard
+                        : a.english_seo_keyboard || a.french_seo_keyword,
+                    );
                     const species = activeSpecies ? getBackPart(activeSpecies) : null;
                     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
                     try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}

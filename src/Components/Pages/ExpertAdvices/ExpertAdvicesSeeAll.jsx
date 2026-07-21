@@ -18,6 +18,7 @@ import {
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
+import { sanitizeSeoKeyword } from "../../../utils/seoKeyword";
 import { FaArrowLeft } from "react-icons/fa";
 
 const CARD_GRID =
@@ -736,9 +737,11 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
 
   const navigateToDetail = (item) => {
-    const keyword = isFr
-      ? item.french_seo_keyword || item.english_seo_keyboard
-      : item.english_seo_keyboard || item.french_seo_keyword;
+    const keyword = sanitizeSeoKeyword(
+      isFr
+        ? item.french_seo_keyword || item.english_seo_keyboard
+        : item.english_seo_keyboard || item.french_seo_keyword,
+    );
     const species = activeSpecies ? getBackPart(activeSpecies) : null;
     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
     try {
