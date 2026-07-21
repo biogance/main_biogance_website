@@ -117,7 +117,7 @@ function TabButton({ label, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`px-3.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.18em] border cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+      className={`px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] border cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
         active
           ? "bg-gray-900 border-gray-900 text-white"
           : "bg-white border-gray-300 text-gray-700 hover:border-gray-900"
@@ -220,13 +220,13 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
   };
 
   return (
-    <div className="relative flex items-center gap-2 min-w-0">
+    <div className="relative flex items-stretch gap-2 min-w-0">
       {canScrollLeft && (
         <button
           type="button"
           onClick={() => scrollByOne(-1)}
           aria-label={tr("scrollLeft")}
-          className="shrink-0 w-6 h-6 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-6.5 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronLeft className="w-4 h-4" />
         </button>
@@ -240,7 +240,7 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
       >
         <div
           ref={scrollRef}
-          className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex items-center gap-2 overflow-x-auto overflow-y-visible scroll-smooth min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => {
             const isActive = activeIds.includes(item.id);
@@ -261,7 +261,7 @@ function ScrollableTabsRow({ items, activeIds = [], onSelect }) {
           type="button"
           onClick={() => scrollByOne(1)}
           aria-label={tr("scrollRight")}
-          className="shrink-0 w-6 h-6 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
+          className="shrink-0 w-6.5 bg-white border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiChevronRight className="w-4 h-4" />
         </button>
