@@ -16,6 +16,7 @@ import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { mergeCartItem } from "../../../utils/cartStorage";
+import { sanitizeSeoKeyword, fetchBlogDetail } from "../../../utils/seoKeyword";
 import { startTopLoader } from "../TopLoader";
 import { FaRegHourglassHalf, FaRegCircleUser } from "react-icons/fa6";
 import { FaArrowLeft, FaRegUserCircle } from "react-icons/fa";
@@ -153,9 +154,11 @@ function MoreAdvicesRow({ items, isFr, backInfo, filterLabel }) {
   };
 
   const navigateToDetail = (item) => {
-    const keyword = isFr
-      ? item.french_seo_keyword || item.english_seo_keyboard
-      : item.english_seo_keyboard || item.french_seo_keyword;
+    const keyword = sanitizeSeoKeyword(
+      isFr
+        ? item.french_seo_keyword || item.english_seo_keyboard
+        : item.english_seo_keyboard || item.french_seo_keyword,
+    );
     startTopLoader();
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
@@ -319,11 +322,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     const fetchDetail = async () => {
       setLoading(true);
       try {
-        const res = await axios.post(
-          `${BASE_URL}/blog/detail`,
-          { ...getAuthBody(), seo_keyboard: decodeURIComponent(seoKeyword) },
-          { headers: { ...getAuthHeaders() } },
-        );
+        const res = await fetchBlogDetail(decodeURIComponent(seoKeyword), {
+          body: getAuthBody(),
+          headers: getAuthHeaders(),
+        });
         if (!res.data.status) {
           router.push("/advices");
           return;
@@ -352,9 +354,11 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   // keyed only on the original seoKeyword prop) or flash the loading state.
   useEffect(() => {
     if (!blog || typeof window === "undefined") return;
-    const keyword = isFr
-      ? blog.french_seo_keyword || blog.english_seo_keyboard
-      : blog.english_seo_keyboard || blog.french_seo_keyword;
+    const keyword = sanitizeSeoKeyword(
+      isFr
+        ? blog.french_seo_keyword || blog.english_seo_keyboard
+        : blog.english_seo_keyboard || blog.french_seo_keyword,
+    );
     if (!keyword) return;
     const newPath = `/advices/${encodeURIComponent(keyword)}`;
     if (window.location.pathname === newPath) return;
@@ -446,7 +450,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         <section className="bg-[#fbf9f7]">
           <div className="flex flex-col lg:flex-row items-stretch">
             <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-18">
-              <div className="h-3 bg-gray-200 animate-pulse rounded w-40 mb-6" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="h-3 bg-gray-200 animate-pulse rounded w-40" />
+                <div className="h-3 bg-gray-200 animate-pulse rounded w-14 sm:hidden" />
+              </div>
               <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-full mb-3" />
               <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-full mb-3" />
                <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-2/3 mb-6" />
@@ -468,6 +475,10 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
                   <div className="h-3 bg-gray-200 animate-pulse rounded w-32" />
                 </div>
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
+                  <div className="h-3 bg-gray-200 animate-pulse rounded w-14" />
+                </div>
               </div>
             </div>
             <div className="relative w-full lg:w-1/2 h-auto bg-gray-200 animate-pulse" />
@@ -478,6 +489,16 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
           <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
             <div className="w-full lg:flex-1 space-y-4">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
+                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
+              </div>
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
               <div className="h-4 bg-gray-100 animate-pulse rounded w-5/6" />
