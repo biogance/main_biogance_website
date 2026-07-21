@@ -215,8 +215,8 @@ export default function UserProfile() {
         body.append('name', formData.fullName);
         body.append('email', formData.email);
         body.append('country_code', formData.country_code);
-        body.append('phone', `${formData.country_code}${formData.phone_number}`);
-        body.append('phone_number', formData.phone_number);
+        body.append('phone', formData.phone_number);
+        body.append('phone_number', `${formData.country_code}${formData.phone_number}`);
         if (profileImageFile) body.append('profile_picture', profileImageFile);
 
         setLoading(true);
