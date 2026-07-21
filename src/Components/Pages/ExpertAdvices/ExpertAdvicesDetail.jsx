@@ -603,7 +603,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       </section>
 
       {/* Article body + product recommendation */}
-    <div className="px-6 pb-15 sm:px-10 lg:px-16 pt-6 md:pt-8 lg:pt-15">
+    <div className="px-6 pb-15 sm:px-10 lg:px-16 pt-4 lg:pt-15">
         {hasProducts ? (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_40%] xl:grid-cols-[1fr_25%] gap-2 lg:gap-x-12">
 
@@ -623,7 +623,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 2. Right: recommended products */}
             <div
-              className="w-full mt-6 mb-6 lg:mt-0 lg:mb-0 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3"
+              className="w-full mb-0 lg:mt-0 lg:mb-0 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3"
             >
               <div className="p-4 sm:p-6 pb-4 shrink-0">
                 <p className="text-xs text-gray-400 mb-2">
@@ -806,7 +806,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 3. YouTube video */}
             {youtubeId && (
-              <div className="w-full order-3 lg:col-start-1 mt-12 md:mt-16 relative aspect-video bg-gray-900 overflow-hidden">
+              <div className="w-full order-3 lg:col-start-1 mt-2 lg:mt-2 relative aspect-video bg-gray-900 overflow-hidden">
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`}
@@ -822,7 +822,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             {tags.length > 0 && (
               <div
                 className={`w-full order-4 lg:col-start-1 ${
-                  youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-4"
+                  youtubeId ? "mt-4 md:mt-6" : "mt-4 md:mt-4"
                 } flex flex-wrap gap-2`}
               >
                 {tags.map((tag) => (
@@ -855,7 +855,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
       {/* YouTube video */}
       {!hasProducts && youtubeId && (
-        <section className="bg-white py-12 md:py-16">
+        <section className="bg-white pb-6 md:pb-10">
           <div className="px-6 sm:px-10 lg:px-16">
             <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
               <div className="relative w-full lg:flex-1 aspect-video bg-gray-900 overflow-hidden">
@@ -879,7 +879,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
       {/* Tags — shown below the video if there is one, otherwise take its place */}
       {!hasProducts && tags.length > 0 && (
-        <section className="bg-white py-10 md:py-12">
+        <section className="bg-white py-4 md:py-6">
           <div className="px-6 sm:px-10 lg:px-16">
             <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
               <div className="w-full lg:flex-1 flex flex-wrap gap-2">

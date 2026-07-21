@@ -366,7 +366,7 @@ function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
             <Shimmer className="h-9 w-full md:w-72 shrink-0" />
           </div>
           <div className="flex items-center gap-2">
-            {Array.from({ length: topicsCount }).map((_, i) => (
+            {Array.from({ length: 15 }).map((_, i) => (
               <Shimmer key={i} className="h-7 w-20 shrink-0" />
             ))}
           </div>

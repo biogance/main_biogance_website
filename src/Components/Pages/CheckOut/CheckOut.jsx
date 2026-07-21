@@ -3828,7 +3828,7 @@ function Checkout({ cartItems = [] }) {
         },
         body: JSON.stringify({
           full_name: finalName, email: finalEmail,
-          country_code: dialCode, phone: dialCode, phone_number: phone,
+          country_code: dialCode, phone: phone, phone_number: dialCode + phone,
           delivery_address_full: finalStreet,
           delivery_address_country: deliveryCountryName,
           delivery_address_city: finalCity,
@@ -3858,8 +3858,8 @@ function Checkout({ cartItems = [] }) {
             ? {
               pickup_name: summaryState.selectedLocation.name,
               pickup_address: summaryState.selectedLocation.address,
-              // pick_up_service_point_id: summaryState.selectedLocation.id,
-              // pickup_carrier_service_point_id: summaryState.selectedLocation.code,
+              pickup_service_point_id: summaryState.selectedLocation.id,
+              pickup_carrier_service_point_id: summaryState.selectedLocation.code,
             }
             : {}),
         }),
@@ -4013,8 +4013,8 @@ function Checkout({ cartItems = [] }) {
           full_name: lastName,
           email,
           country_code: dialCode,
-          phone: dialCode,
-          phone_number: phone,
+          phone: phone,
+          phone_number: dialCode + phone,
           delivery_address_full: street,
           delivery_address_country: deliveryCountryName,
           delivery_address_city: city,
@@ -4044,7 +4044,7 @@ function Checkout({ cartItems = [] }) {
             ? {
               pickup_name: summaryState.selectedLocation.name,
               pickup_address: summaryState.selectedLocation.address,
-              pick_up_service_point_id: summaryState.selectedLocation.id,
+              pickup_service_point_id: summaryState.selectedLocation.id,
               pickup_carrier_service_point_id: summaryState.selectedLocation.code,
             }
             : {}),
@@ -4271,8 +4271,8 @@ function Checkout({ cartItems = [] }) {
         full_name: lastName,
         email,
         country_code: dialCode,
-        phone: dialCode,
-        phone_number: phone,
+        phone: phone,
+        phone_number: dialCode + phone,
         delivery_address_full: street,
         delivery_address_country: deliveryCountryName,
         delivery_address_city: city,
@@ -4304,7 +4304,7 @@ function Checkout({ cartItems = [] }) {
           ? {
             pickup_name: summaryState.selectedLocation.name,
             pickup_address: summaryState.selectedLocation.address,
-            pick_up_service_point_id: summaryState.selectedLocation.id,
+            pickup_service_point_id: summaryState.selectedLocation.id,
             pickup_carrier_service_point_id: summaryState.selectedLocation.code,
           }
           : {}),
