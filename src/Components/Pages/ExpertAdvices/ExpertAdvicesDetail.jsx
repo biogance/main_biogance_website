@@ -67,6 +67,14 @@ function getBlogField(item, field, isFr) {
   return item[frField] || item[field] || "";
 }
 
+function getBlogTopicTags(blog, isFr) {
+  if (!blog?.categories) return [];
+  const getName = (c) => (isFr && c.category.french_name ? c.category.french_name : c.category.name);
+  const collection = blog.categories.find((c) => c.type === "collection" && c.category);
+  const topics = blog.categories.filter((c) => c.type === "topic" && c.category);
+  return [collection ? getName(collection) : null, ...topics.map(getName)].filter(Boolean);
+}
+
 // Editors sometimes leave one or more trailing empty paragraphs/line breaks
 // at the end of the rich-text content — strip all trailing empty blocks so
 // they don't render as blank space, without touching the rest of the content.
@@ -693,9 +701,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 1. Left: article content */}
             <div className="w-full order-1 lg:col-start-1">
-              {contentTagLabels.length > 0 && (
+              {getBlogTopicTags(blog, isFr).length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {contentTagLabels.map((label, i) => (
+                  {getBlogTopicTags(blog, isFr).map((label, i) => (
                     <span
                       key={`${label}-${i}`}
                       className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#fff] border border-gray-200 px-3 py-1"
@@ -937,9 +945,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         ) : (
           /* No products: plain content, aligned with hero content */
           <div>
-            {contentTagLabels.length > 0 && (
+            {getBlogTopicTags(blog, isFr).length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
-                {contentTagLabels.map((label, i) => (
+                {getBlogTopicTags(blog, isFr).map((label, i) => (
                   <span
                     key={`${label}-${i}`}
                     className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#f3f3f3] px-3 py-1"
