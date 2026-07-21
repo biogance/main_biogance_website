@@ -75,6 +75,16 @@ function getBlogTopicTags(blog, isFr) {
   return [collection ? getName(collection) : null, ...topics.map(getName)].filter(Boolean);
 }
 
+function getBlogTopicTagsFull(blog, isFr) {
+  if (!blog?.categories) return [];
+  const getName = (c) =>
+    isFr && c.category.french_name ? c.category.french_name : c.category.name;
+  return blog.categories
+    .filter((c) => c.category && (c.type === "collection" || c.type === "topic"))
+    .map((c) => ({ label: getName(c), type: c.type }))
+    .filter((item) => item.label);
+}
+
 // Editors sometimes leave one or more trailing empty paragraphs/line breaks
 // at the end of the rich-text content — strip all trailing empty blocks so
 // they don't render as blank space, without touching the rest of the content.
@@ -271,29 +281,12 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     } catch {}
   }, []);
 
-  const partLabel = (p) => (isFr && p?.frenchName ? p.frenchName : p?.name) || "";
-  const backSpecies = storedBackInfo?.species ?? null;
-  const backTopics = storedBackInfo?.topics ?? [];
-  // Back-button / more-advices label only ever names the species plus the
-  // first topic, even when several topics are active — keeps that label short.
-  const backPartsLabel = [backSpecies, backTopics[0]]
-    .map(partLabel)
-    .filter(Boolean)
-    .join(" & ");
-  // The pills shown above the article body, in contrast, list every active
-  // topic separately so none of the chosen filters are silently dropped.
-  const contentTagLabels = [
-    partLabel(backSpecies),
-    ...backTopics.map(partLabel),
-  ].filter(Boolean);
-  const backTypeLabel =
-    !backPartsLabel && storedBackInfo?.typeKey
-      ? t(TYPE_LABEL_KEYS[storedBackInfo.typeKey] || "articles")
-      : "";
-  const backPrefix = backPartsLabel || backTypeLabel;
+  const backTypeLabel = storedBackInfo?.typeKey
+    ? t(TYPE_LABEL_KEYS[storedBackInfo.typeKey] || "articles")
+    : "";
   const backInfo = {
     url: storedBackInfo?.url ?? "/advices",
-    label: backPrefix ? `${backPrefix} ${t("advicesSuffix")}` : t("advicesSuffix"),
+    label: backTypeLabel ? `${backTypeLabel} ${t("advicesSuffix")}` : t("advicesSuffix"),
   };
 
   const [blog, setBlog] = useState(null);
@@ -642,6 +635,22 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 {t("share")}
               </button>
             </div>
+          {getBlogTopicTagsFull(blog, isFr).length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-5">
+                {getBlogTopicTagsFull(blog, isFr).map(({ label, type }, i) => (
+                  <span
+                    key={`${label}-${i}`}
+                    className={
+                      type === "collection"
+                        ? "inline-block text-[10px] font-bold uppercase tracking-[0.13em] px-3.5 py-1.5 bg-[#ededed] text-[#3a3a3a] border border-[#d4d4d4]"
+                        : "inline-block text-[10px] font-semibold uppercase tracking-[0.1em] px-3.5 py-1.5 bg-white text-[#7a7a7a] border border-[#e2e2e2]"
+                    }
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
           <h1 className="text-2xl sm:text-3xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
               {getBlogField(blog, "name", isFr)}
             </h1>
@@ -701,18 +710,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 1. Left: article content */}
             <div className="w-full order-1 lg:col-start-1">
-              {getBlogTopicTags(blog, isFr).length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {getBlogTopicTags(blog, isFr).map((label, i) => (
-                    <span
-                      key={`${label}-${i}`}
-                      className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#fff] border border-gray-200 px-3 py-1"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              )}
               {getBlogField(blog, "long_description", isFr) ? (
                 <div
                   className="prose prose-sm max-w-none text-gray-700"
@@ -945,18 +942,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         ) : (
           /* No products: plain content, aligned with hero content */
           <div>
-            {getBlogTopicTags(blog, isFr).length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {getBlogTopicTags(blog, isFr).map((label, i) => (
-                  <span
-                    key={`${label}-${i}`}
-                    className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#f3f3f3] px-3 py-1"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
             {getBlogField(blog, "long_description", isFr) ? (
               <div
                 className="prose prose-sm max-w-none text-gray-700"
@@ -1026,7 +1011,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         items={relatedBlogs}
         isFr={isFr}
         backInfo={backInfo}
-        filterLabel={backPartsLabel}
       />
 
       <Footer />
@@ -1044,3 +1028,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 }
 
 export default ExpertArticleDetail;
+
+
+

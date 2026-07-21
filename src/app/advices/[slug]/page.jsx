@@ -13,8 +13,42 @@ const SEE_ALL_SLUGS = {
   "pet-care-blogs": "pet",
 };
 
+const SEE_ALL_META = {
+  "recommended-pet-care": {
+    title: "Recommended Pet Care | Expert Advice | Biogance",
+    description:
+      "Browse vet-trusted articles recommended for your pet's daily care — expert tips, routines, and product guides from Biogance.",
+  },
+  "trending-pet-care": {
+    title: "Trending Pet Care Articles | Expert Advice | Biogance",
+    description:
+      "Discover the most popular pet care articles trending right now — expert tips and advice from Biogance.",
+  },
+  "most-liked-pet-care": {
+    title: "Most Liked Pet Care Articles | Expert Advice | Biogance",
+    description:
+      "Explore the most loved pet care articles by the Biogance community — expert advice rated by pet owners.",
+  },
+  "latest-pet-care": {
+    title: "Latest Pet Care Articles | Expert Advice | Biogance",
+    description:
+      "Stay up to date with the freshest pet care advice — new expert articles published regularly by Biogance.",
+  },
+  "pet-care-blogs": {
+    title: "Pet Care Blogs | Expert Advice | Biogance",
+    description:
+      "Read in-depth pet care blogs covering nutrition, grooming, health, and daily routines — written by Biogance experts.",
+  },
+};
+
 function stripHtml(html) {
   return (html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function truncateAtWord(str, max) {
+  if (str.length <= max) return str;
+  const cut = str.lastIndexOf(" ", max);
+  return str.slice(0, cut > 0 ? cut : max) + "…";
 }
 
 // react's cache() dedupes this within a single request — generateMetadata
@@ -47,15 +81,42 @@ function articleUrl(origin, slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const decoded = decodeURIComponent(slug);
-  if (SEE_ALL_SLUGS[decoded]) return {};
+  if (SEE_ALL_SLUGS[decoded]) {
+    const meta = SEE_ALL_META[decoded];
+    const origin = await getSiteOrigin();
+    const url = `${origin}/advices/${decoded}`;
+    return {
+      title: meta.title,
+      description: meta.description,
+      alternates: {
+        canonical: url,
+        languages: { en: url, fr: url, "x-default": url },
+      },
+      openGraph: {
+        siteName: "Biogance",
+        title: meta.title,
+        description: meta.description,
+        url,
+        type: "website",
+        locale: "en_US",
+        alternateLocale: "fr_FR",
+        images: [{ url: `${origin}/og-image.jpg`, width: 1200, height: 630, alt: meta.title }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: meta.title,
+        description: meta.description,
+        images: [`${origin}/og-image.jpg`],
+      },
+    };
+  }
 
   const blog = await getBlog(decoded);
-  if (!blog) return {};
+  if (!blog) return { robots: { index: false } };
 
   const title = blog.name || "Biogance";
   const description =
-    blog.short_description ||
-    stripHtml(blog.long_description).slice(0, 160) ||
+    truncateAtWord(blog.short_description || stripHtml(blog.long_description), 155) ||
     "Pioneers in Natural Pet Care";
   const imagePath = blog.images?.[0]?.media ?? blog.image ?? null;
   const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : "/og-image.jpg";
@@ -82,6 +143,7 @@ export async function generateMetadata({ params }) {
       },
     },
     openGraph: {
+      siteName: "Biogance",
       title,
       description,
       url: canonicalUrl,
@@ -99,6 +161,20 @@ export async function generateMetadata({ params }) {
       description,
       images: [imageUrl],
     },
+  };
+}
+
+// BreadcrumbList schema — Google shows "Home > Expert Advice > Article" in
+// search results, which increases click-through rate vs a plain URL.
+function buildBreadcrumbJsonLd(blog, canonicalUrl, origin) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: origin },
+      { "@type": "ListItem", position: 2, name: "Expert Advice", item: `${origin}/advices` },
+      { "@type": "ListItem", position: 3, name: blog.name, item: canonicalUrl },
+    ],
   };
 }
 
@@ -148,21 +224,29 @@ export default async function AdvicesDetailPage({ params }) {
   }
 
   const blog = await getBlog(decoded);
-  let jsonLd = null;
+  let articleJsonLd = null;
+  let breadcrumbJsonLd = null;
   if (blog) {
     const origin = await getSiteOrigin();
     const canonicalUrl = articleUrl(origin, decoded) || `/advices/${encodeURIComponent(decoded)}`;
     const imagePath = blog.images?.[0]?.media ?? blog.image ?? null;
     const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : undefined;
-    jsonLd = buildArticleJsonLd(blog, canonicalUrl, imageUrl, origin);
+    articleJsonLd = buildArticleJsonLd(blog, canonicalUrl, imageUrl, origin);
+    breadcrumbJsonLd = buildBreadcrumbJsonLd(blog, canonicalUrl, origin);
   }
 
   return (
     <>
-      {jsonLd && (
+      {articleJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        />
+      )}
+      {breadcrumbJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
       )}
       <ExpertArticleDetail seoKeyword={decoded} />

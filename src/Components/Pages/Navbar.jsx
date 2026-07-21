@@ -84,21 +84,11 @@ export default function Navbar({
       const scrollOffset = isDesktopRef.current
         ? 0
         : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
-      // Once the offset settles (0 on desktop, 40 past the first 40px of
-      // mobile scroll) there's nothing left to animate — skip the DOM
-      // writes so scrolling further doesn't keep doing main-thread work
-      // that competes with the sticky filter bars below the navbar.
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
       if (announcementBarRef.current) {
         announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
       }
-      // Only mobile actually needs this transform (scrollOffset is always 0
-      // on desktop, so it's a no-op move there) — skip setting it on desktop
-      // entirely. Any active transform value, even translateY(0), makes nav
-      // the CSS containing block for its position:fixed descendants (like
-      // the OurProducts dropdown), so leaving it unset on desktop is what
-      // keeps that dropdown positioned against the viewport instead of nav.
       if (navElRef.current) {
         navElRef.current.style.transform = isDesktopRef.current
           ? ""

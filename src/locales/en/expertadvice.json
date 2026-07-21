@@ -35,10 +35,13 @@
   "articles": "Articles",
   "all": "All Topics",
   "minShort": "{{time}} min",
+  "topics": "Topics",
   "share": "Share",
   "close": "Close",
   "copy": "Copy",
   "linkCopied": "Link copied to clipboard",
+  "copyLink": "Copy link",
+  "shareVia": "or share via",
   "sectionLabels": {
     "recommended": "Recommended For Your Pet",
     "trending": "Trending",
