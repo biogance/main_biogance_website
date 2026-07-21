@@ -23,21 +23,15 @@ export const metadata = {
   openGraph: {
     title: "Biogance - Biogance",
     description: "Pioneers in Natural Pet Care",
-    images: [
-      {
-        url: "/og-image.jpg", 
-        width: 1200,
-        height: 630,
-        alt: "Biogance - Pioneers in Natural Pet Care",
-      },
-    ],
+    // No explicit images here — Next.js auto-picks up src/app/opengraph-image.jsx
+    // for every route that doesn't set its own (like /advices/[slug] does).
   },
- 
+
   twitter: {
     card: "summary_large_image",
     title: "Biogance - Biogance",
     description: "Pioneers in Natural Pet Care",
-    images: ["/fav.svg"], 
+    // Falls back to the resolved openGraph image (see above) when unset.
   },
 };
 
