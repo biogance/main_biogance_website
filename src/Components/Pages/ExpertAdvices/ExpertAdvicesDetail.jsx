@@ -603,7 +603,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       </section>
 
       {/* Article body + product recommendation */}
-    <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
+    <div className="px-6 pb-15 sm:px-10 lg:px-16 pt-6 md:pt-8 lg:pt-15">
         {hasProducts ? (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_40%] xl:grid-cols-[1fr_25%] gap-2 lg:gap-x-12">
 
@@ -822,7 +822,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             {tags.length > 0 && (
               <div
                 className={`w-full order-4 lg:col-start-1 ${
-                  youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-8"
+                  youtubeId ? "mt-12 md:mt-16" : "mt-6 md:mt-4"
                 } flex flex-wrap gap-2`}
               >
                 {tags.map((tag) => (
@@ -879,9 +879,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
       {/* Tags — shown below the video if there is one, otherwise take its place */}
       {!hasProducts && tags.length > 0 && (
-        <section
-          className={`bg-white pb-12 md:pb-16 ${youtubeId ? "pt-12 md:pt-16" : "pt-0"}`}
-        >
+        <section className="bg-white py-10 md:py-12">
           <div className="px-6 sm:px-10 lg:px-16">
             <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
               <div className="w-full lg:flex-1 flex flex-wrap gap-2">

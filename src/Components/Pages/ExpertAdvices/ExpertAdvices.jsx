@@ -641,8 +641,7 @@ function ExpertAdvices() {
   const searchTimerRef = useRef(null);
 
   // ── Splash data ──────────────────────────────────────────────────────────
-  const [splashCategories] = useState(() => {
-    if (typeof window === "undefined") return [];
+  const getSplashCategories = () => {
     try {
       let raw = localStorage.getItem("splashData");
       if (!raw) return [];
@@ -652,7 +651,11 @@ function ExpertAdvices() {
     } catch {
       return [];
     }
-  });
+  };
+  const [splashCategories, setSplashCategories] = useState([]);
+  useEffect(() => {
+    setSplashCategories(getSplashCategories());
+  }, []);
 
   const [activeSpecies, setActiveSpecies] = useState(cachedState?.activeSpecies ?? null);
   const [activeTopic, setActiveTopic] = useState(cachedState?.activeTopic ?? []);

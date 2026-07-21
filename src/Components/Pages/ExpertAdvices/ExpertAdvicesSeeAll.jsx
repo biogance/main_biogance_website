@@ -391,8 +391,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const searchTimerRef = useRef(null);
 
   // ── Splash data (same as ExpertAdvices.jsx) ─────────────────────────────
-  const [splashCategories] = useState(() => {
-    if (typeof window === "undefined") return [];
+  const getSplashCategories = () => {
     try {
       let raw = localStorage.getItem("splashData");
       if (!raw) return [];
@@ -402,7 +401,11 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     } catch {
       return [];
     }
-  });
+  };
+  const [splashCategories, setSplashCategories] = useState([]);
+  useEffect(() => {
+    setSplashCategories(getSplashCategories());
+  }, []);
 
   // One-time carry-over from ExpertAdvices.jsx's "See All" click — consumed
   // (and removed) immediately so it never leaks into an unrelated later
