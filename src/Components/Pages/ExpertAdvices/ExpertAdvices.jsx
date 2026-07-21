@@ -1412,7 +1412,7 @@ function ExpertAdvices() {
                           </div>
                         </div>
                         <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-                          {getCategoryName(a, isFr) || tr("pets")}
+                          {getCategoryName(a, isFr) || "⸻"}
                         </p>
                         <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2 min-h-[2.5rem] group-hover:underline underline-offset-2">
                           {getBlogField(a, "name", isFr)}
