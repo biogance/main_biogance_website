@@ -126,10 +126,48 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
 
   const universes = (activeCategory?.sub_categories || []).filter(s => s.type === 'universe');
 
-  if (!isOpen) return null;
+  // Desktop dropdown stays mounted a little past isOpen turning false so the
+  // close transition (opacity/translateY below) has time to play instead of
+  // the menu just vanishing.
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [animateIn, setAnimateIn] = useState(false);
+  const closeTimeoutRef = useRef(null);
+  const openFrameRef = useRef(null);
+  const openFrame2Ref = useRef(null);
+
+  useEffect(() => {
+    if (isMobileModal) return;
+    if (isOpen) {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+      setShouldRender(true);
+      // Double rAF: the first frame just commits the opacity:0 mount so the
+      // browser actually paints it — flipping to opacity:1 in the same frame
+      // (single rAF) skips that paint and the transition never plays.
+      openFrameRef.current = requestAnimationFrame(() => {
+        openFrame2Ref.current = requestAnimationFrame(() => setAnimateIn(true));
+      });
+    } else {
+      setAnimateIn(false);
+      closeTimeoutRef.current = setTimeout(() => setShouldRender(false), 250);
+    }
+    return () => {
+      if (openFrameRef.current) cancelAnimationFrame(openFrameRef.current);
+      if (openFrame2Ref.current) cancelAnimationFrame(openFrame2Ref.current);
+    };
+  }, [isOpen, isMobileModal]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
 
   // ── MOBILE MODAL ────────────────────────────────────────────────────────────
   if (isMobileModal) {
+    if (!isOpen) return null;
     return (
       <>
         {/* Backdrop */}
@@ -285,6 +323,8 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   }
   // ── END MOBILE MODAL ─────────────────────────────────────────────────────────
 
+  if (!shouldRender) return null;
+
   return (
     <div
       ref={menuRef}
@@ -295,7 +335,10 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         left: 0,
         right: 0,
         minHeight: '420px',
-       
+        opacity: animateIn ? 1 : 0,
+        transform: animateIn ? 'translateY(0)' : 'translateY(-10px)',
+        transition: 'opacity 0.25s ease, transform 0.25s ease',
+        pointerEvents: animateIn ? 'auto' : 'none',
       }}
       // Jab mouse dropdown se bahar (upar navbar center/right mein) jaaye toh close karo
       onMouseLeave={onClose}
