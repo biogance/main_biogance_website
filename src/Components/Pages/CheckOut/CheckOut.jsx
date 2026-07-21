@@ -28,9 +28,18 @@ const stripePromise = loadStripe(
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
+import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import ModalPickLocation from "./ModalPickLocation";
 import ModalChangeAddress from "./ModalChangeAddress";
+
+// Maps getPhoneValidationErrorCode's return value to a checkout.json key.
+const PHONE_ERROR_KEYS = {
+  required: "errorPhoneRequired",
+  tooShort: "errorPhoneTooShort",
+  tooLong: "errorPhoneTooLong",
+  invalid: "errorPhoneInvalid",
+};
 
 // Common abbreviations/aliases users type into the free-text address
 // country field that don't match react-international-phone's iso2 code or
@@ -624,6 +633,8 @@ function PhoneFieldBox({
   onCountryChange,
   value,
   onChange,
+  onBlur,
+  error,
   disabled = false,
 }) {
   const { t } = useTranslation("checkout");
@@ -661,13 +672,14 @@ function PhoneFieldBox({
   }, []);
 
   return (
+    <div>
     <div
       ref={wrapRef}
       style={{
         position: "relative",
         display: "flex",
         alignItems: "stretch",
-        border: `1px solid ${focused ? "#111" : "#ddd"}`,
+        border: `1px solid ${error ? "#e02424" : focused ? "#111" : "#ddd"}`,
         borderRadius: "3px",
         background: disabled ? "#f7f7f7" : "#fff",
         transition: "border-color 0.2s",
@@ -743,7 +755,10 @@ function PhoneFieldBox({
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => {
+            setFocused(false);
+            onBlur?.();
+          }}
           style={{
             width: "100%",
             border: "none",
@@ -857,6 +872,19 @@ function PhoneFieldBox({
           </div>
         </div>
       )}
+    </div>
+    {error && (
+      <p
+        style={{
+          margin: "4px 0 0",
+          fontSize: "12px",
+          color: "#e02424",
+          fontFamily: FONT,
+        }}
+      >
+        {error}
+      </p>
+    )}
     </div>
   );
 }
@@ -3460,6 +3488,7 @@ function Checkout({ cartItems = [] }) {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [countryIso2, setCountryIso2] = useState("");
+  const [phoneError, setPhoneError] = useState(null);
   const [deliveryCountryIso2, setDeliveryCountryIso2] = useState("");
 
   const prefillFromSplash = () => {
@@ -3631,8 +3660,25 @@ function Checkout({ cartItems = [] }) {
   }, [useDifferentBilling]);
 
   const handleCountryChange = (iso2) => {
+    // countryIso2 is what PhoneFieldBox actually reads its flag/dial-code
+    // from — it was never being set here, so the field kept showing the old
+    // country after a change, and phone validation would run against the
+    // wrong country's rules. deliveryCountryIso2 defaulting to match is the
+    // existing behavior; only the missing setCountryIso2 call is new.
+    setCountryIso2(iso2);
     setDeliveryCountryIso2(iso2);
     setPhone("");
+    setPhoneError(null);
+  };
+
+  // Validates the phone number's digit count and leading-digit pattern
+  // against whichever country is currently selected (e.g. a French number
+  // needs 9 digits after +33 starting 6/7; a Pakistani number needs 10
+  // digits after +92 starting 3) — returns true when valid.
+  const validatePhone = () => {
+    const code = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
+    setPhoneError(code ? t(PHONE_ERROR_KEYS[code]) : null);
+    return !code;
   };
 
   const handleExpressSelect = (method) => {
@@ -4075,6 +4121,14 @@ function Checkout({ cartItems = [] }) {
 
   const handlePlaceOrder = async () => {
     if (paymentMethod !== "card" || !stripe || !elements) return;
+
+    const phoneErrorCode = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
+    if (phoneErrorCode) {
+      const message = t(PHONE_ERROR_KEYS[phoneErrorCode]);
+      setPhoneError(message);
+      setFormError(message);
+      return;
+    }
 
     // Validate required delivery fields
     if (!deliveryCountryIso2) {
@@ -4778,7 +4832,12 @@ function Checkout({ cartItems = [] }) {
                   iso2={countryIso2 || "fr"}
                   onCountryChange={handleCountryChange}
                   value={phone}
-                  onChange={setPhone}
+                  onChange={(v) => {
+                    setPhone(v);
+                    if (phoneError) setPhoneError(null);
+                  }}
+                  onBlur={validatePhone}
+                  error={phoneError}
                 />
               </div>
             </Section>

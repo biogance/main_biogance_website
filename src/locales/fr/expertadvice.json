@@ -35,6 +35,10 @@
   "articles": "Articles",
   "all": "Tout Sujettes",
   "minShort": "{{time}} min",
+  "share": "Partager",
+  "close": "Fermer",
+  "copy": "Copier",
+  "linkCopied": "Lien copié dans le presse-papiers",
   "sectionLabels": {
     "recommended": "Recommandé pour votre animal",
     "trending": "Tendances",

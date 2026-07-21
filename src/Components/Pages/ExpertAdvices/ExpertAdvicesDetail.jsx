@@ -9,8 +9,9 @@ import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import ModalAddToCart from "../Modal/ModalAddToCart";
-import { LuPackage, LuUser, LuUserRoundPen } from "react-icons/lu";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import ShareModal from "../Modal/ShareModal";
+import { LuPackage, LuShare2, LuUser, LuUserRoundPen } from "react-icons/lu";
+import { FiChevronLeft, FiChevronRight, FiShare2 } from "react-icons/fi";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
@@ -21,7 +22,7 @@ import { FaArrowLeft, FaRegUserCircle } from "react-icons/fa";
 import { MdOutlineUpdate, MdUpdate } from "react-icons/md";
 import { IoHourglassOutline } from "react-icons/io5";
 import { SlUser } from "react-icons/sl";
-import { PiUser, PiUserLight } from "react-icons/pi";
+import { PiShareFat, PiShareFatBold, PiUser, PiUserLight } from "react-icons/pi";
 
 // Mirrors ExpertAdvicesSeeAll.jsx's TYPE_LABEL_KEYS — needed here to rebuild
 // the "Back to X" label from a stored typeKey in the current language.
@@ -63,6 +64,25 @@ function getBlogField(item, field, isFr) {
     ? field.replace("_description", "_french_description")
     : `french_${field}`;
   return item[frField] || item[field] || "";
+}
+
+// Editors sometimes leave one or more trailing empty paragraphs/line breaks
+// at the end of the rich-text content — strip all trailing empty blocks so
+// they don't render as blank space, without touching the rest of the content.
+function stripTrailingEmptyLine(html) {
+  if (!html) return html;
+  let result = html;
+  while (true) {
+    const before = result;
+    result = result.replace(/\s+$/, "");
+    result = result.replace(/(?:<br(?:\s[^>]*)?\/?>\s*)+$/i, "");
+    result = result.replace(
+      /<(p|div)(?:\s[^>]*)?>(?:\s|&nbsp;| |<br(?:\s[^>]*)?\/?>)*<\/\1>\s*$/i,
+      "",
+    );
+    if (result === before) break;
+  }
+  return result;
 }
 
 function getYoutubeId(url) {
@@ -240,11 +260,21 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     } catch {}
   }, []);
 
-  const backParts = storedBackInfo?.parts ?? [];
-  const backPartsLabel = backParts
-    .map((p) => (isFr && p.frenchName ? p.frenchName : p.name))
+  const partLabel = (p) => (isFr && p?.frenchName ? p.frenchName : p?.name) || "";
+  const backSpecies = storedBackInfo?.species ?? null;
+  const backTopics = storedBackInfo?.topics ?? [];
+  // Back-button / more-advices label only ever names the species plus the
+  // first topic, even when several topics are active — keeps that label short.
+  const backPartsLabel = [backSpecies, backTopics[0]]
+    .map(partLabel)
     .filter(Boolean)
     .join(" & ");
+  // The pills shown above the article body, in contrast, list every active
+  // topic separately so none of the chosen filters are silently dropped.
+  const contentTagLabels = [
+    partLabel(backSpecies),
+    ...backTopics.map(partLabel),
+  ].filter(Boolean);
   const backTypeLabel =
     !backPartsLabel && storedBackInfo?.typeKey
       ? t(TYPE_LABEL_KEYS[storedBackInfo.typeKey] || "articles")
@@ -264,6 +294,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   const [addingBundleId, setAddingBundleId] = useState(null);
   // const [addingAll, setAddingAll] = useState(false); // Add all — commented out
   const [cartOpen, setCartOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   // This component stays mounted across /advices/[keyword] navigations (only
   // seoKeyword changes), so both a related-card click and a browser back/
@@ -313,6 +345,21 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
     };
     fetchDetail();
   }, [seoKeyword]);
+
+  // Keeps the address bar's slug in the active language once the blog has
+  // loaded — a plain URL swap via history.replaceState, not a router
+  // navigation, so it doesn't re-trigger the fetch effect above (which is
+  // keyed only on the original seoKeyword prop) or flash the loading state.
+  useEffect(() => {
+    if (!blog || typeof window === "undefined") return;
+    const keyword = isFr
+      ? blog.french_seo_keyword || blog.english_seo_keyboard
+      : blog.english_seo_keyboard || blog.french_seo_keyword;
+    if (!keyword) return;
+    const newPath = `/advices/${encodeURIComponent(keyword)}`;
+    if (window.location.pathname === newPath) return;
+    window.history.replaceState(window.history.state, "", newPath);
+  }, [isFr, blog]);
 
   const hasProducts = bundles.length > 0;
   const youtubeLink = isFr
@@ -549,13 +596,23 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       <section className="bg-[#fbf9f7]">
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-            <button
-              onClick={() => { startTopLoader(); router.push(backInfo.url); }}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors mb-6 cursor-pointer bg-transparent border-none p-0"
-            >
-            <FaArrowLeft className="w-3.5 h-3.5" />
-              {t("backTo", { label: backInfo.label })}
-            </button>
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => { startTopLoader(); router.push(backInfo.url); }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                <FaArrowLeft className="w-3.5 h-3.5" />
+                {t("backTo", { label: backInfo.label })}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                className="sm:hidden flex text-sm items-center gap-1.5 text-gray-900 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+            <LuShare2 size={16} />
+                {t("share")}
+              </button>
+            </div>
           <h1 className="text-2xl sm:text-3xl lg:text-[42px] font-bold text-gray-900 leading-tight mb-6">
               {getBlogField(blog, "name", isFr)}
             </h1>
@@ -582,9 +639,16 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                       { day: "numeric", month: "long", year: "numeric" },
                     ),
                   })}
-                
                 </span>
               )}
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                <LuShare2 size={16} />
+                {t("share")}
+              </button>
             </div>
           </div>
 
@@ -595,7 +659,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   ? `${MEDIA_URL}${getBlogImage(blog)}`
                   : "/cat.png"
               }
-          
               className="w-full h-full object-cover"
             />
           </div>
@@ -609,11 +672,25 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 1. Left: article content */}
             <div className="w-full order-1 lg:col-start-1">
+              {contentTagLabels.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {contentTagLabels.map((label, i) => (
+                    <span
+                      key={`${label}-${i}`}
+                      className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#fff] border border-gray-200 px-3 py-1"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
               {getBlogField(blog, "long_description", isFr) ? (
                 <div
                   className="prose prose-sm max-w-none text-gray-700"
                   dangerouslySetInnerHTML={{
-                    __html: getBlogField(blog, "long_description", isFr),
+                    __html: stripTrailingEmptyLine(
+                      getBlogField(blog, "long_description", isFr),
+                    ),
                   }}
                 />
               ) : (
@@ -623,7 +700,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
             {/* 2. Right: recommended products */}
             <div
-              className="w-full mb-0 lg:mt-0 lg:mb-0 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3"
+              className="w-full mt-3 mb-0 lg:mt-0 lg:mb-0 xl:max-w-sm mx-auto lg:mx-0 lg:ml-auto lg:sticky lg:top-[130px] lg:self-start border border-gray-200 flex flex-col overflow-hidden sticky-products-sidebar order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3"
             >
               <div className="p-4 sm:p-6 pb-4 shrink-0">
                 <p className="text-xs text-gray-400 mb-2">
@@ -839,11 +916,25 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         ) : (
           /* No products: plain content, aligned with hero content */
           <div>
+            {contentTagLabels.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {contentTagLabels.map((label, i) => (
+                  <span
+                    key={`${label}-${i}`}
+                    className="inline-block text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-700 bg-[#f3f3f3] px-3 py-1"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
             {getBlogField(blog, "long_description", isFr) ? (
               <div
                 className="prose prose-sm max-w-none text-gray-700"
                 dangerouslySetInnerHTML={{
-                  __html: getBlogField(blog, "long_description", isFr),
+                  __html: stripTrailingEmptyLine(
+                    getBlogField(blog, "long_description", isFr),
+                  ),
                 }}
               />
             ) : (
@@ -912,6 +1003,13 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       <Footer />
 
       <ModalAddToCart isOpen={cartOpen} onClose={() => setCartOpen(false)} autoCloseOnLeave />
+
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={shareUrl}
+        title={getBlogField(blog, "name", isFr)}
+      />
     </div>
   );
 }
