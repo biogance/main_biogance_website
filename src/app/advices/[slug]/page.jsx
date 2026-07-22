@@ -100,13 +100,13 @@ export async function generateMetadata({ params }) {
         type: "website",
         locale: "en_US",
         alternateLocale: "fr_FR",
-        images: [{ url: `${origin}/og-image.jpg`, width: 1200, height: 630, alt: meta.title }],
+        images: [{ url: `${origin}/opengraph-image`, width: 1200, height: 630, alt: meta.title }],
       },
       twitter: {
         card: "summary_large_image",
         title: meta.title,
         description: meta.description,
-        images: [`${origin}/og-image.jpg`],
+        images: [`${origin}/opengraph-image`],
       },
     };
   }
@@ -114,15 +114,18 @@ export async function generateMetadata({ params }) {
   const blog = await getBlog(decoded);
   if (!blog) return { robots: { index: false } };
 
+  const origin = await getSiteOrigin();
   const title = blog.name || "Biogance";
   const description =
     truncateAtWord(blog.short_description || stripHtml(blog.long_description), 155) ||
     "Pioneers in Natural Pet Care";
   const imagePath = blog.images?.[0]?.media ?? blog.image ?? null;
-  const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : "/og-image.jpg";
+  // Same generated brand image the rest of the site falls back to (see
+  // src/app/opengraph-image.jsx) when this specific article has no image of
+  // its own — was pointing at "/og-image.jpg", a file that doesn't exist.
+  const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : `${origin}/opengraph-image`;
   const tagNames = (blog.tags ?? []).map((t) => t.name).filter(Boolean);
 
-  const origin = await getSiteOrigin();
   const canonicalUrl = articleUrl(origin, decoded) || `/advices/${encodeURIComponent(decoded)}`;
   // Both language slugs point at the same article, just written for each
   // audience — hreflang tells Google they're translations of one another
@@ -230,7 +233,7 @@ export default async function AdvicesDetailPage({ params }) {
     const origin = await getSiteOrigin();
     const canonicalUrl = articleUrl(origin, decoded) || `/advices/${encodeURIComponent(decoded)}`;
     const imagePath = blog.images?.[0]?.media ?? blog.image ?? null;
-    const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : undefined;
+    const imageUrl = imagePath ? `${MEDIA_URL}${imagePath}` : `${origin}/opengraph-image`;
     articleJsonLd = buildArticleJsonLd(blog, canonicalUrl, imageUrl, origin);
     breadcrumbJsonLd = buildBreadcrumbJsonLd(blog, canonicalUrl, origin);
   }

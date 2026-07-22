@@ -136,7 +136,16 @@ export function RouteTopLoader() {
       triggerStart();
     };
 
-    const onStart = () => triggerStart();
+    // startTopLoader() is called directly from plenty of div/button onClick
+    // handlers across the app (article cards, product cards, etc.) — not
+    // just <a> tags. Those aren't covered by onLinkClick's anchor check
+    // above, so an iOS ghost-click firing one of them after a scroll still
+    // got through and flashed the bar. Same touchMoved guard here closes
+    // that gap.
+    const onStart = () => {
+      if (touchMoved) return;
+      triggerStart();
+    };
 
     document.addEventListener("touchstart", onTouchStart, { passive: true });
     document.addEventListener("touchmove", onTouchMove, { passive: true });

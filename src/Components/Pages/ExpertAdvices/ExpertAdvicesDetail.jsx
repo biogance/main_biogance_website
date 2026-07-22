@@ -469,14 +469,17 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 <div className="h-3 bg-gray-200 animate-pulse rounded w-40" />
                 <div className="h-3 bg-gray-200 animate-pulse rounded w-14 sm:hidden" />
               </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                <div className="h-6 bg-gray-200 animate-pulse rounded w-24" />
+                <div className="h-6 bg-gray-200 animate-pulse rounded w-20" />
+              </div>
               <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-full mb-3" />
               <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-full mb-3" />
                <div className="h-9 sm:h-10 lg:h-9 bg-gray-200 animate-pulse rounded w-2/3 mb-6" />
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-full max-w-lg mb-2" />
-                  <div className="h-4 bg-gray-200 animate-pulse rounded w-full max-w-lg mb-2" />
-                      <div className="h-4 bg-gray-200 animate-pulse rounded w-full max-w-lg mb-2" />
-                          <div className="h-4 bg-gray-200 animate-pulse rounded w-full max-w-lg mb-2" />
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6 max-w-md mb-8" />
+              <div className="max-w-md mb-8 space-y-2">
+                <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+                <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6" />
+              </div>
               <div className="flex items-center gap-5 sm:gap-8 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-gray-200 animate-pulse rounded-full" />
@@ -504,16 +507,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         <div className="px-6 sm:px-10 lg:px-16 py-6 md:py-8 lg:py-12">
           <div className="flex flex-col lg:flex-row gap-2 lg:gap-12">
             <div className="w-full lg:flex-1 space-y-4">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-20" />
-                <div className="h-6 bg-gray-100 animate-pulse rounded w-24" />
-              </div>
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
               <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
               <div className="h-4 bg-gray-100 animate-pulse rounded w-5/6" />

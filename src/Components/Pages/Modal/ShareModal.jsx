@@ -85,8 +85,11 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
     }
   };
 
+  // No width/height (or any other window-feature string) here — passing
+  // those is what makes browsers pop a small separate window instead of a
+  // normal new tab. "noopener,noreferrer" alone still opens as a tab.
   const openShareWindow = (href) =>
-    window.open(href, "_blank", "noopener,noreferrer,width=600,height=500");
+    window.open(href, "_blank", "noopener,noreferrer");
 
   const socialOptions = [
     {
@@ -144,9 +147,16 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
       label: "Email",
       icon: <MdOutlineEmail className="w-4 h-4" />,
       bg: "#6b7280",
-      onClick: () => {
-        window.location.href = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
-      },
+      // window.location.href navigated the current tab itself to the
+      // mailto: URL — if the browser/OS has no default mail client
+      // registered (common on dev machines), that's a silent no-op with no
+      // visible feedback at all, unlike every other option here which opens
+      // a new tab. window.open behaves the same way as the social buttons:
+      // it opens a new tab that either hands off to the mail client or, if
+      // none is registered, is simply left with the unhandled mailto: URL —
+      // either way the current tab / article you're sharing stays untouched.
+      onClick: () =>
+        openShareWindow(`mailto:?subject=${encodedTitle}&body=${encodedUrl}`),
     },
   ];
 
@@ -166,7 +176,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
               {t("share")}
             </h2>
             {title && (
-              <p className="text-xs text-gray-400 mt-1 line-clamp-1 leading-snug">
+              <p className="text-xs text-gray-400 mt-1 sm:line-clamp-1 leading-snug">
                 {title}
               </p>
             )}
@@ -234,7 +244,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
                 key={opt.key}
                 type="button"
                 onClick={opt.onClick}
-                className="flex items-center gap-2.5 px-3 py-2.5 border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group rounded-sm"
+                className="flex items-center justify-center sm:justify-start gap-2.5 px-3 py-2.5 border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group rounded-sm"
               >
                 <span
                   className="w-6 h-6 rounded-full flex items-center justify-center text-white shrink-0 transition-transform duration-150 group-hover:scale-110"
@@ -242,7 +252,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
                 >
                   {opt.icon}
                 </span>
-                <span className="text-[11px] font-medium text-gray-700 truncate leading-tight">
+                <span className="hidden sm:inline text-[11px] font-medium text-gray-700 truncate leading-tight">
                   {opt.label}
                 </span>
               </button>
