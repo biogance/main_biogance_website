@@ -115,9 +115,26 @@ export default function Navbar({
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
+    // iOS Safari's own address bar collapses/expands *during* a normal
+    // scroll (not just on overscroll-bounce past the boundary), which
+    // resizes the visual viewport independently of window.scrollY. Our
+    // translateY here is driven purely off scrollY, so for a frame or two
+    // during that native toolbar animation the two can fall out of sync —
+    // showing up as the fixed bar's edge visibly snapping/flashing. Other
+    // iOS browsers (e.g. Chrome) either don't have this collapsing chrome or
+    // added it in a later version, which is why this only shows up on some
+    // browser/device combinations. Re-applying on visualViewport's own
+    // resize/scroll events keeps the bar's position synced to what's
+    // actually visible, not just to the scroll position.
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", handleScroll);
+    vv?.addEventListener("scroll", handleScroll);
+
     return () => {
       mq.removeEventListener("change", updateIsDesktop);
       window.removeEventListener("scroll", handleScroll);
+      vv?.removeEventListener("resize", handleScroll);
+      vv?.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -616,7 +633,7 @@ export default function Navbar({
 
       <nav
         ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,transform] duration-300 ease-out ${
+        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color,transform] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur

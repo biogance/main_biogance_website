@@ -41,11 +41,17 @@ function LoaderBar({ finishing }) {
         height: "3px",
         width: `${width}%`,
         background: "white",
-       
         zIndex: 99999,
         opacity: finishing ? 0 : 1,
         transition: finishing ? "width 0.2s ease-out, opacity 0.3s ease 0.2s" : "width 0.15s ease-out",
         pointerEvents: "none",
+        // Matches the GPU-layer hints already on the announcement bar in
+        // Navbar.jsx — this bar's width repaints every ~150ms while
+        // position:fixed at the very top, the same combination prone to
+        // flickering during iOS Safari's toolbar collapse/expand animation.
+        transform: "translateZ(0)",
+        WebkitBackfaceVisibility: "hidden",
+        backfaceVisibility: "hidden",
       }}
     />
   );
