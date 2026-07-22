@@ -3577,6 +3577,20 @@ function Checkout({ cartItems = [] }) {
     };
   }, []);
 
+  // PageLoader's /web/splash call is async — on a genuinely first-ever visit
+  // (nothing cached in localStorage yet), it can still be in flight when this
+  // component mounts, so the one-time prefillFromSplash() call above finds
+  // nothing. Without this, the fields only ever populate by the accident of
+  // a later reload finding the *previous* attempt's data already cached —
+  // which is exactly the "works after 2-3 hard refreshes" symptom. Re-running
+  // once PageLoader actually finishes fetching closes that gap.
+  useEffect(() => {
+    window.addEventListener("splashDataReady", prefillFromSplash);
+    return () => {
+      window.removeEventListener("splashDataReady", prefillFromSplash);
+    };
+  }, []);
+
   // Delivery
   const [street, setStreet] = useState("");
   const [postcode, setPostcode] = useState("");

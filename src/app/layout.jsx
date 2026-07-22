@@ -6,6 +6,22 @@ import { Suspense } from "react";
 import { Toaster } from 'react-hot-toast';
 import PageLoader from "../Components/PageLoader";
 
+// Safari (iOS 15+) tints its own address-bar/toolbar chrome to match the
+// page's top color — sampled from this, not from any DOM element. Without
+// it, Safari falls back to a default (often white) while the real top of
+// the page is the black announcement bar (see Navbar.jsx), which is exactly
+// the mismatch that shows as a white sliver right at the toolbar boundary
+// only in Safari (Chrome for iOS doesn't do this toolbar-tinting at all,
+// which is why this never showed up there).
+export const viewport = {
+  // A custom viewport export replaces Next's default entirely rather than
+  // merging with it, so width/initialScale must be repeated here — omitting
+  // them would silently break mobile responsive scaling site-wide.
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#111111",
+};
+
 export const metadata = {
   title: "Biogance - Biogance",
   description: "Pioneers in Natural Pet Care",
