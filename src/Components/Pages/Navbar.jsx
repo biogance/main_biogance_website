@@ -87,12 +87,12 @@ export default function Navbar({
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
       if (announcementBarRef.current) {
-        announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
+        announcementBarRef.current.style.transform = `translate3d(0, -${scrollOffset}px, 0)`;
       }
       if (navElRef.current) {
         navElRef.current.style.transform = isDesktopRef.current
           ? ""
-          : `translateY(-${scrollOffset}px)`;
+          : `translate3d(0, -${scrollOffset}px, 0)`;
       }
     };
 
@@ -286,11 +286,7 @@ export default function Navbar({
 
   const activeHeaders = headers;
 
-  // TEMPORARY TEST — rotation disabled to isolate whether the iOS Safari
-  // white-line flicker is tied to this every-4s text-swap animation rather
-  // than scroll. Revert this `if (true) return;` once tested.
   useEffect(() => {
-    if (true) return;
     if (annPaused) return;
     const interval = setInterval(() => {
       const next = (annIndex + 1) % activeHeaders.length;
@@ -377,10 +373,12 @@ export default function Navbar({
 
   return (
     <>
-      {/* iOS Safari sub-pixel gap cover: a fixed 2px black strip at the very top of the viewport,
+      {/* iOS Safari sub-pixel gap cover: a fixed 4px black strip at the very top of the viewport,
           hidden behind the navbar elements (z-index 49), which guarantees that any compositing or
-          rounding errors at y=0 reveal black instead of the white body background. */}
-      <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#111] z-[49] pointer-events-none lg:hidden" />
+          rounding errors at y=0 reveal black instead of the white body background.
+          We apply transform-gpu and WebKit backface visibility settings to promote this element
+          to the GPU layer so that Safari composites it in sync with the hardware-accelerated elements. */}
+      <div className="fixed top-0 left-0 right-0 h-[4px] bg-[#111] z-[49] pointer-events-none lg:hidden transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]" />
 
       <div
         ref={announcementBarRef}
@@ -396,14 +394,48 @@ export default function Navbar({
         className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[140px] pt-[100px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
       >
         <div className="relative h-full overflow-hidden">
-          {/* TEMPORARY TEST — hardcoded static text, bypassing the rotation/
-              slide-animation render entirely, to isolate whether that
-              every-4s animation is contributing to the iOS Safari white-line
-              flicker independent of scroll. Revert to the {[annIndex,
-              nextIndex].map(...)} block above once tested. */}
-          <p className="absolute inset-0 flex items-center justify-center font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10">
-            <span>Testing Slider</span>
-          </p>
+          {[annIndex, nextIndex].map((idx, pos) => {
+            const h = activeHeaders[idx] || activeHeaders[0];
+            if (!h) return null;
+            const isNoAction = h.type === "no_action";
+            const isClickable = h.type === "bundle" || h.type === "text";
+            return (
+              <p
+                key={pos}
+                style={pos === 0 ? currentStyle : nextStyle}
+                className="absolute inset-0 flex items-center justify-center font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
+              >
+                <span
+                  onMouseEnter={() => setAnnPaused(true)}
+                  onMouseLeave={() => setAnnPaused(false)}
+                  onClick={() => handleHeaderClick(h)}
+                  style={{
+                    cursor: isClickable ? "pointer" : "default",
+                    textDecoration: "none",
+                  }}
+                  onMouseOver={
+                    isClickable
+                      ? (e) => {
+                          e.currentTarget.style.textDecoration = "underline";
+                        }
+                      : undefined
+                  }
+                  onMouseOut={
+                    isClickable
+                      ? (e) => {
+                          e.currentTarget.style.textDecoration = "none";
+                        }
+                      : undefined
+                  }
+                >
+                  {h.title}
+                </span>
+                {h.is_icon && (
+                  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+                )}
+              </p>
+            );
+          })}
         </div>
       </div>
 
