@@ -176,7 +176,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
               {t("share")}
             </h2>
             {title && (
-              <p className="text-xs text-gray-400 mt-1 sm:line-clamp-1 leading-snug">
+              <p className="text-xs text-gray-400 mt-1 leading-snug">
                 {title}
               </p>
             )}
@@ -191,7 +191,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
         </div>
 
         {/* ── Copy link ── */}
-        <div className="px-6 pt-5 pb-4">
+        <div className="px-6 pt-2 pb-4">
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
             {t("copyLink")}
           </p>
