@@ -447,7 +447,7 @@ const CardBadgeShimmer = () => (
 // ratio) — match that exactly so cards don't jump taller once data loads.
 const SkeletonCard = ({ badge = false }) => (
   <div
-    className="w-full h-140 bg-[#f3f3f3] relative overflow-hidden"
+    className="w-full h-[220px] sm:h-[280px] bg-[#f3f3f3] relative overflow-hidden"
     aria-hidden
   >
     <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 shimmer-anim" />
@@ -1579,7 +1579,7 @@ export default function FilterProducts() {
         {isSearching ? (
           <>
             <div className="grid grid-cols-2 gap-[3px] md:grid-cols-3 lg:hidden">
-              {Array.from({ length: 9 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} badge={i < 3} />
               ))}
             </div>
@@ -1598,13 +1598,14 @@ export default function FilterProducts() {
                   {mobileFeaturedBlockA.length > 0 && (
                     <div className="grid grid-cols-2 gap-[3px]">
                       {mobileFeaturedBlockA.map((p, i) => (
-                        <div key={p.id} className="w-full">
+                        <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
                           <LandingCards
                             product={p}
                             showNav={true}
                             index={i}
                             compact={true}
                             compactButtons={true}
+                            fillHeight
                           />
                         </div>
                       ))}
@@ -1612,13 +1613,14 @@ export default function FilterProducts() {
                   )}
 
                   {featuredRow1Video && (
-                    <div className="w-full">
+                    <div className="w-full h-[260px] sm:h-[340px]">
                       <LandingCards
                         product={featuredRow1Video}
                         showNav={true}
                         index={8}
                         compact={false}
                         compactButtons={true}
+                        fillHeight
                         forceVideo
                       />
                     </div>
@@ -1627,13 +1629,14 @@ export default function FilterProducts() {
                   {mobileFeaturedBlockB.length > 0 && (
                     <div className="grid grid-cols-2 gap-[3px]">
                       {mobileFeaturedBlockB.map((p, i) => (
-                        <div key={p.id} className="w-full">
+                        <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
                           <LandingCards
                             product={p}
                             showNav={true}
                             index={i + 10}
                             compact={true}
                             compactButtons={true}
+                            fillHeight
                           />
                         </div>
                       ))}
@@ -1641,13 +1644,14 @@ export default function FilterProducts() {
                   )}
 
                   {featuredRow2Video && (
-                    <div className="w-full">
+                    <div className="w-full h-[260px] sm:h-[340px]">
                       <LandingCards
                         product={featuredRow2Video}
                         showNav={true}
                         index={9}
                         compact={false}
                         compactButtons={true}
+                        fillHeight
                         forceVideo
                       />
                     </div>
@@ -1838,24 +1842,26 @@ export default function FilterProducts() {
               style={{ overflowAnchor: "none", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
             >
               {mobileFeaturedLeftover.map((p, i) => (
-                <div key={p.id} className="w-full">
+                <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
                   <LandingCards
                     product={p}
                     showNav={true}
                     index={i + 4}
                     compact={true}
                     compactButtons={true}
+                    fillHeight
                   />
                 </div>
               ))}
               {restProducts.map((p, i) => (
-                <div key={p.id} className="w-full" data-rest-index={i}>
+                <div key={p.id} className="w-full h-[220px] sm:h-[280px]" data-rest-index={i}>
                   <LandingCards
                     product={p}
                     showNav={true}
                     index={restStartIndex + i}
                     compact={true}
                     compactButtons={true}
+                    fillHeight
                   />
                 </div>
               ))}
