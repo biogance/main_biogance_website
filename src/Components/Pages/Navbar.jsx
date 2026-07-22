@@ -389,7 +389,7 @@ export default function Navbar({
         // exactly the transition-time white line seen at that boundary in
         // screen recordings. Baking the extra region into the same box
         // guarantees it moves/composites as one paint operation.
-        className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[140px] pt-[100px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+        className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[142px] pt-[100px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
       >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
