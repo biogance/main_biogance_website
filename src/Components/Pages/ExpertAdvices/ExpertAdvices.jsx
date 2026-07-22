@@ -1236,7 +1236,7 @@ function ExpertAdvices() {
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={tr("searchPlaceholder")}
-            className="h-11 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+            className="h-11 mb-2 w-full border border-gray-200 bg-gray-50/60 pl-11 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
           {searchInput && (
             <button
