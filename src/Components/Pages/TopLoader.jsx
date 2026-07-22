@@ -93,7 +93,7 @@ export function RouteTopLoader() {
       finishTimer.current = setTimeout(() => {
         triggerFinish();
       }, 10000);
-    }, 50);
+    }, 120);
   }, [triggerFinish]);
 
   // finish on route change
