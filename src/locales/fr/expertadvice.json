@@ -44,6 +44,7 @@
   "shareVia": "ou partager via",
   "sectionLabels": {
     "recommended": "Recommandé pour votre animal",
+    "recommendedShort": "Recommandé",
     "trending": "Tendances",
     "mostLiked": "Les plus aimés",
     "recentlyAdded": "Récemment ajoutés",

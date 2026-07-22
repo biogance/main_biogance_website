@@ -44,6 +44,7 @@
   "shareVia": "or share via",
   "sectionLabels": {
     "recommended": "Recommended For Your Pet",
+    "recommendedShort": "Recommended",
     "trending": "Trending",
     "mostLiked": "Most Liked",
     "recentlyAdded": "Recently Added",
