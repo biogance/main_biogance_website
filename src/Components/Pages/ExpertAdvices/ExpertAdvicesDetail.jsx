@@ -35,6 +35,15 @@ const TYPE_LABEL_KEYS = {
   pet: "sectionLabels.petBlogs",
 };
 
+// Shorter labels used on mobile where space is limited.
+const TYPE_LABEL_SHORT_KEYS = {
+  recommended: "sectionLabels.recommendedShort",
+  trending: "sectionLabels.trending",
+  like: "sectionLabels.mostLiked",
+  recent: "sectionLabels.recentlyAdded",
+  pet: "sectionLabels.petBlogs",
+};
+
 function getAuthHeaders() {
   try {
     const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
@@ -192,7 +201,8 @@ function MoreAdvicesRow({ items, isFr, backInfo, filterLabel }) {
   className="inline-flex items-start sm:items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase text-gray-900 hover:text-gray-500 transition-colors mb-3 cursor-pointer bg-transparent border-none p-0 text-left"
 >
      <FaArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 mt-0.5 sm:mt-0" />
-  {t("backTo", { label: backInfo.label })}
+  <span className="hidden sm:inline">{t("backTo", { label: backInfo.label })}</span>
+  <span className="sm:hidden">{t("backTo", { label: backInfo.shortLabel })}</span>
 </button>
       <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
             {t("moreExpertAdvices")}
@@ -284,9 +294,13 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   const backTypeLabel = storedBackInfo?.typeKey
     ? t(TYPE_LABEL_KEYS[storedBackInfo.typeKey] || "articles")
     : "";
+  const backShortTypeLabel = storedBackInfo?.typeKey
+    ? t(TYPE_LABEL_SHORT_KEYS[storedBackInfo.typeKey] || "articles")
+    : "";
   const backInfo = {
     url: storedBackInfo?.url ?? "/advices",
     label: backTypeLabel ? `${backTypeLabel} ${t("advicesSuffix")}` : t("advicesSuffix"),
+    shortLabel: backShortTypeLabel ? `${backShortTypeLabel} ${t("advicesSuffix")}` : t("advicesSuffix"),
   };
 
   const [blog, setBlog] = useState(null);
@@ -624,7 +638,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 hover:text-gray-500 transition-colors cursor-pointer bg-transparent border-none p-0"
               >
                 <FaArrowLeft className="w-3.5 h-3.5" />
-                {t("backTo", { label: backInfo.label })}
+                <span className="hidden sm:inline">{t("backTo", { label: backInfo.label })}</span>
+                <span className="sm:hidden">{t("backTo", { label: backInfo.shortLabel })}</span>
               </button>
               <button
                 type="button"
