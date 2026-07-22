@@ -73,59 +73,33 @@ export default function Navbar({
   const navElRef = useRef(null);
   const isDesktopRef = useRef(true);
 
-  // Binary show/hide (applied straight to the DOM, no React state, so
-  // scrolling never triggers a navbar re-render) instead of continuously
-  // recalculating a translateY tied to window.scrollY on every scroll tick.
-  // The old continuous version was, by construction, perpetually racing
-  // frame-by-frame against iOS Safari's own address-bar collapse animation
-  // (which resizes the visual viewport independently of window.scrollY) —
-  // there's no way to guarantee two independent per-frame animations stay in
-  // lockstep, and that race is exactly what showed up as a white flash at
-  // the top edge while scrolling (mobile-only, since this hide-on-scroll
-  // effect is a no-op on desktop — isDesktopRef forces the offset to 0 —
-  // which matches it never being reported there). A one-time snap toggle,
-  // with the actual slide handled by the existing CSS transition, has
-  // nothing left to desync: it only touches the DOM on the rare frame where
-  // the threshold is actually crossed, not on every scroll event.
+  // Scroll-linked position is applied straight to the DOM (no React state),
+  // so scrolling never triggers a re-render of the whole navbar tree — doing
+  // that every animation frame was competing with native sticky positioning
+  // on the main thread and showing up as jitter on content-heavy pages.
   useEffect(() => {
-    const COLLAPSE_AT = ANNOUNCEMENT_HEIGHT;
-    const EXPAND_AT = 4;
-    const collapsedRef = { current: false };
+    const lastOffsetRef = { current: -1 };
 
-    const applyState = (collapsed, force = false) => {
-      if (!force && collapsed === collapsedRef.current) return;
-      collapsedRef.current = collapsed;
-      const offset = isDesktopRef.current
+    const applyOffset = (force = false) => {
+      const scrollOffset = isDesktopRef.current
         ? 0
-        : collapsed
-          ? ANNOUNCEMENT_HEIGHT
-          : 0;
+        : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
+      if (!force && scrollOffset === lastOffsetRef.current) return;
+      lastOffsetRef.current = scrollOffset;
       if (announcementBarRef.current) {
-        announcementBarRef.current.style.transform = `translateY(-${offset}px)`;
+        announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
       }
       if (navElRef.current) {
         navElRef.current.style.transform = isDesktopRef.current
           ? ""
-          : `translateY(-${offset}px)`;
+          : `translateY(-${scrollOffset}px)`;
       }
-    };
-
-    const evaluate = (force = false) => {
-      if (isDesktopRef.current) {
-        applyState(false, force);
-        return;
-      }
-      const y = window.scrollY;
-      let collapsed = collapsedRef.current;
-      if (collapsed && y <= EXPAND_AT) collapsed = false;
-      else if (!collapsed && y >= COLLAPSE_AT) collapsed = true;
-      applyState(collapsed, force);
     };
 
     const mq = window.matchMedia("(min-width: 1024px)");
     const updateIsDesktop = () => {
       isDesktopRef.current = mq.matches;
-      evaluate(true);
+      applyOffset(true);
     };
     updateIsDesktop();
     mq.addEventListener("change", updateIsDesktop);
@@ -135,15 +109,21 @@ export default function Navbar({
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(() => {
-        evaluate();
+        applyOffset();
         ticking = false;
       });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", handleScroll);
+    vv?.addEventListener("scroll", handleScroll);
+
     return () => {
       mq.removeEventListener("change", updateIsDesktop);
       window.removeEventListener("scroll", handleScroll);
+      vv?.removeEventListener("resize", handleScroll);
+      vv?.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -395,7 +375,16 @@ export default function Navbar({
     <>
       <div
         ref={announcementBarRef}
-        className="fixed top-0 left-0 right-0 z-[60] w-full bg-[#111] text-white h-[40px] transition-transform duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] shadow-[0_-100px_0_0_#111]"
+        // top/padding-top/height (instead of top-0 + a -100px box-shadow)
+        // extend this element's own *painted box* 100px above the visible
+        // 40px, covering the seam between iOS's status-bar/Dynamic-Island
+        // area and this bar. A box-shadow is a separate render pass from the
+        // element's own paint, and during an active `transform` animation
+        // Safari can composite the shadow a frame behind the element —
+        // exactly the transition-time white line seen at that boundary in
+        // screen recordings. Baking the extra region into the same box
+        // guarantees it moves/composites as one paint operation.
+        className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[140px] pt-[100px] transition-transform duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
       >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
