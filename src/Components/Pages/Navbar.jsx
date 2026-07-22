@@ -73,33 +73,59 @@ export default function Navbar({
   const navElRef = useRef(null);
   const isDesktopRef = useRef(true);
 
-  // Scroll-linked position is applied straight to the DOM (no React state),
-  // so scrolling never triggers a re-render of the whole navbar tree — doing
-  // that every animation frame was competing with native sticky positioning
-  // on the main thread and showing up as jitter on content-heavy pages.
+  // Binary show/hide (applied straight to the DOM, no React state, so
+  // scrolling never triggers a navbar re-render) instead of continuously
+  // recalculating a translateY tied to window.scrollY on every scroll tick.
+  // The old continuous version was, by construction, perpetually racing
+  // frame-by-frame against iOS Safari's own address-bar collapse animation
+  // (which resizes the visual viewport independently of window.scrollY) —
+  // there's no way to guarantee two independent per-frame animations stay in
+  // lockstep, and that race is exactly what showed up as a white flash at
+  // the top edge while scrolling (mobile-only, since this hide-on-scroll
+  // effect is a no-op on desktop — isDesktopRef forces the offset to 0 —
+  // which matches it never being reported there). A one-time snap toggle,
+  // with the actual slide handled by the existing CSS transition, has
+  // nothing left to desync: it only touches the DOM on the rare frame where
+  // the threshold is actually crossed, not on every scroll event.
   useEffect(() => {
-    const lastOffsetRef = { current: -1 };
+    const COLLAPSE_AT = ANNOUNCEMENT_HEIGHT;
+    const EXPAND_AT = 4;
+    const collapsedRef = { current: false };
 
-    const applyOffset = (force = false) => {
-      const scrollOffset = isDesktopRef.current
+    const applyState = (collapsed, force = false) => {
+      if (!force && collapsed === collapsedRef.current) return;
+      collapsedRef.current = collapsed;
+      const offset = isDesktopRef.current
         ? 0
-        : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
-      if (!force && scrollOffset === lastOffsetRef.current) return;
-      lastOffsetRef.current = scrollOffset;
+        : collapsed
+          ? ANNOUNCEMENT_HEIGHT
+          : 0;
       if (announcementBarRef.current) {
-        announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
+        announcementBarRef.current.style.transform = `translateY(-${offset}px)`;
       }
       if (navElRef.current) {
         navElRef.current.style.transform = isDesktopRef.current
           ? ""
-          : `translateY(-${scrollOffset}px)`;
+          : `translateY(-${offset}px)`;
       }
+    };
+
+    const evaluate = (force = false) => {
+      if (isDesktopRef.current) {
+        applyState(false, force);
+        return;
+      }
+      const y = window.scrollY;
+      let collapsed = collapsedRef.current;
+      if (collapsed && y <= EXPAND_AT) collapsed = false;
+      else if (!collapsed && y >= COLLAPSE_AT) collapsed = true;
+      applyState(collapsed, force);
     };
 
     const mq = window.matchMedia("(min-width: 1024px)");
     const updateIsDesktop = () => {
       isDesktopRef.current = mq.matches;
-      applyOffset(true);
+      evaluate(true);
     };
     updateIsDesktop();
     mq.addEventListener("change", updateIsDesktop);
@@ -109,32 +135,15 @@ export default function Navbar({
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(() => {
-        applyOffset();
+        evaluate();
         ticking = false;
       });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // iOS Safari's own address bar collapses/expands *during* a normal
-    // scroll (not just on overscroll-bounce past the boundary), which
-    // resizes the visual viewport independently of window.scrollY. Our
-    // translateY here is driven purely off scrollY, so for a frame or two
-    // during that native toolbar animation the two can fall out of sync —
-    // showing up as the fixed bar's edge visibly snapping/flashing. Other
-    // iOS browsers (e.g. Chrome) either don't have this collapsing chrome or
-    // added it in a later version, which is why this only shows up on some
-    // browser/device combinations. Re-applying on visualViewport's own
-    // resize/scroll events keeps the bar's position synced to what's
-    // actually visible, not just to the scroll position.
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", handleScroll);
-    vv?.addEventListener("scroll", handleScroll);
-
     return () => {
       mq.removeEventListener("change", updateIsDesktop);
       window.removeEventListener("scroll", handleScroll);
-      vv?.removeEventListener("resize", handleScroll);
-      vv?.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
