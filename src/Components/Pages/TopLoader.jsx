@@ -111,10 +111,14 @@ export function RouteTopLoader() {
     let touchStartY = null;
     let touchStartX = null;
     let touchMoved = false;
+    let scrollStartY = 0;
+    let touchStartTime = 0;
 
     const onTouchStart = (e) => {
       touchStartY = e.touches?.[0]?.clientY ?? null;
       touchStartX = e.touches?.[0]?.clientX ?? null;
+      scrollStartY = window.scrollY;
+      touchStartTime = Date.now();
       touchMoved = false;
     };
     const onTouchMove = (e) => {
@@ -130,7 +134,12 @@ export function RouteTopLoader() {
     };
 
     const onLinkClick = (e) => {
-      if (touchMoved) return;
+      const scrollDiff = Math.abs(window.scrollY - scrollStartY);
+      const timeDiff = Date.now() - touchStartTime;
+      if (touchMoved || scrollDiff > 5 || (touchStartY !== null && timeDiff > 300)) {
+        return;
+      }
+
       const anchor = e.target.closest("a[href]");
       if (!anchor) return;
       const href = anchor.getAttribute("href");
@@ -159,10 +168,14 @@ export function RouteTopLoader() {
     // handlers across the app (article cards, product cards, etc.) — not
     // just <a> tags. Those aren't covered by onLinkClick's anchor check
     // above, so an iOS ghost-click firing one of them after a scroll still
-    // got through and flashed the bar. Same touchMoved guard here closes
+    // got through and flashed the bar. Same touchMoved/scrollDiff guard here closes
     // that gap.
     const onStart = () => {
-      if (touchMoved) return;
+      const scrollDiff = Math.abs(window.scrollY - scrollStartY);
+      const timeDiff = Date.now() - touchStartTime;
+      if (touchMoved || scrollDiff > 5 || (touchStartY !== null && timeDiff > 300)) {
+        return;
+      }
       triggerStart();
     };
 

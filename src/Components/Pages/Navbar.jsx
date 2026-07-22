@@ -392,25 +392,9 @@ export default function Navbar({
 
   return (
     <>
-      {/* iOS Safari sub-pixel gap cover: a fixed 4px black strip at the very top of the viewport,
-          hidden behind the navbar elements (z-index 49), which guarantees that any compositing or
-          rounding errors at y=0 reveal black instead of the white body background.
-          We apply transform-gpu and WebKit backface visibility settings to promote this element
-          to the GPU layer so that Safari composites it in sync with the hardware-accelerated elements. */}
-      <div className="fixed top-0 left-0 right-0 h-[4px] bg-[#111] z-[49] pointer-events-none lg:hidden transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]" />
-
       <div
         ref={announcementBarRef}
-        // top/padding-top/height (instead of top-0 + a -100px box-shadow)
-        // extend this element's own *painted box* 100px above the visible
-        // 40px, covering the seam between iOS's status-bar/Dynamic-Island
-        // area and this bar. A box-shadow is a separate render pass from the
-        // element's own paint, and during an active `transform` animation
-        // Safari can composite the shadow a frame behind the element —
-        // exactly the transition-time white line seen at that boundary in
-        // screen recordings. Baking the extra region into the same box
-        // guarantees it moves/composites as one paint operation.
-        className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[140px] pt-[100px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+        className="relative z-[60] w-full bg-[#111] text-white h-[40px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
       >
         <div className="relative h-full overflow-hidden">
           {[annIndex, nextIndex].map((idx, pos) => {
@@ -657,7 +641,7 @@ export default function Navbar({
 
       <nav
         ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
+        className={`z-50 h-16 relative w-full transition-[color,background-color,border-color] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
           isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
             ? "bg-white"
             : !isVideoVisible && scrolledBlur
