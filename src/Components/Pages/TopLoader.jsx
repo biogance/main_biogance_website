@@ -16,20 +16,24 @@ function LoaderBar({ finishing }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    let frameId;
     if (finishing) {
-      setWidth(100);
+      frameId = requestAnimationFrame(() => setWidth(100));
       clearInterval(timerRef.current);
-      return;
+      return () => cancelAnimationFrame(frameId);
     }
 
     let w = 10;
-    setWidth(w);
+    frameId = requestAnimationFrame(() => setWidth(w));
     timerRef.current = setInterval(() => {
       w += Math.random() * 10 + 2;
       if (w >= 90) { w = 90; clearInterval(timerRef.current); }
       setWidth(w);
     }, 150);
-    return () => clearInterval(timerRef.current);
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearInterval(timerRef.current);
+    };
   }, [finishing]);
 
   return (
@@ -94,7 +98,8 @@ export function RouteTopLoader() {
 
   // finish on route change
   useEffect(() => {
-    triggerFinish();
+    const frame = requestAnimationFrame(() => triggerFinish());
+    return () => cancelAnimationFrame(frame);
   }, [pathname, searchParams, triggerFinish]);
 
   // start on link click or manual event
@@ -104,16 +109,24 @@ export function RouteTopLoader() {
     // guard, that ghost click fires the loader bar for a moment on every
     // such scroll, which is the white line flashing at the top on iOS.
     let touchStartY = null;
+    let touchStartX = null;
     let touchMoved = false;
 
     const onTouchStart = (e) => {
       touchStartY = e.touches?.[0]?.clientY ?? null;
+      touchStartX = e.touches?.[0]?.clientX ?? null;
       touchMoved = false;
     };
     const onTouchMove = (e) => {
-      if (touchStartY == null) return;
+      if (touchStartY == null || touchStartX == null) return;
       const y = e.touches?.[0]?.clientY;
-      if (y != null && Math.abs(y - touchStartY) > 10) touchMoved = true;
+      const x = e.touches?.[0]?.clientX;
+      if (
+        (y != null && Math.abs(y - touchStartY) > 10) ||
+        (x != null && Math.abs(x - touchStartX) > 10)
+      ) {
+        touchMoved = true;
+      }
     };
 
     const onLinkClick = (e) => {
