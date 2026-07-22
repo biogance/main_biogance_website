@@ -502,7 +502,7 @@ export const LandingCards = ({
 
           {/* Title + Price / Add to Cart overlay */}
           <div
-            className={`absolute bottom-0 ${compactButtons ? "mb-3" : "mb-4"} left-0 right-0 px-3 py-2`}
+            className={`absolute bottom-0 ${compactButtons ? "mb-0 sm:mb-3" : "mb-0 sm:mb-4"} left-0 right-0 px-3 py-2`}
             style={{ zIndex: 7 }}
           >
             {/* Title + Price — hover pe hide (promoStyle mein hamesha hidden) */}
