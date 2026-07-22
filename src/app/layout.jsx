@@ -19,6 +19,7 @@ export const viewport = {
   // them would silently break mobile responsive scaling site-wide.
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#111111",
 };
 

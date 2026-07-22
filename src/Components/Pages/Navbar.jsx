@@ -81,18 +81,37 @@ export default function Navbar({
     const lastOffsetRef = { current: -1 };
 
     const applyOffset = (force = false) => {
-      const scrollOffset = isDesktopRef.current
-        ? 0
-        : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
-      if (!force && scrollOffset === lastOffsetRef.current) return;
-      lastOffsetRef.current = scrollOffset;
+      if (isDesktopRef.current) {
+        if (announcementBarRef.current) {
+          announcementBarRef.current.style.transform = "";
+          announcementBarRef.current.style.transition = "";
+        }
+        if (navElRef.current) {
+          navElRef.current.style.transform = "";
+          navElRef.current.style.transition = "";
+        }
+        lastOffsetRef.current = -1;
+        return;
+      }
+
+      // On mobile: state-based transition to avoid pixel-by-pixel jitter
+      const isScrolled = window.scrollY >= ANNOUNCEMENT_HEIGHT;
+      const targetOffset = isScrolled ? ANNOUNCEMENT_HEIGHT : 0;
+
+      if (!force && targetOffset === lastOffsetRef.current) return;
+      lastOffsetRef.current = targetOffset;
+
+      const transitionStyle = force
+        ? "none"
+        : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+
       if (announcementBarRef.current) {
-        announcementBarRef.current.style.transform = `translate3d(0, -${scrollOffset}px, 0)`;
+        announcementBarRef.current.style.transition = transitionStyle;
+        announcementBarRef.current.style.transform = `translate3d(0, -${targetOffset}px, 0)`;
       }
       if (navElRef.current) {
-        navElRef.current.style.transform = isDesktopRef.current
-          ? ""
-          : `translate3d(0, -${scrollOffset}px, 0)`;
+        navElRef.current.style.transition = transitionStyle;
+        navElRef.current.style.transform = `translate3d(0, -${targetOffset}px, 0)`;
       }
     };
 
