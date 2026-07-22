@@ -69,8 +69,24 @@ export default function Navbar({
 
   // Announcement bar height in px — also the max scroll distance it travels.
   const ANNOUNCEMENT_HEIGHT = 40;
-  const announcementBarRef = useRef(null);
-  const navElRef = useRef(null);
+
+  // FIX (iOS Safari white-line flicker on scroll):
+  // Previously the announcement bar and the nav were TWO separate
+  // `position: fixed` elements, each receiving its own `style.transform`
+  // write on every scroll tick. Even though both writes happened in the
+  // same JS tick with identical values, iOS Safari (WebKit) composites
+  // independent fixed/GPU layers on its own schedule during momentum
+  // scrolling — there was no guarantee both layers painted on the exact
+  // same frame. A single frame of desync between them opened a hairline
+  // gap, and since the page background sits behind both layers, that gap
+  // flashed as a white line while scrolling.
+  //
+  // Fix: announcement bar + nav now live inside ONE shared fixed wrapper,
+  // and only the wrapper receives the transform. They're part of the same
+  // paint/composite layer, so they physically cannot desync anymore —
+  // there's only one element being moved instead of two being kept in
+  // sync.
+  const headerWrapperRef = useRef(null);
   const isDesktopRef = useRef(true);
 
   // Scroll-linked position is applied straight to the DOM (no React state),
@@ -86,11 +102,12 @@ export default function Navbar({
         : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
-      if (announcementBarRef.current) {
-        announcementBarRef.current.style.transform = `translateY(-${scrollOffset}px)`;
-      }
-      if (navElRef.current) {
-        navElRef.current.style.transform = isDesktopRef.current
+
+      // Single element, single transform write — see note on
+      // headerWrapperRef above for why this replaces the old two-element
+      // (announcementBarRef + navElRef) approach.
+      if (headerWrapperRef.current) {
+        headerWrapperRef.current.style.transform = isDesktopRef.current
           ? ""
           : `translateY(-${scrollOffset}px)`;
       }
@@ -378,63 +395,364 @@ export default function Navbar({
           rounding errors at y=0 reveal black instead of the white body background. */}
       <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#111] z-[49] pointer-events-none lg:hidden" />
 
+      {/* Shared fixed wrapper — announcement bar + nav now live in ONE
+          transformed layer instead of two independently-transformed fixed
+          elements. This is the actual fix for the iOS Safari white-line
+          flicker on scroll: with a single element being moved, WebKit
+          cannot composite the two pieces on different frames, so the
+          hairline desync gap that used to flash white can no longer open. */}
       <div
-        ref={announcementBarRef}
-        // top/padding-top/height (instead of top-0 + a -100px box-shadow)
-        // extend this element's own *painted box* 100px above the visible
-        // 40px, covering the seam between iOS's status-bar/Dynamic-Island
-        // area and this bar. A box-shadow is a separate render pass from the
-        // element's own paint, and during an active `transform` animation
-        // Safari can composite the shadow a frame behind the element —
-        // exactly the transition-time white line seen at that boundary in
-        // screen recordings. Baking the extra region into the same box
-        // guarantees it moves/composites as one paint operation.
-        className="fixed top-[-100px] left-0 right-0 z-[60] w-full bg-[#111] text-white h-[140px] pt-[100px] transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+        ref={headerWrapperRef}
+        className="fixed top-[-100px] left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
-        <div className="relative h-full overflow-hidden">
-          {[annIndex, nextIndex].map((idx, pos) => {
-            const h = activeHeaders[idx] || activeHeaders[0];
-            if (!h) return null;
-            const isNoAction = h.type === "no_action";
-            const isClickable = h.type === "bundle" || h.type === "text";
-            return (
-              <p
-                key={pos}
-                style={pos === 0 ? currentStyle : nextStyle}
-                className="absolute inset-0 flex items-center justify-center font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
-              >
-                <span
-                  onMouseEnter={() => setAnnPaused(true)}
-                  onMouseLeave={() => setAnnPaused(false)}
-                  onClick={() => handleHeaderClick(h)}
-                  style={{
-                    cursor: isClickable ? "pointer" : "default",
-                    textDecoration: "none",
-                  }}
-                  onMouseOver={
-                    isClickable
-                      ? (e) => {
-                          e.currentTarget.style.textDecoration = "underline";
-                        }
-                      : undefined
-                  }
-                  onMouseOut={
-                    isClickable
-                      ? (e) => {
-                          e.currentTarget.style.textDecoration = "none";
-                        }
-                      : undefined
-                  }
+        <div
+          // top/padding-top/height (instead of top-0 + a -100px box-shadow)
+          // extend this element's own *painted box* 100px above the visible
+          // 40px, covering the seam between iOS's status-bar/Dynamic-Island
+          // area and this bar. A box-shadow is a separate render pass from the
+          // element's own paint, and during an active `transform` animation
+          // Safari can composite the shadow a frame behind the element —
+          // exactly the transition-time white line seen at that boundary in
+          // screen recordings. Baking the extra region into the same box
+          // guarantees it moves/composites as one paint operation.
+          className="w-full bg-[#111] text-white h-[140px] pt-[100px]"
+        >
+          <div className="relative h-full overflow-hidden">
+            {[annIndex, nextIndex].map((idx, pos) => {
+              const h = activeHeaders[idx] || activeHeaders[0];
+              if (!h) return null;
+              const isNoAction = h.type === "no_action";
+              const isClickable = h.type === "bundle" || h.type === "text";
+              return (
+                <p
+                  key={pos}
+                  style={pos === 0 ? currentStyle : nextStyle}
+                  className="absolute inset-0 flex items-center justify-center font-normal tracking-wide text-[11px] lg:text-[13px] text-center px-10"
                 >
-                  {h.title}
-                </span>
-                {h.is_icon && (
-                  <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
-                )}
-              </p>
-            );
-          })}
+                  <span
+                    onMouseEnter={() => setAnnPaused(true)}
+                    onMouseLeave={() => setAnnPaused(false)}
+                    onClick={() => handleHeaderClick(h)}
+                    style={{
+                      cursor: isClickable ? "pointer" : "default",
+                      textDecoration: "none",
+                    }}
+                    onMouseOver={
+                      isClickable
+                        ? (e) => {
+                            e.currentTarget.style.textDecoration = "underline";
+                          }
+                        : undefined
+                    }
+                    onMouseOut={
+                      isClickable
+                        ? (e) => {
+                            e.currentTarget.style.textDecoration = "none";
+                          }
+                        : undefined
+                    }
+                  >
+                    {h.title}
+                  </span>
+                  {h.is_icon && (
+                    <FaPlus className="inline mb-0.5 ml-1 shrink-0" />
+                  )}
+                </p>
+              );
+            })}
+          </div>
         </div>
+
+        <nav
+          className={`z-50 h-16 w-full transition-[color,background-color,border-color] duration-300 ease-out ${
+            isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
+              ? "bg-white"
+              : !isVideoVisible && scrolledBlur
+              ? "bg-white"
+              : !isVideoVisible
+              ? "bg-white"
+              : "bg-transparent"
+          } ${
+            (isNavHovered ||
+              isProductsOpen ||
+              isMobileMenuOpen ||
+              !isVideoVisible ||
+              bgWhite) &&
+            !isProductsOpen
+              ? "border-b border-gray-100"
+              : "border-b border-transparent"
+          }`}
+        >
+          <div className="w-full mx-auto px-4 sm:px-6 h-full">
+            <div
+              className="h-full grid items-center"
+              style={{ gridTemplateColumns: "1fr auto 1fr" }}
+            >
+              {/* LEFT: Navigation Links - Desktop Only */}
+              <div className="hidden lg:flex items-stretch gap-3 mt-2.5">
+                {/* Our Products - Hover Mega Menu */}
+                <div
+                  ref={productsRef}
+                  className="group relative h-full"
+                  onMouseEnter={() => {
+                    if (productsCloseTimer.current)
+                      clearTimeout(productsCloseTimer.current);
+                    setIsProductsOpen(true);
+                    handleNavMouseEnter();
+                  }}
+                  onMouseLeave={() => {
+                    productsCloseTimer.current = setTimeout(() => {
+                      setIsProductsOpen(false);
+                    }, 150);
+                    handleNavMouseLeave();
+                  }}
+                >
+                  <button className={navItemBase}>
+                    {t("ourProducts")}
+                    <span className={dotClass} />
+                  </button>
+
+                  <OurProducts
+                    isOpen={isProductsOpen}
+                    onClose={() => setIsProductsOpen(false)}
+                    categories={homeCategories}
+                    popular={popularProducts}
+                    onCartOpen={(product) => {
+                      setCartProduct(product);
+                      setIsCartOpen(true);
+                    }}
+                    onQuickViewOpen={(product) => {
+                      setQuickViewProduct(product);
+                      setIsQuickViewOpen(true);
+                    }}
+                  />
+                </div>
+
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.key}
+                    href={link.href}
+                    className={navItemBase}
+                    onMouseEnter={handleNavMouseEnter}
+                    onMouseLeave={handleNavMouseLeave}
+                  >
+                    {link.text}
+                    <span className={dotClass} />
+                  </Link>
+                ))}
+              </div>
+
+              {/* Mobile Menu Button + Search - Mobile Only */}
+              <div className="flex items-center gap-1 lg:hidden">
+                <button
+                  onClick={handleMobileMenuToggle}
+                  className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
+                >
+                  {isMobileMenuOpen ? (
+                    <FiX className="w-6 h-6 cursor-pointer" />
+                  ) : (
+                    <FiMenu className="w-6 h-6 cursor-pointer" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className="p-2 text-black hover:text-gray-900 transition-transform active:scale-90 duration-200"
+                >
+                  <FiSearch
+                    className="w-5 h-5 cursor-pointer"
+                    strokeWidth={2.0}
+                  />
+                </button>
+              </div>
+
+              {/* CENTER: Logo */}
+              <div className="flex items-center justify-center">
+                <Link
+                  href="/"
+                  className="flex-shrink-0 cursor-pointer flex items-center"
+                >
+                  <ImageWithFallback
+                    src={logoImage}
+                    alt="Biogance Logo"
+                    className="h-7 sm:h-10"
+                  />
+                </Link>
+              </div>
+
+              {/* RIGHT: Icons */}
+
+              <div className="hidden lg:flex items-center justify-end gap-10 h-full">
+                <button
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className="flex items-center justify-center h-full text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+                >
+                  <FiSearch className="w-5 h-5" strokeWidth={2.0} />
+                </button>
+
+                {/* Language Dropdown */}
+                <div
+                  className="relative flex items-center h-full"
+                  ref={desktopLangRef}
+                >
+                  <button
+                    onClick={() =>
+                      setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
+                    }
+                    className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+                  >
+                    <span className="text-[14px]">
+                      {currentLanguage.shortLabel}/{currentLanguage.currency}
+                    </span>
+                    <FiChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isLanguageDropdownOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+
+                  {isLanguageDropdownOpen && (
+                    <div className="absolute top-full -mt-3 left-13 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
+                      {languages.map((lang) => {
+                        const isActive = !!(
+                          i18n.language && i18n.language.startsWith(lang.code)
+                        );
+                        return (
+                          <button
+                            key={lang.code}
+                            onClick={() => changeLanguage(lang.code)}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#111";
+                              e.currentTarget.style.color = "#fff";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (isActive) {
+                                e.currentTarget.style.backgroundColor = "#f3f3f3";
+                                e.currentTarget.style.color = "#111";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#fff";
+                                e.currentTarget.style.color = "#111";
+                              }
+                            }}
+                            style={{
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              padding: "9px 14px",
+                              fontSize: "13px",
+                              cursor: "pointer",
+                              backgroundColor: isActive ? "#f3f3f3" : "#fff",
+                              color: "#111",
+                              fontWeight: isActive ? 600 : 400,
+                              border: "none",
+                              transition: "background-color 0.15s, color 0.15s",
+                              fontFamily:
+                                "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                            }}
+                          >
+                            <span>{lang.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Login / Profile */}
+                {isLoggedIn ? (
+                  <Link
+                    href="/my-account"
+                    className="flex items-center h-full text-sm font-[500] text-[#1C1C1C]"
+                  >
+                    <span>{t("profile")}</span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="flex items-center h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+                  >
+                    <span>{t("login")}</span>
+                  </button>
+                )}
+
+                {/* Cart */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+                >
+                  <span className="uppercase">{t("cart") || "Cart"}</span>
+                  {cartCount > 0 ? (
+                    <div
+                      style={{
+                        height: "23px",
+                        width:
+                          cartCount >= 100
+                            ? "53px"
+                            : cartCount >= 10
+                              ? "33px"
+                              : "23px",
+
+                        marginLeft: "5px",
+                        borderRadius: "999px",
+                        backgroundColor: "#111",
+                        color: "#fff",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        boxSizing: "border-box",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        lineHeight: "24px",
+                      }}
+                    >
+                      {cartCount}
+                    </div>
+                  ) : (
+                    <span className="bg-black w-2 h-2 rounded-full" />
+                  )}
+                </button>
+              </div>
+
+              {/* Mobile right icons */}
+              <div className="flex lg:hidden items-center justify-end">
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative flex items-center p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer"
+                >
+                  {cartCount > 0 ? (
+                    <div
+                      style={{
+                        height: "23px",
+                        width:
+                          cartCount >= 100
+                            ? "53px"
+                            : cartCount >= 10
+                              ? "33px"
+                              : "23px",
+                        borderRadius: "999px",
+                        // paddingTop: "0.7px",
+                        // paddingRight: "0.2px",
+                        backgroundColor: "#111",
+                        color: "#fff",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        boxSizing: "border-box",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        lineHeight: "23px",
+                      }}
+                    >
+                      {cartCount}
+                    </div>
+                  ) : (
+                    <span className="bg-black w-2 h-2 rounded-full" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
       </div>
 
       {/* Text Modal — left side slide-in */}
@@ -634,298 +952,6 @@ export default function Navbar({
         onClick={handleMobileMenuToggle}
       />
 
-      <nav
-        ref={navElRef}
-        className={`z-50 h-16 fixed left-0 right-0 top-[40px] transition-[color,background-color,border-color] duration-300 ease-out transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] ${
-          isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite
-            ? "bg-white"
-            : !isVideoVisible && scrolledBlur
-            ? "bg-white"
-            : !isVideoVisible
-            ? "bg-white"
-            : "bg-transparent"
-        } ${
-          (isNavHovered ||
-            isProductsOpen ||
-            isMobileMenuOpen ||
-            !isVideoVisible ||
-            bgWhite) &&
-          !isProductsOpen
-            ? "border-b border-gray-100"
-            : "border-b border-transparent"
-        }`}
-      >
-        <div className="w-full mx-auto px-4 sm:px-6 h-full">
-          <div
-            className="h-full grid items-center"
-            style={{ gridTemplateColumns: "1fr auto 1fr" }}
-          >
-            {/* LEFT: Navigation Links - Desktop Only */}
-            <div className="hidden lg:flex items-stretch gap-3 mt-2.5">
-              {/* Our Products - Hover Mega Menu */}
-              <div
-                ref={productsRef}
-                className="group relative h-full"
-                onMouseEnter={() => {
-                  if (productsCloseTimer.current)
-                    clearTimeout(productsCloseTimer.current);
-                  setIsProductsOpen(true);
-                  handleNavMouseEnter();
-                }}
-                onMouseLeave={() => {
-                  productsCloseTimer.current = setTimeout(() => {
-                    setIsProductsOpen(false);
-                  }, 150);
-                  handleNavMouseLeave();
-                }}
-              >
-                <button className={navItemBase}>
-                  {t("ourProducts")}
-                  <span className={dotClass} />
-                </button>
-
-                <OurProducts
-                  isOpen={isProductsOpen}
-                  onClose={() => setIsProductsOpen(false)}
-                  categories={homeCategories}
-                  popular={popularProducts}
-                  onCartOpen={(product) => {
-                    setCartProduct(product);
-                    setIsCartOpen(true);
-                  }}
-                  onQuickViewOpen={(product) => {
-                    setQuickViewProduct(product);
-                    setIsQuickViewOpen(true);
-                  }}
-                />
-              </div>
-
-              {navLinks.map((link) => (
-                <Link
-                  key={link.key}
-                  href={link.href}
-                  className={navItemBase}
-                  onMouseEnter={handleNavMouseEnter}
-                  onMouseLeave={handleNavMouseLeave}
-                >
-                  {link.text}
-                  <span className={dotClass} />
-                </Link>
-              ))}
-            </div>
-
-            {/* Mobile Menu Button + Search - Mobile Only */}
-            <div className="flex items-center gap-1 lg:hidden">
-              <button
-                onClick={handleMobileMenuToggle}
-                className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
-              >
-                {isMobileMenuOpen ? (
-                  <FiX className="w-6 h-6 cursor-pointer" />
-                ) : (
-                  <FiMenu className="w-6 h-6 cursor-pointer" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className="p-2 text-black hover:text-gray-900 transition-transform active:scale-90 duration-200"
-              >
-                <FiSearch
-                  className="w-5 h-5 cursor-pointer"
-                  strokeWidth={2.0}
-                />
-              </button>
-            </div>
-
-            {/* CENTER: Logo */}
-            <div className="flex items-center justify-center">
-              <Link
-                href="/"
-                className="flex-shrink-0 cursor-pointer flex items-center"
-              >
-                <ImageWithFallback
-                  src={logoImage}
-                  alt="Biogance Logo"
-                  className="h-7 sm:h-10"
-                />
-              </Link>
-            </div>
-
-            {/* RIGHT: Icons */}
-
-            <div className="hidden lg:flex items-center justify-end gap-10 h-full">
-              <button
-                onClick={() => setIsSearchModalOpen(true)}
-                className="flex items-center justify-center h-full text-[#1C1C1C] cursor-pointer bg-transparent border-none"
-              >
-                <FiSearch className="w-5 h-5" strokeWidth={2.0} />
-              </button>
-
-              {/* Language Dropdown */}
-              <div
-                className="relative flex items-center h-full"
-                ref={desktopLangRef}
-              >
-                <button
-                  onClick={() =>
-                    setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
-                  }
-                  className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
-                >
-                  <span className="text-[14px]">
-                    {currentLanguage.shortLabel}/{currentLanguage.currency}
-                  </span>
-                  <FiChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      isLanguageDropdownOpen ? "rotate-180" : "rotate-0"
-                    }`}
-                  />
-                </button>
-
-                {isLanguageDropdownOpen && (
-                  <div className="absolute top-full -mt-3 left-13 -translate-x-1/2 bg-white text-black shadow-lg overflow-hidden min-w-[140px] cursor-pointer z-50">
-                    {languages.map((lang) => {
-                      const isActive = !!(
-                        i18n.language && i18n.language.startsWith(lang.code)
-                      );
-                      return (
-                        <button
-                          key={lang.code}
-                          onClick={() => changeLanguage(lang.code)}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "#111";
-                            e.currentTarget.style.color = "#fff";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (isActive) {
-                              e.currentTarget.style.backgroundColor = "#f3f3f3";
-                              e.currentTarget.style.color = "#111";
-                            } else {
-                              e.currentTarget.style.backgroundColor = "#fff";
-                              e.currentTarget.style.color = "#111";
-                            }
-                          }}
-                          style={{
-                            width: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            padding: "9px 14px",
-                            fontSize: "13px",
-                            cursor: "pointer",
-                            backgroundColor: isActive ? "#f3f3f3" : "#fff",
-                            color: "#111",
-                            fontWeight: isActive ? 600 : 400,
-                            border: "none",
-                            transition: "background-color 0.15s, color 0.15s",
-                            fontFamily:
-                              "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          }}
-                        >
-                          <span>{lang.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Login / Profile */}
-              {isLoggedIn ? (
-                <Link
-                  href="/my-account"
-                  className="flex items-center h-full text-sm font-[500] text-[#1C1C1C]"
-                >
-                  <span>{t("profile")}</span>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="flex items-center h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
-                >
-                  <span>{t("login")}</span>
-                </button>
-              )}
-
-              {/* Cart */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
-              >
-                <span className="uppercase">{t("cart") || "Cart"}</span>
-                {cartCount > 0 ? (
-                  <div
-                    style={{
-                      height: "23px",
-                      width:
-                        cartCount >= 100
-                          ? "53px"
-                          : cartCount >= 10
-                            ? "33px"
-                            : "23px",
-                      
-                      marginLeft: "5px",
-                      borderRadius: "999px",
-                      backgroundColor: "#111",
-                      color: "#fff",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      boxSizing: "border-box",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      lineHeight: "24px",
-                    }}
-                  >
-                    {cartCount}
-                  </div>
-                ) : (
-                  <span className="bg-black w-2 h-2 rounded-full" />
-                )}
-              </button>
-            </div>
-
-            {/* Mobile right icons */}
-            <div className="flex lg:hidden items-center justify-end">
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer"
-              >
-                {cartCount > 0 ? (
-                  <div
-                    style={{
-                      height: "23px",
-                      width:
-                        cartCount >= 100
-                          ? "53px"
-                          : cartCount >= 10
-                            ? "33px"
-                            : "23px",
-                      borderRadius: "999px",
-                      // paddingTop: "0.7px",
-                      // paddingRight: "0.2px",
-                      backgroundColor: "#111",
-                      color: "#fff",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      boxSizing: "border-box",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      lineHeight: "23px",
-                    }}
-                  >
-                    {cartCount}
-                  </div>
-                ) : (
-                  <span className="bg-black w-2 h-2 rounded-full" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Mobile Menu — full screen left slide-in modal */}
       <>
         {/* Backdrop */}
@@ -1058,7 +1084,7 @@ export default function Navbar({
                         background: isActive ? "#111" : "#f3f3f3",
                         color: isActive ? "#fff" : "#111",
                         border: "none",
-                       
+
                         padding: "6px 14px",
                         cursor: "pointer",
                       }}

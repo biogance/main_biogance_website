@@ -33,6 +33,7 @@ html, body {
    Matching it to that bar's color makes the gap invisible. */
 html {
   background: #111;
+  overscroll-behavior-y: none;
 }
 
 body {
