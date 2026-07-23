@@ -97,9 +97,20 @@ export default function Navbar({
     const lastOffsetRef = { current: -1 };
 
     const applyOffset = (force = false) => {
-      const scrollOffset = isDesktopRef.current
-        ? 0
-        : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT);
+      // Math.round() is the key extra fix here: on iOS Safari, window.scrollY
+      // returns FRACTIONAL values during momentum scrolling (e.g. 12.694px),
+      // not whole pixels like desktop browsers. Feeding that straight into
+      // translateY() forces WebKit to sub-pixel-round the transformed layer,
+      // and that rounding can land a hair differently for the layer's own
+      // paint vs. what's directly behind it — opening a hairline seam that
+      // flashes the white body background through. Rounding to a whole
+      // pixel before it ever reaches the transform removes the sub-pixel
+      // case entirely.
+      const scrollOffset = Math.round(
+        isDesktopRef.current
+          ? 0
+          : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT),
+      );
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
 
@@ -416,6 +427,16 @@ export default function Navbar({
           // screen recordings. Baking the extra region into the same box
           // guarantees it moves/composites as one paint operation.
           className="w-full bg-[#111] text-white h-[140px] pt-[100px]"
+          style={{
+            // Belt-and-suspenders on top of the Math.round() fix above: if
+            // any sub-pixel seam still manages to open between this black
+            // bar and the nav sitting right below it, this 1px box-shadow
+            // "bleeds" the same black color past this element's own bottom
+            // edge, overlapping into that seam — so worst case it flashes
+            // black (blending into the bar itself, invisible) instead of
+            // the white body background underneath.
+            boxShadow: "0 1px 0 0 #111",
+          }}
         >
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
