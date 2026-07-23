@@ -304,17 +304,21 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
   const router = useRouter();
   const { t: tr } = useTranslation("expertadvice");
 
-  const navigateToDetail = (item) => {
+  const getItemHref = (item) => {
     const keyword = sanitizeSeoKeyword(
       isFr
         ? item.french_seo_keyword || item.english_seo_keyboard
         : item.english_seo_keyboard || item.french_seo_keyword,
     );
+    return `/advices/${encodeURIComponent(keyword)}`;
+  };
+
+  const navigateToDetail = (item) => {
     const species = activeSpecies ? getBackPart(activeSpecies) : null;
     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
     try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}
     startTopLoader();
-    router.push(`/advices/${encodeURIComponent(keyword)}`);
+    router.push(getItemHref(item));
   };
   const scrollRef = useRef(null);
   const visibleCount = columns || 1;
@@ -386,10 +390,18 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
           className="flex gap-3 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => (
-            <div
+            <a
               key={item.id}
               data-card
-              onClick={() => navigateToDetail(item)}
+              href={getItemHref(item)}
+              onClick={(e) => {
+                // Ctrl/Cmd/Shift+click (and native middle-click) must fall
+                // through to the browser's own "open in new tab/window"
+                // behavior — only a plain left click runs the SPA navigation.
+                if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+                e.preventDefault();
+                navigateToDetail(item);
+              }}
               className="border border-gray-200 shrink-0 snap-start cursor-pointer group overflow-hidden flex flex-col"
               style={{
                 flexBasis: `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
@@ -418,7 +430,7 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
                 </p>
                 <HiOutlineArrowUpRight className="shrink-0 mt-0.5 -mr-0.5 text-gray-700 w-4 h-4" />
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
@@ -1085,9 +1097,19 @@ function ExpertAdvices() {
                   </span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => {
+              <a
+                href={`/advices/${encodeURIComponent(
+                  sanitizeSeoKeyword(
+                    isFr
+                      ? heroArticle.blog.french_seo_keyword ||
+                        heroArticle.blog.english_seo_keyboard
+                      : heroArticle.blog.english_seo_keyboard ||
+                        heroArticle.blog.french_seo_keyword,
+                  ),
+                )}`}
+                onClick={(e) => {
+                  if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+                  e.preventDefault();
                   const keyword = sanitizeSeoKeyword(
                     isFr
                       ? heroArticle.blog.french_seo_keyword ||
@@ -1103,9 +1125,7 @@ function ExpertAdvices() {
               >
                 {tr("readThisArticle")}
                 <HiOutlineArrowUpRight className="w-3.5 h-3.5" />
-              
-
-              </button>
+              </a>
             </div>
             <div className="hidden lg:block relative lg:w-1/2 h-[420px]">
               <div className="absolute inset-0 flex items-center justify-center">
@@ -1162,7 +1182,7 @@ function ExpertAdvices() {
 
           {/* ── Desktop filters (md and up) ── */}
           <div className="hidden md:block">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt- ">
               <div className="md:flex-1 md:min-w-0">
                 <ScrollableTabsRow
                   items={speciesList.map((cat) => ({
@@ -1188,7 +1208,7 @@ function ExpertAdvices() {
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-9 mb-1.5 w-full border border-gray-300 pl-9 pr-8 py-2 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  className="h-9 mb-1 w-full border border-gray-300 pl-9 pr-8 py-2 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
@@ -1354,17 +1374,28 @@ function ExpertAdvices() {
             <>
               <div className={CARD_GRID}>
                 {allArticles.map((a) => {
-                  const navigateToArticle = () => {
+                  const articleHref = (() => {
                     const keyword = sanitizeSeoKeyword(
                       isFr
                         ? a.french_seo_keyword || a.english_seo_keyboard
                         : a.english_seo_keyboard || a.french_seo_keyword,
                     );
+                    return `/advices/${encodeURIComponent(keyword)}`;
+                  })();
+                  const navigateToArticle = () => {
                     const species = activeSpecies ? getBackPart(activeSpecies) : null;
                     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
                     try { sessionStorage.setItem("adviceBack", JSON.stringify({ species, topics, url: "/advices" })); } catch {}
                     startTopLoader();
-                    router.push(`/advices/${encodeURIComponent(keyword)}`);
+                    router.push(articleHref);
+                  };
+                  // Ctrl/Cmd/Shift+click (and native middle-click) must fall
+                  // through to the browser's own "open in new tab/window"
+                  // behavior — only a plain left click runs the SPA navigation.
+                  const handleCardClick = (e) => {
+                    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+                    e.preventDefault();
+                    navigateToArticle();
                   };
                   const imgSrc = a.image
                     ? `${MEDIA_URL}${a.image}`
@@ -1375,8 +1406,9 @@ function ExpertAdvices() {
                   return (
                     <Fragment key={a.id}>
                       {/* Mobile (below md): same look as the Trending/Recommended cards */}
-                      <div
-                        onClick={navigateToArticle}
+                      <a
+                        href={articleHref}
+                        onClick={handleCardClick}
                         className="md:hidden border border-gray-200 cursor-pointer group overflow-hidden flex flex-col"
                       >
                         <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
@@ -1398,10 +1430,14 @@ function ExpertAdvices() {
                           </p>
                           <HiOutlineArrowUpRight className="shrink-0 mt-0.5 -mr-0.5 text-gray-700 w-4 h-4" />
                         </div>
-                      </div>
+                      </a>
 
                       {/* Desktop (md and up): unchanged existing look */}
-                      <div onClick={navigateToArticle} className="hidden md:block cursor-pointer group">
+                      <a
+                        href={articleHref}
+                        onClick={handleCardClick}
+                        className="hidden md:block cursor-pointer group"
+                      >
                         <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-200">
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
@@ -1431,7 +1467,7 @@ function ExpertAdvices() {
                             {tr("minShort", { time: a.reading_time || "0" })}
                           </span>
                         </div>
-                      </div>
+                      </a>
                     </Fragment>
                   );
                 })}

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTranslation, Trans } from "react-i18next";
 import { parseCountry, defaultCountries } from "react-international-phone";
@@ -32,6 +33,11 @@ import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import ModalPickLocation from "./ModalPickLocation";
 import ModalChangeAddress from "./ModalChangeAddress";
+
+// Simple, deliberately permissive shape check (something@something.tld) —
+// full RFC validation isn't the goal here, just catching obviously-missing
+// or malformed input before it reaches the backend.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Maps getPhoneValidationErrorCode's return value to a checkout.json key.
 const PHONE_ERROR_KEYS = {
@@ -242,7 +248,12 @@ const ChevronUp = () => (
 function CustomDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [windowStart, setWindowStart] = useState(1);
+  // Viewport-relative position for the portaled menu below — computed from
+  // the trigger button's own rect each time it opens.
+  const [menuRect, setMenuRect] = useState(null);
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
   const MAX = 100;
   const WINDOW = 10;
 
@@ -256,6 +267,10 @@ function CustomDropdown({ value, onChange }) {
   const openDropdown = () => {
     const idealStart = Math.max(1, Math.min(selectedQty - 4, MAX - WINDOW + 1));
     setWindowStart(idealStart);
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMenuRect({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+    }
     setIsOpen(true);
   };
 
@@ -274,7 +289,9 @@ function CustomDropdown({ value, onChange }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      const insideButton = dropdownRef.current?.contains(e.target);
+      const insideMenu = menuRef.current?.contains(e.target);
+      if (!insideButton && !insideMenu) {
         setIsOpen(false);
       }
     };
@@ -282,9 +299,27 @@ function CustomDropdown({ value, onChange }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // The cart items list this dropdown lives in scrolls internally (see
+  // CartScrollArea) — since the menu is portaled to <body> and positioned
+  // from a one-time getBoundingClientRect() snapshot, any scroll (the cart
+  // list itself, or the page) would leave it floating away from the button
+  // it belongs to. Closing on scroll is simpler and safer than continuously
+  // repositioning it.
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => setIsOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [isOpen]);
+
   return (
     <div className="relative inline-block" ref={dropdownRef}>
       <button
+        ref={buttonRef}
         onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
         className="flex items-center gap-1 border border-gray-200 px-1.5 py-1 text-sm text-gray-800 cursor-pointer hover:border-gray-400 transition-colors min-w-10"
       >
@@ -296,44 +331,57 @@ function CustomDropdown({ value, onChange }) {
         </span>
       </button>
 
-      {isOpen && (
-        <div className="absolute top-[calc(100%+6px)] left-0 bg-white border border-gray-200 shadow-md z-50 min-w-10 overflow-hidden">
-          {windowStart > 1 && (
-            <button
-              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              onMouseEnter={slideUp}
-              onClick={slideUp}
-            >
-              <ChevronUp />
-            </button>
-          )}
-
-          <ul>
-            {numbers.map((num) => (
-              <li
-                key={num}
-                onClick={() => handleSelect(num)}
-                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${num === selectedQty
-                    ? "font-medium text-black"
-                    : "text-gray-800"
-                  }`}
+      {isOpen &&
+        menuRect &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="bg-white border border-gray-200 shadow-md overflow-hidden"
+            style={{
+              position: "fixed",
+              top: menuRect.top,
+              left: menuRect.left,
+              minWidth: Math.max(menuRect.width, 40),
+              zIndex: 9999,
+            }}
+          >
+            {windowStart > 1 && (
+              <button
+                className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                onMouseEnter={slideUp}
+                onClick={slideUp}
               >
-                {num}
-              </li>
-            ))}
-          </ul>
+                <ChevronUp />
+              </button>
+            )}
 
-          {windowEnd < MAX && (
-            <button
-              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              onMouseEnter={slideDown}
-              onClick={slideDown}
-            >
-              <ChevronDown />
-            </button>
-          )}
-        </div>
-      )}
+            <ul>
+              {numbers.map((num) => (
+                <li
+                  key={num}
+                  onClick={() => handleSelect(num)}
+                  className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${num === selectedQty
+                      ? "font-medium text-black"
+                      : "text-gray-800"
+                    }`}
+                >
+                  {num}
+                </li>
+              ))}
+            </ul>
+
+            {windowEnd < MAX && (
+              <button
+                className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                onMouseEnter={slideDown}
+                onClick={slideDown}
+              >
+                <ChevronDown />
+              </button>
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -486,6 +534,20 @@ function ButtonSpinner({ color = "#111" }) {
    Small UI primitives (unchanged from original Checkout.jsx)
    ──────────────────────────────────────────────────────────────────────── */
 
+// Required-field labels come from translations as "Label *" — this renders
+// just the trailing "*" in red so it stands out as the "required" marker,
+// leaving the rest of the label its normal color.
+function FieldLabel({ text }) {
+  if (typeof text !== "string" || !text.trim().endsWith("*")) return <>{text}</>;
+  const base = text.slice(0, text.lastIndexOf("*"));
+  return (
+    <>
+      {base}
+      <span style={{ color: "#e02424" }}>*</span>
+    </>
+  );
+}
+
 // Floating-label text input
 function FieldBox({
   label,
@@ -493,57 +555,71 @@ function FieldBox({
   value,
   onChange,
   disabled = false,
+  error = false,
   style = {},
 }) {
   const [focused, setFocused] = useState(false);
   const floated = focused || (value !== undefined && value !== "");
   return (
-    <div
-      style={{
-        position: "relative",
-        border: `1px solid ${focused ? "#111" : "#ddd"}`,
-        borderRadius: "3px",
-        padding: floated ? "18px 14px 6px" : "14px 14px",
-        background: disabled ? "#f7f7f7" : "#fff",
-        transition: "border-color 0.2s, padding 0.15s",
-        boxSizing: "border-box",
-        ...style,
-      }}
-    >
-      <label
+    <div style={style}>
+      <div
         style={{
-          position: "absolute",
-          left: "14px",
-          top: floated ? "6px" : "50%",
-          transform: floated ? "none" : "translateY(-50%)",
-          fontSize: floated ? "10px" : "14px",
-          color: focused ? "#111" : "#999",
-          transition: "all 0.15s ease",
-          pointerEvents: "none",
-          fontFamily: FONT,
-          lineHeight: 1,
+          position: "relative",
+          border: `1px solid ${error ? "#e02424" : focused ? "#111" : "#ddd"}`,
+          borderRadius: "3px",
+          padding: floated ? "18px 14px 6px" : "14px 14px",
+          background: disabled ? "#f7f7f7" : "#fff",
+          transition: "border-color 0.2s, padding 0.15s",
+          boxSizing: "border-box",
         }}
       >
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{
-          width: "100%",
-          border: "none",
-          outline: "none",
-          padding: 0,
-          fontSize: "14px",
-          color: disabled ? "#888" : "#111",
-          background: "transparent",
-          fontFamily: FONT,
-        }}
-      />
+        <label
+          style={{
+            position: "absolute",
+            left: "14px",
+            top: floated ? "6px" : "50%",
+            transform: floated ? "none" : "translateY(-50%)",
+            fontSize: floated ? "10px" : "14px",
+            color: focused ? "#111" : "#999",
+            transition: "all 0.15s ease",
+            pointerEvents: "none",
+            fontFamily: FONT,
+            lineHeight: 1,
+          }}
+        >
+          <FieldLabel text={label} />
+        </label>
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            width: "100%",
+            border: "none",
+            outline: "none",
+            padding: 0,
+            fontSize: "14px",
+            color: disabled ? "#888" : "#111",
+            background: "transparent",
+            fontFamily: FONT,
+          }}
+        />
+      </div>
+      {error && (
+        <p
+          style={{
+            margin: "4px 0 0",
+            fontSize: "12px",
+            color: "#e02424",
+            fontFamily: FONT,
+          }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -554,75 +630,90 @@ function CountryFieldBox({
   iso2,
   onChange,
   disabled = false,
+  error = false,
 }) {
   const { t } = useTranslation("checkout");
   const [focused, setFocused] = useState(false);
   return (
-    <div
-      style={{
-        position: "relative",
-        border: `1px solid ${focused ? "#111" : "#ddd"}`,
-        borderRadius: "3px",
-        padding: "8px 34px 9px 14px",
-        background: disabled ? "#f7f7f7" : "#fff",
-        transition: "border-color 0.2s",
-        boxSizing: "border-box",
-      }}
-    >
-      <label
-        style={{
-          display: "block",
-          fontSize: "10.5px",
-          color: "#999",
-          marginBottom: "3px",
-          fontFamily: FONT,
-        }}
-      >
-        {label || t("country")}
-      </label>
-      <select
-        value={iso2}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{
-          width: "100%",
-          border: "none",
-          outline: "none",
-          padding: 0,
-          fontSize: "14px",
-          color: disabled ? "#888" : "#111",
-          background: "transparent",
-          appearance: "none",
-          cursor: disabled ? "default" : "pointer",
-          fontFamily: FONT,
-        }}
-      >
-        <option value="">{t("selectCountry")}</option>
-        {defaultCountries.map((c) => {
-          const p = parseCountry(c);
-          return (
-            <option key={p.iso2} value={p.iso2}>
-              {p.name}
-            </option>
-          );
-        })}
-      </select>
+    <div>
       <div
         style={{
-          position: "absolute",
-          right: "14px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-          width: 0,
-          height: 0,
-          borderLeft: "4px solid transparent",
-          borderRight: "4px solid transparent",
-          borderTop: "5px solid #555",
+          position: "relative",
+          border: `1px solid ${error ? "#e02424" : focused ? "#111" : "#ddd"}`,
+          borderRadius: "3px",
+          padding: "8px 34px 9px 14px",
+          background: disabled ? "#f7f7f7" : "#fff",
+          transition: "border-color 0.2s",
+          boxSizing: "border-box",
         }}
-      />
+      >
+        <label
+          style={{
+            display: "block",
+            fontSize: "10.5px",
+            color: "#999",
+            marginBottom: "3px",
+            fontFamily: FONT,
+          }}
+        >
+          <FieldLabel text={label || t("country")} />
+        </label>
+        <select
+          value={iso2}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            width: "100%",
+            border: "none",
+            outline: "none",
+            padding: 0,
+            fontSize: "14px",
+            color: disabled ? "#888" : "#111",
+            background: "transparent",
+            appearance: "none",
+            cursor: disabled ? "default" : "pointer",
+            fontFamily: FONT,
+          }}
+        >
+          <option value="">{t("selectCountry")}</option>
+          {defaultCountries.map((c) => {
+            const p = parseCountry(c);
+            return (
+              <option key={p.iso2} value={p.iso2}>
+                {p.name}
+              </option>
+            );
+          })}
+        </select>
+        <div
+          style={{
+            position: "absolute",
+            right: "14px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            pointerEvents: "none",
+            width: 0,
+            height: 0,
+            borderLeft: "4px solid transparent",
+            borderRight: "4px solid transparent",
+            borderTop: "5px solid #555",
+          }}
+        />
+      </div>
+      {error && (
+        <p
+          style={{
+            margin: "4px 0 0",
+            fontSize: "12px",
+            color: "#e02424",
+            fontFamily: FONT,
+          }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -747,7 +838,7 @@ function PhoneFieldBox({
             lineHeight: 1,
           }}
         >
-          {t("phoneNumber")}
+          <FieldLabel text={t("phoneNumber")} />
         </label>
         <input
           type="tel"
@@ -3358,31 +3449,34 @@ function Checkout({ cartItems = [] }) {
   const lang = i18n.language;
   const paymentSectionRef = useRef(null);
 
-  // Express Payment bar — once it scrolls out of view at the top of the left
-  // column (desktop only), pin it to the top of the right sidebar instead of
-  // letting it disappear. Scrolling back up returns it to its normal spot.
+  // Express Payment bar — a "conveyor belt" handoff with a second copy
+  // pinned over the top of the right sidebar: as this one scrolls up behind
+  // the sticky header (top:80px) on the left, the pinned copy reveals by
+  // the exact same amount from below on the right. expressScrollProgress
+  // (0 = fully visible on the left / nothing shown on the right, 1 = fully
+  // hidden on the left / fully shown on the right) is read straight off the
+  // left copy's actual on-screen position on every scroll frame — not a
+  // timed animation, so it can never drift out of sync with the scrollbar.
   const expressWrapperRef = useRef(null);
-  const expressBarRef = useRef(null);
   const sidebarRef = useRef(null);
-  const [pinExpress, setPinExpress] = useState(false);
   const [expressBarBox, setExpressBarBox] = useState({
     height: 0,
     left: 0,
     width: 0,
   });
+  const [expressScrollProgress, setExpressScrollProgress] = useState(0);
 
   useEffect(() => {
-    const wrapperEl = expressWrapperRef.current;
-    if (!wrapperEl) return;
     const isDesktop = () => window.innerWidth >= 1024;
+    // Where the sticky header's bottom edge sits — the same line the old
+    // IntersectionObserver rootMargin used to trigger pinning at.
+    const HEADER_BOTTOM = 80;
 
-    // Natural (in-flow) size/position — must be measured before the bar is
-    // ever pinned to `position: fixed`, otherwise we'd be measuring our own
-    // fixed box instead of where it should sit.
-    const measureBox = () => {
-      const barEl = expressBarRef.current;
+    const measure = () => {
+      const barEl = expressWrapperRef.current;
       const sidebarEl = sidebarRef.current;
       if (!barEl || !sidebarEl) return;
+
       const barRect = barEl.getBoundingClientRect();
       const sidebarRect = sidebarEl.getBoundingClientRect();
       setExpressBarBox({
@@ -3390,37 +3484,35 @@ function Checkout({ cartItems = [] }) {
         left: sidebarRect.left,
         width: sidebarRect.width,
       });
-    };
-    measureBox();
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Runs before the pin state (and its fixed styling) is applied, so
-        // this still reflects the natural in-flow box.
-        measureBox();
-        // The bar sits right at the top of the page, so it can only ever
-        // leave by being scrolled past (never "not yet reached" from below)
-        // — no need to also check boundingClientRect.top here, and doing so
-        // actually fights the rootMargin adjustment below.
-        setPinExpress(isDesktop() && !entry.isIntersecting);
-      },
-      // Top 80px is where the sticky header sits — the bar is already
-      // visually covered/hidden by the time it reaches that line, not only
-      // once it crosses the very top of the raw viewport. Excluding that
-      // strip from the observer's root makes the pin trigger the instant it
-      // disappears behind the header, instead of noticeably later.
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" },
-    );
-    observer.observe(wrapperEl);
-
-    const handleResize = () => {
-      if (!isDesktop()) setPinExpress(false);
-      measureBox();
+      if (!isDesktop() || barRect.height === 0) {
+        setExpressScrollProgress(0);
+        return;
+      }
+      // 0 while the bar's top is still at/below the header line (fully
+      // visible); ramps linearly to 1 as its top rises above that line by
+      // its own height (fully tucked behind the header).
+      const raw = (HEADER_BOTTOM - barRect.top) / barRect.height;
+      setExpressScrollProgress(Math.min(1, Math.max(0, raw)));
     };
-    window.addEventListener("resize", handleResize);
+
+    measure();
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        measure();
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
     return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
     };
   }, []);
 
@@ -3471,6 +3563,15 @@ function Checkout({ cartItems = [] }) {
       console.error("Error updating splashData", e);
     }
 
+    // Picking a saved address here is itself a deliberate edit — un-mark
+    // these fields so the prefill below (which otherwise skips anything the
+    // user already touched) is free to apply the newly-chosen address.
+    const fieldsToClear =
+      activeAddressTab === "delivery"
+        ? ["street", "postcode", "city", "deliveryCountryIso2"]
+        : ["billingStreet", "billingPostcode", "billingCity", "billingCountryIso2"];
+    fieldsToClear.forEach((f) => editedFieldsRef.current.delete(f));
+
     prefillFromSplash();
   };
 
@@ -3482,6 +3583,33 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
+  // Field-level validation errors (email/name/country/full address/postcode/
+  // city/card number) shown as a red border on the offending FieldBox, plus
+  // refs to each field's wrapper so we can scroll the first invalid one into
+  // view when the user clicks "Order".
+  const [fieldErrors, setFieldErrors] = useState({});
+  const emailFieldRef = useRef(null);
+  const nameFieldRef = useRef(null);
+  const phoneFieldRef = useRef(null);
+  const countryFieldRef = useRef(null);
+  const streetFieldRef = useRef(null);
+  const postcodeFieldRef = useRef(null);
+  const cityFieldRef = useRef(null);
+  const billingCountryFieldRef = useRef(null);
+  const billingStreetFieldRef = useRef(null);
+  const billingPostcodeFieldRef = useRef(null);
+  const billingCityFieldRef = useRef(null);
+  const cardNumberBoxRef = useRef(null);
+  const cardExpiryBoxRef = useRef(null);
+  const cardCvcBoxRef = useRef(null);
+  // Only ever holds at most one entry (see getFirstFieldError/handlePlaceOrder
+  // below) — clearing it as soon as the user edits the flagged field gives
+  // immediate feedback instead of leaving a stale red border until the next
+  // "Order" click.
+  const clearFieldError = (field) => {
+    setFieldErrors((prev) => (prev[field] ? {} : prev));
+  };
+
   // Contact — prefill from localStorage if logged in
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -3491,16 +3619,27 @@ function Checkout({ cartItems = [] }) {
   const [phoneError, setPhoneError] = useState(null);
   const [deliveryCountryIso2, setDeliveryCountryIso2] = useState("");
 
+  // Fields the user has personally typed/changed since this page mounted.
+  // PageLoader's callSplashApi() re-fetches "splashData" on every click
+  // anywhere in the app and re-fires "splashDataReady" — without this guard,
+  // prefillFromSplash() would run again on that event and stomp whatever the
+  // user had already typed back to the stale splash values. A field, once
+  // marked here, is never auto-filled from splash again for the rest of this
+  // page's life (markEdited/isEdited helpers below).
+  const editedFieldsRef = useRef(new Set());
+  const markEdited = (field) => editedFieldsRef.current.add(field);
+  const isEdited = (field) => editedFieldsRef.current.has(field);
+
   const prefillFromSplash = () => {
     try {
       const splash = JSON.parse(localStorage.getItem("splashData") || "null");
       const user = splash?.user;
       if (!user) return;
 
-      setEmail(user.email || "");
-      setLastName(user.name || "");
-      setPhone(user.phone || "");
-      if (user.phone) {
+      if (!isEdited("email")) setEmail(user.email || "");
+      if (!isEdited("lastName")) setLastName(user.name || "");
+      if (!isEdited("phone")) setPhone(user.phone || "");
+      if (user.phone && !isEdited("countryIso2")) {
         const matched = defaultCountries
           .map((c) => parseCountry(c))
           .filter((c) => user.phone.startsWith("+" + c.dialCode))
@@ -3510,18 +3649,22 @@ function Checkout({ cartItems = [] }) {
 
       const addr = user.delivery_address;
       if (addr) {
-        setStreet(addr.full_address || "");
-        setPostcode(addr.postal_code || "");
-        setCity(addr.city || "");
-        setDeliveryCountryIso2(resolveCountryIso2(addr.country));
+        if (!isEdited("street")) setStreet(addr.full_address || "");
+        if (!isEdited("postcode")) setPostcode(addr.postal_code || "");
+        if (!isEdited("city")) setCity(addr.city || "");
+        if (!isEdited("deliveryCountryIso2"))
+          setDeliveryCountryIso2(resolveCountryIso2(addr.country));
       }
 
       const bill = user.invoice_address;
       if (bill) {
-        setBillingStreet(bill.full_address || "");
-        setBillingPostcode(bill.postal_code || "");
-        setBillingCity(bill.city || "");
-        setBillingCountryIso2(resolveCountryIso2(bill.country));
+        if (!isEdited("billingStreet"))
+          setBillingStreet(bill.full_address || "");
+        if (!isEdited("billingPostcode"))
+          setBillingPostcode(bill.postal_code || "");
+        if (!isEdited("billingCity")) setBillingCity(bill.city || "");
+        if (!isEdited("billingCountryIso2"))
+          setBillingCountryIso2(resolveCountryIso2(bill.country));
       }
     } catch {
       /* silent */
@@ -3591,6 +3734,40 @@ function Checkout({ cartItems = [] }) {
     };
   }, []);
 
+  // If splash has no "user" object at all (a genuine first-time guest —
+  // nothing about them cached yet), every "countryIso2 || 'fr'" fallback
+  // sprinkled through this file would otherwise silently default the phone
+  // field to France. Detect the visitor's real country from their IP instead
+  // (same /api/geoip route ModalPickLocation.jsx already uses for pickup
+  // points) and use that as the default dial-code country. This never marks
+  // countryIso2 as user-edited, so a real account's data (via
+  // prefillFromSplash, if splash finishes loading afterwards) still takes
+  // priority over this guess.
+  useEffect(() => {
+    const detectCountryFromIp = async () => {
+      try {
+        const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+        if (splash?.user) return; // real account/guest data exists already
+
+        const res = await fetch("/api/geoip");
+        const data = await res.json();
+        const code = (data?.countryCode || "").toLowerCase();
+        if (!code) return;
+        const matched = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === code,
+        );
+        if (!matched) return;
+
+        setCountryIso2((prev) =>
+          prev || isEdited("countryIso2") ? prev : code,
+        );
+      } catch {
+        /* silent — the existing "|| 'fr'" fallback still applies */
+      }
+    };
+    detectCountryFromIp();
+  }, []);
+
   // Delivery
   const [street, setStreet] = useState("");
   const [postcode, setPostcode] = useState("");
@@ -3614,6 +3791,12 @@ function Checkout({ cartItems = [] }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [formError, setFormError] = useState(null);
+  // Reflects each Stripe card element's own "complete" flag — all start
+  // false so an untouched field is correctly flagged as empty on the first
+  // submit attempt, matching the other required fields.
+  const [cardNumberComplete, setCardNumberComplete] = useState(false);
+  const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
+  const [cardCvcComplete, setCardCvcComplete] = useState(false);
 
   // Apple Pay — availability reported by the Express Checkout Element
   const [applePayReady, setApplePayReady] = useState(false);
@@ -3683,6 +3866,9 @@ function Checkout({ cartItems = [] }) {
     setDeliveryCountryIso2(iso2);
     setPhone("");
     setPhoneError(null);
+    markEdited("countryIso2");
+    markEdited("deliveryCountryIso2");
+    markEdited("phone");
   };
 
   // Validates the phone number's digit count and leading-digit pattern
@@ -3831,9 +4017,9 @@ function Checkout({ cartItems = [] }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: finalName, email: finalEmail,
-            country_code: dialCode, phone: dialCode,
-            phone_number: phone, device: "web",
-            device_id: "123", fcm_token: "web123",
+            country_code: dialCode, phone: phone,
+            phone_number: dialCode + phone, device: "web",
+            device_id: getDeviceId(), fcm_token: "web123",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
         });
@@ -3989,9 +4175,9 @@ function Checkout({ cartItems = [] }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: lastName, email,
-            country_code: dialCode, phone: dialCode,
-            phone_number: phone, device: "web",
-            device_id: "123", fcm_token: "web123",
+            country_code: dialCode, phone: phone,
+            phone_number: dialCode + phone, device: "web",
+            device_id: getDeviceId(), fcm_token: "web123",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
         });
@@ -4133,52 +4319,83 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
+  // Checks every required field in on-screen top-to-bottom order and stops
+  // at the FIRST one that's invalid — only that field gets flagged (red
+  // border + message below it) and scrolled to. Fix it and click "Order"
+  // again: this re-runs from the top, so it either passes or reports the
+  // next invalid field. Never more than one field flagged at once.
+  const FIELD_REFS = {
+    email: emailFieldRef,
+    name: nameFieldRef,
+    phone: phoneFieldRef,
+    country: countryFieldRef,
+    street: streetFieldRef,
+    postcode: postcodeFieldRef,
+    city: cityFieldRef,
+    billingCountry: billingCountryFieldRef,
+    billingStreet: billingStreetFieldRef,
+    billingPostcode: billingPostcodeFieldRef,
+    billingCity: billingCityFieldRef,
+    cardNumber: cardNumberBoxRef,
+    cardExpiry: cardExpiryBoxRef,
+    cardCvc: cardCvcBoxRef,
+  };
+
+  const getFirstFieldError = () => {
+    if (!email.trim()) return { key: "email", message: t("errorEmailRequired") };
+    if (!EMAIL_REGEX.test(email.trim()))
+      return { key: "email", message: t("errorEmailInvalid") };
+    if (!lastName.trim())
+      return { key: "name", message: t("errorNameRequired") };
+
+    const phoneErrorCode = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
+    if (phoneErrorCode)
+      return { key: "phone", message: t(PHONE_ERROR_KEYS[phoneErrorCode]) };
+
+    if (!deliveryCountryIso2)
+      return { key: "country", message: t("errorSelectCountryDelivery") };
+    if (!street.trim())
+      return { key: "street", message: t("errorFullAddressDelivery") };
+    if (!postcode.trim())
+      return { key: "postcode", message: t("errorPostcodeDelivery") };
+    if (!city.trim())
+      return { key: "city", message: t("errorCityDelivery") };
+
+    if (useDifferentBilling) {
+      if (!billingCountryIso2)
+        return { key: "billingCountry", message: t("errorSelectCountryInvoice") };
+      if (!billingStreet.trim())
+        return { key: "billingStreet", message: t("errorFullAddressInvoice") };
+      if (!billingPostcode.trim())
+        return { key: "billingPostcode", message: t("errorPostcodeInvoice") };
+      if (!billingCity.trim())
+        return { key: "billingCity", message: t("errorCityInvoice") };
+    }
+
+    if (!cardNumberComplete)
+      return { key: "cardNumber", message: t("errorCardNumberRequired") };
+    if (!cardExpiryComplete)
+      return { key: "cardExpiry", message: t("errorCardExpiryRequired") };
+    if (!cardCvcComplete)
+      return { key: "cardCvc", message: t("errorCardCvcRequired") };
+
+    return null;
+  };
+
   const handlePlaceOrder = async () => {
     if (paymentMethod !== "card" || !stripe || !elements) return;
 
-    const phoneErrorCode = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
-    if (phoneErrorCode) {
-      const message = t(PHONE_ERROR_KEYS[phoneErrorCode]);
-      setPhoneError(message);
-      setFormError(message);
-      return;
-    }
+    const firstError = getFirstFieldError();
+    setFieldErrors(firstError ? { [firstError.key]: firstError.message } : {});
+    setPhoneError(firstError?.key === "phone" ? firstError.message : null);
 
-    // Validate required delivery fields
-    if (!deliveryCountryIso2) {
-      setFormError(t("errorSelectCountryDelivery"));
+    if (firstError) {
+      setFormError(firstError.message);
+      FIELD_REFS[firstError.key]?.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
       return;
-    }
-    if (!street.trim()) {
-      setFormError(t("errorFullAddressDelivery"));
-      return;
-    }
-    if (!postcode.trim()) {
-      setFormError(t("errorPostcodeDelivery"));
-      return;
-    }
-    if (!city.trim()) {
-      setFormError(t("errorCityDelivery"));
-      return;
-    }
-    // Validate required billing fields if different billing is used
-    if (useDifferentBilling) {
-      if (!billingCountryIso2) {
-        setFormError(t("errorSelectCountryInvoice"));
-        return;
-      }
-      if (!billingStreet.trim()) {
-        setFormError(t("errorFullAddressInvoice"));
-        return;
-      }
-      if (!billingPostcode.trim()) {
-        setFormError(t("errorPostcodeInvoice"));
-        return;
-      }
-      if (!billingCity.trim()) {
-        setFormError(t("errorCityInvoice"));
-        return;
-      }
     }
 
     setFormError(null);
@@ -4228,10 +4445,10 @@ function Checkout({ cartItems = [] }) {
             name: lastName,
             email,
             country_code: dialCode,
-            phone: dialCode,
-            phone_number: phone,
+            phone: phone,
+            phone_number: dialCode + phone,
             device: "web",
-            device_id: "123",
+            device_id: getDeviceId(),
             fcm_token: "web123",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
@@ -4496,7 +4713,7 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
-  // ✅ CHANGE 2: handleRemoveItem — hits API same as ModalAddToCart
+  //  CHANGE 2: handleRemoveItem — hits API same as ModalAddToCart
   const handleRemoveItem = async (index, cartId) => {
     setIsRemoving(true);
     try {
@@ -4570,7 +4787,12 @@ function Checkout({ cartItems = [] }) {
   // the sidebar PayPal button, but rendered directly inside the Express
   // Checkout row so PayPal's own SDK opens immediately on click (no
   // intermediate "select a payment method" step in between).
-  const payPalExpressButtonNode = (
+  // A factory (not a single shared element) because the conveyor-belt
+  // Express Payment bar below mounts two live copies at once — @paypal/
+  // react-paypal-js supports multiple simultaneous <PayPalButtons/> under
+  // one PayPalScriptProvider, but each needs its own fresh element instance
+  // rather than the exact same JSX object placed in two spots.
+  const renderPayPalExpressButton = () => (
     <PayPalButtons
       style={{ layout: "horizontal", color: "gold", shape: "rect", label: "paypal", height: 45, tagline: false }}
       createOrder={handlePayPalCreateOrder}
@@ -4668,15 +4890,8 @@ function Checkout({ cartItems = [] }) {
           position: sticky;
           top: 80px;
           align-self: flex-start;
-          max-height: calc(100vh - 80px);
-          overflow-y: auto;
           display: flex;
           flex-direction: column;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .checkout-sidebar-container::-webkit-scrollbar {
-          display: none;
         }
         .cart-items-scroll {
           overflow-y: scroll;
@@ -4790,34 +5005,48 @@ function Checkout({ cartItems = [] }) {
         >
           {/* ── Left column ── */}
           <div className="checkout-left-column">
-            {/* Express Payment — pins to the top of the right sidebar on
-                desktop once it scrolls out of view here. */}
-            <div
-              ref={expressWrapperRef}
-              style={pinExpress ? { height: expressBarBox.height } : undefined}
-            >
+            {/* Express Payment — normal in-flow copy. Scrolls naturally with
+                the page; expressScrollProgress (measured off this element)
+                drives the pinned conveyor-belt copy over the sidebar below. */}
+            <div ref={expressWrapperRef}>
+              <ExpressPaymentBar
+                selectedMethod={paymentMethod}
+                onSelect={handleExpressSelect}
+                paypalExpressNode={renderPayPalExpressButton()}
+                isSafari={isSafari}
+              />
+            </div>
+
+            {/* Pinned "conveyor belt" copy — only mounted once scrolling has
+                actually started tucking the copy above behind the sticky
+                header. Its reveal (translateY) is driven 1:1 by
+                expressScrollProgress, not a timed transition, so it always
+                exactly matches how much of the copy above is hidden. */}
+            {expressScrollProgress > 0 && (
               <div
-                ref={expressBarRef}
-                style={
-                  pinExpress
-                    ? {
-                        position: "fixed",
-                        top: "80px",
-                        left: expressBarBox.left,
-                        width: expressBarBox.width,
-                        zIndex: 20,
-                      }
-                    : undefined
-                }
+                style={{
+                  position: "fixed",
+                  top: "80px",
+                  left: expressBarBox.left,
+                  width: expressBarBox.width,
+                  // Below the checkout header's own z-index (10, opaque
+                  // white background) — while hidden (translateY negative),
+                  // this sits in the header's 0–80px band and behind it, not
+                  // overlapping the sidebar/Order Summary below at any
+                  // progress value, so nothing needs opacity to look "gone".
+                  zIndex: 5,
+                  transform: `translateY(${(1 - expressScrollProgress) * -100}%)`,
+                  pointerEvents: expressScrollProgress >= 1 ? "auto" : "none",
+                }}
               >
                 <ExpressPaymentBar
                   selectedMethod={paymentMethod}
                   onSelect={handleExpressSelect}
-                  paypalExpressNode={payPalExpressButtonNode}
+                  paypalExpressNode={renderPayPalExpressButton()}
                   isSafari={isSafari}
                 />
               </div>
-            </div>
+            )}
 
             {/* Contact details */}
             <Section title={t("contactDetails")}>
@@ -4828,31 +5057,48 @@ function Checkout({ cartItems = [] }) {
                   gap: "12px",
                 }}
               >
-                <FieldBox
-                  label={t("email")}
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <div style={{ display: "flex", gap: "12px" }}>
+                <div ref={emailFieldRef}>
                   <FieldBox
-                    label={t("fullName")}
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    style={{ flex: 1 }}
+                    label={t("email")}
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      markEdited("email");
+                      clearFieldError("email");
+                      setEmail(e.target.value);
+                    }}
+                    error={fieldErrors.email}
                   />
                 </div>
-                <PhoneFieldBox
-                  iso2={countryIso2 || "fr"}
-                  onCountryChange={handleCountryChange}
-                  value={phone}
-                  onChange={(v) => {
-                    setPhone(v);
-                    if (phoneError) setPhoneError(null);
-                  }}
-                  onBlur={validatePhone}
-                  error={phoneError}
-                />
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div ref={nameFieldRef} style={{ flex: 1 }}>
+                    <FieldBox
+                      label={t("fullName")}
+                      value={lastName}
+                      onChange={(e) => {
+                        markEdited("lastName");
+                        clearFieldError("name");
+                        setLastName(e.target.value);
+                      }}
+                      error={fieldErrors.name}
+                    />
+                  </div>
+                </div>
+                <div ref={phoneFieldRef}>
+                  <PhoneFieldBox
+                    iso2={countryIso2 || "fr"}
+                    onCountryChange={handleCountryChange}
+                    value={phone}
+                    onChange={(v) => {
+                      markEdited("phone");
+                      clearFieldError("phone");
+                      setPhone(v);
+                      if (phoneError) setPhoneError(null);
+                    }}
+                    onBlur={validatePhone}
+                    error={phoneError}
+                  />
+                </div>
               </div>
             </Section>
 
@@ -4887,34 +5133,60 @@ function Checkout({ cartItems = [] }) {
                   gap: "12px",
                 }}
               >
-                <CountryFieldBox
-                  iso2={deliveryCountryIso2}
-                  onChange={(iso2) => setDeliveryCountryIso2(iso2)}
-                />
-                <FieldBox
-                  label={t("fullAddress")}
-                  value={street}
-                  onChange={(e) => setStreet(e.target.value)}
-                />
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <FieldBox
-                    label={t("postcode")}
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    style={{ flex: 1 }}
+                <div ref={countryFieldRef}>
+                  <CountryFieldBox
+                    iso2={deliveryCountryIso2}
+                    onChange={(iso2) => {
+                      markEdited("deliveryCountryIso2");
+                      clearFieldError("country");
+                      setDeliveryCountryIso2(iso2);
+                    }}
+                    error={fieldErrors.country}
                   />
+                </div>
+                <div ref={streetFieldRef}>
+                  <FieldBox
+                    label={t("fullAddress")}
+                    value={street}
+                    onChange={(e) => {
+                      markEdited("street");
+                      clearFieldError("street");
+                      setStreet(e.target.value);
+                    }}
+                    error={fieldErrors.street}
+                  />
+                </div>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div ref={postcodeFieldRef} style={{ flex: 1 }}>
+                    <FieldBox
+                      label={t("postcode")}
+                      value={postcode}
+                      onChange={(e) => {
+                        markEdited("postcode");
+                        clearFieldError("postcode");
+                        setPostcode(e.target.value);
+                      }}
+                      error={fieldErrors.postcode}
+                    />
+                  </div>
                   <FieldBox
                     label={t("state")}
                     value={region}
                     onChange={(e) => setRegion(e.target.value)}
                     style={{ flex: 1 }}
                   />
-                  <FieldBox
-                    label={t("townCity")}
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    style={{ flex: 1 }}
-                  />
+                  <div ref={cityFieldRef} style={{ flex: 1 }}>
+                    <FieldBox
+                      label={t("townCity")}
+                      value={city}
+                      onChange={(e) => {
+                        markEdited("city");
+                        clearFieldError("city");
+                        setCity(e.target.value);
+                      }}
+                      error={fieldErrors.city}
+                    />
+                  </div>
                 </div>
                 <Checkbox
                   checked={useDifferentBilling}
@@ -4956,34 +5228,60 @@ function Checkout({ cartItems = [] }) {
                     gap: "12px",
                   }}
                 >
-                  <CountryFieldBox
-                    iso2={billingCountryIso2 || countryIso2}
-                    onChange={setBillingCountryIso2}
-                  />
-                  <FieldBox
-                    label={t("fullAddress")}
-                    value={billingStreet}
-                    onChange={(e) => setBillingStreet(e.target.value)}
-                  />
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <FieldBox
-                      label={t("postcode")}
-                      value={billingPostcode}
-                      onChange={(e) => setBillingPostcode(e.target.value)}
-                      style={{ flex: 1 }}
+                  <div ref={billingCountryFieldRef}>
+                    <CountryFieldBox
+                      iso2={billingCountryIso2 || countryIso2}
+                      onChange={(iso2) => {
+                        markEdited("billingCountryIso2");
+                        clearFieldError("billingCountry");
+                        setBillingCountryIso2(iso2);
+                      }}
+                      error={fieldErrors.billingCountry}
                     />
+                  </div>
+                  <div ref={billingStreetFieldRef}>
+                    <FieldBox
+                      label={t("fullAddress")}
+                      value={billingStreet}
+                      onChange={(e) => {
+                        markEdited("billingStreet");
+                        clearFieldError("billingStreet");
+                        setBillingStreet(e.target.value);
+                      }}
+                      error={fieldErrors.billingStreet}
+                    />
+                  </div>
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <div ref={billingPostcodeFieldRef} style={{ flex: 1 }}>
+                      <FieldBox
+                        label={t("postcode")}
+                        value={billingPostcode}
+                        onChange={(e) => {
+                          markEdited("billingPostcode");
+                          clearFieldError("billingPostcode");
+                          setBillingPostcode(e.target.value);
+                        }}
+                        error={fieldErrors.billingPostcode}
+                      />
+                    </div>
                     <FieldBox
                       label={t("state")}
                       value={billingRegion}
                       onChange={(e) => setBillingRegion(e.target.value)}
                       style={{ flex: 1 }}
                     />
-                    <FieldBox
-                      label={t("townCity")}
-                      value={billingCity}
-                      onChange={(e) => setBillingCity(e.target.value)}
-                      style={{ flex: 1 }}
-                    />
+                    <div ref={billingCityFieldRef} style={{ flex: 1 }}>
+                      <FieldBox
+                        label={t("townCity")}
+                        value={billingCity}
+                        onChange={(e) => {
+                          markEdited("billingCity");
+                          clearFieldError("billingCity");
+                          setBillingCity(e.target.value);
+                        }}
+                        error={fieldErrors.billingCity}
+                      />
+                    </div>
                   </div>
                 </div>
               </Section>
@@ -5014,8 +5312,9 @@ function Checkout({ cartItems = [] }) {
                       }}
                     >
                       <div
+                        ref={cardNumberBoxRef}
                         style={{
-                          border: "1px solid #ddd",
+                          border: `1px solid ${fieldErrors.cardNumber ? "#e02424" : "#ddd"}`,
                           borderRadius: "3px",
                           background: "#fff",
                           padding: "14px",
@@ -5032,52 +5331,110 @@ function Checkout({ cartItems = [] }) {
                         >
                           {t("cardNumber")}
                         </label>
-                        <CardNumberElement options={stripeElementStyle} />
+                        <CardNumberElement
+                          options={stripeElementStyle}
+                          onChange={(e) => {
+                            setCardNumberComplete(e.complete);
+                            if (e.complete) clearFieldError("cardNumber");
+                          }}
+                        />
                       </div>
+                      {fieldErrors.cardNumber && (
+                        <p
+                          style={{
+                            margin: "-6px 0 0",
+                            fontSize: "12px",
+                            color: "#e02424",
+                            fontFamily: FONT,
+                          }}
+                        >
+                          {fieldErrors.cardNumber}
+                        </p>
+                      )}
                       <div style={{ display: "flex", gap: "10px" }}>
-                        <div
-                          style={{
-                            flex: 1,
-                            border: "1px solid #ddd",
-                            borderRadius: "3px",
-                            background: "#fff",
-                            padding: "14px",
-                          }}
-                        >
-                          <label
+                        <div style={{ flex: 1 }}>
+                          <div
+                            ref={cardExpiryBoxRef}
                             style={{
-                              fontSize: "10px",
-                              color: "#999",
-                              display: "block",
-                              marginBottom: "6px",
-                              fontFamily: FONT,
+                              border: `1px solid ${fieldErrors.cardExpiry ? "#e02424" : "#ddd"}`,
+                              borderRadius: "3px",
+                              background: "#fff",
+                              padding: "14px",
                             }}
                           >
-                            {t("expirationDate")}
-                          </label>
-                          <CardExpiryElement options={stripeElementStyle} />
+                            <label
+                              style={{
+                                fontSize: "10px",
+                                color: "#999",
+                                display: "block",
+                                marginBottom: "6px",
+                                fontFamily: FONT,
+                              }}
+                            >
+                              {t("expirationDate")}
+                            </label>
+                            <CardExpiryElement
+                              options={stripeElementStyle}
+                              onChange={(e) => {
+                                setCardExpiryComplete(e.complete);
+                                if (e.complete) clearFieldError("cardExpiry");
+                              }}
+                            />
+                          </div>
+                          {fieldErrors.cardExpiry && (
+                            <p
+                              style={{
+                                margin: "4px 0 0",
+                                fontSize: "12px",
+                                color: "#e02424",
+                                fontFamily: FONT,
+                              }}
+                            >
+                              {fieldErrors.cardExpiry}
+                            </p>
+                          )}
                         </div>
-                        <div
-                          style={{
-                            flex: 1,
-                            border: "1px solid #ddd",
-                            borderRadius: "3px",
-                            background: "#fff",
-                            padding: "14px",
-                          }}
-                        >
-                          <label
+                        <div style={{ flex: 1 }}>
+                          <div
+                            ref={cardCvcBoxRef}
                             style={{
-                              fontSize: "10px",
-                              color: "#999",
-                              display: "block",
-                              marginBottom: "6px",
-                              fontFamily: FONT,
+                              border: `1px solid ${fieldErrors.cardCvc ? "#e02424" : "#ddd"}`,
+                              borderRadius: "3px",
+                              background: "#fff",
+                              padding: "14px",
                             }}
                           >
-                            {t("cvc")}
-                          </label>
-                          <CardCvcElement options={stripeElementStyle} />
+                            <label
+                              style={{
+                                fontSize: "10px",
+                                color: "#999",
+                                display: "block",
+                                marginBottom: "6px",
+                                fontFamily: FONT,
+                              }}
+                            >
+                              {t("cvc")}
+                            </label>
+                            <CardCvcElement
+                              options={stripeElementStyle}
+                              onChange={(e) => {
+                                setCardCvcComplete(e.complete);
+                                if (e.complete) clearFieldError("cardCvc");
+                              }}
+                            />
+                          </div>
+                          {fieldErrors.cardCvc && (
+                            <p
+                              style={{
+                                margin: "4px 0 0",
+                                fontSize: "12px",
+                                color: "#e02424",
+                                fontFamily: FONT,
+                              }}
+                            >
+                              {fieldErrors.cardCvc}
+                            </p>
+                          )}
                         </div>
                       </div>
                       {paymentError && (
@@ -5255,21 +5612,21 @@ function Checkout({ cartItems = [] }) {
               width: "480px",
               flexShrink: 0,
               position: "sticky",
-              // Make room at the top for the pinned Express Payment bar, plus the
-              // same 16px gap the left column uses between its own sections —
-              // otherwise the pinned bar and the order summary below it (same
-              // gray background, no gap) read as one merged card.
-              top: pinExpress ? `${80 + expressBarBox.height + 16}px` : "80px",
+              top: "80px",
               alignSelf: "flex-start",
-              maxHeight: pinExpress
-                ? `calc(100vh - ${80 + expressBarBox.height + 16}px)`
-                : "calc(100vh - 80px)",
-              overflowY: "auto",
-              scrollbarWidth: "none",
               display: "flex",
               flexDirection: "column",
             }}
           >
+            <div
+              style={{
+                // Continuous, not a timed transition — makes room for the
+                // pinned copy (plus the left column's usual 16px section
+                // gap) at exactly the same rate it reveals on the right,
+                // via the same expressScrollProgress used above.
+                transform: `translateY(${expressScrollProgress * (expressBarBox.height + 16)}px)`,
+              }}
+            >
             <OrderSummary
               items={items}
               onQtyChange={handleQtyChange}
@@ -5287,6 +5644,7 @@ function Checkout({ cartItems = [] }) {
               deliveryCountryIso2={deliveryCountryIso2}
               postcode={postcode}
             />
+            </div>
             {/* <button
               onClick={handlePlaceOrder}
               disabled={isSubmitting}

@@ -11,7 +11,7 @@ export default function WhoWeBioganceHero() {
   const featuresArray = Array.isArray(features) ? features : [];
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 -mt-30 sm:p-6">
       <div className="max-w-10xl w-full bg-white">
         {/* Main Content Container */}
         <div className="p-6 sm:p-8 lg:p-2">

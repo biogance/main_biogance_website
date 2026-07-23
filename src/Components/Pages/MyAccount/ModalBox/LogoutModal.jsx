@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { logout } from "../../../../redux/features/authSlice";
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../../../API/API';
+import { getDeviceId } from '../../../../utils/deviceId';
+import { saveCartData } from '../../../../utils/cartStorage';
 
 export default function LogoutModal({
   isOpen,
@@ -62,12 +64,30 @@ export default function LogoutModal({
         const msg = data.errors?.length > 0 ? data.errors[0].message : data.title;
         toast.error(msg);
       } else {
+        // Logout se pehle guest cart/list fetch karo
+        let normalizedCart = null;
+        try {
+          const cartRes = await fetch(`${BASE_URL}/user/cart/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_id: getDeviceId() }),
+          });
+          const cartData = await cartRes.json();
+          if (cartData.status) {
+            normalizedCart = {
+              ...cartData.data,
+              cartItem: (cartData.data.cartItem || cartData.data.cartItems || []).filter(Boolean),
+            };
+          }
+        } catch { /* silent */ }
         const rememberMe = localStorage.getItem('rememberMe');
         const deviceId = localStorage.getItem('device_id');
         localStorage.clear();
         if (rememberMe) localStorage.setItem('rememberMe', rememberMe);
         if (deviceId) localStorage.setItem('device_id', deviceId);
+        if (normalizedCart) saveCartData(normalizedCart);
         dispatch(logout());
+        window.dispatchEvent(new Event('logoutStateChange'));
         router.push('/');
         onClose();
       }

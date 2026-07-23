@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -25,6 +26,15 @@ import ModalAddToCart from "./Modal/ModalAddToCart";
 import ModalQuickView from "./Modal/ModalQuickView";
 
 const logoImage = "/logo.svg";
+
+// Client-mount detector for the OurProducts portal below — module-scope so
+// the subscribe/snapshot functions are stable across renders (required by
+// useSyncExternalStore). Returns false during SSR (document isn't there yet
+// to portal into) and true once hydrated on the client; nothing ever changes
+// after that, so subscribe is a no-op.
+const subscribeNoop = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 const ImageWithFallback = ({
   src,
@@ -56,6 +66,13 @@ export default function Navbar({
   const router = useRouter();
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Guards the createPortal(document.body) call below — document doesn't
+  // exist during SSR, and this only ever flips true after the client mount.
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
   const [homeCategories, setHomeCategories] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
@@ -533,20 +550,37 @@ export default function Navbar({
                     <span className={dotClass} />
                   </button>
 
-                  <OurProducts
-                    isOpen={isProductsOpen}
-                    onClose={() => setIsProductsOpen(false)}
-                    categories={homeCategories}
-                    popular={popularProducts}
-                    onCartOpen={(product) => {
-                      setCartProduct(product);
-                      setIsCartOpen(true);
-                    }}
-                    onQuickViewOpen={(product) => {
-                      setQuickViewProduct(product);
-                      setIsQuickViewOpen(true);
-                    }}
-                  />
+                  {/* Portaled to document.body: headerWrapperRef (the fixed
+                      announcement+nav wrapper above) carries transform-gpu +
+                      will-change-transform, which makes it the CSS containing
+                      block for any position:fixed descendant. Left in place,
+                      OurProducts' "fixed; top:104px" would resolve against
+                      that wrapper's own box (whose top sits at -100px) instead
+                      of the viewport, landing near the very top of the screen
+                      instead of just below the navbar. Rendering it into
+                      document.body via a portal keeps it in the React tree
+                      (so this div's onMouseEnter/onMouseLeave still fire
+                      correctly while the pointer is over the menu) while
+                      escaping that transformed ancestor for actual CSS
+                      positioning. */}
+                  {mounted &&
+                    createPortal(
+                      <OurProducts
+                        isOpen={isProductsOpen}
+                        onClose={() => setIsProductsOpen(false)}
+                        categories={homeCategories}
+                        popular={popularProducts}
+                        onCartOpen={(product) => {
+                          setCartProduct(product);
+                          setIsCartOpen(true);
+                        }}
+                        onQuickViewOpen={(product) => {
+                          setQuickViewProduct(product);
+                          setIsQuickViewOpen(true);
+                        }}
+                      />,
+                      document.body,
+                    )}
                 </div>
 
                 {navLinks.map((link) => (

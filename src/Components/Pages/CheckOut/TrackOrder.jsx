@@ -17,6 +17,79 @@ import { IoStar } from "react-icons/io5";
 import { IoIosStarHalf } from "react-icons/io";
 import { MdOutlineStar, MdOutlineStarHalf } from "react-icons/md";
 
+// Reads the three media fields from splashData in localStorage.
+// Retries on splashDataReady event if data was empty on first read.
+function useSplashMedia() {
+  const getFromStorage = () => {
+    try {
+      const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+      return {
+        instagram: splash?.instagram_media || null,
+        petProfile: splash?.create_pet_profile_media || null,
+        googleReview: splash?.google_review_media || null,
+      };
+    } catch {
+      return { instagram: null, petProfile: null, googleReview: null };
+    }
+  };
+
+  const [media, setMedia] = useState(getFromStorage);
+
+  useEffect(() => {
+    // Retry immediately on mount in case splashDataReady already fired
+    setMedia(getFromStorage());
+
+    const handler = () => setMedia(getFromStorage());
+    window.addEventListener("splashDataReady", handler);
+    return () => window.removeEventListener("splashDataReady", handler);
+  }, []);
+
+  return media;
+}
+
+// Renders either a <video> or <img> based on media_type from splash
+function SplashMedia({ media, mediaType, className, fallback = null }) {
+  const [loaded, setLoaded] = useState(false);
+
+  if (!media) return fallback;
+  const src = `${MEDIA_URL}${media}`;
+
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      {!loaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
+      {mediaType === "video" ? (
+        <video
+          src={src}
+          // FIX: absolute inset-0 takes the img/video's own intrinsic
+          // aspect-ratio completely out of the box-sizing equation — both
+          // elements now always fill exactly 100% of the wrapper's box and
+          // get cropped via object-cover, regardless of their natural
+          // dimensions. Previously this was static "w-full h-full" in
+          // normal flow, where <img> (unlike <video>) tends to let its
+          // natural height leak into a self-stretch/h-auto parent's layout
+          // pass, growing the whole container — that's why only the image
+          // case looked oversized while video looked fine.
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          onCanPlay={() => setLoaded(true)}
+        />
+      ) : (
+        <img
+          src={src}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          onLoad={() => setLoaded(true)}
+        />
+      )}
+    </div>
+  );
+}
+
 // Map status string to step index (0-based)
 const STATUS_STEP = {
   Confirmed: 0,
@@ -75,6 +148,7 @@ function TrackOrder() {
   const [showSummary, setShowSummary] = useState(false);
   const [orderSummary, setOrderSummary] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const splashMedia = useSplashMedia();
 
   // Intercept back button — always redirect to / synchronously
   useEffect(() => {
@@ -856,7 +930,7 @@ function TrackOrder() {
                     <br />
                     made for your pet.
                   </h3>
-                  <p className="text-sm text-black leading-relaxed mb-10">
+                  <p className="text-sm text-black leading-relaxed mb-20">
                   Tell us a little about your companion : their breed,<br/>
 coat type, age and lifestyle, and we'll tailor every<br/>
 product suggestion, expert article, and routine tip<br/>
@@ -958,15 +1032,22 @@ specifically to them.
                 </div> */}
               </div>
 
-              {/* Right: video (replaces previous image) */}
-              <div className="md:w-146 shrink-0 h-56 md:h-auto bg-[#f3f3f3]">
-                <video
-                  src="/VIDEO.mp4"
+              {/* Right: pet profile media from splash */}
+              <div className="md:w-146 shrink-0 h-72 md:h-96 bg-[#f3f3f3]">
+                <SplashMedia
+                  media={splashMedia.petProfile?.media}
+                  mediaType={splashMedia.petProfile?.media_type}
                   className="w-full h-full object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+                  fallback={
+                    <video
+                      src="/VIDEO.mp4"
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  }
                 />
               </div>
             </div>
@@ -979,64 +1060,16 @@ specifically to them.
   <div className="max-w-7xl mx-auto px-4">
     <div className="border-t border-[#E3E3E3] py-8 md:py-13">
      <div className="border border-gray-300 bg-[#f3f3f3] p-6 md:p-6 flex flex-col md:flex-row items-center gap-8 md:gap-14">
-        {/* Left: Instagram mockup card */}
-        <div className="w-full md:w-1/2 shrink-0">
-          <div className=" bg-white">
-            {/* Profile header */}
-            <div className="flex items-center gap-3 p-4">
-              <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shrink-0">
-                <span className="text-white text-[9px] font-semibold tracking-tight">
-                  biogance
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 leading-tight">
-                  bioganceofficiel
-                </p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                  BIOGANCE
-                </p>
-                <p className="text-[11px] text-gray-700 mt-0.5">
-                  <span className="font-semibold">1725</span> publications{" "}
-                  <span className="font-semibold">27,2k</span> followers{" "}
-                  <span className="font-semibold">825</span> suivi(e)s
-                </p>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <p className="text-[11px] text-gray-500 px-4 pb-3 leading-relaxed">
-              🐾 Pionnier du soin &amp; de l'hygiène bio et naturel pour vos
-              animaux
-              <br />
-              Laboratoire indépendant &amp; familial
-              <br />
-              <span className="text-gray-400">... plus</span>
-            </p>
-
-            {/* Photo grid 3x2 */}
-            <div className="grid grid-cols-3 gap-0.5">
-              {[
-                "/instagram/photo-1.jpg",
-                "/instagram/photo-2.jpg",
-                "/instagram/photo-3.jpg",
-                "/instagram/photo-4.jpg",
-                "/instagram/photo-5.jpg",
-                "/instagram/photo-6.jpg",
-              ].map((src, idx) => (
-                <div
-                  key={idx}
-                  className="aspect-square bg-gray-100 overflow-hidden"
-                >
-                  <img
-                    src={src}
-                    alt={`Instagram post ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Left: instagram_media from splash */}
+        <div className="w-full md:w-1/2 shrink-0 h-72 md:h-96 overflow-hidden">
+          <SplashMedia
+            media={splashMedia.instagram?.media}
+            mediaType={splashMedia.instagram?.media_type}
+            className="w-full h-full object-cover"
+            fallback={
+              <img src="/distributorImg.jpg" alt="" className="w-full h-full object-cover" />
+            }
+          />
         </div>
 
        {/* Right: Text + Buttons */}
@@ -1105,7 +1138,7 @@ specifically to them.
     <div className="bg-white">
   <div className="max-w-7xl mx-auto px-4">
     <div className="border-t border-[#E3E3E3]">
-      <div className="mt-8 md:mt-15 mb-10 md:mb-20 border border-gray-300 flex flex-col md:flex-row items-stretch">
+      <div className="mt-8 md:mt-15 mb-10 md:mb-20 border border-gray-300 flex flex-col md:flex-row items-stretch overflow-hidden">
         
         {/* Left: Content */}
         <div className="w-full md:w-1/2 bg-[#f3f3f3] text-center md:text-left py-10 px-6 sm:px-10 md:px-12 flex flex-col justify-center">
@@ -1157,12 +1190,19 @@ specifically to them.
           </a>
         </div>
 
-        {/* Right: Image */}
-        <div className="w-full md:w-1/2 shrink-0">
-          <img
-            src="/distributorImg.jpg"
-            alt="Happy pet with owner"
-            className="w-full h-64 sm:h-80 md:h-full object-cover"
+        {/* Right: google review media from splash */}
+        <div className="w-full md:w-1/2 shrink-0 h-72 md:h-auto self-stretch overflow-hidden">
+          <SplashMedia
+            media={splashMedia.googleReview?.media}
+            mediaType={splashMedia.googleReview?.media_type}
+            className="w-full h-full object-cover"
+            fallback={
+              <img
+                src="/distributorImg.jpg"
+                alt="Happy pet with owner"
+                className="w-full h-full object-cover"
+              />
+            }
           />
         </div>
       </div>

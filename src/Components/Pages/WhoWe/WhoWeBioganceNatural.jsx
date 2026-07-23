@@ -32,7 +32,7 @@ export default function WhoWeBioganceNatural() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="relative min-h-screen w-full overflow-hidden -mt-30">
       {/* Background Image */}
       <div className="absolute inset-0 bg-cover bg-center">
         <Image

@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { BASE_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
 import { callSplashApi } from '../../PageLoader';
+import { saveCartData } from '../../../utils/cartStorage';
 import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
 import { getFirebaseAuth, getGoogleProvider, getAppleProvider } from '../../../utils/firebase';
@@ -151,6 +152,23 @@ useEffect(() => {
         } else {
           localStorage.removeItem('rememberMe');
         }
+        // Cart list fetch karo login ke baad, dono complete hone ke baad close karo
+        try {
+          const token = data?.data?.token;
+          const cartRes = await fetch(`${BASE_URL}/user/cart/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({}),
+          });
+          const cartData = await cartRes.json();
+          if (cartData.status) {
+            const normalized = {
+              ...cartData.data,
+              cartItem: (cartData.data.cartItem || cartData.data.cartItems || []).filter(Boolean),
+            };
+            saveCartData(normalized);
+          }
+        } catch { /* silent */ }
         callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();
@@ -180,7 +198,7 @@ useEffect(() => {
           platform,
           platform_id: user.uid,
           device: 'web',
-          device_id: 'web123',
+          device_id: getDeviceId(),
           fcm_token: 'web123',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
@@ -189,6 +207,23 @@ useEffect(() => {
 
       if (data.status === true) {
         localStorage.setItem('LoginData', JSON.stringify(data));
+        // Social login ke baad bhi cart fetch karo
+        try {
+          const token = data?.data?.token;
+          const cartRes = await fetch(`${BASE_URL}/user/cart/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({}),
+          });
+          const cartData = await cartRes.json();
+          if (cartData.status) {
+            const normalized = {
+              ...cartData.data,
+              cartItem: (cartData.data.cartItem || cartData.data.cartItems || []).filter(Boolean),
+            };
+            saveCartData(normalized);
+          }
+        } catch { /* silent */ }
         callSplashApi();
         window.dispatchEvent(new Event('loginStateChange'));
         onClose();

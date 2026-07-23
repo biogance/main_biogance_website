@@ -41,6 +41,7 @@ if (typeof window !== 'undefined' && 'caches' in window) {
         console.log('[Module Load] Serving video from browser Cache Storage.');
         const blob = await cachedResponse.blob();
         globalVideoBlobUrl = URL.createObjectURL(blob);
+        window.__bioganceVideoBlobUrl = globalVideoBlobUrl;
         window.dispatchEvent(new CustomEvent('biogance-video-blob-ready', { detail: globalVideoBlobUrl }));
       } else {
         console.log('[Module Load] Video not cached. Fetching in background...');
@@ -50,6 +51,7 @@ if (typeof window !== 'undefined' && 'caches' in window) {
               await cache.put(videoUrl, response.clone());
               const blob = await response.blob();
               globalVideoBlobUrl = URL.createObjectURL(blob);
+              window.__bioganceVideoBlobUrl = globalVideoBlobUrl;
               window.dispatchEvent(new CustomEvent('biogance-video-blob-ready', { detail: globalVideoBlobUrl }));
               console.log('[Module Load] Video cached successfully.');
             }
