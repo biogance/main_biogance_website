@@ -425,6 +425,13 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
   const [splashCategories, setSplashCategories] = useState([]);
   useEffect(() => {
     setSplashCategories(getSplashCategories());
+    // PageLoader's callSplashApi() writes "splashData" to localStorage
+    // asynchronously and only then fires this event — if that write lands
+    // after this mount-read, categories/topics would otherwise stay empty
+    // for the rest of the page's life since this effect never re-runs.
+    const onSplashReady = () => setSplashCategories(getSplashCategories());
+    window.addEventListener("splashDataReady", onSplashReady);
+    return () => window.removeEventListener("splashDataReady", onSplashReady);
   }, []);
 
   // One-time carry-over from ExpertAdvices.jsx's "See All" click — consumed
