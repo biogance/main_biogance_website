@@ -538,6 +538,35 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
     fetchUpsellProducts();
   }, [isOpen]);
 
+  // Login hone ke baad cart ko fresh data se update karo
+  useEffect(() => {
+    const handleLoginChange = () => {
+      const stored = getCartData();
+      if (stored) {
+        setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
+        setCartCount(stored.cart_count || 0);
+      }
+    };
+    window.addEventListener('loginStateChange', handleLoginChange);
+    return () => window.removeEventListener('loginStateChange', handleLoginChange);
+  }, []);
+
+  // Logout hone ke baad guest cart data se update karo
+  useEffect(() => {
+    const handleLogoutChange = () => {
+      const stored = getCartData();
+      if (stored) {
+        setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
+        setCartCount(stored.cart_count || 0);
+      } else {
+        setCartItems([]);
+        setCartCount(0);
+      }
+    };
+    window.addEventListener('logoutStateChange', handleLogoutChange);
+    return () => window.removeEventListener('logoutStateChange', handleLogoutChange);
+  }, []);
+
   const fetchUpsellProducts = () => {
     try {
       const cached = localStorage.getItem('splashData');

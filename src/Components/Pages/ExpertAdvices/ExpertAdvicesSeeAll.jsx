@@ -743,12 +743,16 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
 
 
-  const navigateToDetail = (item) => {
+  const getItemHref = (item) => {
     const keyword = sanitizeSeoKeyword(
       isFr
         ? item.french_seo_keyword || item.english_seo_keyboard
         : item.english_seo_keyboard || item.french_seo_keyword,
     );
+    return `/advices/${encodeURIComponent(keyword)}`;
+  };
+
+  const navigateToDetail = (item) => {
     const species = activeSpecies ? getBackPart(activeSpecies) : null;
     const topics = activeTopic?.length ? activeTopic.map(getBackPart) : [];
     try {
@@ -763,7 +767,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
       );
     } catch {}
     startTopLoader();
-    router.push(`/advices/${encodeURIComponent(keyword)}`);
+    router.push(getItemHref(item));
   };
 
   if (loading && !hasLoadedOnceRef.current) {
@@ -849,7 +853,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
           {/* ── Desktop filters (md and up) ── */}
           <div className="hidden md:block">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt-1">
               <div className="md:flex-1 md:min-w-0">
                 <ScrollableTabsRow
                   items={speciesList.map((cat) => ({
@@ -875,7 +879,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={tr("searchPlaceholder")}
-                  className="h-9 mb-1.5 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  className="h-9 mb-1 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
                 />
                 {searchInput && (
                   <button
@@ -979,9 +983,17 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
           <>
             <div className={CARD_GRID}>
               {articles.map((a) => (
-                <div
+                <a
                   key={a.id}
-                  onClick={() => navigateToDetail(a)}
+                  href={getItemHref(a)}
+                  onClick={(e) => {
+                    // Ctrl/Cmd/Shift+click (and native middle-click) must fall
+                    // through to the browser's own "open in new tab/window"
+                    // behavior — only a plain left click runs the SPA navigation.
+                    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+                    e.preventDefault();
+                    navigateToDetail(a);
+                  }}
                   className="border border-gray-200 cursor-pointer group overflow-hidden flex flex-col"
                 >
                   <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
@@ -1007,7 +1019,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                     </p>
                     <HiOutlineArrowUpRight className="shrink-0 mt-0.5 -mr-0.5 text-gray-700 w-4 h-4" />
                   </div>
-                </div>
+                </a>
               ))}
             </div>
 
