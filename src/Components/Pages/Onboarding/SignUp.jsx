@@ -165,8 +165,8 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
       // phone_number: formData.phoneNumber,
       password: formData.password,
       device: 'web',
-      device_id: 'web123',
-      fcm_token: null,
+       device_id: getDeviceId(),
+       fcm_token: 'web123',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
@@ -213,7 +213,7 @@ export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
           platform,
           platform_id: user.uid,
           device: 'web',
-          device_id: 'web123',
+          device_id: getDeviceId(),
           fcm_token: 'web123',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),

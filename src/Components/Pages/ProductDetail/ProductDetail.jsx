@@ -222,7 +222,7 @@ export default function ProductDetail() {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        ...(token ? {} : { device_id: "Abc" }),
+        ...(token ? {} : { device_id: getDeviceId() }),
         seo_keyword: productId,
       }),
     })

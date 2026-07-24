@@ -137,7 +137,7 @@ useEffect(() => {
           password: formData.password,
           device: 'web',
           device_id: getDeviceId(),
-          fcm_token: null,
+          fcm_token: 'web123',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });

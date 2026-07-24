@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTranslation, Trans } from "react-i18next";
@@ -76,6 +76,20 @@ function resolveCountryIso2(countryRaw) {
     ) ||
     (aliasIso2 &&
       defaultCountries.find((c) => parseCountry(c).iso2 === aliasIso2));
+  return found ? parseCountry(found).iso2 : "";
+}
+
+// splashData's user object carries an explicit `country_code` dial-code
+// field (e.g. "+33" or "33") — the same one UserProfile.jsx resolves via
+// getIso2ByDialCode. Matching THIS directly is reliable; matching it by
+// prefix-testing `user.phone` against every dial code is not — it silently
+// fails whenever phone isn't stored with a leading "+", which made the
+// checkout page fall through to an IP-based guess even when splash already
+// had the real country.
+function resolveIso2ByDialCode(dialCode) {
+  const clean = String(dialCode || "").replace("+", "").trim();
+  if (!clean) return "";
+  const found = defaultCountries.find((c) => parseCountry(c).dialCode === clean);
   return found ? parseCountry(found).iso2 : "";
 }
 
@@ -740,8 +754,12 @@ function PhoneFieldBox({
     return c ? `+${parseCountry(c).dialCode}` : "";
   };
   const dialCode = getDialCode(iso2 || "fr");
-  const flagUrl = (code) =>
-    `https://flagcdn.com/24x18/${(code || "fr").toLowerCase()}.png`;
+  // Convert iso2 code to emoji flag — works in all browsers, no network
+  // request, never blocked by Firefox ETP or ad-blockers.
+  const flagEmoji = (code) => {
+    const c = (code || "fr").toUpperCase();
+    return [...c].map((ch) => String.fromCodePoint(0x1F1E6 - 65 + ch.charCodeAt(0))).join("");
+  };
 
   const filteredCountries = defaultCountries
     .map((c) => parseCountry(c))
@@ -793,16 +811,7 @@ function PhoneFieldBox({
           userSelect: "none",
         }}
       >
-        <img
-          src={flagUrl(iso2)}
-          alt=""
-          style={{
-            width: "20px",
-            height: "15px",
-            objectFit: "cover",
-            borderRadius: "1px",
-          }}
-        />
+        <span style={{ fontSize: "18px", lineHeight: 1 }}>{flagEmoji(iso2)}</span>
         <span style={{ fontSize: "13px", color: "#333", fontFamily: FONT }}>
           {dialCode}
         </span>
@@ -944,17 +953,7 @@ function PhoneFieldBox({
                     if (dialEl) dialEl.style.color = "#888";
                   }}
                 >
-                  <img
-                    src={flagUrl(p.iso2)}
-                    alt=""
-                    style={{
-                      width: "18px",
-                      height: "14px",
-                      objectFit: "cover",
-                      borderRadius: "1px",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <span style={{ fontSize: "16px", lineHeight: 1, flexShrink: 0 }}>{flagEmoji(p.iso2)}</span>
                   <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
                   <span style={{ color: "#888" }}>+{p.dialCode}</span>
                 </div>
@@ -3639,12 +3638,19 @@ function Checkout({ cartItems = [] }) {
       if (!isEdited("email")) setEmail(user.email || "");
       if (!isEdited("lastName")) setLastName(user.name || "");
       if (!isEdited("phone")) setPhone(user.phone || "");
-      if (user.phone && !isEdited("countryIso2")) {
-        const matched = defaultCountries
-          .map((c) => parseCountry(c))
-          .filter((c) => user.phone.startsWith("+" + c.dialCode))
-          .sort((a, b) => b.dialCode.length - a.dialCode.length)[0];
-        if (matched) setCountryIso2(matched.iso2);
+      if (!isEdited("countryIso2")) {
+        const iso2FromCode = resolveIso2ByDialCode(user.country_code);
+        if (iso2FromCode) {
+          setCountryIso2(iso2FromCode);
+        } else if (user.phone) {
+          // Fallback for splash data that never got a country_code —
+          // best-effort guess from the phone string itself.
+          const matched = defaultCountries
+            .map((c) => parseCountry(c))
+            .filter((c) => user.phone.startsWith("+" + c.dialCode))
+            .sort((a, b) => b.dialCode.length - a.dialCode.length)[0];
+          if (matched) setCountryIso2(matched.iso2);
+        }
       }
 
       const addr = user.delivery_address;
@@ -3698,19 +3704,47 @@ function Checkout({ cartItems = [] }) {
     prefillFromSplash();
   }, []);
 
+  const refreshCartRef = useRef(null);
+
   useEffect(() => {
     const handler = () => {
       const d = getLoginData();
       if (d?.data?.token) {
         setIsLoggedIn(true);
-        setEmail(d.data.email || "");
-        setLastName(d.data.name || "");
-        setPhone(d.data.phone_number || "");
-        const cc = (d.data.country_code || "").replace("+", "");
-        const found = defaultCountries.find(
-          (c) => parseCountry(c).dialCode === cc,
-        );
-        if (found) setCountryIso2(parseCountry(found).iso2);
+
+        let splashUser = null;
+        try {
+          const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+          splashUser = splash?.user || null;
+        } catch {}
+        const splashEmail = splashUser?.email || "";
+        const splashName = splashUser?.name || "";
+        const splashPhone = splashUser?.phone || "";
+        const splashCountryIso2 =
+          resolveIso2ByDialCode(splashUser?.country_code) ||
+          (() => {
+            if (!splashPhone) return "";
+            const matched = defaultCountries
+              .map((c) => parseCountry(c))
+              .filter((c) => splashPhone.startsWith("+" + c.dialCode))
+              .sort((a, b) => b.dialCode.length - a.dialCode.length)[0];
+            return matched?.iso2 || "";
+          })();
+
+        setEmail((prev) => (prev === splashEmail ? d.data.email || "" : prev));
+        setLastName((prev) => (prev === splashName ? d.data.name || "" : prev));
+        setPhone((prev) => (prev === splashPhone ? d.data.phone || "" : prev));
+        setCountryIso2((prev) => {
+          if (prev !== splashCountryIso2) return prev;
+          const cc = (d.data.country_code || "").replace("+", "");
+          const found = defaultCountries.find(
+            (c) => parseCountry(c).dialCode === cc,
+          );
+          return found ? parseCountry(found).iso2 : prev;
+        });
+
+        // Login ke baad server se fresh merged cart fetch karo
+        refreshCartFromServer();
       }
       prefillFromSplash();
     };
@@ -3734,39 +3768,112 @@ function Checkout({ cartItems = [] }) {
     };
   }, []);
 
-  // If splash has no "user" object at all (a genuine first-time guest —
-  // nothing about them cached yet), every "countryIso2 || 'fr'" fallback
-  // sprinkled through this file would otherwise silently default the phone
-  // field to France. Detect the visitor's real country from their IP instead
-  // (same /api/geoip route ModalPickLocation.jsx already uses for pickup
-  // points) and use that as the default dial-code country. This never marks
-  // countryIso2 as user-edited, so a real account's data (via
-  // prefillFromSplash, if splash finishes loading afterwards) still takes
-  // priority over this guess.
-  useEffect(() => {
-    const detectCountryFromIp = async () => {
-      try {
-        const splash = JSON.parse(localStorage.getItem("splashData") || "null");
-        if (splash?.user) return; // real account/guest data exists already
-
-        const res = await fetch("/api/geoip");
-        const data = await res.json();
-        const code = (data?.countryCode || "").toLowerCase();
-        if (!code) return;
-        const matched = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === code,
-        );
-        if (!matched) return;
-
-        setCountryIso2((prev) =>
-          prev || isEdited("countryIso2") ? prev : code,
-        );
-      } catch {
-        /* silent — the existing "|| 'fr'" fallback still applies */
+  // If splash has no usable country on it (a genuine first-time guest, or an
+  // account/guest record that exists but has no phone/address yet), every
+  // "countryIso2 || 'fr'" fallback sprinkled through this file would
+  // otherwise silently default the phone field to France. Detect the
+  // visitor's real country from their IP instead (same /api/visitor-locale
+  // route ModalPickLocation.jsx already uses for pickup points) and use that as
+  // the default dial-code country. This never marks countryIso2 as
+  // user-edited, so a real account's data (via prefillFromSplash, if splash
+  // finishes loading afterwards) still takes priority over this guess.
+  //
+  // On a genuinely first-ever visit, PageLoader's /web/splash call is still
+  // in flight when this mounts, so localStorage has no splashData yet — this
+  // ran fine either way. The actual "works after refresh, not on first load"
+  // bug was that this only ever ran ONCE, on mount: if that one attempt
+  // failed (a slow/rate-limited geoip lookup, a hiccup on the first cold
+  // request) nothing ever retried it, so the field was stuck on the "fr"
+  // fallback for the rest of the page's life — until a refresh gave it a
+  // fresh mount and a fresh attempt. Re-running this alongside
+  // prefillFromSplash on "splashDataReady" (guarded so it stops once a
+  // country is actually resolved) closes that gap the same way it was
+  // already closed for email/phone/address above.
+  const countryDetectedRef = useRef(false);
+  const detectCountryFromIp = useCallback(async () => {
+    if (countryDetectedRef.current || isEdited("countryIso2")) return;
+    try {
+      const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+      const user = splash?.user;
+      const hasUsableCountry =
+        !!resolveIso2ByDialCode(user?.country_code) ||
+        (user?.phone &&
+          defaultCountries.some((c) =>
+            user.phone.startsWith("+" + parseCountry(c).dialCode),
+          )) ||
+        !!user?.delivery_address?.country;
+      if (hasUsableCountry) {
+        countryDetectedRef.current = true;
+        return;
       }
-    };
-    detectCountryFromIp();
+
+      // Check sessionStorage cache first — avoids re-fetching on every
+      // render/retry and works around Firefox ETP blocking repeated requests.
+      const cached = sessionStorage.getItem("_visitorCountry");
+      if (cached) {
+        const matched = defaultCountries.find((c) => parseCountry(c).iso2 === cached);
+        if (matched) {
+          countryDetectedRef.current = true;
+          setCountryIso2((prev) => (!prev && !isEdited("countryIso2")) ? cached : prev);
+          return;
+        }
+      }
+
+      // Firefox ETP / uBlock can block fetch() to same-origin API routes
+      // that contain geo-related path segments. Use XMLHttpRequest as a
+      // fallback — it goes through a different request pipeline and is not
+      // subject to the same filter-list URL matching that kills fetch().
+      const fetchLocale = () =>
+        new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", "/api/visitor-locale", true);
+          xhr.timeout = 5000;
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try { resolve(JSON.parse(xhr.responseText)); }
+              catch { reject(new Error("Invalid JSON")); }
+            } else {
+              reject(new Error(`HTTP ${xhr.status}`));
+            }
+          };
+          xhr.onerror = () => reject(new Error("XHR network error"));
+          xhr.ontimeout = () => reject(new Error("XHR timeout"));
+          xhr.send();
+        });
+
+      let data;
+      try {
+        // Try fetch first (Chrome/Edge), fall back to XHR (Firefox)
+        const res = await fetch("/api/visitor-locale", { credentials: "same-origin" });
+        data = await res.json();
+      } catch {
+        data = await fetchLocale();
+      }
+
+      const code = (data?.countryCode || "").toLowerCase();
+      if (!code) return;
+
+      const matched = defaultCountries.find((c) => parseCountry(c).iso2 === code);
+      if (!matched) return;
+
+      try { sessionStorage.setItem("_visitorCountry", code); } catch { /* ignore */ }
+      countryDetectedRef.current = true;
+      setCountryIso2((prev) => (!prev && !isEdited("countryIso2")) ? code : prev);
+    } catch {
+      /* silent — the existing "|| 'fr'" fallback still applies */
+    }
   }, []);
+
+  useEffect(() => {
+    detectCountryFromIp();
+  }, [detectCountryFromIp]);
+
+  useEffect(() => {
+    window.addEventListener("splashDataReady", detectCountryFromIp);
+    return () => {
+      window.removeEventListener("splashDataReady", detectCountryFromIp);
+    };
+  }, [detectCountryFromIp]);
 
   // Delivery
   const [street, setStreet] = useState("");
@@ -4117,6 +4224,12 @@ function Checkout({ cartItems = [] }) {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
       } catch { }
 
+      // Re-fetch the (now-emptied) cart straight from the server and save it
+      // — same pattern Login.jsx uses after login — so ModalAddToCart reads
+      // the correct data from localStorage the instant it next opens,
+      // instead of showing whatever was cached until its own refetch lands.
+      await refreshCartFromServer();
+
       router.push("/track-order");
 
     } catch (err) {
@@ -4309,6 +4422,8 @@ function Checkout({ cartItems = [] }) {
       try {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(orderData.data?.order || orderData.data || {}));
       } catch { }
+
+      await refreshCartFromServer();
 
       router.push("/track-order");
 
@@ -4625,6 +4740,8 @@ function Checkout({ cartItems = [] }) {
         console.error("Failed to save lastPlacedOrder", e);
       }
 
+      await refreshCartFromServer();
+
       router.push("/track-order");
     } catch (err) {
       console.error(err);
@@ -4678,6 +4795,8 @@ function Checkout({ cartItems = [] }) {
       if (stopLoader) setIsRemoving(false);
     }
   };
+  // Keep ref in sync so loginStateChange handler (defined earlier) can call it
+  refreshCartRef.current = refreshCartFromServer;
 
   // ✅ CHANGE 2: handleQtyChange — hits API same as ModalAddToCart
   const handleQtyChange = async (index, qty, cartId) => {

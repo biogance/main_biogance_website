@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
@@ -40,6 +40,11 @@ const SEE_ALL_SLUGS = {
   pet: "pet-care-blogs",
 };
 const ROWS_PER_PAGE = 3;
+// Desktop filters: the search box lives in the species row when the topics
+// row is long (needs the full row width) and slides down into the topics
+// row when it's short enough to leave room (see the FLIP effect below).
+// Count includes the "All" chip.
+const TOPICS_FEW_THRESHOLD = 9;
 // Single-column (mobile) layout loads a flat 15 cards per page instead of
 // columns * ROWS_PER_PAGE (which would be just 1 * 3 = 3).
 const MOBILE_PER_PAGE = 15;
@@ -479,6 +484,37 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
     return Array.from(map.values());
   }, [activeSpecies, speciesList]);
 
+  // +1 for the "All" chip that's always prepended to topicsList in the UI.
+  const topicsFew = topicsList.length + 1 <= TOPICS_FEW_THRESHOLD;
+
+  // FLIP animation: when topicsFew flips, the search box's DOM parent
+  // changes (species row <-> topics row). React remounts it at the new
+  // spot; this effect measures the position delta across that remount and
+  // animates from the old spot to the new one instead of just popping there.
+  const searchWrapRef = useRef(null);
+  const searchFlipRectRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = searchWrapRef.current;
+    if (!el) return;
+    el.style.transition = "none";
+    el.style.transform = "translate(0, 0)";
+    const after = el.getBoundingClientRect();
+    const before = searchFlipRectRef.current;
+    if (before) {
+      const dx = before.left - after.left;
+      const dy = before.top - after.top;
+      if (dx || dy) {
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        void el.offsetHeight;
+        requestAnimationFrame(() => {
+          el.style.transition = "transform 450ms cubic-bezier(0.22, 1, 0.36, 1)";
+          el.style.transform = "translate(0, 0)";
+        });
+      }
+    }
+    searchFlipRectRef.current = after;
+  }, [topicsFew]);
+
   const resetAllFilters = () => {
     setActiveSpecies(null);
     setActiveTopic([]);
@@ -853,72 +889,91 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
           {/* ── Desktop filters (md and up) ── */}
           <div className="hidden md:block">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt-1">
-              <div className="md:flex-1 md:min-w-0">
-                <ScrollableTabsRow
-                  items={speciesList.map((cat) => ({
-                    id: cat.id,
-                    label: getBlogField(cat, "name", isFr),
-                  }))}
-                  activeIds={activeSpecies ? [activeSpecies.id] : []}
-                  onSelect={(id) => {
-                    const found = speciesList.find((cat) => cat.id === id);
-                    if (!found) return;
-                    setActiveSpecies((prev) =>
-                      prev?.id === found.id ? null : found,
-                    );
-                    setActiveTopic([]);
-                  }}
-                />
-              </div>
+            {(() => {
+              const searchBox = (
+                <div
+                  ref={searchWrapRef}
+                  className="group relative w-full md:w-72 shrink-0 mb-3 md:mb-0"
+                >
+                  <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    placeholder={tr("searchPlaceholder")}
+                    className="h-9 mb-1 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      aria-label={tr("clearSearch")}
+                      className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                    >
+                      <FiX className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              );
 
-              <div className="group relative w-full md:w-72 shrink-0 mb-3 md:mb-0">
-                <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900" />
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder={tr("searchPlaceholder")}
-                  className="h-9 mb-1 w-full border border-gray-300 pl-9 pr-8 text-xs text-gray-900 placeholder:text-gray-400 transition-colors focus:border-gray-900 focus:bg-white focus:outline-none"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    aria-label={tr("clearSearch")}
-                    className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                  >
-                    <FiX className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            </div>
+              return (
+                <>
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt-1">
+                    <div className="md:flex-1 md:min-w-0">
+                      <ScrollableTabsRow
+                        items={speciesList.map((cat) => ({
+                          id: cat.id,
+                          label: getBlogField(cat, "name", isFr),
+                        }))}
+                        activeIds={activeSpecies ? [activeSpecies.id] : []}
+                        onSelect={(id) => {
+                          const found = speciesList.find((cat) => cat.id === id);
+                          if (!found) return;
+                          setActiveSpecies((prev) =>
+                            prev?.id === found.id ? null : found,
+                          );
+                          setActiveTopic([]);
+                        }}
+                      />
+                    </div>
 
-            <ScrollableTabsRow
-              items={[
-                { id: "all", label: tr("all") },
-                ...topicsList.map((t) => ({
-                  id: t.id,
-                  label: getBlogField(t, "name", isFr),
-                })),
-              ]}
-              activeIds={
-                activeTopic.length === 0 ? ["all"] : activeTopic.map((t) => t.id)
-              }
-              onSelect={(id) => {
-                if (id === "all") {
-                  setActiveTopic([]);
-                  return;
-                }
-                const found = topicsList.find((t) => t.id === id);
-                if (!found) return;
-                setActiveTopic((prev) =>
-                  prev.find((t) => t.id === found.id)
-                    ? prev.filter((t) => t.id !== found.id)
-                    : [...prev, found],
-                );
-              }}
-            />
+                    {!topicsFew && searchBox}
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="md:flex-1 md:min-w-0">
+                      <ScrollableTabsRow
+                        items={[
+                          { id: "all", label: tr("all") },
+                          ...topicsList.map((t) => ({
+                            id: t.id,
+                            label: getBlogField(t, "name", isFr),
+                          })),
+                        ]}
+                        activeIds={
+                          activeTopic.length === 0 ? ["all"] : activeTopic.map((t) => t.id)
+                        }
+                        onSelect={(id) => {
+                          if (id === "all") {
+                            setActiveTopic([]);
+                            return;
+                          }
+                          const found = topicsList.find((t) => t.id === id);
+                          if (!found) return;
+                          setActiveTopic((prev) =>
+                            prev.find((t) => t.id === found.id)
+                              ? prev.filter((t) => t.id !== found.id)
+                              : [...prev, found],
+                          );
+                        }}
+                      />
+                    </div>
+
+                    {topicsFew && searchBox}
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
             <hr className="border-t border-gray-200 mt-3 md:mt-3" />

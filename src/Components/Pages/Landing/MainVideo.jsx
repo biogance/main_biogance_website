@@ -265,7 +265,14 @@ export default function HeroSection() {
               loop
               playsInline
               preload="auto"
-              onError={(e) => console.error('Video error:', e)}
+              onError={(e) => {
+                const err = e.target.error;
+                console.error('Video error:', err?.code, err?.message);
+                // Fallback: if blob URL failed, switch to direct file
+                if (videoSrc !== '/VIDEO.mp4') {
+                  setVideoSrc('/VIDEO.mp4');
+                }
+              }}
               onLoadedData={() => console.log('Video loaded successfully')}
             >
               Your browser does not support the video tag.

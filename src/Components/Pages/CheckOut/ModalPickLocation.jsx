@@ -29,7 +29,7 @@ async function resolveServicePointParams(initialCountry, initialPostalCode) {
 
   // 3. IP-based country detection (via server-side API route)
   try {
-    const res = await fetch("/api/geoip");
+    const res = await fetch("/api/visitor-locale");
     const data = await res.json();
     if (data?.countryCode && data?.zip) {
       return { country: data.countryCode.toUpperCase(), postalCode: data.zip };

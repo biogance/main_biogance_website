@@ -1031,7 +1031,7 @@ export default function FilterProducts() {
       per_page: perPage,
       // Logged-in users are identified via the Authorization header below —
       // device_id is only sent for guests.
-      ...(token ? {} : { device_id: "Abc" }),
+      ...(token ? {} : { device_id: getDeviceId() }),
     };
 
     // Guard against out-of-order responses: with two fetches now able to be in flight close
