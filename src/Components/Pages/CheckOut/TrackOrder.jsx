@@ -298,7 +298,7 @@ function TrackOrder() {
 
             <div className="flex flex-wrap gap-3">
               {/* Order Number */}
-              <div className="flex items-center gap-2 bg-[#f3f3f3] border border-gray-300 px-3 py-2 w-fit max-w-full">
+              <div className="flex items-center gap-2 bg-[#f8f7f4] border border-gray-300 px-3 py-2 w-fit max-w-full">
                 <CgShoppingBag
                   style={{
                     background: "#111",
@@ -918,14 +918,14 @@ function TrackOrder() {
       <div className=" bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="border-t border-[#E3E3E3] py-8 md:py-15">
-            <div className="flex flex-col md:flex-row  border border-gray-300 bg-[#f3f3f3] overflow-hidden">
+            <div className="flex flex-col md:flex-row  border border-gray-300 bg-[#f8f7f4] overflow-hidden">
               {/* Left: text content */}
               <div className="flex-1 p-6 flex flex-col justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  <p className="text-[12px] text-[#b8b8b8] uppercase tracking-widest mb-3">
                     My Pet Profile
                   </p>
-                  <h3 className="text-xl font-semibold text-gray-900 leading-snug mb-3">
+                  <h3 className="text-xl font-normal text-gray-800 leading-snug mb-3">
                     Get recommendations
                     <br />
                     made for your pet.
@@ -936,7 +936,7 @@ coat type, age and lifestyle, and we'll tailor every<br/>
 product suggestion, expert article, and routine tip<br/>
 specifically to them.
                   </p>
-                  <button className="flex items-center uppercase cursor-pointer gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#bebebe] text-xs font-semibold py-3 px-5  transition-colors w-full justify-center">
+                  <button className="flex items-center uppercase cursor-pointer gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#d6d6d6] text-sm py-3 px-5  transition-colors w-100 justify-center">
                     Create My Pet's Profile
                     <svg
                       className="w-3.5 h-3.5"
@@ -1033,7 +1033,7 @@ specifically to them.
               </div>
 
               {/* Right: pet profile media from splash */}
-              <div className="md:w-146 shrink-0 h-72 md:h-96 bg-[#f3f3f3]">
+              <div className="md:w-146 shrink-0 h-72 md:h-96 bg-[#f8f7f4]">
                 <SplashMedia
                   media={splashMedia.petProfile?.media}
                   mediaType={splashMedia.petProfile?.media_type}
@@ -1059,7 +1059,7 @@ specifically to them.
 <div className="bg-white">
   <div className="max-w-7xl mx-auto px-4">
     <div className="border-t border-[#E3E3E3] py-8 md:py-13">
-     <div className="border border-gray-300 bg-[#f3f3f3] p-6 md:p-6 flex flex-col md:flex-row items-center gap-8 md:gap-14">
+     <div className="border border-gray-300 bg-[#f8f7f4] p-6 md:p-6 flex flex-col md:flex-row items-center gap-8 md:gap-14">
         {/* Left: instagram_media from splash */}
         <div className="w-full md:w-1/2 shrink-0 h-72 md:h-96 overflow-hidden">
           <SplashMedia
@@ -1074,30 +1074,30 @@ specifically to them.
 
        {/* Right: Text + Buttons */}
 <div className="w-full md:w-1/2 flex flex-col justify-between h-full">
-  <h3 className="text-3xl sm:text-3xl font-semibold text-gray-900 mb-6">
+  <h3 className="text-2xl sm:text-2xl text-gray-800 mb-6">
     Show us your pet's moment.
   </h3>
 
   <div className="space-y-4 mb-6">
-    <p className="text-sm text-gray-500 leading-relaxed">
+    <p className="text-sm text-black leading-relaxed">
       Tag your photos with{" "}
-      <span className="font-semibold text-gray-800">
+      <span>
         #BioganceNaturally
       </span>{" "}
       and connect with<br/> pet owners who believe in gentler, cleaner and more
       natural<br/> care for their companions.
     </p>
 
-    <p className="text-sm text-gray-500 leading-relaxed">
+    <p className="text-sm leading-relaxed">
       Follow Biogance on social media to take part in exclusive <br/> giveaways,
       discover our latest news and product launches, <br/> and enjoy expert
       advice, practical tips and recommendations <br/> to support your pet's
       wellbeing every day.
     </p>
 
-    <p className="text-sm text-gray-500 leading-relaxed">
+    <p className="text-sm text-black leading-relaxed">
       Follow us, share your photos and join the Biogance <br/> community with{" "}
-      <span className="font-semibold text-gray-800">
+      <span>
         #BioganceNaturally
       </span>
       .
@@ -1109,9 +1109,9 @@ specifically to them.
     href="https://www.instagram.com/bioganceofficiel/?hl=en"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex items-center cursor-pointer gap-1 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#bebebe] hover:text-white text-sm font-medium px-5 transition-colors"
+    className="flex items-center cursor-pointer gap-1 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#d6d6d6] hover:text-white text-sm font-medium px-5 transition-colors"
   >
-    <span className="text-[#bebebe] flex items-center justify-center shrink-0">
+    <span className="text-[#d6d6d6] flex items-center justify-center shrink-0">
       <CiInstagram size={31} />
     </span>
     INSTAGRAM
@@ -1120,9 +1120,9 @@ specifically to them.
     href="https://www.facebook.com/bioganceofficiel/"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex items-center cursor-pointer gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#bebebe] hover:text-white text-sm font-medium px-5 py-2 transition-colors"
+    className="flex items-center cursor-pointer gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#d6d6d6] hover:text-white text-sm font-medium px-5 py-2 transition-colors"
   >
-    <span className="w-6 h-6 rounded-sm border border-current text-[#bebebe] flex items-center justify-center shrink-0">
+    <span className="w-6 h-6 rounded-sm border border-current text-[#d6d6d6] flex items-center justify-center shrink-0">
       <FaFacebookF size={16} />
     </span>
     FACEBOOK
@@ -1141,7 +1141,7 @@ specifically to them.
       <div className="mt-8 md:mt-15 mb-10 md:mb-20 border border-gray-300 flex flex-col md:flex-row items-stretch overflow-hidden">
         
         {/* Left: Content */}
-        <div className="w-full md:w-1/2 bg-[#f3f3f3] text-center md:text-left py-10 px-6 sm:px-10 md:px-12 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 bg-[#f8f7f4] text-center md:text-left py-10 px-6 sm:px-10 md:px-12 flex flex-col justify-center">
           
           {/* Google rating - logo + stars together, centered */}
           <div className="flex flex-col items-center gap-1 mb-6">
@@ -1163,16 +1163,16 @@ specifically to them.
             </div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6 leading-snug">
+          <h2 className="text-xl sm:text-2xl text-gray-800 mb-6 leading-snug">
             Did we earn your trust?
           </h2>
 
           <p className="text-sm text-[#111] leading-relaxed mb-4 text-justify">
-            Biogance is an independent, family-owned French laboratory,
-            no big group behind us, just a team passionate about
+            Biogance is an independent, family-owned French <br/> laboratory,
+            no big group behind us, just a team <br/> passionate about
             natural pet care.<br/>
-            Your Google review helps us stand out and reach other pet
-            owners who care about what goes on their animals' skin.
+            Your Google review helps us stand out and reach<br/> other pet
+            owners who care about what goes on <br/> their animals' skin.
           </p>
 
           <p className="text-sm text-[#111] leading-relaxed mb-6">
@@ -1184,7 +1184,7 @@ specifically to them.
             href="https://search.google.com/local/reviews?placeid=ChIJd1q6Z-InBkgRBAHsb2wiK4M"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center text-center uppercase justify-center gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#bebebe] text-xs font-medium py-3.5 px-8 transition-colors w-full"
+            className="flex items-center text-center uppercase justify-center gap-2 bg-[#323232] hover:bg-gray-900 hover:text-white text-[#d6d6d6] text-sm py-3.5 px-3 w-80 transition-colors"
           >
             Leave a Google review
           </a>

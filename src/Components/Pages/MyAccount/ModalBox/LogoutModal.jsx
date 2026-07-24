@@ -57,7 +57,7 @@ export default function LogoutModal({
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
-        body: JSON.stringify({ device_id: 'web123' }),
+        body: JSON.stringify({ device_id: getDeviceId() }),
       });
       const data = await res.json();
       if (data.status === false) {

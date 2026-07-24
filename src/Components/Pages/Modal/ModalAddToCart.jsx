@@ -538,17 +538,29 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
     fetchUpsellProducts();
   }, [isOpen]);
 
-  // Login hone ke baad cart ko fresh data se update karo
+  // Login hone ke baad server se fresh merged cart fetch karo
   useEffect(() => {
-    const handleLoginChange = () => {
-      const stored = getCartData();
-      if (stored) {
-        setCartItems((stored.cartItem || stored.cartItems || []).filter(Boolean));
-        setCartCount(stored.cart_count || 0);
-      }
-    };
+    const handleLoginChange = () => refreshCartFromServer();
     window.addEventListener('loginStateChange', handleLoginChange);
     return () => window.removeEventListener('loginStateChange', handleLoginChange);
+  }, []);
+
+  // Order place hone ke baad cart clear karo
+  useEffect(() => {
+    const handleOrderPlaced = () => {
+      saveCartData({ cartItem: [], cart_count: 0 });
+      setCartItems([]);
+      setCartCount(0);
+      removeVoucherState();
+      setLoggedVoucherApplied(false);
+      setAppliedVoucherOff(0);
+      setSelectedPill(null);
+      setLoggedVoucherInput('');
+      setVoucherPoints(null);
+      setAppliedPromo(null);
+    };
+    window.addEventListener('cartOrderPlaced', handleOrderPlaced);
+    return () => window.removeEventListener('cartOrderPlaced', handleOrderPlaced);
   }, []);
 
   // Logout hone ke baad guest cart data se update karo

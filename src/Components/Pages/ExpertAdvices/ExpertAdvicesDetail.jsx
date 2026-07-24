@@ -437,7 +437,35 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   const cardsScrollRef = useRef(null);
 
+  // The recommended-products sidebar (.sticky-products-sidebar) only gets its
+  // max-height + inner scroll on lg+ (globals.css) once position:sticky pins
+  // it at top:130px — but the native scroll-chaining browsers do for nested
+  // scrollables kicks in as soon as the box is height-capped, even before it
+  // has actually reached that pinned position. That let a wheel-hover over
+  // the (still in-flow, not yet stuck) sidebar scroll the product list
+  // instead of the page, trapping the user before the section was even
+  // fully in view. While it's not yet stuck, forward wheel scrolling to the
+  // page instead; once it's actually pinned at top:130px, let the browser's
+  // normal nested-scroll behavior take over.
+  useEffect(() => {
+    const scrollEl = cardsScrollRef.current;
+    if (!scrollEl || !hasProducts) return;
 
+    const STICKY_TOP = 130;
+    const onWheel = (e) => {
+      if (window.innerWidth < 1024) return;
+      const wrapper = scrollEl.parentElement;
+      if (!wrapper) return;
+      const stuck = wrapper.getBoundingClientRect().top <= STICKY_TOP + 1;
+      if (stuck) return;
+
+      e.preventDefault();
+      window.scrollBy({ top: e.deltaY });
+    };
+
+    scrollEl.addEventListener("wheel", onWheel, { passive: false });
+    return () => scrollEl.removeEventListener("wheel", onWheel);
+  }, [hasProducts]);
 
   // const handleAddAll = async () => {
   //   if (addingAll) return;
