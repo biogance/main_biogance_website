@@ -68,13 +68,13 @@ export default function Footer() {
               <div>
                 <p className="text-sm text-gray-400 mb-2">{t('social.biogance')}</p>
                 <div className="flex gap-2">
-                  <a href="#" aria-label="Facebook" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="https://www.facebook.com/bioganceofficiel/" target="_blank" rel="noreferrer" aria-label="Facebook" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="Instagram" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="https://www.instagram.com/bioganceofficiel/?hl=en" target="_blank" rel="noreferrer" aria-label="Instagram" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="YouTube" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="https://www.youtube.com/channel/UCo-KLXCLV10LTMilyd-y7aQ" target="_blank" rel="noreferrer" aria-label="YouTube" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <SlSocialYoutube className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a href="#" aria-label="LinkedIn" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
@@ -83,7 +83,7 @@ export default function Footer() {
                   <a href="#" aria-label="Twitter" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                     <PiTwitterLogo className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
-                  <a href="#" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
+                  <a href="https://www.tiktok.com/@bioganceofficiel" target="_blank" rel="noreferrer" aria-label="TikTok" className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition">
                    <BsTiktok size={15} className="p-[0.9]  border border gray-200   text-[#E3E3E3] " />
                   </a>
                 </div>

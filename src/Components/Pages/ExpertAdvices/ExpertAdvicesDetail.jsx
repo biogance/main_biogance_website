@@ -726,14 +726,29 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             </div>
           </div>
 
-          <div className="relative w-full lg:w-1/2">
+          {/* aspect-[4/3] gives this a real height on mobile (flex-col stacks
+              it below the text column, so it has no height to inherit until
+              the image loads) — without it the container collapsed to ~0px
+              and then snapped open once the image arrived. lg:aspect-auto
+              hands sizing back to items-stretch on desktop, where it already
+              matches the text column's height correctly. */}
+          <div className="relative w-full lg:w-1/2 aspect-[4/3] lg:aspect-auto bg-gray-200">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="w-9 h-9 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+            </div>
             <img
               src={
                 getBlogImage(blog)
                   ? `${MEDIA_URL}${getBlogImage(blog)}`
                   : "/cat.png"
               }
-              className="w-full h-full object-cover"
+              alt=""
+              onLoad={(e) => {
+                e.currentTarget.previousSibling?.remove();
+                e.currentTarget.parentElement.classList.remove("bg-gray-200");
+                e.currentTarget.classList.remove("opacity-0");
+              }}
+              className="relative z-10 w-full h-full object-cover transition-opacity duration-700 opacity-0"
             />
           </div>
         </div>

@@ -918,7 +918,12 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
               return (
                 <>
-                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt-1">
+                  {/* md:min-h-[40px] on both rows — matches the search box's
+                      rendered height so whichever row it slides into never
+                      changes that row's height, which would otherwise push
+                      the other row's tags up/down. See ExpertAdvices.jsx for
+                      the measured before/after. */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-4  md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow
                         items={speciesList.map((cat) => ({
@@ -940,7 +945,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                     {!topicsFew && searchBox}
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow
                         items={[

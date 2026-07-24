@@ -26,6 +26,7 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { LandingCards } from "../Landing/LandingCards";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getDeviceId } from "@/utils/deviceId";
 
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
