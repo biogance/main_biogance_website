@@ -14,6 +14,7 @@ import { FaApple } from 'react-icons/fa';
 import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
 import { getFirebaseAuth, getGoogleProvider, getAppleProvider } from '../../../utils/firebase';
 import { signInWithPopup } from 'firebase/auth';
+import { getDeviceId } from '@/utils/deviceId';
 
 export default function SignupModal({ isOpen, onClose, onLoginSuccess }) {
   const { t } = useTranslation('onboarding');

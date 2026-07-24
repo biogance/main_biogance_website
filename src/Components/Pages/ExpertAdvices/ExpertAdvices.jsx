@@ -1247,7 +1247,15 @@ function ExpertAdvices() {
 
               return (
                 <>
-                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-1 -mt- ">
+                  {/* md:min-h-[40px] on both rows — matches the search box's
+                      rendered height (h-9 + border) so whichever row it
+                      slides into never changes that row's height. Without
+                      this, the row losing/gaining the search box shrank or
+                      grew by ~11px, which visibly pushed the OTHER row's
+                      tags up/down instead of leaving them in place. Fixing
+                      the height here also centers the (shorter) tabs-only
+                      row's content evenly top/bottom via items-center. */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow
                         items={speciesList.map((cat) => ({
@@ -1269,7 +1277,7 @@ function ExpertAdvices() {
                     {!topicsFew && searchBox}
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow
                         items={[

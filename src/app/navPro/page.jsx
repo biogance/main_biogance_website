@@ -1,5 +1,5 @@
-import { Pro } from '@/Components/Pages/Pro/Pro';
+import ProSection from '@/Components/Pages/ProSection/ProSection';
 
 export default function Page() {
-  return <Pro/>;
+  return <ProSection/>;
 }
