@@ -229,7 +229,7 @@ export default function Footer() {
             <div>
               <h3 className="font-semibold text-white mb-4 text-md">{t('laboratory.title')}</h3>
               <ul className="space-y-2.5 text-sm text-gray-300">
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/who-are-we" className="hover:text-white transition">{laboratoryItems[0]}</Link></li>
+                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/our-laboratory" className="hover:text-white transition">{laboratoryItems[0]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/commitments" className="hover:text-white transition">{laboratoryItems[1]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/certifications" className="hover:text-white transition">{laboratoryItems[2]}</Link></li>
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300"><Link href="/advices" className="hover:text-white transition">{laboratoryItems[3]}</Link></li>

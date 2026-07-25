@@ -8,6 +8,7 @@ import { getDeviceId } from "../utils/deviceId";
 const VALID_ROUTES = [
   "/",
   "/who-are-we",
+  "/our-laboratory",
   "/navPro",
   "/advices",
   "/products",
