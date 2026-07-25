@@ -234,7 +234,7 @@ export default function ProSection() {
                     <li>Sales team follow-up</li>
                     <li>Catalogue access</li>
                   </ul>
-                  <Link style={{ backgroundColor:"black",  color: "white", padding: "10px 20px" }} className="btn" href="/distributor">
+                  <Link style={{ backgroundColor:"black",  color: "white", padding: "10px 20px" }} className="btn" href="/become-a-reseller">
                     Access reseller form
                   </Link>
                 </div>
@@ -264,7 +264,7 @@ export default function ProSection() {
                     <li>Expert voice &amp; content</li>
                     <li>Marketing team review</li>
                   </ul>
-                  <Link style={{ backgroundColor:"white",  color: "black", padding: "10px 20px" }} className="btn" href="/ambassador">
+                  <Link style={{ backgroundColor:"white",  color: "black", padding: "10px 20px" }} className="btn" href="/become-an-ambassador">
                     Access partner form
                   </Link>
                 </div>
@@ -431,7 +431,7 @@ export default function ProSection() {
                     and concept stores.
                   </span>
                 </div>
-                <Link className="tiny-link" href="/distributor">
+                <Link className="tiny-link" href="/become-a-reseller">
                   Apply
                 </Link>
               </div>
@@ -443,7 +443,7 @@ export default function ProSection() {
                     equestrian profiles.
                   </span>
                 </div>
-                <Link className="tiny-link" href="/ambassador">
+                <Link className="tiny-link" href="/become-an-ambassador">
                   Apply
                 </Link>
               </div>
@@ -595,7 +595,7 @@ export default function ProSection() {
 
         /* COMPONENTS */
         .page-shell {
-          max-width: var(--max);
+          max-width: full;
           margin: 0 auto;
           background: var(--paper);
         }
