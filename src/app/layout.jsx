@@ -6,17 +6,13 @@ import { Suspense } from "react";
 import { Toaster } from 'react-hot-toast';
 import PageLoader from "../Components/PageLoader";
 
-// Safari (iOS 15+) tints its own address-bar/toolbar chrome to match this
-// color — sampled from the meta tag, not from any DOM element. Kept white
-// on purpose: the black announcement bar (see Navbar.jsx) should stay a
-// page element, not bleed into the browser's own chrome above it.
+
 export const viewport = {
-  // A custom viewport export replaces Next's default entirely rather than
-  // merging with it, so width/initialScale must be repeated here — omitting
-  // them would silently break mobile responsive scaling site-wide.
+  
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover",
+
+  viewportFit: "auto",
   themeColor: "#ffffff",
 };
 
