@@ -2880,7 +2880,7 @@ export default function Ambasseder() {
             padding: 54px 24px;
           }
           .hero-copy :global(h1) {
-            font-size: clamp(54px, 17vw, 96px);
+            font-size: clamp(32px, 11vw, 68px);
           }
           .section {
             padding: 62px 0;

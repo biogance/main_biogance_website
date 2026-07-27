@@ -1,18 +1,15 @@
 import "./globals.css";
 import { ReduxProvider } from "../redux/provider";
 import I18nProvider from "../Components/I18nProvider";
-import { RouteTopLoader } from "../Components/Pages/TopLoader";
+import { RouteTopLoader, PullToRefresh } from "../Components/Pages/TopLoader";
 import { Suspense } from "react";
 import { Toaster } from 'react-hot-toast';
 import PageLoader from "../Components/PageLoader";
 
-// Safari (iOS 15+) tints its own address-bar/toolbar chrome to match the
-// page's top color — sampled from this, not from any DOM element. Without
-// it, Safari falls back to a default (often white) while the real top of
-// the page is the black announcement bar (see Navbar.jsx), which is exactly
-// the mismatch that shows as a white sliver right at the toolbar boundary
-// only in Safari (Chrome for iOS doesn't do this toolbar-tinting at all,
-// which is why this never showed up there).
+// Safari (iOS 15+) tints its own address-bar/toolbar chrome to match this
+// color — sampled from the meta tag, not from any DOM element. Kept white
+// on purpose: the black announcement bar (see Navbar.jsx) should stay a
+// page element, not bleed into the browser's own chrome above it.
 export const viewport = {
   // A custom viewport export replaces Next's default entirely rather than
   // merging with it, so width/initialScale must be repeated here — omitting
@@ -20,7 +17,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#111111",
+  themeColor: "#ffffff",
 };
 
 export const metadata = {
@@ -65,6 +62,7 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           <I18nProvider>
             <PageLoader />
+            <PullToRefresh />
             <Suspense fallback={null}><RouteTopLoader /></Suspense>
             <Toaster position="top-right" toastOptions={{ duration: 4000, style: { zIndex: 999999 } }} containerStyle={{ zIndex: 999999 }} />
             {children}

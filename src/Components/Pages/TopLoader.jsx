@@ -2,6 +2,67 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+// Native "pull past the top to refresh" (typology.com-style) — iOS Safari's
+// rubber-band bounce is purely visual and never reloads the page on its
+// own, so this reproduces the gesture: arm on a touchstart while already at
+// scrollY 0, and if the release point is more than PULL_THRESHOLD below
+// that while still at the top, reload.
+const PULL_THRESHOLD = 80;
+
+export function PullToRefresh() {
+  useEffect(() => {
+    let startY = null;
+    let armed = false;
+
+    const onTouchStart = (e) => {
+      // A modal/drawer locks body scroll via overflow:hidden (see Navbar.jsx)
+      // while its own inner content scrolls — window.scrollY stays 0 the
+      // whole time in that state, so without this guard a pull inside an
+      // open modal would also trigger a full-page reload.
+      if (document.body.style.overflow === "hidden") {
+        armed = false;
+        return;
+      }
+      if (window.scrollY <= 0) {
+        startY = e.touches[0].clientY;
+        armed = true;
+      } else {
+        startY = null;
+        armed = false;
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (!armed || startY == null) return;
+      const dy = e.touches[0].clientY - startY;
+      // Pulling back up (or scrolling away from the top) cancels the pull.
+      if (dy < 0 || window.scrollY > 0) armed = false;
+    };
+
+    const onTouchEnd = (e) => {
+      if (!armed || startY == null) return;
+      const endY = e.changedTouches[0].clientY;
+      const dy = endY - startY;
+      armed = false;
+      startY = null;
+      if (dy > PULL_THRESHOLD && window.scrollY <= 0) {
+        window.location.reload();
+      }
+    };
+
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
+  return null;
+}
+
 export function useTopLoader() {
   const start = () => window.dispatchEvent(new Event("toploader:start"));
   return { start };
