@@ -155,7 +155,30 @@ export default function Navbar({
     const mq = window.matchMedia("(min-width: 1024px)");
     const updateIsDesktop = () => {
       isDesktopRef.current = mq.matches;
-      applyOffset(true);
+
+      // FIX (Issue 1 — navbar appears already-scrolled on first paint):
+      // We used to call applyOffset(true) here, which reads the REAL
+      // window.scrollY at this exact instant and immediately applies a
+      // matching translateY. The problem: on first mount (and on
+      // client-side route changes) window.scrollY is not reliably 0 at
+      // the moment this effect runs — the browser's native scroll
+      // restoration, or timing of the route transition, can report a
+      // stale non-zero value. That caused the wrapper to be forced into
+      // the "scrolled" (announcement hidden, white nav) state immediately,
+      // even though the user never actually scrolled — and it would only
+      // correct itself once a REAL 'scroll' event fired later.
+      //
+      // Fix: always reset to the top/expanded state (transform: "") on
+      // mount / breakpoint change, ignoring whatever window.scrollY
+      // happens to report at that instant. If the user genuinely is
+      // scrolled down, the very next real scroll event (handleScroll
+      // below) corrects the position almost instantly — a tiny, cheap
+      // correction, instead of getting stuck in the wrong state until the
+      // user manually scrolls.
+      lastOffsetRef.current = -1;
+      if (headerWrapperRef.current) {
+        headerWrapperRef.current.style.transform = "";
+      }
     };
     updateIsDesktop();
     mq.addEventListener("change", updateIsDesktop);
@@ -228,6 +251,17 @@ export default function Navbar({
     const timer = setTimeout(() => setShowAnnouncement(true), 200);
     return () => clearTimeout(timer);
   }, []);
+
+  // FIX (Issue 1, continued): on every client-side route change, force the
+  // header wrapper back to its top/expanded state immediately. Without
+  // this, navigating to a new page while already scrolled down on the
+  // previous page could leave the wrapper visually "stuck" in whatever
+  // transform it last had, until a fresh real scroll event corrects it.
+  useEffect(() => {
+    if (headerWrapperRef.current) {
+      headerWrapperRef.current.style.transform = "";
+    }
+  }, [pathname]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

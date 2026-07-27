@@ -245,10 +245,15 @@ export default function HeroSection() {
   return (
     <>
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-      {/* Fixed Navbar at top */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar isVideoVisible={isVideoVisible} />
-      </div>
+      {/* Navbar handles its own fixed positioning internally (both its
+          always-white iOS status-bar strip and its header wrapper are
+          independently position:fixed) — wrapping it in another
+          position:fixed z-50 div here was redundant, and worse, it caps
+          the white strip's z-index:70 at this wrapper's z-50 from the
+          outside (z-index only ranks within the stacking context that
+          contains it), which is what let the status bar go black again
+          specifically on this page's transparent/top-of-scroll state. */}
+      <Navbar isVideoVisible={isVideoVisible} />
 
       {/* Main content with viewport height */}
       <main className="relative bg-white">
