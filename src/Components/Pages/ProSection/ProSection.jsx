@@ -234,7 +234,7 @@ export default function ProSection() {
                     <li>Sales team follow-up</li>
                     <li>Catalogue access</li>
                   </ul>
-                  <Link style={{ backgroundColor:"black",  color: "white", padding: "10px 20px" }} className="btn" href="/become-a-reseller">
+                  <Link style={{ backgroundColor:"black", color:"white", padding:"10px 28px" }} className="btn" href="/become-a-reseller">
                     Access reseller form
                   </Link>
                 </div>
@@ -264,7 +264,7 @@ export default function ProSection() {
                     <li>Expert voice &amp; content</li>
                     <li>Marketing team review</li>
                   </ul>
-                  <Link style={{ backgroundColor:"white",  color: "black", padding: "10px 20px" }} className="btn" href="/become-an-ambassador">
+                  <Link style={{ backgroundColor:"white", color:"black", padding:"10px 28px" }} className="btn" href="/become-an-ambassador">
                     Access partner form
                   </Link>
                 </div>
@@ -1002,14 +1002,15 @@ export default function ProSection() {
         .partner-card .route-card-bottom :global(li) {
           color: rgba(255, 255, 255, 0.58);
         }
-        .partner-card :global(.btn.secondary) {
-          border-color: #fff;
-          color: #111;
+        .partner-card :global(.btn) {
           background: #fff;
+          color: #111;
+          border-color: #fff;
         }
-        .partner-card :global(.btn.secondary:hover) {
+        .partner-card :global(.btn:hover) {
           background: transparent;
           color: #fff;
+          border-color: #fff;
         }
         .route-note-bar {
           margin-top: 18px;
@@ -1404,6 +1405,8 @@ export default function ProSection() {
           }
           .route-choice-card {
             min-height: 480px;
+            overflow: visible;
+            transform: none !important;
           }
           .route-card-bottom {
             grid-template-columns: 1fr;

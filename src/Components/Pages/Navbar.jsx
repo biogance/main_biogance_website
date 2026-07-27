@@ -449,7 +449,7 @@ export default function Navbar({
           // enough buffer for the animation seam, not the full status-bar
           // height, otherwise it paints black into the area that's supposed
           // to show Safari's white chrome.
-          className="w-full bg-[#111] text-white h-[52px] pt-[12px]"
+          className="w-full bg-[#fff] text-black h-[52px] pt-[12px]"
           style={{
             // Belt-and-suspenders on top of the Math.round() fix above: if
             // any sub-pixel seam still manages to open between this black
@@ -458,7 +458,7 @@ export default function Navbar({
             // edge, overlapping into that seam — so worst case it flashes
             // black (blending into the bar itself, invisible) instead of
             // the white body background underneath.
-            boxShadow: "0 1px 0 0 #111",
+           
           }}
         >
           <div className="relative h-full overflow-hidden">
