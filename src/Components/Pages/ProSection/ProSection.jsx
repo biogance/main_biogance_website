@@ -900,6 +900,10 @@ export default function ProSection() {
           position: relative;
           z-index: 1;
         }
+        .route-card-bottom :global(a.btn) {
+          position: relative;
+          z-index: 2;
+        }
         .route-choice-card:hover {
           transform: translateY(-4px);
           box-shadow: 0 30px 80px rgba(0, 0, 0, 0.07);
