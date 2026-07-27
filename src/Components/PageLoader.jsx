@@ -9,7 +9,7 @@ const VALID_ROUTES = [
   "/",
   "/who-are-we",
   "/our-laboratory",
-  "/navPro",
+  "/professional",
   "/advices",
   "/products",
   "/shop",

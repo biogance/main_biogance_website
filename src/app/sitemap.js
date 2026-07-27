@@ -76,7 +76,7 @@ export default async function sitemap() {
     { url: `${SITE_URL}/ambassador`,      lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/distributor`,     lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/reseller`,        lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${SITE_URL}/navPro`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/professional`,    lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/become-a-reseller`,    lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/become-an-ambassador`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/contact`,         lastModified: now, changeFrequency: "monthly", priority: 0.5 },
