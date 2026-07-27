@@ -433,7 +433,7 @@ export default function Reseller() {
                     contacting you with the next steps.
                   </p>
                   <div className="hero-actions">
-                    <a style={{ color: "white" }} className="btn" href="#application">
+                    <a style={{ color: "white", hover: { color: "black" } }} className="btn" href="#application">
                       Apply now
                     </a>
                     <a className="btn secondary" href="#catalogue">
@@ -971,7 +971,7 @@ export default function Reseller() {
         .reseller-landing input,
         .reseller-landing select,
         .reseller-landing textarea {
-          font: inherit;
+          font-family: inherit;
         }
 
         /* Navbar is fixed (104px desktop / 64px mobile) — same offset used
@@ -1030,18 +1030,18 @@ export default function Reseller() {
           transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
             transform 0.2s ease;
         }
-        .btn:hover {
-          background: transparent;
-          color: var(--ink);
-          transform: translateY(-1px);
-        }
+       .btn:hover {
+  background: transparent !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
         .btn.secondary {
           background: transparent;
           color: var(--ink);
         }
         .btn.secondary:hover {
-          background: var(--ink);
-          color: var(--white);
+          background: black !important;
+          color: white !important;
         }
         .btn.white {
           background: var(--white);
@@ -1049,8 +1049,8 @@ export default function Reseller() {
           border-color: var(--white);
         }
         .btn.white:hover {
-          background: transparent;
-          color: var(--white);
+          background: lightgray !important;
+          color: black !important;
         }
 
         .section {
@@ -1666,9 +1666,23 @@ export default function Reseller() {
           border-bottom: 0;
         }
         .checkbox-card :global(input) {
+          /* The checkbox <input> is a descendant of .field, so the generic
+             ".field input" rule further down (border/background/min-height:
+             48px/padding, meant for text fields) also matches it — its
+             min-height:48px overrides this 14px height, stretching the box
+             into a tall thin rectangle instead of a square checkbox.
+             Reset every one of those leaked properties back to a plain
+             native checkbox here. */
           width: 14px;
           height: 14px;
+          min-height: 0;
+          min-width: 0;
+          padding: 0;
+          margin: 0;
+          border: 0;
+          background: none;
           accent-color: var(--ink);
+          flex: 0 0 auto;
         }
 
         .consent-box {
@@ -1937,6 +1951,51 @@ export default function Reseller() {
           }
         }
 
+        /* Small/medium screens — gentler heading sizes than the desktop
+           clamp()s above (tuned for wide screens, left untouched there),
+           same pattern used in ProSection.jsx. Kept as its own pass so
+           nothing above 1440px changes. */
+        @media (max-width: 1440px) {
+          .hero-title {
+            font-size: clamp(34px, 5.4vw, 64px);
+            overflow-wrap: break-word;
+            word-break: break-word;
+          }
+          .section-title {
+            font-size: clamp(30px, 4.6vw, 58px);
+            overflow-wrap: break-word;
+            word-break: break-word;
+          }
+          .form-aside :global(h2) {
+            font-size: clamp(28px, 4vw, 46px);
+          }
+          .catalogue-copy :global(h2) {
+            font-size: clamp(28px, 4.2vw, 52px);
+          }
+          .glass-card :global(h2) {
+            font-size: clamp(20px, 2.6vw, 34px);
+          }
+        }
+
+        /* Checkbox cards: on tablet the grid is still 2 columns, so a row
+           with one 2-line label and one 1-line label share a stretched row
+           height — align-items:center then centers the short label's
+           checkbox against that taller row instead of its own text,
+           making checkboxes drift out of alignment between rows. Top-align
+           instead so every checkbox sits flush with the first line of its
+           own label, on both the 2-col tablet grid and the 1-col mobile
+           grid. */
+        @media (max-width: 900px) {
+          .checkbox-card {
+            align-items: flex-start;
+            line-height: 1.45;
+          }
+          .checkbox-card :global(input) {
+            margin-top: 3px;
+            flex-shrink: 0;
+          }
+        }
+
         @media (max-width: 1180px) {
           .hero-grid,
           .form-shell,
@@ -2035,6 +2094,12 @@ export default function Reseller() {
           }
           .form-progress {
             grid-template-columns: 1fr 1fr;
+          }
+          .progress-step {
+            font-size: 8.5px;
+            letter-spacing: 0.1em;
+            line-height: 1.35;
+            padding: 6px;
           }
           .form-actions {
             align-items: flex-start;

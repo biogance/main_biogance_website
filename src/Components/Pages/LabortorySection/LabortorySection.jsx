@@ -452,7 +452,7 @@ export default function LabortorySection() {
         }
 
         .wrap {
-          max-width: var(--max);
+          max-width: full;
           margin: 0 auto;
           padding: 0 24px;
         }
