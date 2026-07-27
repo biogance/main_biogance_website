@@ -8,12 +8,11 @@ import PageLoader from "../Components/PageLoader";
 
 
 export const viewport = {
-  
   width: "device-width",
   initialScale: 1,
-
   viewportFit: "auto",
   themeColor: "#ffffff",
+  colorScheme: "light",
 };
 
 export const metadata = {
