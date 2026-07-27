@@ -380,7 +380,7 @@ export default function LabortorySection() {
               Choosing Biogance means choosing an expert French brand that blends science and nature to create trusted, responsible and desirable pet-care routines.
             </p>
             <div className="closing-actions">
-              <a className="btn dark" href="/products">
+              <a className="btn dark" href="#">
                 Discover our products
               </a>
               <a className="btn" href="#commitments">
