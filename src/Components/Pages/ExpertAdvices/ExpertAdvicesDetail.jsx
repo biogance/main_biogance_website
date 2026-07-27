@@ -790,8 +790,15 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               </div>
               <div
                 ref={cardsScrollRef}
-                className="flex-1 min-h-0 -mt-5 overflow-y-auto scroll-smooth px-4 sm:px-6 pb-4 sm:pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="flex-1 min-h-0 -mt-5 overflow-y-auto scroll-smooth products-sidebar-scroll px-4 sm:px-6 pb-4 sm:pb-2"
               >
+                <style>{`
+                  .products-sidebar-scroll { scrollbar-width: thin; scrollbar-color: #d1d1ce transparent; }
+                  .products-sidebar-scroll::-webkit-scrollbar { display: block; width: 3px; }
+                  .products-sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+                  .products-sidebar-scroll::-webkit-scrollbar-thumb { background: #d1d1ce; border-radius: 999px; }
+                  .products-sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a0a09c; }
+                `}</style>
                 {bundles.map((bundle) => {
                   const products = bundle.products || [];
                   const uniqueSizes = [

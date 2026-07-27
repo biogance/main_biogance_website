@@ -431,7 +431,20 @@ export default function LabortorySection() {
             padding-top: 64px;
           }
         }
-
+.hero,
+#story,
+#values,
+#commitments {
+  scroll-margin-top: 104px;
+}
+@media (max-width: 1023px) {
+  .hero,
+  #story,
+  #values,
+  #commitments {
+    scroll-margin-top: 64px;
+  }
+}
         .page {
           min-height: 100vh;
         }
@@ -459,7 +472,7 @@ export default function LabortorySection() {
         }
 
         .wrap {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
           padding: 0 24px;
         }
