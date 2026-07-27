@@ -23,25 +23,13 @@ html, body {
   scrollbar-width: none;
 }
 
-/* iOS's elastic "rubber-band" overscroll briefly reveals the canvas behind
-   the page (above y=0) on essentially every scroll gesture, not just a
-   deliberate overscroll — this happens identically in Safari, Chrome and
-   Firefox on iOS since they all share Apple's WebKit engine and its native
-   scroll physics. That gap shows whatever color sits behind <body>, which
-   was the default white — clashing with the black fixed bar pinned at the
-   very top (see Navbar.jsx) and showing as a white flash while scrolling.
-   Matching it to that bar's color makes the gap invisible.
-   The bounce itself is intentionally left enabled (no overscroll-behavior
-   override) — Navbar.jsx's fixed bar already paints solid black 100px
-   above the visible viewport for exactly this gap, and PullToRefresh (see
-   TopLoader.jsx) relies on the native pull gesture being available to
-   reload the page when the user pulls down past the top. */
 html {
-  background: #fff;
+  background: #fff !important;
+  color-scheme: light !important;
 }
 
 body {
-  background: #fff;
+  background: #fff !important;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

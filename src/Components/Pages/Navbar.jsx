@@ -430,21 +430,12 @@ export default function Navbar({
           never moves it, keeping it locked behind the status bar at all
           times. z-[61] sits above the wrapper (z-[60]) so it paints on
           top of any black bleed from the announcement bar. */}
-      <div
-        className="fixed left-0 right-0 top-0 z-[62] pointer-events-none lg:hidden transform-gpu"
-        style={{
-          height: "env(safe-area-inset-top)",
-          background: "#fff",
-          willChange: "transform",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-        }}
-      />
+      {/* viewport-fit:auto — Safari clips content out of status bar,
+          white strip no longer needed since html background handles it */}
 
       <div
         ref={headerWrapperRef}
-        className="fixed left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
-        style={{ top: "env(safe-area-inset-top)" }}
+        className="fixed top-0 left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
         <div
           className="w-full bg-[#111] text-white h-[40px]"
