@@ -437,9 +437,9 @@ export default function Navbar({
         ref={headerWrapperRef}
         className="fixed top-0 left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
-        <div
-          className="w-full bg-[#111] text-white h-[40px]"
-        >
+        {/* Status bar area — white, sits above announcement bar */}
+        <div className="lg:hidden" style={{ height: "env(safe-area-inset-top)", background: "#ffffff" }} />
+        <div className="w-full bg-[#111] text-white h-[40px]">
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
               const h = activeHeaders[idx] || activeHeaders[0];
