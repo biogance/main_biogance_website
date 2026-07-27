@@ -431,8 +431,14 @@ export default function Navbar({
           times. z-[61] sits above the wrapper (z-[60]) so it paints on
           top of any black bleed from the announcement bar. */}
       <div
-        className="fixed left-0 right-0 top-0 z-[61] pointer-events-none lg:hidden"
-        style={{ height: "env(safe-area-inset-top)", background: "#fff" }}
+        className="fixed left-0 right-0 top-0 z-[62] pointer-events-none lg:hidden transform-gpu"
+        style={{
+          height: "env(safe-area-inset-top)",
+          background: "#fff",
+          willChange: "transform",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+        }}
       />
 
       <div
