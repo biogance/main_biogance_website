@@ -10,16 +10,11 @@ import PageLoader from "../Components/PageLoader";
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  // "cover" on purpose: it lets the page paint under the iPhone notch/
-  // status-bar area, but Navbar.jsx now deliberately leaves that exact
-  // strip transparent (a spacer sized to env(safe-area-inset-top), which
-  // only resolves to a real value in "cover" mode) instead of relying on
-  // "auto" to clip fixed content out of it automatically — that clipping
-  // turned out not to apply to the header bar here, since it's a GPU-
-  // composited (transform-gpu/will-change) fixed element, which iOS Safari
-  // doesn't always clip the same way as plain fixed content.
-  viewportFit: "cover",
-  themeColor: "#ffffff",
+  viewportFit: "auto",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#ffffff" },
+  ],
   colorScheme: "light",
 };
 
@@ -56,8 +51,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=auto" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)" />
+        <meta name="color-scheme" content="light" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="icon" type="image/svg+xml" href="/FF.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
