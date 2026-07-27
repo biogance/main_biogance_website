@@ -421,7 +421,7 @@ export default function Navbar({
       {/* iOS Safari sub-pixel gap cover: a fixed 2px black strip at the very top of the viewport,
           hidden behind the navbar elements (z-index 49), which guarantees that any compositing or
           rounding errors at y=0 reveal black instead of the white body background. */}
-      <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#111] z-[49] pointer-events-none lg:hidden" />
+      <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#fff] z-[49] pointer-events-none lg:hidden" />
 
       {/* Shared fixed wrapper — announcement bar + nav now live in ONE
           transformed layer instead of two independently-transformed fixed
