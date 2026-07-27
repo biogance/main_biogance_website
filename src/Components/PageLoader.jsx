@@ -58,10 +58,28 @@ export function callSplashApi() {
     .catch(() => {});
 }
 
+function forceThemeWhite() {
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.content = "#ffffff";
+}
+
 export default function PageLoader() {
   const [visible, setVisible] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Force theme-color white on every load including bfcache restore (refresh)
+  useEffect(() => {
+    forceThemeWhite();
+    const handlePageShow = () => forceThemeWhite();
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   // Call splash API on every click anywhere in the app
   useEffect(() => {
