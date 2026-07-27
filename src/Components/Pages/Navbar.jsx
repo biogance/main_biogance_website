@@ -85,7 +85,7 @@ export default function Navbar({
   const productsCloseTimer = useRef(null);
 
   // Announcement bar height in px — also the max scroll distance it travels.
-  const ANNOUNCEMENT_HEIGHT = 40;
+  const ANNOUNCEMENT_HEIGHT = 40; // matches h-[40px] on the announcement bar
 
   // FIX (iOS Safari white-line flicker on scroll):
   // Previously the announcement bar and the nav were TWO separate
@@ -418,16 +418,6 @@ export default function Navbar({
 
   return (
     <>
-      {/* iOS Safari sub-pixel gap cover: a fixed 2px black strip, hidden behind the navbar
-          elements (z-index 49), which guarantees that any compositing or rounding errors right
-          below the safe area reveal black instead of the white body background. Positioned at
-          env(safe-area-inset-top) rather than top:0 so it starts below the notch/status-bar
-          strip instead of painting into it — see the spacer below for why that strip has to stay
-          empty. */}
-      <div
-        className="fixed left-0 right-0 h-[2px] bg-[#111] z-[49] pointer-events-none lg:hidden"
-        style={{ top: "env(safe-area-inset-top)" }}
-      />
 
       {/* Shared fixed wrapper — announcement bar + nav now live in ONE
           transformed layer instead of two independently-transformed fixed
@@ -435,41 +425,23 @@ export default function Navbar({
           flicker on scroll: with a single element being moved, WebKit
           cannot composite the two pieces on different frames, so the
           hairline desync gap that used to flash white can no longer open. */}
+      {/* White fixed strip that always covers the status-bar / safe-area
+          region — lives OUTSIDE the transformed wrapper so translateY
+          never moves it, keeping it locked behind the status bar at all
+          times. z-[61] sits above the wrapper (z-[60]) so it paints on
+          top of any black bleed from the announcement bar. */}
+      <div
+        className="fixed left-0 right-0 top-0 z-[61] pointer-events-none lg:hidden"
+        style={{ height: "env(safe-area-inset-top)", background: "#fff" }}
+      />
+
       <div
         ref={headerWrapperRef}
-        className="fixed top-[-12px] left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
+        className="fixed left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
+        style={{ top: "env(safe-area-inset-top)" }}
       >
-        {/* Deliberately transparent — this is the iPhone notch/status-bar/
-            Dynamic-Island strip. Safari tints its own status bar to match
-            whatever color is actually painted here (confirmed directly:
-            making the bar below white made the status bar go white too),
-            not the <meta name="theme-color"> tag alone — "auto" viewport-fit
-            was supposed to auto-clip fixed content out of this area but
-            didn't reliably for this GPU-composited (transform-gpu/
-            will-change) header, so this spacer explicitly reserves it as
-            empty instead. Needs viewportFit: "cover" in layout.jsx for
-            env(safe-area-inset-top) to resolve to a real value — it's 0 in
-            "auto" mode. */}
-        <div style={{ height: "env(safe-area-inset-top)", background: "#fff" }} />
         <div
-          // top/padding-top/height (instead of top-0 + a box-shadow) extend
-          // this element's own *painted box* slightly above the visible 40px,
-          // so a sub-pixel seam can't open at its own top edge during the
-          // 0-40px translateY hide/show animation (a box-shadow is a separate
-          // render pass from the element's own paint, and during an active
-          // `transform` Safari can composite the shadow a frame behind the
-          // element — the transition-time white line this guards against).
-          className="w-full bg-[#111] text-white h-[52px] pt-[12px]"
-          style={{
-            // Belt-and-suspenders on top of the Math.round() fix above: if
-            // any sub-pixel seam still manages to open between this black
-            // bar and the nav sitting right below it, this 1px box-shadow
-            // "bleeds" the same black color past this element's own bottom
-            // edge, overlapping into that seam — so worst case it flashes
-            // black (blending into the bar itself, invisible) instead of
-            // the white body background underneath.
-           
-          }}
+          className="w-full bg-[#111] text-white h-[40px]"
         >
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
