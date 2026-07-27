@@ -409,9 +409,16 @@ export default function Reseller() {
   const openStepOnInvalid = (index) => () => setOpenIndex(index);
 
   return (
-    <div className="reseller-landing">
+    <>
+      {/* Rendered outside .reseller-landing on purpose: that wrapper sets its
+          own font-family/color via CSS custom properties below, and since
+          Navbar is a real child component (not styled-jsx-scoped content),
+          those properties would otherwise inherit straight into Navbar's
+          own text through normal CSS inheritance, overriding its intended
+          site-wide styling. */}
       <Navbar bgWhite={true} />
 
+      <div className="reseller-landing">
       <div className="reseller-page-offset">
         <main>
           {/* HERO */}
@@ -2145,6 +2152,7 @@ export default function Reseller() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }

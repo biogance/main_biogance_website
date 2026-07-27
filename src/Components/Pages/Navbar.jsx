@@ -429,6 +429,43 @@ export default function Navbar({
 
   return (
     <>
+      {/* ALWAYS-WHITE iOS STATUS BAR STRIP
+          -----------------------------------------------------------------
+          This is a completely SEPARATE fixed element, a SIBLING of
+          headerWrapperRef below — it is intentionally NOT nested inside it.
+
+          Why: headerWrapperRef gets `transform: translateY(-Npx)` applied
+          on every scroll tick (see the scroll effect above) to hide the
+          announcement bar as the user scrolls. If this status-bar strip
+          lived inside that wrapper, it would move/scroll away too, and
+          whatever sits behind it (page background, which can be dark-mode
+          aware or themed) would show through the safe-area / notch region
+          — breaking the "always white" requirement.
+
+          By keeping it as an independent `position: fixed` element with
+          its own top-level stacking context and a z-index HIGHER than the
+          header wrapper (z-[70] > z-[60]), it:
+            1. Never receives the scroll transform (not a descendant of
+               headerWrapperRef), so it never physically moves.
+            2. Always paints on top of the announcement bar / nav / any
+               modal backdrop that sits under it.
+            3. Uses an inline `background: "#ffffff"` (not a Tailwind class
+               or CSS variable), so it can never be overridden by a
+               `dark:` variant, a body/theme background, or any dark-mode
+               class toggled elsewhere in the app.
+
+          `lg:hidden` — this is only relevant on phones with a notch/safe
+          area (iOS Safari); desktop browsers don't have this status bar
+          concept, so we don't render it there. */}
+      <div
+        aria-hidden="true"
+        className="lg:hidden fixed top-0 left-0 right-0 pointer-events-none"
+        style={{
+          height: "env(safe-area-inset-top)",
+          background: "#ffffff",
+          zIndex: 70, // above headerWrapperRef (z-[60]) and its contents
+        }}
+      />
 
       {/* Shared fixed wrapper — announcement bar + nav now live in ONE
           transformed layer instead of two independently-transformed fixed
@@ -436,14 +473,6 @@ export default function Navbar({
           flicker on scroll: with a single element being moved, WebKit
           cannot composite the two pieces on different frames, so the
           hairline desync gap that used to flash white can no longer open. */}
-      {/* White fixed strip that always covers the status-bar / safe-area
-          region — lives OUTSIDE the transformed wrapper so translateY
-          never moves it, keeping it locked behind the status bar at all
-          times. z-[61] sits above the wrapper (z-[60]) so it paints on
-          top of any black bleed from the announcement bar. */}
-      {/* viewport-fit:auto — Safari clips content out of status bar,
-          white strip no longer needed since html background handles it */}
-
       <div
         ref={headerWrapperRef}
         className="fixed top-0 left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
@@ -452,11 +481,12 @@ export default function Navbar({
           className="w-full bg-[#111] text-white"
           style={{ height: "calc(env(safe-area-inset-top) + 40px)" }}
         >
-          {/* White strip covering status bar area — always on top of #111 */}
-          <div
-            className="lg:hidden absolute left-0 right-0 top-0"
-            style={{ height: "env(safe-area-inset-top)", background: "#ffffff", zIndex: 1 }}
-          />
+          {/* NOTE: the old in-wrapper white status-bar strip that used to
+              live here has been removed. It scrolled/translated together
+              with this wrapper, which meant it could move out from behind
+              the real status bar during scroll and expose non-white
+              content. The always-white strip above (outside this wrapper,
+              never transformed) fully replaces it. */}
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
               const h = activeHeaders[idx] || activeHeaders[0];
