@@ -450,7 +450,7 @@ export default function Navbar({
             empty instead. Needs viewportFit: "cover" in layout.jsx for
             env(safe-area-inset-top) to resolve to a real value — it's 0 in
             "auto" mode. */}
-        <div style={{ height: "env(safe-area-inset-top)" }} />
+        <div style={{ height: "env(safe-area-inset-top)", background: "#fff" }} />
         <div
           // top/padding-top/height (instead of top-0 + a box-shadow) extend
           // this element's own *painted box* slightly above the visible 40px,
