@@ -37,7 +37,7 @@ html, body {
    TopLoader.jsx) relies on the native pull gesture being available to
    reload the page when the user pulls down past the top. */
 html {
-  background: #111;
+  background: #fff;
 }
 
 body {
