@@ -418,10 +418,16 @@ export default function Navbar({
 
   return (
     <>
-      {/* iOS Safari sub-pixel gap cover: a fixed 2px black strip at the very top of the viewport,
-          hidden behind the navbar elements (z-index 49), which guarantees that any compositing or
-          rounding errors at y=0 reveal black instead of the white body background. */}
-      <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#fff] z-[49] pointer-events-none lg:hidden" />
+      {/* iOS Safari sub-pixel gap cover: a fixed 2px black strip, hidden behind the navbar
+          elements (z-index 49), which guarantees that any compositing or rounding errors right
+          below the safe area reveal black instead of the white body background. Positioned at
+          env(safe-area-inset-top) rather than top:0 so it starts below the notch/status-bar
+          strip instead of painting into it — see the spacer below for why that strip has to stay
+          empty. */}
+      <div
+        className="fixed left-0 right-0 h-[2px] bg-[#111] z-[49] pointer-events-none lg:hidden"
+        style={{ top: "env(safe-area-inset-top)" }}
+      />
 
       {/* Shared fixed wrapper — announcement bar + nav now live in ONE
           transformed layer instead of two independently-transformed fixed
@@ -433,6 +439,18 @@ export default function Navbar({
         ref={headerWrapperRef}
         className="fixed top-[-12px] left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
+        {/* Deliberately transparent — this is the iPhone notch/status-bar/
+            Dynamic-Island strip. Safari tints its own status bar to match
+            whatever color is actually painted here (confirmed directly:
+            making the bar below white made the status bar go white too),
+            not the <meta name="theme-color"> tag alone — "auto" viewport-fit
+            was supposed to auto-clip fixed content out of this area but
+            didn't reliably for this GPU-composited (transform-gpu/
+            will-change) header, so this spacer explicitly reserves it as
+            empty instead. Needs viewportFit: "cover" in layout.jsx for
+            env(safe-area-inset-top) to resolve to a real value — it's 0 in
+            "auto" mode. */}
+        <div style={{ height: "env(safe-area-inset-top)" }} />
         <div
           // top/padding-top/height (instead of top-0 + a box-shadow) extend
           // this element's own *painted box* slightly above the visible 40px,
@@ -441,15 +459,7 @@ export default function Navbar({
           // render pass from the element's own paint, and during an active
           // `transform` Safari can composite the shadow a frame behind the
           // element — the transition-time white line this guards against).
-          // This used to extend 100px up specifically to paint black under
-          // the iOS status-bar/Dynamic-Island area too, back when the page
-          // rendered under it (viewport-fit: cover in layout.jsx). Now that
-          // viewport-fit is "auto", the page no longer renders under that
-          // area at all — Safari's own chrome owns it — so this only needs
-          // enough buffer for the animation seam, not the full status-bar
-          // height, otherwise it paints black into the area that's supposed
-          // to show Safari's white chrome.
-          className="w-full bg-[#fff] text-black h-[52px] pt-[12px]"
+          className="w-full bg-[#111] text-white h-[52px] pt-[12px]"
           style={{
             // Belt-and-suspenders on top of the Math.round() fix above: if
             // any sub-pixel seam still manages to open between this black

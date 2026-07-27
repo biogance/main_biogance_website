@@ -10,7 +10,15 @@ import PageLoader from "../Components/PageLoader";
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  viewportFit: "auto",
+  // "cover" on purpose: it lets the page paint under the iPhone notch/
+  // status-bar area, but Navbar.jsx now deliberately leaves that exact
+  // strip transparent (a spacer sized to env(safe-area-inset-top), which
+  // only resolves to a real value in "cover" mode) instead of relying on
+  // "auto" to clip fixed content out of it automatically — that clipping
+  // turned out not to apply to the header bar here, since it's a GPU-
+  // composited (transform-gpu/will-change) fixed element, which iOS Safari
+  // doesn't always clip the same way as plain fixed content.
+  viewportFit: "cover",
   themeColor: "#ffffff",
   colorScheme: "light",
 };
