@@ -85,7 +85,18 @@ export default function Navbar({
   const productsCloseTimer = useRef(null);
 
   // Announcement bar height in px — also the max scroll distance it travels.
-  const ANNOUNCEMENT_HEIGHT = 40; // matches h-[40px] on the announcement bar
+  const ANNOUNCEMENT_HEIGHT = 40;
+
+  const safeAreaRef = useRef(0);
+
+  useEffect(() => {
+    // Read env(safe-area-inset-top) once after mount
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;top:env(safe-area-inset-top);height:0;visibility:hidden";
+    document.body.appendChild(el);
+    safeAreaRef.current = el.getBoundingClientRect().top;
+    document.body.removeChild(el);
+  }, []);
 
   // FIX (iOS Safari white-line flicker on scroll):
   // Previously the announcement bar and the nav were TWO separate
@@ -126,7 +137,7 @@ export default function Navbar({
       const scrollOffset = Math.round(
         isDesktopRef.current
           ? 0
-          : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT),
+          : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT + safeAreaRef.current),
       );
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
@@ -437,9 +448,15 @@ export default function Navbar({
         ref={headerWrapperRef}
         className="fixed top-0 left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
-        {/* Status bar area — white, sits above announcement bar */}
-        <div className="lg:hidden" style={{ height: "env(safe-area-inset-top)", background: "#ffffff" }} />
-        <div className="w-full bg-[#111] text-white h-[40px]">
+        <div
+          className="w-full bg-[#111] text-white"
+          style={{ height: "calc(env(safe-area-inset-top) + 40px)" }}
+        >
+          {/* White strip covering status bar area — always on top of #111 */}
+          <div
+            className="lg:hidden absolute left-0 right-0 top-0"
+            style={{ height: "env(safe-area-inset-top)", background: "#ffffff", zIndex: 1 }}
+          />
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
               const h = activeHeaders[idx] || activeHeaders[0];
