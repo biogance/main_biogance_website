@@ -268,7 +268,7 @@ export default function Navbar({
   const navLinks = [
     { href: "/our-laboratory", text: t("ourLaboratory"), key: "laboratory" },
     { href: "/advices", text: t("ourExpertAdvice"), key: "advice" },
-    { href: "/navPro", text: "PRO", key: "pro" },
+    { href: "/professional", text: "PRO", key: "pro" },
   ];
 
   const languages = [
