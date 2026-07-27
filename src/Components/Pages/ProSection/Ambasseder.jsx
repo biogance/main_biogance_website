@@ -1403,9 +1403,16 @@ export default function Ambasseder() {
   ];
 
   return (
-    <div className="ambassador-landing">
+    <>
+      {/* Rendered outside .ambassador-landing on purpose: that wrapper sets
+          its own font-family/color via CSS custom properties below, and
+          since Navbar is a real child component (not styled-jsx-scoped
+          content), those properties would otherwise inherit straight into
+          Navbar's own text through normal CSS inheritance, overriding its
+          intended site-wide styling. */}
       <Navbar bgWhite={true} />
 
+      <div className="ambassador-landing">
       <div className="ambassador-page-offset">
         <main className="page">
           <section className="hero" id="top">
@@ -2946,6 +2953,7 @@ export default function Ambasseder() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }

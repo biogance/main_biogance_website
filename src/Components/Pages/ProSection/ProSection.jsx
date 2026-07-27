@@ -113,9 +113,16 @@ export default function ProSection() {
   }, []);
 
   return (
-    <div className="pro-landing">
+    <>
+      {/* Rendered outside .pro-landing on purpose: that wrapper sets its own
+          font-family/color via CSS custom properties below, and since Navbar
+          is a real child component (not styled-jsx-scoped content), those
+          properties would otherwise inherit straight into Navbar's own text
+          through normal CSS inheritance, overriding its intended site-wide
+          styling. */}
       <Navbar bgWhite={true} />
 
+      <div className="pro-landing">
       <div className="pro-page-offset">
       
 
@@ -1471,6 +1478,7 @@ export default function ProSection() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }

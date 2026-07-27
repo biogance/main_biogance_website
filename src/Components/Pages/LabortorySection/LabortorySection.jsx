@@ -127,9 +127,16 @@ export default function LabortorySection() {
   }, []);
 
   return (
-    <div className="laboratory-landing">
+    <>
+      {/* Rendered outside .laboratory-landing on purpose: that wrapper sets
+          its own font-family/color via CSS custom properties below, and
+          since Navbar is a real child component (not styled-jsx-scoped
+          content), those properties would otherwise inherit straight into
+          Navbar's own text through normal CSS inheritance, overriding its
+          intended site-wide styling. */}
       <Navbar bgWhite={true} />
 
+      <div className="laboratory-landing">
       <div className="laboratory-page-offset">
         <main className="page">
           <div className="hero-viewport">
@@ -1265,6 +1272,7 @@ export default function LabortorySection() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }
