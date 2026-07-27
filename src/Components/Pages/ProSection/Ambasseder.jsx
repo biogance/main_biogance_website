@@ -1167,8 +1167,14 @@ export default function Ambasseder() {
     contact_consent: false,
     information_accuracy: false,
   });
-  const [submitMessage, setSubmitMessage] = useState(null); // { error: bool, node: JSX }
+  const [submitMessage, setSubmitMessage] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const messageRef = useRef(null);
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+    document.body.style.overflow = "";
+  };
 
   const [phoneIso2, setPhoneIso2] = useState("fr");
   const phoneCountryEditedRef = useRef(false);
@@ -1369,18 +1375,8 @@ export default function Ambasseder() {
     }
     const brand = brandLabel(pathState.brandKey);
     const profileLabelText = program?.label || profileLabels[profile] || "selected profile";
-    setSubmitMessage({
-      error: false,
-      node: (
-        <>
-          <strong>Application submitted.</strong>
-          <br />
-          Thank you for sharing your universe with us. Our team will carefully review your {brand} / {profileLabelText} application and come back to you
-          with the next steps.
-        </>
-      ),
-    });
-    requestAnimationFrame(() => messageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    setShowSuccessModal(true);
+    document.body.style.overflow = "hidden";
   }
 
   const platforms = [
@@ -1411,6 +1407,96 @@ export default function Ambasseder() {
           Navbar's own text through normal CSS inheritance, overriding its
           intended site-wide styling. */}
       <Navbar bgWhite={true} />
+
+      {showSuccessModal && (
+        <div
+          onClick={() => closeSuccessModal()}
+          style={{
+            position: "fixed", inset: 0, zIndex: 99999,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            animation: "smBackdropIn 0.3s ease both",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              maxWidth: "480px", width: "100%",
+              position: "relative",
+              animation: "smPopIn 0.4s cubic-bezier(0.34,1.45,0.64,1) both",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ height: "4px", background: "#111" }} />
+
+            <div style={{ padding: "44px 40px 40px" }}>
+              <div style={{
+                width: "56px", height: "56px",
+                border: "1px solid #111",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                marginBottom: "28px",
+              }}>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <path d="M3 11.5L8.5 17L19 6" stroke="#111" strokeWidth="1.8" strokeLinecap="square"/>
+                </svg>
+              </div>
+
+              <p style={{ fontSize: "10px", letterSpacing: "0.22em", textTransform: "uppercase", color: "#888", margin: "0 0 12px" }}>
+                Biogance Professional
+              </p>
+              <h2 style={{
+                margin: "0 0 16px",
+                fontSize: "clamp(28px,5vw,38px)",
+                lineHeight: 1, letterSpacing: "-0.055em",
+                fontWeight: 700, textTransform: "uppercase", color: "#111",
+              }}>
+                Application<br />Submitted.
+              </h2>
+              <p style={{ margin: "0 0 32px", fontSize: "14px", lineHeight: 1.75, color: "#555" }}>
+                Thank you for sharing your universe with us. Our Marketing team will carefully review your partner application and come back to you with the next steps.
+              </p>
+
+              <div style={{
+                borderTop: "1px solid #e8e8e4",
+                paddingTop: "24px",
+                display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px",
+              }}>
+                <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Next step</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>Marketing review</p>
+                </div>
+                <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Response time</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>5–10 business days</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => closeSuccessModal()}
+                style={{
+                  marginTop: "28px", width: "100%",
+                  height: "48px", background: "#111", color: "#fff",
+                  border: "none", cursor: "pointer",
+                  fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase",
+                  fontWeight: 700, fontFamily: "inherit",
+                  transition: "background 0.2s ease",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#000"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#111"}
+              >
+                Close
+              </button>
+            </div>
+
+            <style>{`
+              @keyframes smBackdropIn { from { opacity: 0 } to { opacity: 1 } }
+              @keyframes smPopIn { from { opacity: 0; transform: scale(0.88) translateY(16px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+            `}</style>
+          </div>
+        </div>
+      )}
 
       <div className="ambassador-landing">
       <div className="ambassador-page-offset">
@@ -1979,7 +2065,7 @@ export default function Ambasseder() {
           min-height: 100vh;
         }
         .wrap {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
           padding: 0 24px;
         }
@@ -2667,7 +2753,7 @@ export default function Ambasseder() {
 
         .social-strip {
           width: calc(100% - 48px);
-          max-width: full;
+          max-width: var(--max);
           margin: 96px auto;
           display: grid;
           grid-template-columns: minmax(0, 0.58fr) minmax(360px, 0.42fr);

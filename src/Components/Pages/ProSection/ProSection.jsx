@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
+import { useRouter } from "next/navigation";
 import { MEDIA_URL } from "../../API/API";
 
 // Ported 1:1 from the navPro mockup (httpswww.website-dev.biogance.comnavPro(1).html)
@@ -97,6 +98,7 @@ function SplashMedia({ data }) {
 }
 
 export default function ProSection() {
+  const router = useRouter();
   const heroMedia = useSplashMedia("pro_header");
   const footerVisualMedia = useSplashMedia("pro_footer");
 
@@ -217,65 +219,85 @@ export default function ProSection() {
             </div>
 
             <div className="route-choice-grid" aria-label="Professional application routes">
-              <article className="route-choice-card reseller-card" id="reseller-route">
-                <div className="route-card-top">
-                  <span className="route-label">Route 01</span>
-                  <span className="route-code">B2B</span>
-                </div>
-                <div className="route-card-main">
-                  <div className="kicker-row">
-                    <span>Sales access</span>
-                    <span className="dot" />
-                    <span>Professional account</span>
-                  </div>
-                  <h3 style={{ marginTop:"20px" }}>Resellers &amp; distributors.</h3>
-                  <p>
-                    For retailers, distributors, grooming salons, pharmacies,
-                    concept stores and online sellers who want to offer
-                    Biogance products to their customers.
-                  </p>
-                </div>
-                <div className="route-card-bottom">
-                  <ul>
-                    <li>Professional information</li>
-                    <li>Sales team follow-up</li>
-                    <li>Catalogue access</li>
-                  </ul>
-                  <Link style={{ backgroundColor:"black", color:"white", padding:"10px 28px" }} className="btn" href="/become-a-reseller">
-                    Access reseller form
-                  </Link>
-                </div>
-              </article>
+             <article
+  className="route-choice-card reseller-card"
+  id="reseller-route"
+  onClick={() => router.push("/become-a-reseller")}
+  style={{ cursor: "pointer" }}
+>
+  <div className="route-card-top">
+    <span className="route-label">Route 01</span>
+    <span className="route-code">B2B</span>
+  </div>
+  <div className="route-card-main">
+    <div className="kicker-row">
+      <span>Sales access</span>
+      <span className="dot" />
+      <span>Professional account</span>
+    </div>
+    <h3 style={{ marginTop: "20px" }}>Resellers &amp; distributors.</h3>
+    <p>
+      For retailers, distributors, grooming salons, pharmacies,
+      concept stores and online sellers who want to offer
+      Biogance products to their customers.
+    </p>
+  </div>
+  <div className="route-card-bottom">
+    <ul>
+      <li>Professional information</li>
+      <li>Sales team follow-up</li>
+      <li>Catalogue access</li>
+    </ul>
+    <Link
+      style={{ backgroundColor: "black", color: "white", padding: "10px 28px" }}
+      className="btn"
+      href="/become-a-reseller"
+      onClick={(e) => e.stopPropagation()}
+    >
+      Access reseller form
+    </Link>
+  </div>
+</article>
 
-              <article className="route-choice-card partner-card" id="partner-route">
-                <div className="route-card-top">
-                  <span className="route-label">Route 02</span>
-                  <span className="route-code">AMB</span>
-                </div>
-                <div className="route-card-main">
-                  <div className="kicker-row">
-                    <span>Community</span>
-                    <span className="dot" />
-                    <span>Brand adventure</span>
-                  </div>
-                  <h3 style={{ marginTop:"20px" }}>Partners &amp; ambassadors.</h3>
-                  <p>
-                    For creators, YouTubers, breeders, clubs, groomers,
-                    veterinarians, behaviourists, educators and Ekinat
-                    equestrian profiles ready to share their expertise.
-                  </p>
-                </div>
-                <div className="route-card-bottom">
-                  <ul>
-                    <li>Biogance or Ekinat universe</li>
-                    <li>Expert voice &amp; content</li>
-                    <li>Marketing team review</li>
-                  </ul>
-                  <Link style={{ backgroundColor:"white", color:"black", padding:"10px 28px" }} className="btn" href="/become-an-ambassador">
-                    Access partner form
-                  </Link>
-                </div>
-              </article>
+             <article
+  className="route-choice-card partner-card"
+  id="partner-route"
+  onClick={() => router.push("/become-an-ambassador")}
+  style={{ cursor: "pointer" }}
+>
+  <div className="route-card-top">
+    <span className="route-label">Route 02</span>
+    <span className="route-code">AMB</span>
+  </div>
+  <div className="route-card-main">
+    <div className="kicker-row">
+      <span>Community</span>
+      <span className="dot" />
+      <span>Brand adventure</span>
+    </div>
+    <h3 style={{ marginTop: "20px" }}>Partners &amp; ambassadors.</h3>
+    <p>
+      For creators, YouTubers, breeders, clubs, groomers,
+      veterinarians, behaviourists, educators and Ekinat
+      equestrian profiles ready to share their expertise.
+    </p>
+  </div>
+  <div className="route-card-bottom">
+    <ul>
+      <li>Biogance or Ekinat universe</li>
+      <li>Expert voice &amp; content</li>
+      <li>Marketing team review</li>
+    </ul>
+    <Link
+      style={{ backgroundColor: "white", color: "black", padding: "10px 28px" }}
+      className="btn"
+      href="/become-an-ambassador"
+      onClick={(e) => e.stopPropagation()}
+    >
+      Access partner form
+    </Link>
+  </div>
+</article>
             </div>
 
             <div className="route-note-bar">
@@ -602,7 +624,7 @@ export default function ProSection() {
 
         /* COMPONENTS */
         .page-shell {
-          max-width: full;
+        max-width: var(--max);
           margin: 0 auto;
           background: var(--paper);
         }
@@ -672,14 +694,20 @@ export default function ProSection() {
         }
 
         /* HERO */
-        .hero {
-          min-height: calc(100vh - 106px);
-          border-left: 1px solid var(--line);
-          border-right: 1px solid var(--line);
-          display: grid;
-          grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
-          background: var(--paper);
-        }
+      .hero {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  min-height: calc(100vh - 106px);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+  background: var(--paper);
+}
         .hero-copy {
           padding: 72px clamp(24px, 5vw, 74px) 66px;
           display: flex;
@@ -784,11 +812,13 @@ export default function ProSection() {
           position: absolute;
           left: clamp(28px, 5vw, 76px);
           right: clamp(28px, 5vw, 76px);
-          bottom: clamp(32px, 6vw, 82px);
-          padding: 30px;
+          bottom: clamp(32px, 2vw, 82px);
+          padding: 20px;
+        
           border: 1px solid rgba(17, 17, 17, 0.18);
-          background: rgba(255, 255, 255, 0.42);
+              background: rgba(255, 255, 255, 0.14);
           backdrop-filter: blur(18px);
+              color: var(--white);
         }
         .hero-card-title {
           margin: 20px 0 42px;
@@ -832,6 +862,7 @@ export default function ProSection() {
 
         /* ROUTE SECTION */
         .route-section {
+        margin-top:50px;
           border-left: 1px solid var(--line);
           border-right: 1px solid var(--line);
           border-top: 1px solid var(--line);

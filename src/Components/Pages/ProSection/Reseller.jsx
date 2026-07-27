@@ -404,9 +404,20 @@ export default function Reseller() {
     });
   };
 
-  // A collapsed panel's inputs are still in the DOM, so native validation can
-  // still target them — reopen the owning section when that happens.
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const openStepOnInvalid = (index) => () => setOpenIndex(index);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setShowSuccessModal(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+    document.body.style.overflow = "";
+  };
 
   return (
     <>
@@ -417,6 +428,99 @@ export default function Reseller() {
           own text through normal CSS inheritance, overriding its intended
           site-wide styling. */}
       <Navbar bgWhite={true} />
+
+      {showSuccessModal && (
+        <div
+          onClick={() => closeSuccessModal()}
+          style={{
+            position: "fixed", inset: 0, zIndex: 99999,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            animation: "smBackdropIn 0.3s ease both",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              maxWidth: "480px", width: "100%",
+              padding: "0",
+              position: "relative",
+              animation: "smPopIn 0.4s cubic-bezier(0.34,1.45,0.64,1) both",
+              overflow: "hidden",
+            }}
+          >
+            {/* Top accent bar */}
+            <div style={{ height: "4px", background: "#111" }} />
+
+            <div style={{ padding: "44px 40px 40px" }}>
+              {/* Icon */}
+              <div style={{
+                width: "56px", height: "56px",
+                border: "1px solid #111",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                marginBottom: "28px",
+              }}>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <path d="M3 11.5L8.5 17L19 6" stroke="#111" strokeWidth="1.8" strokeLinecap="square"/>
+                </svg>
+              </div>
+
+              <p style={{ fontSize: "10px", letterSpacing: "0.22em", textTransform: "uppercase", color: "#888", margin: "0 0 12px" }}>
+                Biogance Professional
+              </p>
+              <h2 style={{
+                margin: "0 0 16px",
+                fontSize: "clamp(28px,5vw,38px)",
+                lineHeight: 1, letterSpacing: "-0.055em",
+                fontWeight: 700, textTransform: "uppercase", color: "#111",
+              }}>
+                Application<br />Submitted.
+              </h2>
+              <p style={{ margin: "0 0 32px", fontSize: "14px", lineHeight: 1.75, color: "#555" }}>
+                Thank you for your reseller application. Our sales team will review your request and contact you with the next steps.
+              </p>
+
+              <div style={{
+                borderTop: "1px solid #e8e8e4",
+                paddingTop: "24px",
+                display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px",
+              }}>
+                <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Next step</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>Commercial review</p>
+                </div>
+                <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Response time</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>3–5 business days</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => closeSuccessModal()}
+                style={{
+                  marginTop: "28px", width: "100%",
+                  height: "48px", background: "#111", color: "#fff",
+                  border: "none", cursor: "pointer",
+                  fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase",
+                  fontWeight: 700, fontFamily: "inherit",
+                  transition: "background 0.2s ease",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#000"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#111"}
+              >
+                Close
+              </button>
+            </div>
+
+            <style>{`
+              @keyframes smBackdropIn { from { opacity: 0 } to { opacity: 1 } }
+              @keyframes smPopIn { from { opacity: 0; transform: scale(0.88) translateY(16px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+            `}</style>
+          </div>
+        </div>
+      )}
 
       <div className="reseller-landing">
       <div className="reseller-page-offset">
@@ -611,7 +715,7 @@ export default function Reseller() {
                 </div>
               </aside>
 
-              <form action="#" method="post">
+              <form action="#" method="post" onSubmit={handleSubmit}>
                 <div className="form-progress" aria-label="Application sections">
                   <button
                     type="button"
@@ -1061,7 +1165,7 @@ export default function Reseller() {
         }
 
         .section {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
           padding: 96px 22px;
         }
@@ -1072,8 +1176,8 @@ export default function Reseller() {
           gap: clamp(32px, 7vw, 120px);
           align-items: end;
           margin-bottom: 48px;
-          border-top: 1px solid var(--ink);
-          padding-top: 22px;
+          
+         
         }
         .section-title {
           margin: 18px 0 0;
@@ -1093,8 +1197,6 @@ export default function Reseller() {
 
         /* HERO */
         .hero {
-          max-width: full;
-          margin: 0 auto;
           padding: 26px 22px 0;
         }
         .hero-grid {
@@ -1206,9 +1308,9 @@ export default function Reseller() {
 
         /* PARTNER PROOF STRIP */
         .proof-strip {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
-          padding: 18px 22px 0;
+          padding: 78px 22px 0px;
         }
         .proof-inner {
           display: grid;
@@ -1291,7 +1393,7 @@ export default function Reseller() {
 
         /* CATALOGUE */
         .catalogue-band {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
           padding: 100px 22px;
         }
@@ -1382,7 +1484,7 @@ export default function Reseller() {
 
         /* FORM */
         .form-section {
-          max-width: full;
+          max-width: var(--max);
           margin: 0 auto;
           padding: 10px 22px;
         }
