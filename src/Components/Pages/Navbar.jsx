@@ -431,19 +431,25 @@ export default function Navbar({
           hairline desync gap that used to flash white can no longer open. */}
       <div
         ref={headerWrapperRef}
-        className="fixed top-[-100px] left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
+        className="fixed top-[-12px] left-0 right-0 z-[60] w-full transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden] will-change-transform"
       >
         <div
-          // top/padding-top/height (instead of top-0 + a -100px box-shadow)
-          // extend this element's own *painted box* 100px above the visible
-          // 40px, covering the seam between iOS's status-bar/Dynamic-Island
-          // area and this bar. A box-shadow is a separate render pass from the
-          // element's own paint, and during an active `transform` animation
-          // Safari can composite the shadow a frame behind the element —
-          // exactly the transition-time white line seen at that boundary in
-          // screen recordings. Baking the extra region into the same box
-          // guarantees it moves/composites as one paint operation.
-          className="w-full bg-[#111] text-white h-[140px] pt-[100px]"
+          // top/padding-top/height (instead of top-0 + a box-shadow) extend
+          // this element's own *painted box* slightly above the visible 40px,
+          // so a sub-pixel seam can't open at its own top edge during the
+          // 0-40px translateY hide/show animation (a box-shadow is a separate
+          // render pass from the element's own paint, and during an active
+          // `transform` Safari can composite the shadow a frame behind the
+          // element — the transition-time white line this guards against).
+          // This used to extend 100px up specifically to paint black under
+          // the iOS status-bar/Dynamic-Island area too, back when the page
+          // rendered under it (viewport-fit: cover in layout.jsx). Now that
+          // viewport-fit is "auto", the page no longer renders under that
+          // area at all — Safari's own chrome owns it — so this only needs
+          // enough buffer for the animation seam, not the full status-bar
+          // height, otherwise it paints black into the area that's supposed
+          // to show Safari's white chrome.
+          className="w-full bg-[#111] text-white h-[52px] pt-[12px]"
           style={{
             // Belt-and-suspenders on top of the Math.round() fix above: if
             // any sub-pixel seam still manages to open between this black

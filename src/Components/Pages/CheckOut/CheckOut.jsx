@@ -5116,7 +5116,7 @@ function Checkout({ cartItems = [] }) {
           style={{
             maxWidth: "1280px",
             margin: "0 auto",
-            padding: "40px 44px",
+         padding: "0px 44px 30px 44px",
             display: "flex",
             gap: "32px",
             alignItems: "flex-start",
