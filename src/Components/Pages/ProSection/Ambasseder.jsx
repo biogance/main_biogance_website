@@ -1,11 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlagImage, defaultCountries, parseCountry } from "react-international-phone";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import toast from "react-hot-toast";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
-import { MEDIA_URL } from "../../API/API";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+// Maps getPhoneValidationErrorCode's return value to an ambassador.json
+// errors.* key — same codes CheckOut.jsx and UserProfile.jsx map through
+// their own translation files.
+const PHONE_ERROR_KEYS = {
+  required: "errors.phoneRequired",
+  tooShort: "errors.phoneTooShort",
+  tooLong: "errors.phoneTooLong",
+  invalid: "errors.phoneInvalid",
+};
 
 // Ported 1:1 from the PAGE_DEVENIR_AMBASSADEUR ("Become a Partner") mockup —
 // same fonts/colors/layout, scoped via styled-jsx so it never leaks into (or
@@ -26,11 +43,13 @@ import { MEDIA_URL } from "../../API/API";
 // moving under it. When the form column runs out, the section ends and the
 // page continues scrolling normally — scrolling back up re-pins it.
 //
-// The panel is deliberately height-auto with NO inner scrollbar: it is a
-// genuinely fixed block, not a nested scroll area. That avoids the
-// scroll-chaining problem the recommended-products sidebar has in
-// ExpertAdvicesDetail.jsx, where a height-capped, inner-scrolling box
-// swallows the wheel before it is actually stuck and traps the user.
+// The panel is height-capped (max-height: viewport minus navbar/pin-gap)
+// with its own inner scrollbar: once its content is taller than the space
+// under the navbar, hovering the panel and scrolling moves only the panel's
+// content while the left column stays put. overscroll-behavior: contain
+// stops that inner scroll from chaining into the page once the panel hits
+// its own top/bottom edge, so scrolling past it resumes the normal page
+// scroll (and the left column) instead of getting trapped.
 //
 // Pinning is done with position: sticky rather than by locking page scroll:
 // the left column is a real form, so its inputs must stay reachable by
@@ -517,28 +536,6 @@ const sidePanelCopy = {
   },
 };
 
-const profileLabels = {
-  content_creator: "Content creator",
-  youtube: "YouTuber",
-  breeder: "Breeder",
-  club: "Club / association",
-  behaviourist: "Behaviourist",
-  trainer: "Educator / dog trainer",
-  groomer: "Groomer",
-  veterinarian: "Veterinarian",
-  other: "Other project",
-};
-
-const animalLabels = {
-  dog: "Dog",
-  cat: "Cat",
-  small_mammal: "Small mammal",
-  bird: "Bird",
-  reptile: "Reptile",
-  horse: "Horse",
-  all: "All of them",
-};
-
 function brandFromAnimal(animal) {
   if (animal === "horse") return "ekinat";
   if (animal === "all") return "biogance_ekinat";
@@ -546,34 +543,25 @@ function brandFromAnimal(animal) {
   return "";
 }
 
-function brandLabel(key) {
-  if (key === "ekinat") return "Ekinat";
-  if (key === "biogance_ekinat") return "Biogance for pets + Ekinat for horses";
-  if (key === "biogance") return "Biogance";
-  return "selected universe";
+function brandLabel(t, key) {
+  if (key === "ekinat") return t("brand.label.ekinat");
+  if (key === "biogance_ekinat") return t("brand.label.bioganceEkinat");
+  if (key === "biogance") return t("brand.label.biogance");
+  return t("brand.label.fallback");
 }
 
-function brandShortLabel(key) {
-  if (key === "ekinat") return "Ekinat";
-  if (key === "biogance_ekinat") return "Biogance + Ekinat";
-  if (key === "biogance") return "Biogance";
-  return "selected universe";
+function brandShortLabel(t, key) {
+  if (key === "ekinat") return t("brand.shortLabel.ekinat");
+  if (key === "biogance_ekinat") return t("brand.shortLabel.bioganceEkinat");
+  if (key === "biogance") return t("brand.shortLabel.biogance");
+  return t("brand.shortLabel.fallback");
 }
 
-function brandHashLabel(key) {
-  if (key === "ekinat") return "Ekinat";
-  if (key === "biogance_ekinat") return "BioganceEkinat";
-  if (key === "biogance") return "Biogance";
-  return "Universe";
-}
-
-function personalizeBrandText(txt, brandKey) {
-  const label = brandLabel(brandKey);
-  return String(txt || "")
-    .replaceAll("the selected universe", label)
-    .replaceAll("selected universe", label)
-    .replaceAll("Biogance or Ekinat", label)
-    .replaceAll("Biogance / Ekinat", label);
+function brandHashLabel(t, key) {
+  if (key === "ekinat") return t("brand.hashLabel.ekinat");
+  if (key === "biogance_ekinat") return t("brand.hashLabel.bioganceEkinat");
+  if (key === "biogance") return t("brand.hashLabel.biogance");
+  return t("brand.hashLabel.fallback");
 }
 
 function sideCopyKeyFromProfile(profile, animal) {
@@ -625,91 +613,89 @@ function resolveProgram(profile, animal) {
 // Mirrors updatePath()'s four branches (neither/profile-only/animal-only/
 // both selected) from the mockup script — computed as a pure function of
 // the two selects instead of imperative textContent/classList writes.
-function computePathState(profile, animal) {
+function computePathState(t, profile, animal) {
   const brandKey = brandFromAnimal(animal);
-  const derivedUniverseText = brandKey ? `Suggested universe: ${brandLabel(brandKey)}` : "";
+  const brandLbl = brandLabel(t, brandKey);
+  const derivedUniverseText = brandKey ? t("path.suggestedUniverse", { brand: brandLbl }) : "";
 
   if (!profile && !animal) {
     return {
       brandKey,
       derivedUniverseText,
-      sideTitle: "Choose your profile",
-      sideDescription:
-        "Start with your partnership profile, then tell us which animal universe represents your activity. Biogance is for pets and companion animals; Ekinat is exclusively for horses.",
-      sideTags: ["#Profile", "#Animals", "#Story"],
+      sideTitle: t("path.neither.sideTitle"),
+      sideDescription: t("path.neither.sideDescription"),
+      sideTags: t("path.neither.tags", { returnObjects: true }),
       sideCopyKey: "default",
-      formTitle: "Partnership Application",
-      formSubtitle: "Select your partnership profile and animal universe to open the right questionnaire.",
-      pathNote: "Once both fields are completed, the right questionnaire will appear automatically.",
+      formTitle: t("path.genericFormTitle"),
+      formSubtitle: t("path.genericFormSubtitle"),
+      pathNote: t("path.neither.pathNote"),
       programKey: "",
-      dynamicLegend: "Partnership details",
+      dynamicLegend: t("path.genericDynamicLegend"),
       visible: false,
     };
   }
 
   if (profile && !animal) {
+    const profileLbl = t(`profileLabels.${profile}`) || t("path.profileOnly.fallbackTitle");
     return {
       brandKey,
       derivedUniverseText,
-      sideTitle: profileLabels[profile] || "Partner profile",
-      sideDescription:
-        "Now select the animal universe that represents your activity. Horse profiles open the Ekinat path; all other animals open the Biogance path.",
-      sideTags: [`#${(profileLabels[profile] || "Profile").replaceAll(" ", "")}`, "#Animals"],
+      sideTitle: profileLbl,
+      sideDescription: t("path.profileOnly.sideDescription"),
+      sideTags: [`#${(profileLbl || t("path.profileOnly.fallbackTag")).replaceAll(" ", "")}`, t("path.profileOnly.tagAnimals")],
       sideCopyKey: sideCopyKeyFromProfile(profile, animal),
-      formTitle: "Partnership Application",
-      formSubtitle: "Select your partnership profile and animal universe to open the right questionnaire.",
-      pathNote: "Select your animal universe to continue.",
+      formTitle: t("path.genericFormTitle"),
+      formSubtitle: t("path.genericFormSubtitle"),
+      pathNote: t("path.profileOnly.pathNote"),
       programKey: "",
-      dynamicLegend: "Partnership details",
+      dynamicLegend: t("path.genericDynamicLegend"),
       visible: false,
     };
   }
 
   if (!profile && animal) {
+    const animalLbl = t(`animalLabels.${animal}`) || t("path.animalOnly.fallbackTitle");
     return {
       brandKey,
       derivedUniverseText,
-      sideTitle: animalLabels[animal] || "Animal universe",
-      sideDescription: `${animalLabels[animal]} selected — ${brandLabel(brandKey)}. Now choose your partnership profile.`,
-      sideTags: [`#${brandLabel(brandKey).replaceAll(" ", "")}`, "#Profile"],
+      sideTitle: animalLbl,
+      sideDescription: t("path.animalOnly.sideDescriptionTemplate", { animal: animalLbl, brand: brandLbl }),
+      sideTags: [`#${brandLbl.replaceAll(" ", "")}`, t("path.animalOnly.tagProfile")],
       sideCopyKey: "default",
-      formTitle: "Partnership Application",
-      formSubtitle: "Select your partnership profile and animal universe to open the right questionnaire.",
-      pathNote: "Select your partnership profile to continue.",
+      formTitle: t("path.genericFormTitle"),
+      formSubtitle: t("path.genericFormSubtitle"),
+      pathNote: t("path.animalOnly.pathNote"),
       programKey: "",
-      dynamicLegend: "Partnership details",
+      dynamicLegend: t("path.genericDynamicLegend"),
       visible: false,
     };
   }
 
   const programKey = resolveProgram(profile, animal);
-  const p = programs[programKey];
-  const brandHash = brandHashLabel(brandKey);
+  const brandHash = brandHashLabel(t, brandKey);
+  const animalLbl = t(`animalLabels.${animal}`);
+  const profileLbl = t(`profileLabels.${profile}`);
+  const programLabel = t(`programs.${programKey}.label`);
+  const programSide = t(`programs.${programKey}.side`);
+  const programTitle = t(`programs.${programKey}.title`);
+  const programDescription = t(`programs.${programKey}.description`, { brand: brandLbl });
+  const programSubtitle = t(`programs.${programKey}.subtitle`, { brand: brandLbl });
+  const brandNoteKey = brandKey === "ekinat" ? "ekinat" : brandKey === "biogance" ? "biogance" : "both";
+  const brandNote = t(`path.brandNote.${brandNoteKey}`);
+  const reviewNote = t(`path.reviewNote.${brandNoteKey}`);
 
   return {
     brandKey,
     derivedUniverseText,
-    sideTitle: p.side,
-    sideDescription: `${personalizeBrandText(p.description, brandKey)} Animal universe: ${animalLabels[animal]}. ${
-      brandKey === "ekinat"
-        ? "Ekinat is dedicated to horses only."
-        : brandKey === "biogance"
-        ? "Biogance is dedicated to pets and companion animals."
-        : "Biogance covers pets and Ekinat covers horses."
-    }`,
-    sideTags: [`#${brandHash}`, `#${(profileLabels[profile] || p.label).replaceAll(" ", "")}`, `#${animalLabels[animal].replaceAll(" ", "")}`],
+    sideTitle: programSide,
+    sideDescription: t("path.final.sideDescriptionTemplate", { description: programDescription, animal: animalLbl, note: brandNote }),
+    sideTags: [`#${brandHash}`, `#${(profileLbl || programLabel).replaceAll(" ", "")}`, `#${animalLbl.replaceAll(" ", "")}`],
     sideCopyKey: programKey,
-    formTitle: p.title,
-    formSubtitle: `${brandShortLabel(brandKey)} path selected — ${personalizeBrandText(p.subtitle, brandKey)}`,
-    pathNote: `Your answers will be reviewed by the Marketing Team as a ${brandShortLabel(brandKey)} ${p.label} application. ${
-      brandKey === "ekinat"
-        ? "Ekinat applies to horse profiles only."
-        : brandKey === "biogance"
-        ? "Biogance applies to all non-horse animal profiles."
-        : "Horse answers will be treated under Ekinat; other animals under Biogance."
-    }`,
+    formTitle: programTitle,
+    formSubtitle: t("path.final.formSubtitleTemplate", { brand: brandShortLabel(t, brandKey), subtitle: programSubtitle }),
+    pathNote: t("path.final.pathNoteTemplate", { brand: brandShortLabel(t, brandKey), label: programLabel, note: reviewNote }),
     programKey,
-    dynamicLegend: `${p.label} details`,
+    dynamicLegend: t("path.final.dynamicLegendTemplate", { label: programLabel }),
     visible: true,
   };
 }
@@ -1153,6 +1139,7 @@ function AmbassadorHeaderSlider({ data }) {
 }
 
 export default function Ambasseder() {
+  const { t } = useTranslation("ambassador");
   const headerMedia = useSplashMedia("ambassador_header");
   const [profile, setProfile] = useState("");
   const [animal, setAnimal] = useState("");
@@ -1169,6 +1156,8 @@ export default function Ambasseder() {
   });
   const [submitMessage, setSubmitMessage] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const messageRef = useRef(null);
 
   const closeSuccessModal = () => {
@@ -1245,14 +1234,17 @@ export default function Ambasseder() {
     };
   }, []);
 
-  const pathState = useMemo(() => computePathState(profile, animal), [profile, animal]);
+  const pathState = useMemo(() => computePathState(t, profile, animal), [t, profile, animal]);
   const program = pathState.programKey ? programs[pathState.programKey] : null;
 
-  const sideCopy = sidePanelCopy[pathState.sideCopyKey] || sidePanelCopy.default;
-  const missionCopyText =
-    pathState.programKey === "youtube" ? personalizeBrandText(sidePanelCopy.youtube.missionCopy, pathState.brandKey) : sideCopy.missionCopy;
-  const rewardCopyText =
-    pathState.programKey === "youtube" ? personalizeBrandText(sidePanelCopy.youtube.rewardCopy, pathState.brandKey) : sideCopy.rewardCopy;
+  const sideCopyKey = sidePanelCopy[pathState.sideCopyKey] ? pathState.sideCopyKey : "default";
+  const brandLbl = brandLabel(t, pathState.brandKey);
+  const missionTitle = t(`sidePanelCopy.${sideCopyKey}.missionTitle`);
+  const missionCopyText = t(`sidePanelCopy.${sideCopyKey}.missionCopy`, { brand: brandLbl });
+  const missionTags = t(`sidePanelCopy.${sideCopyKey}.missionTags`, { returnObjects: true });
+  const rewardTitle = t(`sidePanelCopy.${sideCopyKey}.rewardTitle`);
+  const rewardCopyText = t(`sidePanelCopy.${sideCopyKey}.rewardCopy`, { brand: brandLbl });
+  const rewardTags = t(`sidePanelCopy.${sideCopyKey}.rewardTags`, { returnObjects: true });
 
   const { score, priority } = useMemo(
     () => computeScore({ profile, animal, brandKey: pathState.brandKey, programKey: pathState.programKey, values, checks }),
@@ -1284,8 +1276,22 @@ export default function Ambasseder() {
     };
   }, []);
 
-  const setVal = (name, value) => setValues((prev) => ({ ...prev, [name]: value }));
+  const setVal = (name, value) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    // Clear that field's error the moment the user starts fixing it.
+    setErrors((prev) => (prev[name] ? { ...prev, [name]: "" } : prev));
+  };
   const getVal = (name) => values[name] ?? "";
+
+  // Validates the phone number's digit count and leading-digit pattern
+  // against whichever country is currently selected — same
+  // libphonenumber-js-backed check CheckOut.jsx and UserProfile.jsx use.
+  // Returns true when valid.
+  const validatePhone = () => {
+    const code = getPhoneValidationErrorCode(getVal("phone"), phoneIso2 || "fr");
+    setErrors((prev) => ({ ...prev, phone: code ? t(PHONE_ERROR_KEYS[code]) : "" }));
+    return !code;
+  };
 
   const togglePlatform = (checkName, relatedFieldNames) => (e) => {
     const active = e.target.checked;
@@ -1310,53 +1316,71 @@ export default function Ambasseder() {
         <span className="req">*</span>
       </>
     ) : null;
+    // No native `required` here — these are the "content creator detail"
+    // fields (contact_detail1-5 on submit), custom-validated in
+    // handleSubmit instead so they get the same red-border/message
+    // treatment as every other required field on this form.
+    const hasError = !!errors[field.name];
+    const fieldBase = `programs.${pathState.programKey}.fields.${field.name}`;
+    const fieldLabel = t(`${fieldBase}.label`);
     if (field.type === "select") {
+      const options = t(`${fieldBase}.options`, { returnObjects: true });
       return (
-        <div className="field" key={field.name}>
+        <div className={`field${hasError ? " has-error" : ""}`} key={field.name}>
           <label htmlFor={field.name}>
-            {field.label}
+            {fieldLabel}
             {req}
           </label>
           <select
             id={field.name}
             name={field.name}
-            required={field.required}
             data-export={field.name}
             value={getVal(field.name)}
             onChange={(e) => setVal(field.name, e.target.value)}
+            style={hasError ? { borderColor: "#dc2626" } : undefined}
           >
-            <option value="">Select</option>
-            {field.options.map((opt) => (
+            <option value="">{t("selectPlaceholder")}</option>
+            {options.map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
               </option>
             ))}
           </select>
+          {hasError && (
+            <p style={{ margin: "6px 0 0", color: "#dc2626", fontSize: "11px", lineHeight: 1.5, fontWeight: 600 }}>
+              {errors[field.name]}
+            </p>
+          )}
         </div>
       );
     }
     return (
-      <div className="field" key={field.name}>
+      <div className={`field${hasError ? " has-error" : ""}`} key={field.name}>
         <label htmlFor={field.name}>
-          {field.label}
+          {fieldLabel}
           {req}
         </label>
         <input
           type={field.type}
           id={field.name}
           name={field.name}
-          required={field.required}
           data-export={field.name}
           min={field.type === "number" ? 0 : undefined}
           inputMode={field.type === "number" ? "numeric" : undefined}
           value={getVal(field.name)}
           onChange={(e) => setVal(field.name, e.target.value)}
+          style={hasError ? { borderColor: "#dc2626" } : undefined}
         />
+        {hasError && (
+          <p style={{ margin: "6px 0 0", color: "#dc2626", fontSize: "11px", lineHeight: 1.5, fontWeight: 600 }}>
+            {errors[field.name]}
+          </p>
+        )}
       </div>
     );
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const selectedPlatforms = platformCheckNames.filter((name) => checks[name]).length;
     if (!selectedPlatforms) {
@@ -1364,35 +1388,142 @@ export default function Ambasseder() {
         error: true,
         node: (
           <>
-            <strong>Social platform required.</strong>
+            <strong>{t("errors.platformRequiredTitle")}</strong>
             <br />
-            Please select at least one active platform and add the follower / subscriber count so our team can review your profile properly.
+            {t("errors.platformRequiredBody")}
           </>
         ),
       });
       requestAnimationFrame(() => messageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
-    const brand = brandLabel(pathState.brandKey);
-    const profileLabelText = program?.label || profileLabels[profile] || "selected profile";
-    setShowSuccessModal(true);
-    document.body.style.overflow = "hidden";
+
+    // Contact information + the active program's dynamic "detail" fields
+    // (contact_detail1-5 on submit) are custom-validated so they get a red
+    // border and message instead of the browser's native validation popup.
+    const newErrors = {};
+    if (!getVal("first_name").trim()) newErrors.first_name = t("errors.firstName");
+    if (!getVal("last_name").trim()) newErrors.last_name = t("errors.lastName");
+    if (!getVal("email").trim()) {
+      newErrors.email = t("errors.emailRequired");
+    } else if (!isValidEmail(getVal("email"))) {
+      newErrors.email = t("errors.emailInvalid");
+    }
+    const phoneErrorCode = getPhoneValidationErrorCode(getVal("phone"), phoneIso2 || "fr");
+    if (phoneErrorCode) newErrors.phone = t(PHONE_ERROR_KEYS[phoneErrorCode]);
+    if (!getVal("country").trim()) newErrors.country = t("errors.country");
+    if (!getVal("city").trim()) newErrors.city = t("errors.city");
+    if (!getVal("postal_address").trim()) newErrors.postal_address = t("errors.postalAddress");
+
+    (program?.fields || []).forEach((field) => {
+      if (!getVal(field.name).trim()) {
+        const fieldLabel = t(`programs.${pathState.programKey}.fields.${field.name}.label`).toLowerCase();
+        newErrors[field.name] =
+          field.type === "select"
+            ? t("errors.selectFieldTemplate", { field: fieldLabel })
+            : t("errors.enterFieldTemplate", { field: fieldLabel });
+      }
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setSubmitMessage(null);
+      requestAnimationFrame(() => {
+        document.querySelector(".field.has-error")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
+
+    const dialCode = getDialCodeByIso2(phoneIso2);
+    // contact_detail1-5: the currently active program's own dynamic fields,
+    // in order — most programs define exactly 5, matching the 5 backend
+    // slots (a couple define 6 and get truncated to the first 5, a couple
+    // define fewer and leave the trailing slots empty).
+    const dynamicValues = (program?.fields || []).map((field) => getVal(field.name));
+    const platformValue = (check, field) => (checks[check] ? getVal(field) : "");
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch(`${BASE_URL}/app/ambassadors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: profile,
+          pets: animal,
+          first_name: getVal("first_name"),
+          last_name: getVal("last_name"),
+          email: getVal("email"),
+          contact: `${dialCode}${getVal("phone")}`,
+          city: getVal("city"),
+          country: getVal("country"),
+          postal_code: getVal("postal_address"),
+          instagram_link: platformValue("has_instagram", "instagram_url"),
+          instagram_follower: platformValue("has_instagram", "instagram_followers"),
+          tiktok_link: platformValue("has_tiktok", "tiktok_url"),
+          tiktok_follower: platformValue("has_tiktok", "tiktok_followers"),
+          youtube_link: platformValue("has_youtube", "youtube_url"),
+          youtube_follower: platformValue("has_youtube", "youtube_subscribers"),
+          social_link: getVal("portfolio_link"),
+          facebook_link: platformValue("has_facebook", "facebook_url"),
+          facebook_follower: platformValue("has_facebook", "facebook_followers"),
+          other_name: platformValue("has_other_platform", "other_platform_name"),
+          other_link: platformValue("has_other_platform", "other_platform_url"),
+          other_follower: platformValue("has_other_platform", "other_platform_followers"),
+          contact_detail1: dynamicValues[0] || "",
+          contact_detail2: dynamicValues[1] || "",
+          contact_detail3: dynamicValues[2] || "",
+          contact_detail4: dynamicValues[3] || "",
+          contact_detail5: dynamicValues[4] || "",
+        }),
+      });
+      const data = await res.json();
+      if (data.status === false || data.status === "false" || !res.ok) {
+        const msg =
+          data.errors?.length > 0
+            ? data.errors[0].message
+            : data.action || data.title || t("errors.genericSubmit");
+        toast.error(msg);
+        return;
+      }
+
+      setShowSuccessModal(true);
+      document.body.style.overflow = "hidden";
+      setValues({});
+      setChecks({
+        has_instagram: false,
+        has_tiktok: false,
+        has_youtube: false,
+        has_facebook: false,
+        has_other_platform: false,
+        content_usage_rights_accepted: false,
+        contact_consent: false,
+        information_accuracy: false,
+      });
+      setProfile("");
+      setAnimal("");
+      setErrors({});
+    } catch (err) {
+      console.error("Ambassador form error:", err);
+      toast.error(t("errors.genericSubmit"));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const platforms = [
-    { key: "instagram", check: "has_instagram", label: "Instagram", urlField: "instagram_url", followersField: "instagram_followers", urlPlaceholder: "Instagram profile URL", followersPlaceholder: "Instagram followers", inputId: "instagram", followersId: "instagramFollowers" },
-    { key: "tiktok", check: "has_tiktok", label: "TikTok", urlField: "tiktok_url", followersField: "tiktok_followers", urlPlaceholder: "TikTok profile URL", followersPlaceholder: "TikTok followers", inputId: "tiktok", followersId: "tiktokFollowers" },
-    { key: "youtube", check: "has_youtube", label: "YouTube", urlField: "youtube_url", followersField: "youtube_subscribers", urlPlaceholder: "YouTube channel URL", followersPlaceholder: "YouTube subscribers", inputId: "youtubeProfile", followersId: "youtubeSubscribers" },
-    { key: "facebook", check: "has_facebook", label: "Facebook", urlField: "facebook_url", followersField: "facebook_followers", urlPlaceholder: "Facebook page URL", followersPlaceholder: "Facebook followers", inputId: "facebook", followersId: "facebookFollowers" },
+    { key: "instagram", check: "has_instagram", label: t("social.platforms.instagram.label"), urlField: "instagram_url", followersField: "instagram_followers", urlPlaceholder: t("social.platforms.instagram.urlPlaceholder"), followersPlaceholder: t("social.platforms.instagram.followersPlaceholder"), inputId: "instagram", followersId: "instagramFollowers" },
+    { key: "tiktok", check: "has_tiktok", label: t("social.platforms.tiktok.label"), urlField: "tiktok_url", followersField: "tiktok_followers", urlPlaceholder: t("social.platforms.tiktok.urlPlaceholder"), followersPlaceholder: t("social.platforms.tiktok.followersPlaceholder"), inputId: "tiktok", followersId: "tiktokFollowers" },
+    { key: "youtube", check: "has_youtube", label: t("social.platforms.youtube.label"), urlField: "youtube_url", followersField: "youtube_subscribers", urlPlaceholder: t("social.platforms.youtube.urlPlaceholder"), followersPlaceholder: t("social.platforms.youtube.followersPlaceholder"), inputId: "youtubeProfile", followersId: "youtubeSubscribers" },
+    { key: "facebook", check: "has_facebook", label: t("social.platforms.facebook.label"), urlField: "facebook_url", followersField: "facebook_followers", urlPlaceholder: t("social.platforms.facebook.urlPlaceholder"), followersPlaceholder: t("social.platforms.facebook.followersPlaceholder"), inputId: "facebook", followersId: "facebookFollowers" },
     {
       key: "other",
       check: "has_other_platform",
-      label: "Other platform / website",
+      label: t("social.platforms.other.label"),
       nameField: "other_platform_name",
       urlField: "other_platform_url",
       followersField: "other_platform_followers",
-      urlPlaceholder: "Profile / website URL",
-      followersPlaceholder: "Followers / monthly visits",
+      urlPlaceholder: t("social.platforms.other.urlPlaceholder"),
+      followersPlaceholder: t("social.platforms.other.followersPlaceholder"),
       inputId: "otherPlatformUrl",
       followersId: "otherPlatformFollowers",
     },
@@ -1444,7 +1575,7 @@ export default function Ambasseder() {
               </div>
 
               <p style={{ fontSize: "10px", letterSpacing: "0.22em", textTransform: "uppercase", color: "#888", margin: "0 0 12px" }}>
-                Biogance Professional
+                {t("successModal.eyebrow")}
               </p>
               <h2 style={{
                 margin: "0 0 16px",
@@ -1452,10 +1583,10 @@ export default function Ambasseder() {
                 lineHeight: 1, letterSpacing: "-0.055em",
                 fontWeight: 700, textTransform: "uppercase", color: "#111",
               }}>
-                Application<br />Submitted.
+                {t("successModal.titleLine1")}<br />{t("successModal.titleLine2")}
               </h2>
               <p style={{ margin: "0 0 32px", fontSize: "14px", lineHeight: 1.75, color: "#555" }}>
-                Thank you for sharing your universe with us. Our Marketing team will carefully review your partner application and come back to you with the next steps.
+                {t("successModal.message")}
               </p>
 
               <div style={{
@@ -1464,12 +1595,12 @@ export default function Ambasseder() {
                 display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px",
               }}>
                 <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
-                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Next step</p>
-                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>Marketing review</p>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>{t("successModal.nextStepLabel")}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>{t("successModal.nextStepValue")}</p>
                 </div>
                 <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
-                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Response time</p>
-                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>5–10 business days</p>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>{t("successModal.responseTimeLabel")}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>{t("successModal.responseTimeValue")}</p>
                 </div>
               </div>
 
@@ -1486,7 +1617,7 @@ export default function Ambasseder() {
                 onMouseEnter={(e) => e.currentTarget.style.background = "#000"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#111"}
               >
-                Close
+                {t("successModal.close")}
               </button>
             </div>
 
@@ -1503,22 +1634,19 @@ export default function Ambasseder() {
         <main className="page">
           <section className="hero" id="top">
             <div className="hero-copy">
-              <div className="eyebrow">Biogance professional network</div>
+              <div className="eyebrow">{t("hero.eyebrow")}</div>
               <h1 style={{ lineHeight: "1" }}>
-                Become
+                {t("hero.titleLine1")}
                 <br />
-                <span className="small-line">a</span> Partner.
+                <span className="small-line">{t("hero.titleSmall")}</span> {t("hero.titleLine2")}
               </h1>
-              <p>
-                Join a human adventure built around animals, expertise and authentic stories. As a Biogance partner for pets or an Ekinat partner for
-                horses, you help inspire our community, share trusted advice and actively contribute to the development of our brands.
-              </p>
+              <p>{t("hero.lead")}</p>
               <div className="hero-actions">
                 <a className="btn dark" href="#apply">
-                  Start application
+                  {t("hero.startApplication")}
                 </a>
                 <a className="btn" href="#process">
-                  How it works
+                  {t("hero.howItWorks")}
                 </a>
               </div>
             </div>
@@ -1531,42 +1659,30 @@ export default function Ambasseder() {
             <div className="wrap">
               <div className="section-head">
                 <div>
-                  <div className="kicker">Join the adventure</div>
+                  <div className="kicker">{t("process.kicker")}</div>
                   <h2 style={{ lineHeight: "1" }}>
-                    Choose.
+                    {t("process.titleLine1")}
                     <br />
-                    Share.
+                    {t("process.titleLine2")}
                     <br />
-                    Grow.
+                    {t("process.titleLine3")}
                   </h2>
                 </div>
-                <p>
-                  Biogance is looking for passionate ambassador partners ready to help strengthen brand visibility, grow awareness and inspire a community
-                  built around responsible animal care. In return, selected partners can receive products, access exclusive offers, be featured across our
-                  communication channels and take part in a meaningful human adventure where animal well-being always comes first.
-                </p>
+                <p>{t("process.intro")}</p>
               </div>
 
               <div className="process-row">
-                <div className="process-step">
-                  <span>Step 01</span>
-                  <strong>Choose your profile</strong>
-                  <p>Tell us who you are, what you do and how your universe can naturally bring Biogance to life.</p>
-                </div>
-                <div className="process-step">
-                  <span>Step 02</span>
-                  <strong>Represent our universe</strong>
-                  <p>Share your animal world, your community and the content or expertise you could bring to Biogance or Ekinat.</p>
-                </div>
-                <div className="process-step">
-                  <span>Step 03</span>
-                  <strong>Grow together</strong>
-                  <p>Enjoy exclusive brand benefits, visibility opportunities and the chance to build something authentic with us.</p>
-                </div>
+                {t("process.steps", { returnObjects: true }).map((item) => (
+                  <div className="process-step" key={item.step}>
+                    <span>{item.step}</span>
+                    <strong>{item.title}</strong>
+                    <p>{item.desc}</p>
+                  </div>
+                ))}
               </div>
               <div className="process-actions">
                 <a className="btn dark" href="#apply">
-                  Start application
+                  {t("hero.startApplication")}
                 </a>
               </div>
             </div>
@@ -1576,7 +1692,7 @@ export default function Ambasseder() {
             <div className="wrap">
               <div className="application-shell">
                 <aside className="side-panel" aria-label="Partnership journey">
-                  <div className="program-label">Your partnership journey</div>
+                  <div className="program-label">{t("sidePanel.label")}</div>
                   <h3>{pathState.sideTitle}</h3>
                   <p>{pathState.sideDescription}</p>
                   <div className="side-tags">
@@ -1586,20 +1702,20 @@ export default function Ambasseder() {
                   </div>
 
                   <div className="export-panel">
-                    <strong>{sideCopy.missionTitle}</strong>
+                    <strong>{missionTitle}</strong>
                     <p>{missionCopyText}</p>
                     <div className="export-keys">
-                      {sideCopy.missionTags.map((tag) => (
+                      {missionTags.map((tag) => (
                         <span key={tag}>{tag}</span>
                       ))}
                     </div>
                   </div>
 
                   <div className="export-panel">
-                    <strong>{sideCopy.rewardTitle}</strong>
+                    <strong>{rewardTitle}</strong>
                     <p>{rewardCopyText}</p>
                     <div className="export-keys">
-                      {sideCopy.rewardTags.map((tag) => (
+                      {rewardTags.map((tag) => (
                         <span key={tag}>{tag}</span>
                       ))}
                     </div>
@@ -1620,11 +1736,11 @@ export default function Ambasseder() {
                   </div>
 
                   <fieldset className="application-path-fieldset">
-                    <legend>Application path</legend>
+                    <legend>{t("applicationPath.legend")}</legend>
                     <div className="form-grid">
                       <div className="field full">
                         <label htmlFor="profileSelect">
-                          Partnership profile <span className="req">*</span>
+                          {t("applicationPath.profile.label")} <span className="req">*</span>
                         </label>
                         <select
                           id="profileSelect"
@@ -1637,22 +1753,22 @@ export default function Ambasseder() {
                             resetOnPathChange();
                           }}
                         >
-                          <option value="">Select your partnership profile</option>
-                          <option value="content_creator">Content creator</option>
-                          <option value="youtube">YouTuber</option>
-                          <option value="breeder">Breeder</option>
-                          <option value="club">Club / association</option>
-                          <option value="behaviourist">Behaviourist</option>
-                          <option value="trainer">Educator / dog trainer</option>
-                          <option value="groomer">Groomer</option>
-                          <option value="veterinarian">Veterinarian</option>
-                          <option value="other">Other project</option>
+                          <option value="">{t("applicationPath.profile.placeholder")}</option>
+                          <option value="content_creator">{t("profileLabels.content_creator")}</option>
+                          <option value="youtube">{t("profileLabels.youtube")}</option>
+                          <option value="breeder">{t("profileLabels.breeder")}</option>
+                          <option value="club">{t("profileLabels.club")}</option>
+                          <option value="behaviourist">{t("profileLabels.behaviourist")}</option>
+                          <option value="trainer">{t("profileLabels.trainer")}</option>
+                          <option value="groomer">{t("profileLabels.groomer")}</option>
+                          <option value="veterinarian">{t("profileLabels.veterinarian")}</option>
+                          <option value="other">{t("profileLabels.other")}</option>
                         </select>
-                        <div className="hint">Choose the role that best reflects your activity.</div>
+                        <div className="hint">{t("applicationPath.profile.hint")}</div>
                       </div>
                       <div className="field full">
                         <label htmlFor="animalSelect">
-                          My animal universe <span className="req">*</span>
+                          {t("applicationPath.animal.label")} <span className="req">*</span>
                         </label>
                         <select
                           id="animalSelect"
@@ -1665,18 +1781,16 @@ export default function Ambasseder() {
                             resetOnPathChange();
                           }}
                         >
-                          <option value="">Select your animal universe</option>
-                          <option value="dog">Dog</option>
-                          <option value="cat">Cat</option>
-                          <option value="small_mammal">Small mammal</option>
-                          <option value="bird">Bird</option>
-                          <option value="reptile">Reptile</option>
-                          <option value="horse">Horse</option>
-                          <option value="all">All of them</option>
+                          <option value="">{t("applicationPath.animal.placeholder")}</option>
+                          <option value="dog">{t("animalLabels.dog")}</option>
+                          <option value="cat">{t("animalLabels.cat")}</option>
+                          <option value="small_mammal">{t("animalLabels.small_mammal")}</option>
+                          <option value="bird">{t("animalLabels.bird")}</option>
+                          <option value="reptile">{t("animalLabels.reptile")}</option>
+                          <option value="horse">{t("animalLabels.horse")}</option>
+                          <option value="all">{t("animalLabels.all")}</option>
                         </select>
-                        <div className="hint">
-                          Ekinat is exclusively for horses. Dog, cat, small mammal, bird and reptile profiles are guided toward Biogance.
-                        </div>
+                        <div className="hint">{t("applicationPath.animal.hint")}</div>
                         <div className="derived-universe">{pathState.derivedUniverseText}</div>
                       </div>
                       <div className="path-note">{pathState.pathNote}</div>
@@ -1684,124 +1798,123 @@ export default function Ambasseder() {
                   </fieldset>
 
                   <fieldset className={pathState.visible ? undefined : "is-hidden"}>
-                    <legend>Contact information</legend>
+                    <legend>{t("contact.legend")}</legend>
                     <div className="form-grid">
-                      <div className="field">
+                      <div className={`field${errors.first_name ? " has-error" : ""}`}>
                         <label htmlFor="firstName">
-                          First name <span className="req">*</span>
+                          {t("contact.firstName")} <span className="req">*</span>
                         </label>
                         <input
                           id="firstName"
                           name="first_name"
                           type="text"
                           autoComplete="given-name"
-                          required
                           data-export="first_name"
                           value={getVal("first_name")}
                           onChange={(e) => setVal("first_name", e.target.value)}
                         />
+                        {errors.first_name && <p className="field-error">{errors.first_name}</p>}
                       </div>
-                      <div className="field">
+                      <div className={`field${errors.last_name ? " has-error" : ""}`}>
                         <label htmlFor="lastName">
-                          Last name <span className="req">*</span>
+                          {t("contact.lastName")} <span className="req">*</span>
                         </label>
                         <input
                           id="lastName"
                           name="last_name"
                           type="text"
                           autoComplete="family-name"
-                          required
                           data-export="last_name"
                           value={getVal("last_name")}
                           onChange={(e) => setVal("last_name", e.target.value)}
                         />
+                        {errors.last_name && <p className="field-error">{errors.last_name}</p>}
                       </div>
-                      <div className="field">
+                      <div className={`field${errors.email ? " has-error" : ""}`}>
                         <label htmlFor="email">
-                          Email <span className="req">*</span>
+                          {t("contact.email")} <span className="req">*</span>
                         </label>
                         <input
                           id="email"
                           name="email"
                           type="email"
                           autoComplete="email"
-                          required
                           data-export="email"
                           value={getVal("email")}
                           onChange={(e) => setVal("email", e.target.value)}
                         />
+                        {errors.email && <p className="field-error">{errors.email}</p>}
                       </div>
-                      <div className="field">
+                      <div className={`field${errors.phone ? " has-error" : ""}`}>
                         <label htmlFor="phone">
-                          Phone number <span className="req">*</span>
+                          {t("contact.phone")} <span className="req">*</span>
                         </label>
                         <PhoneFieldBox
                           iso2={phoneIso2}
                           onCountryChange={(iso2) => {
                             phoneCountryEditedRef.current = true;
                             setPhoneIso2(iso2);
+                            setErrors((prev) => (prev.phone ? { ...prev, phone: "" } : prev));
                           }}
                           value={getVal("phone")}
                           onChange={(phone) => setVal("phone", phone)}
-                          required
+                          onBlur={validatePhone}
                         />
+                        {errors.phone && <p className="field-error">{errors.phone}</p>}
                       </div>
-                      <div className="field">
+                      <div className={`field${errors.country ? " has-error" : ""}`}>
                         <label htmlFor="country">
-                          Country <span className="req">*</span>
+                          {t("contact.country")} <span className="req">*</span>
                         </label>
                         <input
                           id="country"
                           name="country"
                           type="text"
                           autoComplete="country-name"
-                          required
                           data-export="country"
                           value={getVal("country")}
                           onChange={(e) => setVal("country", e.target.value)}
                         />
+                        {errors.country && <p className="field-error">{errors.country}</p>}
                       </div>
-                      <div className="field">
+                      <div className={`field${errors.city ? " has-error" : ""}`}>
                         <label htmlFor="city">
-                          City <span className="req">*</span>
+                          {t("contact.city")} <span className="req">*</span>
                         </label>
                         <input
                           id="city"
                           name="city"
                           type="text"
                           autoComplete="address-level2"
-                          required
                           data-export="city"
                           value={getVal("city")}
                           onChange={(e) => setVal("city", e.target.value)}
                         />
+                        {errors.city && <p className="field-error">{errors.city}</p>}
                       </div>
-                      <div className="field full">
+                      <div className={`field full${errors.postal_address ? " has-error" : ""}`}>
                         <label htmlFor="address">
-                          Postal address <span className="req">*</span>
+                          {t("contact.postalAddress")} <span className="req">*</span>
                         </label>
                         <input
                           id="address"
                           name="postal_address"
                           type="text"
                           autoComplete="street-address"
-                          required
                           data-export="postal_address"
                           value={getVal("postal_address")}
                           onChange={(e) => setVal("postal_address", e.target.value)}
                         />
-                        <div className="hint">Required for potential product deliveries, contracts or event shipments.</div>
+                        {errors.postal_address && <p className="field-error">{errors.postal_address}</p>}
+                        <div className="hint">{t("contact.postalAddressHint")}</div>
                       </div>
                     </div>
                   </fieldset>
 
                   <fieldset className={pathState.visible ? undefined : "is-hidden"}>
-                    <legend>Social platforms</legend>
+                    <legend>{t("social.legend")}</legend>
                     <div className="form-grid">
-                      <div className="platform-intro">
-                        Tick only the platforms where you are active. For each selected platform, add the profile link and the follower / subscriber
-                        count. If you do not use a platform, leave it unchecked.
-                      </div>
+                      <div className="platform-intro">{t("social.intro")}</div>
                       <div className="platform-grid">
                         {platforms.map((platform) => {
                           const active = checks[platform.check];
@@ -1827,7 +1940,7 @@ export default function Ambasseder() {
                                     id="otherPlatformName"
                                     name={platform.nameField}
                                     type="text"
-                                    placeholder="Platform name"
+                                    placeholder={t("social.otherNamePlaceholder")}
                                     data-export={platform.nameField}
                                     disabled={!active}
                                     required={active}
@@ -1874,10 +1987,10 @@ export default function Ambasseder() {
                   </fieldset>
 
                   <fieldset className={pathState.visible ? undefined : "is-hidden"}>
-                    <legend>Consent</legend>
+                    <legend>{t("consentSection.legend")}</legend>
                     <div className="form-grid">
                       <div className="field full">
-                        <label htmlFor="portfolio">Media kit / portfolio link</label>
+                        <label htmlFor="portfolio">{t("consentSection.portfolioLabel")}</label>
                         <input
                           id="portfolio"
                           name="portfolio_link"
@@ -1888,7 +2001,7 @@ export default function Ambasseder() {
                           value={getVal("portfolio_link")}
                           onChange={(e) => setVal("portfolio_link", e.target.value)}
                         />
-                        <div className="hint">Optional — add a link only if you already have one.</div>
+                        <div className="hint">{t("consentSection.portfolioHint")}</div>
                       </div>
                       <div className="field full">
                         <div className="checkbox-row">
@@ -1902,10 +2015,7 @@ export default function Ambasseder() {
                             checked={checks.content_usage_rights_accepted}
                             onChange={toggleConsent("content_usage_rights_accepted")}
                           />
-                          <label htmlFor="rights">
-                            I agree that the relevant brand team may review my public profiles and, if a partnership is validated, may request permission
-                            to use selected photos or videos.
-                          </label>
+                          <label htmlFor="rights">{t("consentSection.rights")}</label>
                         </div>
                         <div className="checkbox-row">
                           <input
@@ -1917,7 +2027,7 @@ export default function Ambasseder() {
                             checked={checks.contact_consent}
                             onChange={toggleConsent("contact_consent")}
                           />
-                          <label htmlFor="contactConsent">I agree to be contacted by the Biogance team regarding my application.</label>
+                          <label htmlFor="contactConsent">{t("consentSection.contact")}</label>
                         </div>
                         <div className="checkbox-row">
                           <input
@@ -1929,15 +2039,15 @@ export default function Ambasseder() {
                             checked={checks.information_accuracy}
                             onChange={toggleConsent("information_accuracy")}
                           />
-                          <label htmlFor="truth">I confirm that the information provided is accurate.</label>
+                          <label htmlFor="truth">{t("consentSection.truth")}</label>
                         </div>
                       </div>
                     </div>
                   </fieldset>
 
                   <div className="form-actions" style={{ display: pathState.visible ? "flex" : "none" }}>
-                    <button className="btn dark" type="submit">
-                      Submit application
+                    <button className="btn dark" type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? t("actions.submitting") : t("actions.submit")}
                     </button>
                   </div>
                   <div ref={messageRef} className={`success-message${submitMessage ? " show" : ""}`}>
@@ -1950,25 +2060,22 @@ export default function Ambasseder() {
 
           <section className="social-strip" aria-label="Follow Biogance">
             <div className="social-copy">
-              <div className="kicker">While we review your application</div>
-              <h2 style={{ lineHeight: "1" }}>Stay close to the Biogance universe.</h2>
-              <p>
-                Thank you for taking the time to share your universe with us. While we discover your application, follow our latest routines, expert
-                advice, product launches and community stories on social media.
-              </p>
+              <div className="kicker">{t("socialStrip.kicker")}</div>
+              <h2 style={{ lineHeight: "1" }}>{t("socialStrip.title")}</h2>
+              <p>{t("socialStrip.text")}</p>
             </div>
             <div className="social-actions">
               <a className="btn" href="https://www.instagram.com/bioganceofficiel" target="_blank" rel="noopener noreferrer">
-                Instagram
+                {t("socialStrip.instagram")}
               </a>
               <a className="btn" href="https://www.facebook.com/bioganceofficiel" target="_blank" rel="noopener noreferrer">
-                Facebook
+                {t("socialStrip.facebook")}
               </a>
               <a className="btn" href="https://youtube.com/@bioganceofficiel?si=IJV8iaJ1YTgSos8z" target="_blank" rel="noopener noreferrer">
-                YouTube
+                {t("socialStrip.youtube")}
               </a>
               <a className="btn" href="https://www.tiktok.com/@bioganceofficiel" target="_blank" rel="noopener noreferrer">
-                TikTok
+                {t("socialStrip.tiktok")}
               </a>
             </div>
           </section>
@@ -2158,6 +2265,14 @@ export default function Ambasseder() {
         .btn.dark:hover {
           background: #000;
         }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+        }
+        .btn.dark:disabled:hover {
+          background: var(--ink);
+        }
         .btn.soft {
           background: var(--white);
         }
@@ -2255,6 +2370,11 @@ export default function Ambasseder() {
           color: white;
           cursor: pointer;
         }
+          .process-step:hover span,
+.process-step:hover strong,
+.process-step:hover p {
+  color: #fff !important;
+}
         .process-step:last-child {
           border-right: 0;
         }
@@ -2294,16 +2414,36 @@ export default function Ambasseder() {
           align-items: start;
         }
         .side-panel {
-          /* parks itself --pin-gap below the fixed navbar and then stays put
-             while the form column scrolls past it. Height follows its own
-             content — no fixed height and no inner scrollbar, so the panel is
-             genuinely fixed and the page scroll is never captured by it. */
           position: sticky;
           top: calc(var(--nav-h) + var(--pin-gap));
+          /* Same --pin-gap breathing room at the bottom as the top offset
+             above uses, so the pinned card never presses flush against the
+             bottom of the screen. Content taller than that available space
+             scrolls inside the card itself (overscroll-behavior: contain
+             stops that inner scroll from leaking into the page once it
+             hits its own top/bottom edge). */
+          max-height: calc(100vh - var(--nav-h) - (var(--pin-gap) * 2));
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
           background: var(--ink);
           color: var(--white);
           padding: 30px;
           order: 2;
+        }
+        .side-panel::-webkit-scrollbar {
+          width: 3px;
+        }
+        .side-panel::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .side-panel::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 999px;
+        }
+        .side-panel::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
         }
         .side-panel .program-label {
           font-size: 10px;
@@ -2621,6 +2761,28 @@ export default function Ambasseder() {
           font-size: 13px;
           color: var(--ink);
           box-shadow: none;
+        }
+
+        /* Required-field validation state — a field goes red the moment its
+           submit-time error is set, and clears on the next edit.
+           !important on both: the border/color rules earlier in this same
+           block (.ambassador-landing :global(input/select), .field
+           :global(label) etc.) are declared with the same or higher
+           specificity, so a plain override here was silently losing to
+           them regardless of source order. */
+        .field.has-error :global(input),
+        .field.has-error :global(select),
+        .field.has-error :global(.phone-field-box) {
+          border-color: #dc2626 !important;
+        }
+        .field-error {
+          margin: 6px 0 0 !important;
+          color: #dc2626 !important;
+          font-size: 11px !important;
+          line-height: 1.5 !important;
+          font-weight: 600 !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
         }
 
         .hint {

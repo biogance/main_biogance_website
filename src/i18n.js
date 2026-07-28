@@ -27,6 +27,10 @@ import stickyaddtocartEN from "../src/locales/en/stickyaddtocart.json";
 import filterEN from "../src/locales/en/filter.json";
 import modaladdtocartEN from "../src/locales/en/modaladdtocart.json";
 import checkoutEN from "../src/locales/en/checkout.json";
+import prosectionEN from "../src/locales/en/prosection.json";
+import resellerEN from "../src/locales/en/reseller.json";
+import ambassadorEN from "../src/locales/en/ambassador.json";
+import laboratoryEN from "../src/locales/en/laboratory.json";
 
 
 
@@ -56,6 +60,10 @@ import stickyaddtocartFR from "../src/locales/fr/stickyaddtocart.json";
 import filterFR from "../src/locales/fr/filter.json";
 import modaladdtocartFR from "../src/locales/fr/modaladdtocart.json";
 import checkoutFR from "../src/locales/fr/checkout.json";
+import prosectionFR from "../src/locales/fr/prosection.json";
+import resellerFR from "../src/locales/fr/reseller.json";
+import ambassadorFR from "../src/locales/fr/ambassador.json";
+import laboratoryFR from "../src/locales/fr/laboratory.json";
 
 i18n
     .use(LanguageDetector)
@@ -88,6 +96,10 @@ i18n
                 filter: filterEN,
                 modaladdtocart: modaladdtocartEN,
                 checkout: checkoutEN,
+                prosection: prosectionEN,
+                reseller: resellerEN,
+                ambassador: ambassadorEN,
+                laboratory: laboratoryEN,
             },
             fr: {
                 common: commonFR,
@@ -115,10 +127,14 @@ i18n
                 filter: filterFR,
                 modaladdtocart: modaladdtocartFR,
                 checkout: checkoutFR,
+                prosection: prosectionFR,
+                reseller: resellerFR,
+                ambassador: ambassadorFR,
+                laboratory: laboratoryFR,
             },
         },
         fallbackLng: "en",
-        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout"],
+        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout, prosection, reseller, ambassador, laboratory"],
         defaultNS: "common",
         interpolation: {
             escapeValue: false,

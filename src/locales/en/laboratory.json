@@ -1,0 +1,149 @@
+{
+  "hero": {
+    "eyebrow": "About Biogance",
+    "heading1": "Natural care.",
+    "heading2": "French",
+    "heading3": "expertise.",
+    "description": "Biogance is an independent French family business dedicated to animal well-being. As a pioneer in organic and natural hygiene and care for pets, the brand combines selected ingredients, Research & Innovation expertise and certified production standards to create safe, effective and responsible daily care.",
+    "btnCommitments": "Our commitments",
+    "btnStory": "Our story",
+    "cardBadge": "Organic & natural pet care",
+    "cardStrong": "Formulated for animals, designed with purpose."
+  },
+  "marquee": {
+    "tags": [
+      "98% organic & natural ingredients",
+      "Expert pet-care formulas",
+      "Pioneer in organic & natural hygiene and care for pets",
+      "Family business & independent French laboratory",
+      "Animal welfare first",
+      "Responsible care routines"
+    ]
+  },
+  "story": {
+    "kicker": "Our identity",
+    "heading": "Born in Angers. Built for animal care.",
+    "description": "Born in Angers and guided by a responsible French laboratory culture, Biogance has grown with one clear ambition: creating natural, effective and desirable care routines that respect animals, their families and the planet.",
+    "year": "2008",
+    "yearDesc": "The beginning of a French pet-care laboratory with a clear ambition: make animal hygiene cleaner, softer and more responsible.",
+    "copy1": "Founded in Angers, in the heart of the Pays de la Loire, Biogance grew from a laboratory project into a recognised name in natural pet care. From the beginning, the brand has worked with experts to create formulas adapted to the needs of pets and companion animals.",
+    "copy2Prefix": "Today, Biogance continues to combine",
+    "copy2Bold": "natural inspiration, scientific precision and French know-how",
+    "copy2Suffix": "to support families, breeders, groomers, veterinarians and pet professionals with trusted daily care routines."
+  },
+  "values": {
+    "kicker": "What guides us",
+    "heading": "Care without excess.",
+    "description": "Biogance is shaped by simple but demanding principles: respect for animals, carefully selected ingredients, controlled manufacturing and continuous improvement.",
+    "card1": {
+      "number": "01",
+      "title": "Animal well-being",
+      "desc": "Products developed to support comfort, hygiene, skin balance and coat beauty — paraben-free, phenoxyethanol-free, animal oil-free and not tested on animals."
+    },
+    "card2": {
+      "number": "02",
+      "title": "Natural inspiration",
+      "desc": "Formulas enriched with organic and natural ingredients, selected for performance and softness."
+    },
+    "card3": {
+      "number": "03",
+      "title": "Expert formulation",
+      "desc": "French laboratory know-how at every step, from ingredient selection to product control."
+    },
+    "card4": {
+      "number": "04",
+      "title": "Responsible progress",
+      "desc": "A long-term approach guided by recyclable packaging, selected raw materials and improvement over time."
+    }
+  },
+  "commitments": {
+    "kicker": "Our commitments",
+    "heading": "Better care starts with better choices.",
+    "description": "At Biogance, every commitment is translated into concrete choices: formulas developed for animal welfare, carefully selected raw materials, recyclable packaging, certified production standards and a team culture built on respect, trust and continuous improvement.",
+    "items": {
+      "animal": {
+        "label": "Animal",
+        "text": "Care routines designed for comfort, hygiene and well-being."
+      },
+      "nature": {
+        "label": "Nature",
+        "text": "Organic actives and ingredients of natural origin, carefully selected."
+      },
+      "planet": {
+        "label": "Planet",
+        "text": "Recyclable packaging and an eco-responsible approach."
+      },
+      "quality": {
+        "label": "Quality",
+        "text": "GMP / ISO 22716 certified production and controlled traceability."
+      },
+      "people": {
+        "label": "People",
+        "text": "A family business driven by collaboration and respect."
+      }
+    }
+  },
+  "proofs": {
+    "kicker": "From intention to product",
+    "heading": "Natural care, made tangible.",
+    "description": "The Biogance promise lives in five essential pillars: animal welfare, environmental responsibility, innovation, quality and respect for the people who make the brand move forward every day.",
+    "hero": {
+      "label": "Signature fact",
+      "stat": "98%",
+      "heading": "Organic & natural ingredients at the heart of Biogance care.",
+      "desc": "A powerful proof point, designed to be seen first: Biogance care begins with a formula philosophy rooted in organic and natural ingredients."
+    },
+    "iso": {
+      "label": "Certified quality",
+      "stat": "ISO 22716",
+      "heading": "GMP-certified production standards.",
+      "desc": "Controlled traceability and quality standards at every stage."
+    },
+    "pioneer": {
+      "label": "Brand heritage",
+      "stat": "Pioneer",
+      "heading": "Natural pet care since the beginning.",
+      "desc": "Biogance has championed organic and natural hygiene and care from day one."
+    },
+    "family": {
+      "label": "Laboratory DNA",
+      "stat": "Family business",
+      "heading": "Independent French laboratory with a long-term vision.",
+      "desc": "A human brand built on expertise, trust and continuity."
+    }
+  },
+  "pillars": {
+    "welfare": {
+      "kicker": "Respect for the animal",
+      "title": "Welfare first",
+      "desc": "Organic and natural care products formulated with certified organic active ingredients and ingredients of natural origin, designed for the specific needs of dogs, cats, small mammals, birds, reptiles and other companions."
+    },
+    "responsible": {
+      "kicker": "Respect for the environment",
+      "title": "Responsible by design",
+      "desc": "Selected raw materials, recyclable packaging and an eco-responsible approach to reduce impact while preserving formula quality, safety and conservation."
+    },
+    "science": {
+      "kicker": "Innovation",
+      "title": "Science meets nature",
+      "desc": "A Research & Development team inspired by aromatic and medicinal plants, constantly improving formulas to answer market expectations and the real needs of pets."
+    },
+    "quality": {
+      "kicker": "Quality",
+      "title": "Controlled standards",
+      "desc": "Production units certified GMP / ISO 22716, quality controls at every step and the Organissime range launched with ECOCERT as a reference for natural, ethical animal cosmetics."
+    },
+    "human": {
+      "kicker": "Sharing & respect",
+      "title": "Human expertise",
+      "desc": "A family business where R&D, quality, production, logistics and marketing work together with trust, dynamism and respect — because caring for animals also means respecting people."
+    }
+  },
+  "closing": {
+    "kicker": "The natural way",
+    "heading": "Care that respects animals, people and the planet.",
+    "description": "Choosing Biogance means choosing an expert French brand that blends science and nature to create trusted, responsible and desirable pet-care routines.",
+    "btnProducts": "Discover our products",
+    "btnCommitments": "Read our commitments"
+  }
+}

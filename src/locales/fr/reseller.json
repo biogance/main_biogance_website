@@ -1,0 +1,152 @@
+{
+  "successModal": {
+    "eyebrow": "Biogance Professionnel",
+    "titleLine1": "Candidature",
+    "titleLine2": "envoyée.",
+    "message": "Merci pour votre candidature revendeur. Notre équipe commerciale examinera votre demande et vous contactera pour les prochaines étapes.",
+    "nextStepLabel": "Prochaine étape",
+    "nextStepValue": "Revue commerciale",
+    "responseTimeLabel": "Délai de réponse",
+    "responseTimeValue": "3 à 5 jours ouvrés",
+    "close": "Fermer"
+  },
+  "hero": {
+    "eyebrow": "Biogance Professionnel",
+    "titleLine1": "Devenez",
+    "titleLine2": "revendeur",
+    "titleLine3": "Biogance.",
+    "text": "Apportez à vos clients un soin animalier naturel et expert. Complétez le formulaire de candidature revendeur et notre équipe commerciale examinera votre demande avant de vous contacter pour les prochaines étapes.",
+    "applyNow": "Postuler maintenant",
+    "downloadCatalogue": "Télécharger le catalogue",
+    "notes": [
+      { "title": "Des formules expertes", "desc": "Des routines de soin développées avec une approche professionnelle de l'hygiène et du bien-être." },
+      { "title": "Un laboratoire français", "desc": "Une marque née à Angers, conçue avec précision et pour une confiance durable." },
+      { "title": "Un accompagnement commercial", "desc": "Un suivi commercial pour aider nos partenaires qualifiés à construire le bon assortiment." }
+    ],
+    "glassCard": {
+      "title": "Un soin naturel, pensé pour les professionnels.",
+      "text": "Des animaleries et salons de toilettage aux environnements de vente pilotés par des vétérinaires, Biogance accompagne des partenaires qui partagent la même ambition : des routines plus saines, des résultats visibles et un soin fiable pour chaque compagnon."
+    }
+  },
+  "proof": {
+    "items": [
+      { "value": "2008", "label": "Fondée à Angers, en France" },
+      { "value": "40+", "label": "Pays qui font confiance à la marque" },
+      { "value": "ISO", "label": "Normes de fabrication professionnelles" },
+      { "value": "ECO", "label": "Expertise certifiée en soin naturel" }
+    ]
+  },
+  "experience": {
+    "eyebrow": "Partenariat professionnel",
+    "titleLine1": "Une expérience",
+    "titleLine2": "B2B",
+    "titleLine3": "raffinée.",
+    "copy": "Le parcours revendeur a été pensé pour être clair, sélectif et efficace. Une fois vos informations transmises, l'équipe commerciale Biogance peut qualifier votre profil professionnel, comprendre vos besoins de distribution et vous orienter vers l'offre professionnelle la plus pertinente.",
+    "cards": [
+      { "step": "Étape 01", "title": "Partagez les informations de votre entreprise", "desc": "Complétez vos coordonnées d'entreprise, de contact et de TVA afin que notre équipe puisse identifier rapidement votre profil professionnel." },
+      { "step": "Étape 02", "title": "Définissez vos centres d'intérêt produits", "desc": "Sélectionnez les catégories Biogance que vous souhaitez distribuer, des essentiels de toilettage aux routines de soin naturel certifiées." },
+      { "step": "Étape 03", "title": "Soyez contacté par l'équipe commerciale", "desc": "Après examen, un représentant commercial Biogance vous contactera pour discuter des conditions revendeur, de l'accès au catalogue et des prochaines étapes." }
+    ]
+  },
+  "form": {
+    "aside": {
+      "eyebrow": "Candidature revendeur",
+      "title": "Demandez un accès professionnel.",
+      "intro": "Partagez quelques informations essentielles afin que notre équipe commerciale puisse qualifier votre demande et vous contacter avec les bonnes conditions B2B.",
+      "process": [
+        { "title": "Envoyez votre demande", "desc": "Vos informations professionnelles sont transmises à l'équipe commerciale Biogance." },
+        { "title": "Revue commerciale", "desc": "Nous vérifions votre activité, votre marché et vos besoins produits." },
+        { "title": "Suivi personnalisé", "desc": "Un représentant commercial vous contacte pour les prochaines étapes." }
+      ],
+      "note": "Ce court formulaire aide notre équipe commerciale à comprendre votre activité, votre marché et les gammes de produits qui vous intéressent.",
+      "completed": "Formulaire complété"
+    },
+    "steps": {
+      "companyContact": "Entreprise & contact",
+      "businessNeeds": "Besoins commerciaux"
+    },
+    "overview": {
+      "label": "Progression de la candidature",
+      "completedSuffix": "% complété"
+    },
+    "percentCompleteSuffix": "% complété",
+    "accordion1": {
+      "summaryTitle": "Entreprise & contact",
+      "legend": "Entreprise & contact",
+      "required": "Obligatoire",
+      "company": { "label": "Entreprise", "placeholder": "Nom de votre entreprise" },
+      "businessType": { "label": "Type d'activité", "placeholder": "Sélectionnez votre activité" },
+      "vat": { "label": "TVA", "placeholder": "Numéro de TVA" },
+      "email": { "label": "Email", "placeholder": "nom@entreprise.com" },
+      "phone": { "label": "Numéro de téléphone" },
+      "country": { "label": "Pays", "placeholder": "Pays" },
+      "website": { "label": "Site web ou profil réseau social", "placeholder": "https://" }
+    },
+    "accordion2": {
+      "summaryTitle": "Besoins commerciaux",
+      "legend": "Besoins commerciaux",
+      "salesChannel": { "label": "Canal de vente principal", "placeholder": "Sélectionnez une option" },
+      "market": { "label": "Marché couvert", "placeholder": "France, Portugal, Émirats arabes unis, Singapour…" },
+      "interests": { "label": "Centres d'intérêt produits", "hint": "Sélectionnez au moins un élément" }
+    },
+    "consent": "Je confirme que les informations fournies sont exactes et j'accepte d'être contacté par l'équipe commerciale Biogance concernant ma candidature revendeur.",
+    "actions": {
+      "secureNote": "Votre demande sera examinée par notre équipe commerciale. La soumission de ce formulaire ne garantit pas automatiquement un accès revendeur.",
+      "submit": "Envoyer la candidature",
+      "submitting": "Envoi en cours..."
+    }
+  },
+  "businessTypeOptions": [
+    "Animalerie",
+    "Salon de toilettage",
+    "Clinique vétérinaire",
+    "Éleveur",
+    "Vendeur e-commerce",
+    "Distributeur / grossiste",
+    "Concept store",
+    "Autre activité professionnelle"
+  ],
+  "salesChannelOptions": [
+    "Magasin physique",
+    "Boutique en ligne",
+    "Marketplace",
+    "Vente en salon de toilettage",
+    "Vente vétérinaire",
+    "Réseau de distribution",
+    "Canaux mixtes"
+  ],
+  "interests": {
+    "biogance-dogs-cats": "Biogance — Soin chiens, chats & chiots",
+    "biogance-small-pets-birds-reptiles": "Biogance — Petits mammifères, oiseaux & reptiles",
+    "organissime": "Organissime — Soin certifié biologique",
+    "biospotix": "Biospotix — Protection anti-parasitaire végétale",
+    "ekinat": "Ekinat — Soin équestre premium",
+    "gamme-pro": "Gamme Pro — Formats professionnels"
+  },
+  "progress": {
+    "ready": "Candidature prête à être envoyée.",
+    "almost": "Presque terminé — complétez les derniers détails obligatoires.",
+    "good": "Bonne progression — continuez à compléter chaque section.",
+    "started": "Le profil revendeur se construit étape par étape.",
+    "start": "Commencez par les informations de votre entreprise pour construire votre profil revendeur."
+  },
+  "errors": {
+    "company": "Veuillez indiquer le nom de votre entreprise",
+    "businessType": "Veuillez sélectionner votre type d'activité",
+    "vat": "Veuillez indiquer votre numéro de TVA",
+    "emailRequired": "Veuillez indiquer votre email",
+    "emailInvalid": "Veuillez indiquer une adresse email valide",
+    "phoneRequired": "Veuillez indiquer votre numéro de téléphone",
+    "phoneTooShort": "Ce numéro de téléphone est trop court",
+    "phoneTooLong": "Ce numéro de téléphone est trop long",
+    "phoneInvalid": "Veuillez indiquer un numéro de téléphone valide",
+    "genericSubmit": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "catalogue": {
+    "eyebrow": "Catalogue produits",
+    "title": "Découvrez l'assortiment professionnel.",
+    "text": "Téléchargez le catalogue produits Biogance pour découvrir nos gammes de soin, nos formats professionnels et nos routines expertes pour chiens, chats et autres compagnons.",
+    "cta": "Télécharger le catalogue",
+    "tags": ["#SoinToilettage", "#FormulesNaturelles", "#GammesCertifiées", "#FormatsProfessionnels"]
+  }
+}

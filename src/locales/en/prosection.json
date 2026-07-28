@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "eyebrow": "Biogance Professional",
+    "titleLine1": "The",
+    "titleLine2": "Professional",
+    "titleLine3": "Universe.",
+    "lead": "A dedicated space for retailers, distributors, grooming salons, ambassadors and expert partners who want to bring naturally inspired, French-made pet care closer to their communities.",
+    "chooseRoute": "Choose your route",
+    "downloadCatalogue": "Download catalogue",
+    "meta": {
+      "founded": { "value": "2008", "label": "Founded in Angers, France" },
+      "countries": { "value": "40+", "label": "Countries worldwide" },
+      "routes": { "value": "2", "label": "Professional routes" }
+    },
+    "card": {
+      "kicker1": "Professional care",
+      "kicker2": "Sales support",
+      "title": "One network. Many ways to grow.",
+      "seals": {
+        "resellers": { "title": "Resellers", "desc": "Access B2B terms, catalogues and sales support." },
+        "partners": { "title": "Partners", "desc": "Share expert content and build meaningful collaborations." },
+        "ekinat": { "title": "Ekinat", "desc": "Dedicated opportunities for the equestrian world." },
+        "biogance": { "title": "Biogance", "desc": "Pet care routines for dogs, cats and companion animals." }
+      }
+    }
+  },
+  "route": {
+    "eyebrow": "Choose your professional route",
+    "title": "One space. Two clear paths.",
+    "intro": "Select the application page that matches your project. Whether you want to distribute Biogance products or join our brand adventure as a partner, each route has its own dedicated form and team review.",
+    "reseller": {
+      "routeLabel": "Route 01",
+      "code": "B2B",
+      "kicker1": "Sales access",
+      "kicker2": "Professional account",
+      "title": "Resellers & distributors.",
+      "description": "For retailers, distributors, grooming salons, pharmacies, concept stores and online sellers who want to offer Biogance products to their customers.",
+      "bullets": ["Professional information", "Sales team follow-up", "Catalogue access"],
+      "cta": "Access reseller form"
+    },
+    "partner": {
+      "routeLabel": "Route 02",
+      "code": "AMB",
+      "kicker1": "Community",
+      "kicker2": "Brand adventure",
+      "title": "Partners & ambassadors.",
+      "description": "For creators, YouTubers, breeders, clubs, groomers, veterinarians, behaviourists, educators and Ekinat equestrian profiles ready to share their expertise.",
+      "bullets": ["Biogance or Ekinat universe", "Expert voice & content", "Marketing team review"],
+      "cta": "Access partner form"
+    },
+    "note1": "Applications are reviewed by the Biogance team.",
+    "note2": "Choose the route first — the dedicated page will collect the right information."
+  },
+  "signature": {
+    "eyebrow": "Why join the network",
+    "title": "Built for professionals.",
+    "intro": "Biogance supports professional clients with clear product information, sales resources and a brand universe designed to be easy to explain, recommend and display.",
+    "cards": [
+      { "num": "01", "title": "French-made expertise", "desc": "Products developed with a laboratory approach and a strong commitment to quality and traceability." },
+      { "num": "02", "title": "Natural pet care", "desc": "Routines inspired by nature and designed for dogs, cats, horses and companion animals." },
+      { "num": "03", "title": "Commercial support", "desc": "A dedicated team reviews each request and guides professionals through the next steps." },
+      { "num": "04", "title": "Brand material", "desc": "Catalogues, visuals, POS assets and product information to help activate the brand in-store and online." }
+    ]
+  },
+  "editorial": {
+    "eyebrow": "Partners & ambassadors",
+    "title": "More than a collaboration.",
+    "intro": "Joining Biogance or Ekinat as a partner means taking part in a human adventure: sharing your expertise, your daily life and your vision of animal care while actively supporting the development of the brand.",
+    "steps": [
+      { "num": "01", "title": "Choose your universe", "desc": "Biogance for pet care, Ekinat for the equestrian world, or a custom project if your idea is unique." },
+      { "num": "02", "title": "Share your profile", "desc": "Tell us about your audience, your expertise, your content style and the animals you work with." },
+      { "num": "03", "title": "Build with the brand", "desc": "Our Marketing team studies every application and comes back with the most relevant next step." }
+    ],
+    "visual": {
+      "label": "Partner journey",
+      "sub": "Creators · Breeders · Clubs · Groomers · Experts · Veterinarians · YouTubers",
+      "mark": "Pro"
+    }
+  },
+  "resource": {
+    "eyebrow": "Professional resources",
+    "title": "Your professional starting point.",
+    "intro": "Download the product catalogue, choose your professional route and continue to the dedicated application page that fits your business or partnership project.",
+    "items": {
+      "catalogue": { "title": "Biogance professional catalogue", "desc": "Product ranges, routines and key information for professional buyers.", "cta": "Download" },
+      "reseller": { "title": "Reseller application", "desc": "For pet shops, pharmacies, grooming salons, distributors and concept stores.", "cta": "Apply" },
+      "partner": { "title": "Partner application", "desc": "For creators, clubs, breeders, experts, YouTubers and equestrian profiles.", "cta": "Apply" }
+    }
+  },
+  "cta": {
+    "eyebrow": "Stay close",
+    "title": "Follow the Biogance universe.",
+    "intro": "While our teams review professional and partnership applications, discover our latest routines, expert advice, product launches and community stories.",
+    "social": { "instagram": "Instagram", "facebook": "Facebook", "youtube": "YouTube", "tiktok": "TikTok" }
+  }
+}

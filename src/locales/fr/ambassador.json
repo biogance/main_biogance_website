@@ -1,0 +1,490 @@
+{
+  "selectPlaceholder": "Sélectionner",
+  "successModal": {
+    "eyebrow": "Biogance Professionnel",
+    "titleLine1": "Candidature",
+    "titleLine2": "envoyée.",
+    "message": "Merci d'avoir partagé votre univers avec nous. Notre équipe marketing examinera attentivement votre candidature partenaire et reviendra vers vous avec les prochaines étapes.",
+    "nextStepLabel": "Prochaine étape",
+    "nextStepValue": "Revue marketing",
+    "responseTimeLabel": "Délai de réponse",
+    "responseTimeValue": "5 à 10 jours ouvrés",
+    "close": "Fermer"
+  },
+  "hero": {
+    "eyebrow": "Réseau professionnel Biogance",
+    "titleLine1": "Devenez",
+    "titleSmall": "un",
+    "titleLine2": "Partenaire.",
+    "lead": "Rejoignez une aventure humaine construite autour des animaux, de l'expertise et d'histoires authentiques. En tant que partenaire Biogance pour les animaux de compagnie ou partenaire Ekinat pour les chevaux, vous aidez à inspirer notre communauté, partagez des conseils fiables et contribuez activement au développement de nos marques.",
+    "startApplication": "Commencer la candidature",
+    "howItWorks": "Comment ça marche"
+  },
+  "process": {
+    "kicker": "Rejoignez l'aventure",
+    "titleLine1": "Choisissez.",
+    "titleLine2": "Partagez.",
+    "titleLine3": "Grandissez.",
+    "intro": "Biogance recherche des partenaires ambassadeurs passionnés, prêts à renforcer la visibilité de la marque, développer sa notoriété et inspirer une communauté construite autour d'un soin animalier responsable. En retour, les partenaires sélectionnés peuvent recevoir des produits, accéder à des offres exclusives, être mis en avant sur nos canaux de communication et participer à une aventure humaine authentique où le bien-être animal passe toujours en premier.",
+    "steps": [
+      { "step": "Étape 01", "title": "Choisissez votre profil", "desc": "Dites-nous qui vous êtes, ce que vous faites et comment votre univers peut naturellement faire vivre Biogance." },
+      { "step": "Étape 02", "title": "Représentez notre univers", "desc": "Partagez votre monde animalier, votre communauté et le contenu ou l'expertise que vous pourriez apporter à Biogance ou Ekinat." },
+      { "step": "Étape 03", "title": "Grandissons ensemble", "desc": "Profitez d'avantages exclusifs de la marque, d'opportunités de visibilité et de la chance de construire quelque chose d'authentique avec nous." }
+    ]
+  },
+  "sidePanel": {
+    "label": "Votre parcours partenaire"
+  },
+  "applicationPath": {
+    "legend": "Parcours de candidature",
+    "profile": {
+      "label": "Profil de partenariat",
+      "placeholder": "Sélectionnez votre profil de partenariat",
+      "hint": "Choisissez le rôle qui reflète le mieux votre activité."
+    },
+    "animal": {
+      "label": "Mon univers animalier",
+      "placeholder": "Sélectionnez votre univers animalier",
+      "hint": "Ekinat est exclusivement dédié aux chevaux. Les profils chien, chat, petit mammifère, oiseau et reptile sont orientés vers Biogance."
+    }
+  },
+  "contact": {
+    "legend": "Coordonnées",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "phone": "Numéro de téléphone",
+    "country": "Pays",
+    "city": "Ville",
+    "postalAddress": "Adresse postale",
+    "postalAddressHint": "Requis pour d'éventuelles livraisons de produits, contrats ou envois liés à un événement."
+  },
+  "social": {
+    "legend": "Réseaux sociaux",
+    "intro": "Cochez uniquement les plateformes sur lesquelles vous êtes actif. Pour chaque plateforme sélectionnée, ajoutez le lien du profil et le nombre d'abonnés. Si vous n'utilisez pas une plateforme, laissez-la décochée.",
+    "otherNamePlaceholder": "Nom de la plateforme",
+    "platforms": {
+      "instagram": { "label": "Instagram", "urlPlaceholder": "URL du profil Instagram", "followersPlaceholder": "Abonnés Instagram" },
+      "tiktok": { "label": "TikTok", "urlPlaceholder": "URL du profil TikTok", "followersPlaceholder": "Abonnés TikTok" },
+      "youtube": { "label": "YouTube", "urlPlaceholder": "URL de la chaîne YouTube", "followersPlaceholder": "Abonnés YouTube" },
+      "facebook": { "label": "Facebook", "urlPlaceholder": "URL de la page Facebook", "followersPlaceholder": "Abonnés Facebook" },
+      "other": { "label": "Autre plateforme / site web", "urlPlaceholder": "URL du profil / site web", "followersPlaceholder": "Abonnés / visites mensuelles" }
+    }
+  },
+  "consentSection": {
+    "legend": "Consentement",
+    "portfolioLabel": "Lien media kit / portfolio",
+    "portfolioHint": "Facultatif — ajoutez un lien uniquement si vous en avez déjà un.",
+    "rights": "J'accepte que l'équipe de marque concernée examine mes profils publics et, si un partenariat est validé, puisse me demander l'autorisation d'utiliser certaines photos ou vidéos.",
+    "contact": "J'accepte d'être contacté par l'équipe Biogance concernant ma candidature.",
+    "truth": "Je confirme que les informations fournies sont exactes."
+  },
+  "actions": {
+    "submit": "Envoyer la candidature",
+    "submitting": "Envoi en cours..."
+  },
+  "socialStrip": {
+    "kicker": "Pendant que nous examinons votre candidature",
+    "title": "Restez proche de l'univers Biogance.",
+    "text": "Merci d'avoir pris le temps de partager votre univers avec nous. Pendant que nous découvrons votre candidature, suivez nos dernières routines, conseils d'experts, lancements de produits et histoires de communauté sur les réseaux sociaux.",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "youtube": "YouTube",
+    "tiktok": "TikTok"
+  },
+  "errors": {
+    "platformRequiredTitle": "Plateforme sociale requise.",
+    "platformRequiredBody": "Veuillez sélectionner au moins une plateforme active et indiquer le nombre d'abonnés afin que notre équipe puisse examiner correctement votre profil.",
+    "firstName": "Veuillez indiquer votre prénom",
+    "lastName": "Veuillez indiquer votre nom",
+    "emailRequired": "Veuillez indiquer votre email",
+    "emailInvalid": "Veuillez indiquer une adresse email valide",
+    "phoneRequired": "Veuillez indiquer votre numéro de téléphone",
+    "phoneTooShort": "Ce numéro de téléphone est trop court",
+    "phoneTooLong": "Ce numéro de téléphone est trop long",
+    "phoneInvalid": "Veuillez indiquer un numéro de téléphone valide",
+    "country": "Veuillez indiquer votre pays",
+    "city": "Veuillez indiquer votre ville",
+    "postalAddress": "Veuillez indiquer votre adresse postale",
+    "selectFieldTemplate": "Veuillez sélectionner {{field}}",
+    "enterFieldTemplate": "Veuillez indiquer {{field}}",
+    "genericSubmit": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "brand": {
+    "label": { "ekinat": "Ekinat", "bioganceEkinat": "Biogance pour les animaux de compagnie + Ekinat pour les chevaux", "biogance": "Biogance", "fallback": "univers sélectionné" },
+    "shortLabel": { "ekinat": "Ekinat", "bioganceEkinat": "Biogance + Ekinat", "biogance": "Biogance", "fallback": "univers sélectionné" },
+    "hashLabel": { "ekinat": "Ekinat", "bioganceEkinat": "BioganceEkinat", "biogance": "Biogance", "fallback": "Univers" }
+  },
+  "profileLabels": {
+    "content_creator": "Créateur de contenu",
+    "youtube": "YouTubeur",
+    "breeder": "Éleveur",
+    "club": "Club / association",
+    "behaviourist": "Comportementaliste",
+    "trainer": "Éducateur / dresseur canin",
+    "groomer": "Toiletteur",
+    "veterinarian": "Vétérinaire",
+    "other": "Autre projet"
+  },
+  "animalLabels": {
+    "dog": "Chien",
+    "cat": "Chat",
+    "small_mammal": "Petit mammifère",
+    "bird": "Oiseau",
+    "reptile": "Reptile",
+    "horse": "Cheval",
+    "all": "Tous"
+  },
+  "path": {
+    "suggestedUniverse": "Univers suggéré : {{brand}}",
+    "genericFormTitle": "Candidature de partenariat",
+    "genericFormSubtitle": "Sélectionnez votre profil de partenariat et votre univers animalier pour ouvrir le bon questionnaire.",
+    "genericDynamicLegend": "Détails du partenariat",
+    "neither": {
+      "sideTitle": "Choisissez votre profil",
+      "sideDescription": "Commencez par votre profil de partenariat, puis indiquez-nous quel univers animalier représente votre activité. Biogance est dédié aux animaux de compagnie ; Ekinat est exclusivement dédié aux chevaux.",
+      "tags": ["#Profil", "#Animaux", "#Histoire"],
+      "pathNote": "Une fois les deux champs complétés, le bon questionnaire apparaîtra automatiquement."
+    },
+    "profileOnly": {
+      "fallbackTitle": "Profil partenaire",
+      "sideDescription": "Sélectionnez maintenant l'univers animalier qui représente votre activité. Les profils équestres ouvrent le parcours Ekinat ; tous les autres animaux ouvrent le parcours Biogance.",
+      "fallbackTag": "Profil",
+      "tagAnimals": "#Animaux",
+      "pathNote": "Sélectionnez votre univers animalier pour continuer."
+    },
+    "animalOnly": {
+      "fallbackTitle": "Univers animalier",
+      "sideDescriptionTemplate": "{{animal}} sélectionné — {{brand}}. Choisissez maintenant votre profil de partenariat.",
+      "tagProfile": "#Profil",
+      "pathNote": "Sélectionnez votre profil de partenariat pour continuer."
+    },
+    "final": {
+      "sideDescriptionTemplate": "{{description}} Univers animalier : {{animal}}. {{note}}",
+      "formSubtitleTemplate": "Parcours {{brand}} sélectionné — {{subtitle}}",
+      "pathNoteTemplate": "Vos réponses seront examinées par l'équipe marketing en tant que candidature {{brand}} {{label}}. {{note}}",
+      "dynamicLegendTemplate": "Détails {{label}}"
+    },
+    "brandNote": {
+      "ekinat": "Ekinat est exclusivement dédié aux chevaux.",
+      "biogance": "Biogance est dédié aux animaux de compagnie.",
+      "both": "Biogance couvre les animaux de compagnie et Ekinat couvre les chevaux."
+    },
+    "reviewNote": {
+      "ekinat": "Ekinat s'applique uniquement aux profils équestres.",
+      "biogance": "Biogance s'applique à tous les profils animaliers autres que le cheval.",
+      "both": "Les réponses concernant les chevaux seront traitées sous Ekinat ; les autres animaux sous Biogance."
+    }
+  },
+  "sidePanelCopy": {
+    "default": {
+      "missionTitle": "Plus qu'une collaboration",
+      "missionCopy": "Rejoignez une aventure de marque humaine construite autour des animaux, de l'expertise et d'histoires authentiques. Apportez votre voix, votre communauté et votre façon de prendre soin.",
+      "missionTags": ["#Confiance", "#Expertise", "#Contenu", "#Communauté"],
+      "rewardTitle": "Ce que vous pouvez attendre",
+      "rewardCopy": "Si votre candidature est retenue, notre équipe marketing vous contactera pour imaginer la bonne collaboration : Biogance pour les animaux de compagnie ou Ekinat pour les chevaux.",
+      "rewardTags": ["#Visibilité", "#Accompagnement", "#Communauté", "#Surprises"]
+    },
+    "content_creator": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Aidez Biogance à développer sa notoriété et sa visibilité à travers de belles Reels, photos, stories et contenus authentiques partagés avec votre communauté.",
+      "missionTags": ["#Reels", "#Photos", "#Stories", "#Communauté"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Un accès anticipé aux produits, des mises en avant sur nos réseaux sociaux, un code de réduction pour vos abonnés et bien d'autres surprises en cours de route.",
+      "rewardTags": ["#AccèsAnticipé", "#CodeRéduction", "#MiseEnAvant", "#Surprises"]
+    },
+    "biogance_creator": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Aidez Biogance à développer sa notoriété et sa visibilité à travers de belles Reels, photos, stories et contenus authentiques partagés avec votre communauté.",
+      "missionTags": ["#Reels", "#Photos", "#Stories", "#Communauté"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Un accès anticipé aux produits, des mises en avant sur nos réseaux sociaux, un code de réduction pour vos abonnés et bien d'autres surprises en cours de route.",
+      "rewardTags": ["#AccèsAnticipé", "#CodeRéduction", "#MiseEnAvant", "#Surprises"]
+    },
+    "youtube": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Faites vivre {{brand}} à travers un contenu vidéo crédible : avis, routines, tutoriels, Shorts ou récits longs qui inspirent votre audience.",
+      "missionTags": ["#YouTube", "#Avis", "#Tutoriels", "#Shorts"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Des produits à tester, une visibilité sur les réseaux sociaux, un code de réduction pour votre communauté et des opportunités de collaboration exclusives.",
+      "rewardTags": ["#Produits", "#CodeRéduction", "#Visibilité", "#Collaboration"]
+    },
+    "breeder": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Partagez votre expertise de la race à travers des vidéos ou articles experts, et donnez de la visibilité à Biogance lors de vos expositions, concours ou événements communautaires.",
+      "missionTags": ["#ExpertiseRace", "#Articles", "#VidéoExperte", "#Expositions"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Des kits chiot ou chaton pour les familles adoptantes, une allocation de produits, des mises en avant sur les réseaux sociaux, une signalétique Biogance et d'autres surprises pour soutenir votre programme d'élevage.",
+      "rewardTags": ["#KitsChiot", "#KitsChaton", "#Produits", "#Signalétique"]
+    },
+    "club": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Mettez Biogance en avant lors de vos événements, sur les réseaux sociaux et sur vos supports de communication tout en partageant de beaux moments de l'exposition.",
+      "missionTags": ["#Événements", "#BOB", "#BOS", "#BIS"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Des lots pour BOB, BOS et BIS, ainsi que des échantillons, bons de réduction et goodies pour vos membres et participants.",
+      "rewardTags": ["#Lots", "#Échantillons", "#Bons", "#Goodies"]
+    },
+    "behaviourist": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Partagez des conseils d'expert, des recommandations pratiques ou des vidéos qui aident les propriétaires d'animaux à mieux comprendre le comportement animal et à instaurer des routines plus saines.",
+      "missionTags": ["#VoixExperte", "#Conseils", "#Vidéo", "#Éducation"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Une allocation de produits, des bons de réduction pour vos clients ou votre communauté, des échantillons et une visibilité sur les réseaux sociaux Biogance.",
+      "rewardTags": ["#Produits", "#Bons", "#Échantillons", "#MiseEnAvant"]
+    },
+    "trainer": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Créez des conseils d'expert, de courtes vidéos ou du contenu éducatif qui aident les propriétaires d'animaux à progresser avec soin, confiance et une éducation responsable.",
+      "missionTags": ["#VoixExperte", "#Éducation", "#Vidéo", "#Formation"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Une allocation de produits, des bons de réduction pour vos clients ou votre communauté, des échantillons et une visibilité sur les réseaux sociaux Biogance.",
+      "rewardTags": ["#Produits", "#Bons", "#Échantillons", "#MiseEnAvant"]
+    },
+    "groomer": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Montrez votre expertise en toilettage à travers des vidéos de haute qualité : routines complètes, utilisation des produits, résultats avant/après et gestes professionnels.",
+      "missionTags": ["#Toilettage", "#RoutineComplète", "#AvantAprès", "#Vidéo"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Une allocation de produits pour chaque vidéo validée, des remises très avantageuses et l'opportunité de contribuer activement à l'amélioration continue de nos produits.",
+      "rewardTags": ["#Produits", "#RemisesPréférentielles", "#RetourProduit", "#Expertise"]
+    },
+    "veterinarian": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Partagez des conseils d'expert fiables, des articles ou des vidéos qui aident les propriétaires d'animaux à comprendre les routines de soin avec clarté, confiance et un regard professionnel.",
+      "missionTags": ["#VoixExperte", "#ConseilVétérinaire", "#Vidéo", "#Confiance"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Une allocation de produits, des bons de réduction pour vos clients ou votre communauté, des échantillons et une visibilité sur les réseaux sociaux Biogance.",
+      "rewardTags": ["#Produits", "#Bons", "#Échantillons", "#MiseEnAvant"]
+    },
+    "ekinat_creator": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Augmentez la visibilité d'Ekinat à travers un contenu équestre élégant : routines de soin du cheval, vie d'écurie, moments de compétition, Reels, photos et stories.",
+      "missionTags": ["#SoinDuCheval", "#VieDÉcurie", "#Reels", "#Communauté"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Un accès anticipé aux produits, des mises en avant sur nos réseaux sociaux, un code de réduction pour votre communauté et des surprises Ekinat exclusives.",
+      "rewardTags": ["#AccèsAnticipé", "#CodeRéduction", "#MiseEnAvant", "#Ekinat"]
+    },
+    "stud_farms": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Donnez de la visibilité à Ekinat à l'écurie, lors de vos événements et sur vos supports de communication tout en partageant de vrais moments de soin avec votre communauté équestre.",
+      "missionTags": ["#Écurie", "#Événements", "#Club", "#Visibilité"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Un accompagnement dédié, une allocation de produits, des échantillons, des goodies et des opportunités de communication adaptées à votre structure équestre.",
+      "rewardTags": ["#Produits", "#Échantillons", "#Goodies", "#Accompagnement"]
+    },
+    "horse_groom": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Créez des vidéos pratiques et de haute qualité montrant les routines Ekinat, le soin à l'écurie, la préparation aux événements et les gestes professionnels autour du cheval.",
+      "missionTags": ["#PalefrenierSoigneur", "#Routine", "#Vidéo", "#SoinÉcurie"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Une allocation de produits Ekinat, des remises préférentielles, une visibilité sur les réseaux sociaux et l'opportunité de partager vos retours pour une amélioration continue.",
+      "rewardTags": ["#Produits", "#RemisesPréférentielles", "#MiseEnAvant", "#Retour"]
+    },
+    "other": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Parlez-nous de votre projet et de la façon dont vous souhaiteriez faire vivre Biogance pour les animaux de compagnie ou Ekinat pour les chevaux à travers votre communauté, votre événement ou votre expertise.",
+      "missionTags": ["#Projet", "#Communauté", "#Visibilité", "#Soin"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Notre équipe marketing examinera votre proposition et reviendra vers vous avec l'opportunité de partenariat la plus pertinente.",
+      "rewardTags": ["#Revue", "#Accompagnement", "#Opportunité", "#ProchainesÉtapes"]
+    },
+    "other_biogance": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Parlez-nous de votre projet et de la façon dont vous souhaiteriez faire vivre Biogance à travers votre communauté, votre événement ou votre expertise.",
+      "missionTags": ["#Projet", "#Communauté", "#Visibilité", "#Biogance"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Notre équipe marketing examinera votre proposition et reviendra vers vous avec l'opportunité de partenariat la plus pertinente.",
+      "rewardTags": ["#Revue", "#Accompagnement", "#Opportunité", "#ProchainesÉtapes"]
+    },
+    "other_ekinat": {
+      "missionTitle": "Votre mission",
+      "missionCopy": "Parlez-nous de votre projet et de la façon dont vous souhaiteriez faire vivre Ekinat à travers votre communauté équestre, votre événement ou votre expertise.",
+      "missionTags": ["#Projet", "#Communauté", "#Visibilité", "#Ekinat"],
+      "rewardTitle": "Ce que vous recevez",
+      "rewardCopy": "Notre équipe marketing examinera votre proposition et reviendra vers vous avec l'opportunité de partenariat la plus pertinente.",
+      "rewardTags": ["#Revue", "#Accompagnement", "#Opportunité", "#ProchainesÉtapes"]
+    }
+  },
+  "programs": {
+    "biogance_creator": {
+      "label": "Créateurs de contenu",
+      "title": "Candidature Créateur de contenu",
+      "side": "Créateur de contenu",
+      "description": "Pour les créateurs capables de partager des routines de soin authentiques, des moments produits et des histoires communautaires.",
+      "subtitle": "Une courte candidature pour comprendre votre univers, vos animaux et votre potentiel de création de contenu.",
+      "fields": {
+        "pets_featured": { "label": "Animal(aux) mis en avant" },
+        "content_formats": { "label": "Format de contenu préféré", "options": ["Photos", "Vidéos courtes / Reels", "Vidéos longues", "Articles / paroles d'expert", "Contenu événementiel", "Autre"] },
+        "publishing_frequency": { "label": "Fréquence de publication", "options": ["Plusieurs fois par semaine", "Chaque semaine", "Quelques fois par mois", "Occasionnellement"] },
+        "content_comfort": { "label": "Aisance photo / vidéo", "options": ["Très à l'aise", "À l'aise", "Pas encore, mais prêt à progresser", "Pas à l'aise"] },
+        "content_type": { "label": "Contenu que vous pouvez créer", "options": ["Reels / vidéos courtes", "Photos", "Stories", "Contenu produit UGC", "Conseils d'expert", "Pas encore sûr"] }
+      }
+    },
+    "youtube": {
+      "label": "YouTubeurs",
+      "title": "Candidature Partenaire YouTube",
+      "side": "Partenaire YouTube",
+      "description": "Pour les créateurs capables de produire un contenu vidéo crédible : avis, routines ou vidéos éducatives sur le soin animalier.",
+      "subtitle": "Parlez-nous de votre chaîne et de la façon dont {{brand}} pourrait naturellement apparaître dans vos vidéos.",
+      "fields": {
+        "youtube_content_type": { "label": "Thème principal des vidéos", "options": ["Conseils de soin animalier", "Éducation sur la race / l'animal", "Tutoriels de toilettage", "Soin équestre", "Style de vie avec les animaux", "Autre"] },
+        "average_youtube_views": { "label": "Vues moyennes par vidéo" },
+        "video_format": { "label": "Format de collaboration préféré", "options": ["Avis dédié", "Routine / tutoriel", "Segment intégré", "Série de Shorts", "Pas sûr"] },
+        "tracking_ready": { "label": "Pouvez-vous partager un lien ou un code promo ?", "options": ["Oui", "Non", "Pas sûr"] },
+        "youtube_video_style": { "label": "Contenu vidéo que vous pouvez créer", "options": ["Avis produit", "Routine / tutoriel", "Série de Shorts", "Segment intégré", "Vidéo éducative", "Pas encore sûr"] }
+      }
+    },
+    "breeder": {
+      "label": "Éleveurs",
+      "title": "Candidature Éleveur",
+      "side": "Partenaire Éleveur",
+      "description": "Pour les éleveurs responsables à petite échelle, avec une forte éthique, une expertise de la race et la capacité de partager des conseils.",
+      "subtitle": "Un court formulaire pour comprendre votre activité d'élevage et comment vous pourriez contribuer à du contenu expert.",
+      "fields": {
+        "breeding_name": { "label": "Nom de l'élevage / chenil / chatterie" },
+        "breeds": { "label": "Race(s)" },
+        "litters_per_year": { "label": "Portées par an" },
+        "champion_titles": { "label": "Titres de champion / récompenses, le cas échéant" },
+        "article_writing": { "label": "À l'aise pour rédiger des articles experts ?", "options": ["Oui", "Avec un accompagnement éditorial", "Non"] }
+      }
+    },
+    "club": {
+      "label": "Clubs / Associations",
+      "title": "Candidature Club",
+      "side": "Partenaire Club",
+      "description": "Pour les clubs canins, félins ou animaliers organisant des événements réguliers, avec des membres actifs et une visibilité communautaire.",
+      "subtitle": "Parlez-nous de votre club, de vos événements et de la visibilité que vous pouvez offrir après des moments sponsorisés.",
+      "fields": {
+        "club_name": { "label": "Nom du club / de l'association" },
+        "club_scope": { "label": "Race, espèce ou activité" },
+        "club_members": { "label": "Nombre de membres" },
+        "events_per_year": { "label": "Événements par an" },
+        "post_event_content": { "label": "Pouvez-vous envoyer des photos/vidéos après les événements ?", "options": ["Oui — photos et vidéos", "Oui — photos uniquement", "Peut-être", "Non"] },
+        "sponsorship_request": { "label": "Support demandé", "options": ["Lots BOB / BOS / BIS", "Échantillons", "Bons de réduction", "Goodies", "Partenariat événementiel", "Pas encore sûr"] }
+      }
+    },
+    "behaviourist": {
+      "label": "Comportementalistes",
+      "title": "Candidature Comportementaliste",
+      "side": "Comportementaliste",
+      "description": "Pour les experts du comportement capables de partager des conseils pratiques à travers des paroles d'expert, articles ou vidéos.",
+      "subtitle": "Partagez votre expertise et le type de conseils que vous pourriez apporter à notre communauté.",
+      "fields": {
+        "professional_title": { "label": "Titre professionnel / certification" },
+        "years_experience": { "label": "Années d'expérience" },
+        "specialties": { "label": "Spécialité principale", "options": ["Anxiété / stress", "Réactivité", "Éducation chiot / chaton", "Comportement du chat", "Comportement au quotidien", "Autre"] },
+        "expert_content_format": { "label": "Format de contenu expert préféré", "options": ["Texte", "Vidéo", "Texte + vidéo", "Interview"] }
+      }
+    },
+    "trainer": {
+      "label": "Éducateurs / Dresseurs canins",
+      "title": "Candidature Éducateur",
+      "side": "Éducateur",
+      "description": "Pour les éducateurs et dresseurs capables de créer des conseils, tutoriels ou avis d'experts utiles.",
+      "subtitle": "Une courte candidature pour comprendre votre expertise et votre aisance avec le contenu.",
+      "fields": {
+        "business_name": { "label": "Nom de l'entreprise / professionnel" },
+        "certifications": { "label": "Certifications / parcours de formation" },
+        "years_experience": { "label": "Années d'expérience" },
+        "tutorial_ready": { "label": "À l'aise pour créer des conseils ou tutoriels ?", "options": ["Oui — vidéo", "Oui — texte", "Texte + vidéo", "Pas encore"] },
+        "training_topic": { "label": "Sujet que vous pouvez traiter", "options": ["Éducation du chiot", "Rappel / marche en laisse", "Éducation positive", "Confiance du chien", "Routines quotidiennes", "Autre"] }
+      }
+    },
+    "groomer": {
+      "label": "Toiletteurs",
+      "title": "Candidature Toiletteur",
+      "side": "Toiletteur",
+      "description": "Pour les toiletteurs à l'aise pour créer du contenu audiovisuel, des routines, tutoriels ou visuels avant/après.",
+      "subtitle": "Parlez-nous de votre salon et de votre capacité à mettre en valeur les routines Biogance en image ou en vidéo.",
+      "fields": {
+        "salon_name": { "label": "Nom du salon" },
+        "clients_per_month": { "label": "Clients par mois (environ)" },
+        "audiovisual_comfort": { "label": "À l'aise pour créer des vidéos ?", "options": ["Très à l'aise", "À l'aise", "Pas encore, mais prêt à progresser", "Pas à l'aise"] },
+        "before_after_ready": { "label": "Pouvez-vous fournir des visuels avant/après ?", "options": ["Oui — photos et vidéos", "Oui — photos uniquement", "Peut-être", "Non"] },
+        "tutorial_type": { "label": "Tutoriel que vous pouvez créer", "options": ["Routine de toilettage complète", "Avant / après", "Routine shampoing", "Astuce soin du pelage", "Routine peau sensible", "Autre"] }
+      }
+    },
+    "veterinarian": {
+      "label": "Vétérinaires",
+      "title": "Candidature Vétérinaire",
+      "side": "Vétérinaire",
+      "description": "Pour les professionnels vétérinaires à l'aise pour partager des conseils d'experts fiables en format texte ou vidéo.",
+      "subtitle": "Un court formulaire pour comprendre votre expertise et les sujets que vous pourriez aider à expliquer.",
+      "fields": {
+        "clinic_name": { "label": "Nom de la clinique / du cabinet" },
+        "veterinary_registration": { "label": "Numéro d'inscription / d'identification professionnelle" },
+        "specialties": { "label": "Spécialités" },
+        "expert_content_format": { "label": "Format de contenu expert préféré", "options": ["Texte", "Vidéo", "Texte + vidéo", "Interview"] },
+        "expert_topic": { "label": "Sujet d'expert que vous pouvez traiter", "options": ["Soin de la peau et du pelage", "Routine d'hygiène", "Soin du chiot / chaton", "Animaux sensibles", "Prévention et bien-être", "Autre"] }
+      }
+    },
+    "ekinat_creator": {
+      "label": "Créateurs équestres",
+      "title": "Candidature Créateur équestre",
+      "side": "Créateur équestre",
+      "description": "Pour les profils équestres capables de montrer des routines de soin du cheval, des moments de compétition ou du contenu de vie d'écurie.",
+      "subtitle": "Parlez-nous de votre monde équestre et de la façon dont Ekinat pourrait naturellement s'intégrer à votre contenu.",
+      "fields": {
+        "equestrian_profile": { "label": "Profil cavalier / écurie / créateur" },
+        "discipline": { "label": "Discipline principale", "options": ["Saut d'obstacles", "Dressage", "Concours complet", "Course", "Endurance", "Équitation de loisir", "Autre"] },
+        "horses_featured": { "label": "Chevaux régulièrement mis en avant" },
+        "competition_level": { "label": "Niveau de compétition", "options": ["International", "National", "Régional", "Local", "Pas de compétition"] },
+        "ekinat_content_type": { "label": "Contenu Ekinat que vous pouvez créer", "options": ["Routine de soin du cheval", "Contenu de vie d'écurie", "Préparation à la compétition", "Démonstration produit", "Avant / après", "Autre"] }
+      }
+    },
+    "stud_farms": {
+      "label": "Haras & Clubs",
+      "title": "Candidature Haras / Club",
+      "side": "Haras & Clubs",
+      "description": "Pour les centres équestres, haras, clubs et institutions équestres disposant de chevaux, de membres et d'une visibilité.",
+      "subtitle": "Partagez votre structure, votre audience et le support que vous recherchez.",
+      "fields": {
+        "institution_name": { "label": "Nom de l'institution / du haras / du club" },
+        "institution_type": { "label": "Type de structure", "options": ["Haras", "Centre équestre", "Poney-club", "Centre de formation", "Club équestre", "Autre"] },
+        "horses_on_site": { "label": "Nombre de chevaux" },
+        "members_or_clients": { "label": "Membres / clients réguliers" },
+        "events_per_year": { "label": "Événements par an" },
+        "requested_support": { "label": "Support demandé", "options": ["Allocation de produits", "Échantillons", "Goodies", "Support événementiel", "Support de communication", "Pas encore sûr"] }
+      }
+    },
+    "horse_groom": {
+      "label": "Palefreniers-soigneurs",
+      "title": "Candidature Palefrenier-soigneur",
+      "side": "Palefrenier-soigneur",
+      "description": "Pour les palefreniers-soigneurs capables de créer des vidéos pratiques, des routines ou du contenu de vie d'écurie avec Ekinat.",
+      "subtitle": "Parlez-nous de votre rôle et de votre aisance avec le contenu vidéo.",
+      "fields": {
+        "professional_role": { "label": "Rôle professionnel" },
+        "stable_or_team": { "label": "Écurie / équipe / cavalier" },
+        "horses_cared_for": { "label": "Chevaux soignés par semaine" },
+        "routine_video_ready": { "label": "À l'aise pour filmer des routines de soin ?", "options": ["Oui", "Avec accompagnement", "Pas encore"] },
+        "video_type": { "label": "Vidéo que vous pouvez créer", "options": ["Routine de soin du cheval", "Astuce soin d'écurie", "Préparation à la compétition", "Démonstration produit", "Avant / après", "Autre"] }
+      }
+    },
+    "other_biogance": {
+      "label": "Autre projet",
+      "title": "Candidature Autre projet",
+      "side": "Autre projet",
+      "description": "Pour toute idée de partenariat qui ne correspond pas aux catégories prédéfinies.",
+      "subtitle": "Quelques informations rapides pour aider notre équipe à identifier la bonne opportunité.",
+      "fields": {
+        "project_type": { "label": "Type de projet", "options": ["Événement", "Association / œuvre caritative", "Média / presse", "Activation retail", "Projet éducatif", "Autre"] },
+        "project_name": { "label": "Nom du projet / titre court" },
+        "requested_support": { "label": "Support demandé", "options": ["Produits", "Échantillons", "Bons de réduction", "Goodies", "Support événementiel", "Visibilité", "Autre"] }
+      }
+    },
+    "other_ekinat": {
+      "label": "Autre projet Ekinat",
+      "title": "Candidature Autre projet",
+      "side": "Autre projet Ekinat",
+      "description": "Pour toute idée de partenariat qui ne correspond pas aux catégories prédéfinies.",
+      "subtitle": "Quelques informations rapides pour aider notre équipe à identifier la bonne opportunité.",
+      "fields": {
+        "project_type": { "label": "Type de projet", "options": ["Événement", "Association / œuvre caritative", "Média / presse", "Activation retail", "Projet éducatif", "Autre"] },
+        "project_name": { "label": "Nom du projet / titre court" },
+        "requested_support": { "label": "Support demandé", "options": ["Produits", "Échantillons", "Bons de réduction", "Goodies", "Support événementiel", "Visibilité", "Autre"] }
+      }
+    }
+  }
+}

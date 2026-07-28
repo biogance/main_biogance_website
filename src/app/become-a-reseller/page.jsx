@@ -1,5 +1,6 @@
 import Reseller from "@/Components/Pages/ProSection/Reseller";
 import { headers } from "next/headers";
+import resellerContent from "@/locales/en/reseller.json";
 
 async function getSiteOrigin() {
   const hdrs = await headers();
@@ -12,8 +13,18 @@ export async function generateMetadata() {
   const origin = await getSiteOrigin();
   const url = `${origin}/become-a-reseller`;
   const title = "Become a Reseller | Biogance Professional Network";
+  // Every "Type of business" option from the reseller form's own field
+  // (Reseller.jsx's accordion1.businessType select) — kept in sync with the
+  // form since both read from the same reseller.json source of truth.
+  // Used in both the description and the keywords list.
+  const businessTypes = resellerContent.businessTypeOptions;
+  // "Main sales channel" select options and the "Product interests"
+  // checkbox labels — same reseller.json source, keywords only.
+  const salesChannels = resellerContent.salesChannelOptions;
+  const productInterests = Object.values(resellerContent.interests);
   const description =
-    "Apply to become an official Biogance reseller or distributor. Join pet shops, grooming salons, pharmacies and concept stores offering natural, French-made pet care to their customers.";
+    "Apply to become an official Biogance reseller or distributor. Join pet shops, grooming salons, pharmacies and concept stores offering natural, French-made pet care to their customers. " +
+    `Open to every professional profile: ${businessTypes.join(", ")}.`;
 
   return {
     title,
@@ -24,6 +35,9 @@ export async function generateMetadata() {
       "Biogance wholesale",
       "pet shop reseller program",
       "grooming salon supplier",
+      ...businessTypes,
+      ...salesChannels,
+      ...productInterests,
     ],
     alternates: {
       canonical: url,

@@ -194,12 +194,24 @@ export function RouteTopLoader() {
       }
     };
 
+    // Only a touch that started *just before this click* can be an iOS
+    // ghost-click — touchStartY stays null for the entire session on a
+    // plain mouse/trackpad click, and scrollStartY was only ever set at the
+    // last touchstart. Gating scrollDiff/touchMoved behind that recency
+    // check matters because scrollStartY otherwise defaults to 0: without
+    // this gate, ANY mouse click made after scrolling away from the very
+    // top of the page (i.e. almost every click that isn't right at page
+    // load) computed scrollDiff = window.scrollY > 5 and silently ate the
+    // loader — which is why it looked like the loader "only worked from the
+    // top of the page".
+    const isGhostClick = () => {
+      if (touchStartY === null) return false;
+      if (Date.now() - touchStartTime > 300) return false;
+      return touchMoved || Math.abs(window.scrollY - scrollStartY) > 5;
+    };
+
     const onLinkClick = (e) => {
-      const scrollDiff = Math.abs(window.scrollY - scrollStartY);
-      const timeDiff = Date.now() - touchStartTime;
-      if (touchMoved || scrollDiff > 5 || (touchStartY !== null && timeDiff > 300)) {
-        return;
-      }
+      if (isGhostClick()) return;
 
       const anchor = e.target.closest("a[href]");
       if (!anchor) return;
@@ -213,30 +225,31 @@ export function RouteTopLoader() {
         anchor.target === "_blank"
       ) return;
 
-      // Don't show loader if navigating to the exact same URL
+      // Re-clicking the exact same URL doesn't change pathname/searchParams,
+      // so the "finish on route change" effect below never fires for it —
+      // start the bar as usual but finish it after a short flash instead of
+      // leaving it to the 10s safety fallback.
+      let isSameUrl = false;
       try {
         const url = new URL(href, window.location.href);
         const currentUrl = new URL(window.location.href);
-        if (url.pathname === currentUrl.pathname && url.search === currentUrl.search) {
-            return;
-        }
+        isSameUrl = url.pathname === currentUrl.pathname && url.search === currentUrl.search;
       } catch (err) {}
 
       triggerStart();
+      if (isSameUrl) {
+        setTimeout(() => triggerFinish(), 350);
+      }
     };
 
     // startTopLoader() is called directly from plenty of div/button onClick
     // handlers across the app (article cards, product cards, etc.) — not
     // just <a> tags. Those aren't covered by onLinkClick's anchor check
     // above, so an iOS ghost-click firing one of them after a scroll still
-    // got through and flashed the bar. Same touchMoved/scrollDiff guard here closes
+    // got through and flashed the bar. Same ghost-click guard here closes
     // that gap.
     const onStart = () => {
-      const scrollDiff = Math.abs(window.scrollY - scrollStartY);
-      const timeDiff = Date.now() - touchStartTime;
-      if (touchMoved || scrollDiff > 5 || (touchStartY !== null && timeDiff > 300)) {
-        return;
-      }
+      if (isGhostClick()) return;
       triggerStart();
     };
 
@@ -252,7 +265,7 @@ export function RouteTopLoader() {
       clearTimeout(finishTimer.current);
       clearTimeout(startTimer.current);
     };
-  }, [triggerStart]);
+  }, [triggerStart, triggerFinish]);
 
   if (!loaderState.key) return null;
 

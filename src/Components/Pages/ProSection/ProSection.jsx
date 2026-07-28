@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { useRouter } from "next/navigation";
 import { MEDIA_URL } from "../../API/API";
+import { startTopLoader } from "../TopLoader";
 
 // Ported 1:1 from the navPro mockup (httpswww.website-dev.biogance.comnavPro(1).html)
 // — same fonts/colors/layout, scoped to this component via styled-jsx so it
@@ -98,9 +100,22 @@ function SplashMedia({ data }) {
 }
 
 export default function ProSection() {
+  const { t } = useTranslation("prosection");
   const router = useRouter();
   const heroMedia = useSplashMedia("pro_header");
   const footerVisualMedia = useSplashMedia("pro_footer");
+  const pdfData = useSplashMedia("pro_pdf");
+  const catalogueFilename = "biogance-professional-catalogue.pdf";
+  // Routed through the same-origin /api/download-file proxy rather than a
+  // direct link to MEDIA_URL (CloudFront): a cross-origin <a download>
+  // is silently ignored by browsers, so it just opens the PDF in a new tab
+  // instead of downloading it. The proxy fetches it server-side and replies
+  // with Content-Disposition: attachment, so the plain <a download> below
+  // works natively. The static /public fallback is already same-origin, so
+  // it's used directly without going through the proxy.
+  const catalogueUrl = pdfData?.media
+    ? `/api/download-file?${new URLSearchParams({ path: pdfData.media, filename: catalogueFilename }).toString()}`
+    : "/biogance-professional-catalogue.pdf";
 
   // "Choose your route" / "Download catalogue" are plain #hash anchors —
   // without this they jump instantly. Scoped to this page's lifetime
@@ -133,39 +148,34 @@ export default function ProSection() {
           <section className="hero">
             <div className="hero-copy">
               <div>
-                <span className="eyebrow">Biogance Professional</span>
+                <span className="eyebrow">{t("hero.eyebrow")}</span>
                 <h1>
-                  <span>The</span>
-                  <span>Professional</span>
-                  <span>Universe.</span>
+                  <span>{t("hero.titleLine1")}</span>
+                  <span>{t("hero.titleLine2")}</span>
+                  <span>{t("hero.titleLine3")}</span>
                 </h1>
-                <p className="hero-lead">
-                  A dedicated space for retailers, distributors, grooming
-                  salons, ambassadors and expert partners who want to bring
-                  naturally inspired, French-made pet care closer to their
-                  communities.
-                </p>
+                <p className="hero-lead">{t("hero.lead")}</p>
                 <div className="hero-actions">
                   <a className="btn" href="#choose">
-                    Choose your route
+                    {t("hero.chooseRoute")}
                   </a>
-                  <a className="btn secondary" href="#catalogues">
-                    Download catalogue
+                  <a className="btn secondary" href={catalogueUrl} download={catalogueFilename}>
+                    {t("hero.downloadCatalogue")}
                   </a>
                 </div>
               </div>
               <div className="hero-meta" aria-label="Biogance professional highlights">
                 <div className="meta-item">
-                  <strong>2008</strong>
-                  <span>Founded in Angers, France</span>
+                  <strong>{t("hero.meta.founded.value")}</strong>
+                  <span>{t("hero.meta.founded.label")}</span>
                 </div>
                 <div className="meta-item">
-                  <strong>40+</strong>
-                  <span>Countries worldwide</span>
+                  <strong>{t("hero.meta.countries.value")}</strong>
+                  <span>{t("hero.meta.countries.label")}</span>
                 </div>
                 <div className="meta-item">
-                  <strong>2</strong>
-                  <span>Professional routes</span>
+                  <strong>{t("hero.meta.routes.value")}</strong>
+                  <span>{t("hero.meta.routes.label")}</span>
                 </div>
               </div>
             </div>
@@ -176,27 +186,27 @@ export default function ProSection() {
               <SplashMedia data={heroMedia} />
               <div className="hero-card">
                 <div className="kicker-row">
-                  <span>Professional care</span>
+                  <span>{t("hero.card.kicker1")}</span>
                   <span className="dot" />
-                  <span>Sales support</span>
+                  <span>{t("hero.card.kicker2")}</span>
                 </div>
-                <div className="hero-card-title">One network. Many ways to grow.</div>
+                <div className="hero-card-title">{t("hero.card.title")}</div>
                 <div className="seal-grid">
                   <div className="seal">
-                    <strong>Resellers</strong>
-                    <span>Access B2B terms, catalogues and sales support.</span>
+                    <strong>{t("hero.card.seals.resellers.title")}</strong>
+                    <span>{t("hero.card.seals.resellers.desc")}</span>
                   </div>
                   <div className="seal">
-                    <strong>Partners</strong>
-                    <span>Share expert content and build meaningful collaborations.</span>
+                    <strong>{t("hero.card.seals.partners.title")}</strong>
+                    <span>{t("hero.card.seals.partners.desc")}</span>
                   </div>
                   <div className="seal">
-                    <strong>Ekinat</strong>
-                    <span>Dedicated opportunities for the equestrian world.</span>
+                    <strong>{t("hero.card.seals.ekinat.title")}</strong>
+                    <span>{t("hero.card.seals.ekinat.desc")}</span>
                   </div>
                   <div className="seal">
-                    <strong>Biogance</strong>
-                    <span>Pet care routines for dogs, cats and companion animals.</span>
+                    <strong>{t("hero.card.seals.biogance.title")}</strong>
+                    <span>{t("hero.card.seals.biogance.desc")}</span>
                   </div>
                 </div>
               </div>
@@ -207,46 +217,37 @@ export default function ProSection() {
           <section className="route-section" id="choose">
             <div className="section-head refined-head">
               <div>
-                <span className="eyebrow">Choose your professional route</span>
-                <h2 style={{ marginTop:"30px" }} className="section-title">One space. Two clear paths.</h2>
+                <span className="eyebrow">{t("route.eyebrow")}</span>
+                <h2 style={{ marginTop:"30px" }} className="section-title">{t("route.title")}</h2>
               </div>
-              <p className="section-intro">
-                Select the application page that matches your project.
-                Whether you want to distribute Biogance products or join our
-                brand adventure as a partner, each route has its own
-                dedicated form and team review.
-              </p>
+              <p className="section-intro">{t("route.intro")}</p>
             </div>
 
             <div className="route-choice-grid" aria-label="Professional application routes">
              <article
   className="route-choice-card reseller-card"
   id="reseller-route"
-  onClick={() => router.push("/become-a-reseller")}
+  onClick={() => { startTopLoader(); router.push("/become-a-reseller"); }}
   style={{ cursor: "pointer" }}
 >
   <div className="route-card-top">
-    <span className="route-label">Route 01</span>
-    <span className="route-code">B2B</span>
+    <span className="route-label">{t("route.reseller.routeLabel")}</span>
+    <span className="route-code">{t("route.reseller.code")}</span>
   </div>
   <div className="route-card-main">
     <div className="kicker-row">
-      <span>Sales access</span>
+      <span>{t("route.reseller.kicker1")}</span>
       <span className="dot" />
-      <span>Professional account</span>
+      <span>{t("route.reseller.kicker2")}</span>
     </div>
-    <h3 style={{ marginTop: "20px" }}>Resellers &amp; distributors.</h3>
-    <p>
-      For retailers, distributors, grooming salons, pharmacies,
-      concept stores and online sellers who want to offer
-      Biogance products to their customers.
-    </p>
+    <h3 style={{ marginTop: "20px" }}>{t("route.reseller.title")}</h3>
+    <p>{t("route.reseller.description")}</p>
   </div>
   <div className="route-card-bottom">
     <ul>
-      <li>Professional information</li>
-      <li>Sales team follow-up</li>
-      <li>Catalogue access</li>
+      {t("route.reseller.bullets", { returnObjects: true }).map((item) => (
+        <li key={item}>{item}</li>
+      ))}
     </ul>
     <Link
       style={{ backgroundColor: "black", color: "white", padding: "10px 28px" }}
@@ -254,7 +255,7 @@ export default function ProSection() {
       href="/become-a-reseller"
       onClick={(e) => e.stopPropagation()}
     >
-      Access reseller form
+      {t("route.reseller.cta")}
     </Link>
   </div>
 </article>
@@ -262,31 +263,27 @@ export default function ProSection() {
              <article
   className="route-choice-card partner-card"
   id="partner-route"
-  onClick={() => router.push("/become-an-ambassador")}
+  onClick={() => { startTopLoader(); router.push("/become-an-ambassador"); }}
   style={{ cursor: "pointer" }}
 >
   <div className="route-card-top">
-    <span className="route-label">Route 02</span>
-    <span className="route-code">AMB</span>
+    <span className="route-label">{t("route.partner.routeLabel")}</span>
+    <span className="route-code">{t("route.partner.code")}</span>
   </div>
   <div className="route-card-main">
     <div className="kicker-row">
-      <span>Community</span>
+      <span>{t("route.partner.kicker1")}</span>
       <span className="dot" />
-      <span>Brand adventure</span>
+      <span>{t("route.partner.kicker2")}</span>
     </div>
-    <h3 style={{ marginTop: "20px" }}>Partners &amp; ambassadors.</h3>
-    <p>
-      For creators, YouTubers, breeders, clubs, groomers,
-      veterinarians, behaviourists, educators and Ekinat
-      equestrian profiles ready to share their expertise.
-    </p>
+    <h3 style={{ marginTop: "20px" }}>{t("route.partner.title")}</h3>
+    <p>{t("route.partner.description")}</p>
   </div>
   <div className="route-card-bottom">
     <ul>
-      <li>Biogance or Ekinat universe</li>
-      <li>Expert voice &amp; content</li>
-      <li>Marketing team review</li>
+      {t("route.partner.bullets", { returnObjects: true }).map((item) => (
+        <li key={item}>{item}</li>
+      ))}
     </ul>
     <Link
       style={{ backgroundColor: "white", color: "black", padding: "10px 28px" }}
@@ -294,18 +291,15 @@ export default function ProSection() {
       href="/become-an-ambassador"
       onClick={(e) => e.stopPropagation()}
     >
-      Access partner form
+      {t("route.partner.cta")}
     </Link>
   </div>
 </article>
             </div>
 
             <div className="route-note-bar">
-              <span>Applications are reviewed by the Biogance team.</span>
-              <span>
-                Choose the route first — the dedicated page will collect the
-                right information.
-              </span>
+              <span>{t("route.note1")}</span>
+              <span>{t("route.note2")}</span>
             </div>
           </section>
 
@@ -313,115 +307,51 @@ export default function ProSection() {
           <section className="signature-section" id="resellers">
             <div className="section-head">
               <div>
-                <span className="eyebrow">Why join the network</span>
-                <h2 style={{ marginTop:"30px", fontSize:"clamp(34px, 5vw, 69px)" }} className="section-title">Built for professionals.</h2>
+                <span className="eyebrow">{t("signature.eyebrow")}</span>
+                <h2 style={{ marginTop:"30px", fontSize:"clamp(34px, 5vw, 69px)" }} className="section-title">{t("signature.title")}</h2>
               </div>
-              <p className="section-intro">
-                Biogance supports professional clients with clear product
-                information, sales resources and a brand universe designed
-                to be easy to explain, recommend and display.
-              </p>
+              <p className="section-intro">{t("signature.intro")}</p>
             </div>
             <div className="signature-grid">
-              <article className="signature-card">
-                <div>
-                  <span>01</span>
-                  <h3 style={{ fontWeight: "bold", marginTop: "20px" }}>French-made expertise</h3>
-                </div>
-                <p>
-                  Products developed with a laboratory approach and a strong
-                  commitment to quality and traceability.
-                </p>
-              </article>
-              <article className="signature-card">
-                <div>
-                  <span>02</span>
-                  <h3 style={{ fontWeight: "bold", marginTop: "20px" }}>Natural pet care</h3>
-                </div>
-                <p>
-                  Routines inspired by nature and designed for dogs, cats,
-                  horses and companion animals.
-                </p>
-              </article>
-              <article className="signature-card">
-                <div>
-                  <span>03</span>
-                  <h3 style={{ fontWeight: "bold", marginTop: "20px" }}>Commercial support</h3>
-                </div>
-                <p>
-                  A dedicated team reviews each request and guides
-                  professionals through the next steps.
-                </p>
-              </article>
-              <article className="signature-card">
-                <div>
-                  <span>04</span>
-                  <h3 style={{ fontWeight: "bold", marginTop: "20px" }}>Brand material</h3>
-                </div>
-                <p>
-                  Catalogues, visuals, POS assets and product information to
-                  help activate the brand in-store and online.
-                </p>
-              </article>
+              {t("signature.cards", { returnObjects: true }).map((card) => (
+                <article className="signature-card" key={card.num}>
+                  <div>
+                    <span>{card.num}</span>
+                    <h3 style={{ fontWeight: "bold", marginTop: "20px" }}>{card.title}</h3>
+                  </div>
+                  <p>{card.desc}</p>
+                </article>
+              ))}
             </div>
           </section>
 
           {/* SPLIT EDITORIAL */}
           <section className="editorial-split" id="partners">
             <div className="editorial-copy">
-              <span className="eyebrow">Partners &amp; ambassadors</span>
-              <h2 style={{ fontSize: "clamp(34px, 5vw, 80px)", marginTop: "30px" , lineHeight: "1", fontWeight: "bold"}}>More than a collaboration.</h2>
-              <p className="section-intro">
-                Joining Biogance or Ekinat as a partner means taking part in
-                a human adventure: sharing your expertise, your daily life
-                and your vision of animal care while actively supporting the
-                development of the brand.
-              </p>
+              <span className="eyebrow">{t("editorial.eyebrow")}</span>
+              <h2 style={{ fontSize: "clamp(34px, 5vw, 80px)", marginTop: "30px" , lineHeight: "1", fontWeight: "bold"}}>{t("editorial.title")}</h2>
+              <p className="section-intro">{t("editorial.intro")}</p>
               <div className="steps">
-                <div className="step">
-                  <div className="step-number">01</div>
-                  <div className="step-content">
-                    <strong>Choose your universe</strong>
-                    <p>
-                      Biogance for pet care, Ekinat for the equestrian world,
-                      or a custom project if your idea is unique.
-                    </p>
+                {t("editorial.steps", { returnObjects: true }).map((step) => (
+                  <div className="step" key={step.num}>
+                    <div className="step-number">{step.num}</div>
+                    <div className="step-content">
+                      <strong>{step.title}</strong>
+                      <p>{step.desc}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="step">
-                  <div className="step-number">02</div>
-                  <div className="step-content">
-                    <strong>Share your profile</strong>
-                    <p>
-                      Tell us about your audience, your expertise, your
-                      content style and the animals you work with.
-                    </p>
-                  </div>
-                </div>
-                <div className="step">
-                  <div className="step-number">03</div>
-                  <div className="step-content">
-                    <strong>Build with the brand</strong>
-                    <p>
-                      Our Marketing team studies every application and comes
-                      back with the most relevant next step.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             <div className={`editorial-visual${footerVisualMedia?.media ? " has-media" : ""}`}>
               <SplashMedia data={footerVisualMedia} />
               <div className="visual-label">
                 <div>
-                  <strong>Partner journey</strong>
+                  <strong>{t("editorial.visual.label")}</strong>
                   <br />
-                  <span>
-                    Creators · Breeders · Clubs · Groomers · Experts ·
-                    Veterinarians · YouTubers
-                  </span>
+                  <span>{t("editorial.visual.sub")}</span>
                 </div>
-                <div className="mark">Pro</div>
+                <div className="mark">{t("editorial.visual.mark")}</div>
               </div>
             </div>
           </section>
@@ -430,50 +360,37 @@ export default function ProSection() {
           <section className="resource-band" id="catalogues">
             <div>
               <span className="eyebrow" style={{ color: "rgba(255,255,255,.7)" }}>
-                Professional resources
+                {t("resource.eyebrow")}
               </span>
-              <h2 style={{ fontSize: "clamp(34px, 5vw, 72px)", marginTop: "20px" , lineHeight: "1", fontWeight: "bold"}} className="section-title">Your professional starting point.</h2>
-              <p>
-                Download the product catalogue, choose your professional
-                route and continue to the dedicated application page that
-                fits your business or partnership project.
-              </p>
+              <h2 style={{ fontSize: "clamp(34px, 5vw, 72px)", marginTop: "20px" , lineHeight: "1", fontWeight: "bold"}} className="section-title">{t("resource.title")}</h2>
+              <p>{t("resource.intro")}</p>
             </div>
             <div className="resource-list">
               <div className="resource-item">
                 <div>
-                  <strong>Biogance professional catalogue</strong>
-                  <span>
-                    Product ranges, routines and key information for
-                    professional buyers.
-                  </span>
+                  <strong>{t("resource.items.catalogue.title")}</strong>
+                  <span>{t("resource.items.catalogue.desc")}</span>
                 </div>
-                <a className="tiny-link" href="/biogance-professional-catalogue.pdf">
-                  Download
+                <a className="tiny-link" href={catalogueUrl} download={catalogueFilename}>
+                  {t("resource.items.catalogue.cta")}
                 </a>
               </div>
               <div className="resource-item">
                 <div>
-                  <strong>Reseller application</strong>
-                  <span>
-                    For pet shops, pharmacies, grooming salons, distributors
-                    and concept stores.
-                  </span>
+                  <strong>{t("resource.items.reseller.title")}</strong>
+                  <span>{t("resource.items.reseller.desc")}</span>
                 </div>
                 <Link className="tiny-link" href="/become-a-reseller">
-                  Apply
+                  {t("resource.items.reseller.cta")}
                 </Link>
               </div>
               <div className="resource-item">
                 <div>
-                  <strong>Partner application</strong>
-                  <span>
-                    For creators, clubs, breeders, experts, YouTubers and
-                    equestrian profiles.
-                  </span>
+                  <strong>{t("resource.items.partner.title")}</strong>
+                  <span>{t("resource.items.partner.desc")}</span>
                 </div>
                 <Link className="tiny-link" href="/become-an-ambassador">
-                  Apply
+                  {t("resource.items.partner.cta")}
                 </Link>
               </div>
             </div>
@@ -482,26 +399,22 @@ export default function ProSection() {
           {/* CTA */}
           <section className="final-cta" id="apply">
             <div>
-              <span className="eyebrow">Stay close</span>
-              <h2 style={{fontWeight:"bold"}}>Follow the Biogance universe.</h2>
-              <p>
-                While our teams review professional and partnership
-                applications, discover our latest routines, expert advice,
-                product launches and community stories.
-              </p>
+              <span className="eyebrow">{t("cta.eyebrow")}</span>
+              <h2 style={{fontWeight:"bold"}}>{t("cta.title")}</h2>
+              <p>{t("cta.intro")}</p>
             </div>
             <div className="social-row">
               <a href="https://www.instagram.com/bioganceofficiel" target="_blank" rel="noreferrer">
-                Instagram
+                {t("cta.social.instagram")}
               </a>
               <a href="https://www.facebook.com/bioganceofficiel" target="_blank" rel="noreferrer">
-                Facebook
+                {t("cta.social.facebook")}
               </a>
               <a href="https://youtube.com/@bioganceofficiel?si=IJV8iaJ1YTgSos8z" target="_blank" rel="noreferrer">
-                YouTube
+                {t("cta.social.youtube")}
               </a>
               <a href="https://www.tiktok.com/@bioganceofficiel" target="_blank" rel="noreferrer">
-                TikTok
+                {t("cta.social.tiktok")}
               </a>
             </div>
           </section>

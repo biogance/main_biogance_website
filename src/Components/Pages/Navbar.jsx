@@ -183,6 +183,26 @@ export default function Navbar({
     updateIsDesktop();
     mq.addEventListener("change", updateIsDesktop);
 
+    // FIX (real iPhone hardware only — Simulator doesn't reproduce this):
+    // the always-white status-bar strip needs WebKit to composite it above
+    // this fixed/GPU-layered header, but on real devices that compositing
+    // pass sometimes isn't correct on first paint — it only resolves once
+    // something forces a real recomposite, which is exactly what the first
+    // scroll event does (a `style.transform` write triggers it). Rather
+    // than wait for the user's first scroll, force that same recomposite
+    // right after mount with a throwaway sub-pixel transform (invisible —
+    // 0.01px) immediately reset back to the real value one frame later.
+    if (!isDesktopRef.current && headerWrapperRef.current) {
+      const el = headerWrapperRef.current;
+      const restore = el.style.transform;
+      requestAnimationFrame(() => {
+        el.style.transform = "translateY(0.01px)";
+        requestAnimationFrame(() => {
+          el.style.transform = restore;
+        });
+      });
+    }
+
     let ticking = false;
     const handleScroll = () => {
       if (ticking) return;
@@ -491,7 +511,7 @@ export default function Navbar({
           `lg:hidden` — this is only relevant on phones with a notch/safe
           area (iOS Safari); desktop browsers don't have this status bar
           concept, so we don't render it there. */}
-      <div
+      {/* <div
         aria-hidden="true"
         className="lg:hidden fixed top-0 left-0 right-0 pointer-events-none"
         style={{
@@ -499,7 +519,7 @@ export default function Navbar({
           background: "#ffffff",
           zIndex: 70, // above headerWrapperRef (z-[60]) and its contents
         }}
-      />
+      /> */}
 
       {/* Shared fixed wrapper — announcement bar + nav now live in ONE
           transformed layer instead of two independently-transformed fixed
@@ -515,12 +535,7 @@ export default function Navbar({
           className="w-full bg-[#111] text-white"
           style={{ height: "calc(env(safe-area-inset-top) + 40px)" }}
         >
-          {/* NOTE: the old in-wrapper white status-bar strip that used to
-              live here has been removed. It scrolled/translated together
-              with this wrapper, which meant it could move out from behind
-              the real status bar during scroll and expose non-white
-              content. The always-white strip above (outside this wrapper,
-              never transformed) fully replaces it. */}
+         
           <div className="relative h-full overflow-hidden">
             {[annIndex, nextIndex].map((idx, pos) => {
               const h = activeHeaders[idx] || activeHeaders[0];
