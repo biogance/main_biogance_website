@@ -1,0 +1,152 @@
+{
+  "successModal": {
+    "eyebrow": "Biogance Professional",
+    "titleLine1": "Application",
+    "titleLine2": "Submitted.",
+    "message": "Thank you for your reseller application. Our sales team will review your request and contact you with the next steps.",
+    "nextStepLabel": "Next step",
+    "nextStepValue": "Commercial review",
+    "responseTimeLabel": "Response time",
+    "responseTimeValue": "3–5 business days",
+    "close": "Close"
+  },
+  "hero": {
+    "eyebrow": "Biogance Professional",
+    "titleLine1": "Become a",
+    "titleLine2": "Biogance",
+    "titleLine3": "Reseller.",
+    "text": "Bring naturally inspired, expert-led pet care to your customers. Complete the reseller application form and our sales team will review your request before contacting you with the next steps.",
+    "applyNow": "Apply now",
+    "downloadCatalogue": "Download catalogue",
+    "notes": [
+      { "title": "Expert formulas", "desc": "Care routines developed with a professional approach to hygiene and well-being." },
+      { "title": "French laboratory", "desc": "A brand born in Angers, crafted with precision and long-term trust." },
+      { "title": "Sales support", "desc": "Commercial follow-up to help qualified partners build the right assortment." }
+    ],
+    "glassCard": {
+      "title": "Natural care, curated for professionals.",
+      "text": "From pet shops and grooming salons to veterinary-led retail environments, Biogance supports partners who share the same ambition: cleaner routines, visible results and trusted care for every companion."
+    }
+  },
+  "proof": {
+    "items": [
+      { "value": "2008", "label": "Founded in Angers, France" },
+      { "value": "40+", "label": "Countries trusting the brand" },
+      { "value": "ISO", "label": "Professional manufacturing standards" },
+      { "value": "ECO", "label": "Certified natural pet care expertise" }
+    ]
+  },
+  "experience": {
+    "eyebrow": "Professional partnership",
+    "titleLine1": "A refined",
+    "titleLine2": "B2B",
+    "titleLine3": "experience.",
+    "copy": "The reseller journey has been designed to be clear, selective and efficient. Once your information has been submitted, the Biogance sales team can qualify your business profile, understand your distribution needs and guide you toward the most relevant professional offer.",
+    "cards": [
+      { "step": "Step 01", "title": "Share your company details", "desc": "Complete your company, contact and VAT details so our team can identify your professional profile quickly." },
+      { "step": "Step 02", "title": "Define your product interests", "desc": "Select the Biogance categories you would like to distribute, from grooming essentials to certified natural care routines." },
+      { "step": "Step 03", "title": "Get contacted by sales", "desc": "After review, a Biogance sales representative will contact you to discuss reseller conditions, catalogue access and next steps." }
+    ]
+  },
+  "form": {
+    "aside": {
+      "eyebrow": "Reseller application",
+      "title": "Apply for professional access.",
+      "intro": "Share a few essential details so our commercial team can qualify your request and contact you with the right B2B conditions.",
+      "process": [
+        { "title": "Submit your request", "desc": "Your business information is sent to the Biogance sales team." },
+        { "title": "Commercial review", "desc": "We check your activity, market and product needs." },
+        { "title": "Personal follow-up", "desc": "A sales representative contacts you with the next steps." }
+      ],
+      "note": "This short form helps our sales team understand your business, your market and the product ranges you are interested in.",
+      "completed": "Form completed"
+    },
+    "steps": {
+      "companyContact": "Company & Contact",
+      "businessNeeds": "Business Needs"
+    },
+    "overview": {
+      "label": "Application progress",
+      "completedSuffix": "% completed"
+    },
+    "percentCompleteSuffix": "% complete",
+    "accordion1": {
+      "summaryTitle": "Company & contact",
+      "legend": "Company & contact",
+      "required": "Required",
+      "company": { "label": "Company", "placeholder": "Your company name" },
+      "businessType": { "label": "Type of business", "placeholder": "Select your activity" },
+      "vat": { "label": "VAT", "placeholder": "VAT number" },
+      "email": { "label": "Email", "placeholder": "name@company.com" },
+      "phone": { "label": "Phone number" },
+      "country": { "label": "Country", "placeholder": "Country" },
+      "website": { "label": "Website or social profile", "placeholder": "https://" }
+    },
+    "accordion2": {
+      "summaryTitle": "Business needs",
+      "legend": "Business needs",
+      "salesChannel": { "label": "Main sales channel", "placeholder": "Select one option" },
+      "market": { "label": "Market covered", "placeholder": "France, Portugal, UAE, Singapore…" },
+      "interests": { "label": "Product interests", "hint": "Select at least one" }
+    },
+    "consent": "I confirm that the information provided is accurate and agree to be contacted by the Biogance sales team regarding my reseller application.",
+    "actions": {
+      "secureNote": "Your request will be reviewed by our commercial team. Submitting this form does not automatically guarantee reseller access.",
+      "submit": "Submit application",
+      "submitting": "Submitting..."
+    }
+  },
+  "businessTypeOptions": [
+    "Pet shop",
+    "Grooming salon",
+    "Veterinary clinic",
+    "Breeder",
+    "E-commerce retailer",
+    "Distributor / wholesaler",
+    "Concept store",
+    "Other professional activity"
+  ],
+  "salesChannelOptions": [
+    "Physical store",
+    "Online store",
+    "Marketplace",
+    "Grooming salon retail",
+    "Veterinary retail",
+    "Distribution network",
+    "Mixed channels"
+  ],
+  "interests": {
+    "biogance-dogs-cats": "Biogance — Dogs, cats & puppies care",
+    "biogance-small-pets-birds-reptiles": "Biogance — Small mammals, birds & reptiles",
+    "organissime": "Organissime — Certified organic care",
+    "biospotix": "Biospotix — Plant-based anti-parasite protection",
+    "ekinat": "Ekinat — Premium horse care",
+    "gamme-pro": "Gamme Pro — Professional formats"
+  },
+  "progress": {
+    "ready": "Application ready to submit.",
+    "almost": "Almost there — complete the last required details.",
+    "good": "Good progress — keep completing each section.",
+    "started": "The reseller profile is being built step by step.",
+    "start": "Start with company information to build your reseller profile."
+  },
+  "errors": {
+    "company": "Please enter your company name",
+    "businessType": "Please select your type of business",
+    "vat": "Please enter your VAT number",
+    "emailRequired": "Please enter your email",
+    "emailInvalid": "Please enter a valid email address",
+    "phoneRequired": "Please enter your phone number",
+    "phoneTooShort": "This phone number is too short",
+    "phoneTooLong": "This phone number is too long",
+    "phoneInvalid": "Please enter a valid phone number",
+    "genericSubmit": "Something went wrong. Please try again."
+  },
+  "catalogue": {
+    "eyebrow": "Product catalogue",
+    "title": "Explore the professional assortment.",
+    "text": "Download the Biogance product catalogue to discover our care ranges, professional formats and expert routines for dogs, cats and other companions.",
+    "cta": "Download catalogue",
+    "tags": ["#GroomingCare", "#NaturalFormulas", "#CertifiedRanges", "#ProfessionalFormats"]
+  }
+}

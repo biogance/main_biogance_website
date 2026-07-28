@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "eyebrow": "Biogance Professionnel",
+    "titleLine1": "L'univers",
+    "titleLine2": "Professionnel",
+    "titleLine3": "Biogance.",
+    "lead": "Un espace dédié aux revendeurs, distributeurs, salons de toilettage, ambassadeurs et partenaires experts qui souhaitent rapprocher leurs communautés d'un soin animalier naturel, fabriqué en France.",
+    "chooseRoute": "Choisir votre parcours",
+    "downloadCatalogue": "Télécharger le catalogue",
+    "meta": {
+      "founded": { "value": "2008", "label": "Fondée à Angers, en France" },
+      "countries": { "value": "40+", "label": "Pays dans le monde" },
+      "routes": { "value": "2", "label": "Parcours professionnels" }
+    },
+    "card": {
+      "kicker1": "Soin professionnel",
+      "kicker2": "Accompagnement commercial",
+      "title": "Un réseau. Plusieurs façons de grandir.",
+      "seals": {
+        "resellers": { "title": "Revendeurs", "desc": "Accédez aux conditions B2B, aux catalogues et à un accompagnement commercial." },
+        "partners": { "title": "Partenaires", "desc": "Partagez du contenu expert et construisez des collaborations authentiques." },
+        "ekinat": { "title": "Ekinat", "desc": "Des opportunités dédiées à l'univers équestre." },
+        "biogance": { "title": "Biogance", "desc": "Des routines de soin pour chiens, chats et animaux de compagnie." }
+      }
+    }
+  },
+  "route": {
+    "eyebrow": "Choisissez votre parcours professionnel",
+    "title": "Un espace. Deux parcours clairs.",
+    "intro": "Sélectionnez la page de candidature qui correspond à votre projet. Que vous souhaitiez distribuer les produits Biogance ou rejoindre notre aventure de marque en tant que partenaire, chaque parcours dispose de son propre formulaire dédié et d'une revue par notre équipe.",
+    "reseller": {
+      "routeLabel": "Parcours 01",
+      "code": "B2B",
+      "kicker1": "Accès commercial",
+      "kicker2": "Compte professionnel",
+      "title": "Revendeurs & distributeurs.",
+      "description": "Pour les détaillants, distributeurs, salons de toilettage, pharmacies, concept stores et vendeurs en ligne qui souhaitent proposer les produits Biogance à leurs clients.",
+      "bullets": ["Informations professionnelles", "Suivi par l'équipe commerciale", "Accès au catalogue"],
+      "cta": "Accéder au formulaire revendeur"
+    },
+    "partner": {
+      "routeLabel": "Parcours 02",
+      "code": "AMB",
+      "kicker1": "Communauté",
+      "kicker2": "Aventure de marque",
+      "title": "Partenaires & ambassadeurs.",
+      "description": "Pour les créateurs, YouTubeurs, éleveurs, clubs, toiletteurs, vétérinaires, comportementalistes, éducateurs et profils équestres Ekinat prêts à partager leur expertise.",
+      "bullets": ["Univers Biogance ou Ekinat", "Voix d'expert & contenu", "Revue par l'équipe marketing"],
+      "cta": "Accéder au formulaire partenaire"
+    },
+    "note1": "Les candidatures sont examinées par l'équipe Biogance.",
+    "note2": "Choisissez d'abord votre parcours — la page dédiée recueillera les bonnes informations."
+  },
+  "signature": {
+    "eyebrow": "Pourquoi rejoindre le réseau",
+    "title": "Conçu pour les professionnels.",
+    "intro": "Biogance accompagne ses clients professionnels avec des informations produits claires, des ressources commerciales et un univers de marque facile à expliquer, à recommander et à mettre en avant.",
+    "cards": [
+      { "num": "01", "title": "Une expertise fabriquée en France", "desc": "Des produits développés avec une approche de laboratoire et un engagement fort pour la qualité et la traçabilité." },
+      { "num": "02", "title": "Un soin naturel pour les animaux", "desc": "Des routines inspirées de la nature, pensées pour les chiens, chats, chevaux et animaux de compagnie." },
+      { "num": "03", "title": "Un accompagnement commercial", "desc": "Une équipe dédiée examine chaque demande et guide les professionnels vers les prochaines étapes." },
+      { "num": "04", "title": "Du matériel de marque", "desc": "Catalogues, visuels, PLV et informations produits pour activer la marque en magasin et en ligne." }
+    ]
+  },
+  "editorial": {
+    "eyebrow": "Partenaires & ambassadeurs",
+    "title": "Plus qu'une collaboration.",
+    "intro": "Devenir partenaire Biogance ou Ekinat, c'est participer à une aventure humaine : partager votre expertise, votre quotidien et votre vision du soin animalier, tout en soutenant activement le développement de la marque.",
+    "steps": [
+      { "num": "01", "title": "Choisissez votre univers", "desc": "Biogance pour le soin des animaux de compagnie, Ekinat pour le monde équestre, ou un projet sur-mesure si votre idée est unique." },
+      { "num": "02", "title": "Partagez votre profil", "desc": "Parlez-nous de votre audience, de votre expertise, de votre style de contenu et des animaux avec lesquels vous travaillez." },
+      { "num": "03", "title": "Construisons ensemble avec la marque", "desc": "Notre équipe marketing étudie chaque candidature et revient vers vous avec l'étape la plus pertinente." }
+    ],
+    "visual": {
+      "label": "Le parcours partenaire",
+      "sub": "Créateurs · Éleveurs · Clubs · Toiletteurs · Experts · Vétérinaires · YouTubeurs",
+      "mark": "Pro"
+    }
+  },
+  "resource": {
+    "eyebrow": "Ressources professionnelles",
+    "title": "Votre point de départ professionnel.",
+    "intro": "Téléchargez le catalogue produits, choisissez votre parcours professionnel et poursuivez vers la page de candidature dédiée à votre projet d'activité ou de partenariat.",
+    "items": {
+      "catalogue": { "title": "Catalogue professionnel Biogance", "desc": "Gammes de produits, routines et informations clés pour les acheteurs professionnels.", "cta": "Télécharger" },
+      "reseller": { "title": "Candidature revendeur", "desc": "Pour les animaleries, pharmacies, salons de toilettage, distributeurs et concept stores.", "cta": "Postuler" },
+      "partner": { "title": "Candidature partenaire", "desc": "Pour les créateurs, clubs, éleveurs, experts, YouTubeurs et profils équestres.", "cta": "Postuler" }
+    }
+  },
+  "cta": {
+    "eyebrow": "Restez connectés",
+    "title": "Suivez l'univers Biogance.",
+    "intro": "Pendant que nos équipes examinent les candidatures professionnelles et de partenariat, découvrez nos dernières routines, conseils d'experts, lancements de produits et histoires de communauté.",
+    "social": { "instagram": "Instagram", "facebook": "Facebook", "youtube": "YouTube", "tiktok": "TikTok" }
+  }
+}

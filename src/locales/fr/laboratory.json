@@ -1,0 +1,149 @@
+{
+  "hero": {
+    "eyebrow": "À propos de Biogance",
+    "heading1": "Soin naturel.",
+    "heading2": "Expertise",
+    "heading3": "française.",
+    "description": "Biogance est une entreprise familiale française indépendante dédiée au bien-être animal. Pionnière dans l'hygiène et le soin bio et naturel pour les animaux de compagnie, la marque associe des ingrédients sélectionnés, une expertise Recherche & Innovation et des standards de production certifiés pour créer des soins quotidiens sûrs, efficaces et responsables.",
+    "btnCommitments": "Nos engagements",
+    "btnStory": "Notre histoire",
+    "cardBadge": "Soin bio & naturel pour animaux",
+    "cardStrong": "Formulé pour les animaux, conçu avec intention."
+  },
+  "marquee": {
+    "tags": [
+      "98% d'ingrédients bio & naturels",
+      "Formules expert pour animaux",
+      "Pionnier du soin bio & naturel pour animaux",
+      "Entreprise familiale & laboratoire français indépendant",
+      "Le bien-être animal avant tout",
+      "Routines de soin responsables"
+    ]
+  },
+  "story": {
+    "kicker": "Notre identité",
+    "heading": "Né à Angers. Bâti pour le soin animal.",
+    "description": "Née à Angers et guidée par une culture de laboratoire français responsable, Biogance a grandi avec une ambition claire : créer des routines de soin naturelles, efficaces et désirables, respectueuses des animaux, de leurs familles et de la planète.",
+    "year": "2008",
+    "yearDesc": "Le début d'un laboratoire français dédié aux animaux, avec une ambition claire : rendre l'hygiène animale plus propre, plus douce et plus responsable.",
+    "copy1": "Fondée à Angers, au cœur des Pays de la Loire, Biogance est passée d'un projet de laboratoire à une marque reconnue dans le soin naturel pour animaux. Dès le début, la marque a collaboré avec des experts pour créer des formules adaptées aux besoins des animaux de compagnie.",
+    "copy2Prefix": "Aujourd'hui, Biogance continue de combiner",
+    "copy2Bold": "l'inspiration naturelle, la précision scientifique et le savoir-faire français",
+    "copy2Suffix": "pour accompagner les familles, les éleveurs, les toiletteurs, les vétérinaires et les professionnels de l'animal dans leurs routines de soin quotidiennes."
+  },
+  "values": {
+    "kicker": "Ce qui nous guide",
+    "heading": "Le soin sans excès.",
+    "description": "Biogance est façonnée par des principes simples mais exigeants : le respect des animaux, des ingrédients soigneusement sélectionnés, une fabrication maîtrisée et une amélioration continue.",
+    "card1": {
+      "number": "01",
+      "title": "Bien-être animal",
+      "desc": "Produits développés pour favoriser le confort, l'hygiène, l'équilibre cutané et la beauté du pelage — sans parabène, sans phénoxyéthanol, sans huile animale et non testés sur les animaux."
+    },
+    "card2": {
+      "number": "02",
+      "title": "Inspiration naturelle",
+      "desc": "Formules enrichies d'ingrédients bio et naturels, sélectionnés pour leur performance et leur douceur."
+    },
+    "card3": {
+      "number": "03",
+      "title": "Formulation experte",
+      "desc": "Le savoir-faire d'un laboratoire français à chaque étape, de la sélection des ingrédients au contrôle des produits."
+    },
+    "card4": {
+      "number": "04",
+      "title": "Progrès responsable",
+      "desc": "Une approche à long terme guidée par des emballages recyclables, des matières premières sélectionnées et une amélioration continue."
+    }
+  },
+  "commitments": {
+    "kicker": "Nos engagements",
+    "heading": "Un meilleur soin commence par de meilleurs choix.",
+    "description": "Chez Biogance, chaque engagement se traduit par des choix concrets : des formules développées pour le bien-être animal, des matières premières soigneusement sélectionnées, des emballages recyclables, des standards de production certifiés et une culture d'équipe fondée sur le respect, la confiance et l'amélioration continue.",
+    "items": {
+      "animal": {
+        "label": "Animal",
+        "text": "Routines de soin conçues pour le confort, l'hygiène et le bien-être."
+      },
+      "nature": {
+        "label": "Nature",
+        "text": "Actifs biologiques et ingrédients d'origine naturelle, soigneusement sélectionnés."
+      },
+      "planet": {
+        "label": "Planète",
+        "text": "Emballages recyclables et démarche éco-responsable."
+      },
+      "quality": {
+        "label": "Qualité",
+        "text": "Production certifiée GMP / ISO 22716 et traçabilité contrôlée."
+      },
+      "people": {
+        "label": "Humain",
+        "text": "Une entreprise familiale portée par la collaboration et le respect."
+      }
+    }
+  },
+  "proofs": {
+    "kicker": "De l'intention au produit",
+    "heading": "Le soin naturel, rendu tangible.",
+    "description": "La promesse Biogance repose sur cinq piliers essentiels : le bien-être animal, la responsabilité environnementale, l'innovation, la qualité et le respect des femmes et hommes qui font avancer la marque chaque jour.",
+    "hero": {
+      "label": "Fait signature",
+      "stat": "98%",
+      "heading": "Ingrédients bio & naturels au cœur du soin Biogance.",
+      "desc": "Un argument fort, conçu pour être vu en premier : le soin Biogance repose sur une philosophie de formulation ancrée dans les ingrédients bio et naturels."
+    },
+    "iso": {
+      "label": "Qualité certifiée",
+      "stat": "ISO 22716",
+      "heading": "Standards de production certifiés BPF.",
+      "desc": "Traçabilité contrôlée et standards qualité à chaque étape."
+    },
+    "pioneer": {
+      "label": "Héritage de marque",
+      "stat": "Pionnier",
+      "heading": "Le soin naturel pour animaux depuis le début.",
+      "desc": "Biogance défend l'hygiène et le soin bio et naturel depuis le premier jour."
+    },
+    "family": {
+      "label": "ADN laboratoire",
+      "stat": "Entreprise familiale",
+      "heading": "Laboratoire français indépendant avec une vision long terme.",
+      "desc": "Une marque humaine fondée sur l'expertise, la confiance et la continuité."
+    }
+  },
+  "pillars": {
+    "welfare": {
+      "kicker": "Respect de l'animal",
+      "title": "Le bien-être d'abord",
+      "desc": "Produits de soin bio et naturels formulés avec des actifs certifiés biologiques et des ingrédients d'origine naturelle, conçus pour les besoins spécifiques des chiens, chats, petits mammifères, oiseaux, reptiles et autres compagnons."
+    },
+    "responsible": {
+      "kicker": "Respect de l'environnement",
+      "title": "Responsable par conception",
+      "desc": "Matières premières sélectionnées, emballages recyclables et démarche éco-responsable pour réduire l'impact tout en préservant la qualité, la sécurité et la conservation des formules."
+    },
+    "science": {
+      "kicker": "Innovation",
+      "title": "La science rencontre la nature",
+      "desc": "Une équipe Recherche & Développement inspirée par les plantes aromatiques et médicinales, qui améliore continuellement les formules pour répondre aux attentes du marché et aux besoins réels des animaux."
+    },
+    "quality": {
+      "kicker": "Qualité",
+      "title": "Standards maîtrisés",
+      "desc": "Unités de production certifiées BPF / ISO 22716, contrôles qualité à chaque étape et la gamme Organissime lancée avec ECOCERT comme référence en cosmétique animale naturelle et éthique."
+    },
+    "human": {
+      "kicker": "Partage & respect",
+      "title": "L'expertise humaine",
+      "desc": "Une entreprise familiale où R&D, qualité, production, logistique et marketing travaillent ensemble avec confiance, dynamisme et respect — parce que prendre soin des animaux, c'est aussi respecter les personnes."
+    }
+  },
+  "closing": {
+    "kicker": "La voie naturelle",
+    "heading": "Un soin qui respecte les animaux, les personnes et la planète.",
+    "description": "Choisir Biogance, c'est choisir une marque française experte qui allie science et nature pour créer des routines de soin fiables, responsables et désirables.",
+    "btnProducts": "Découvrir nos produits",
+    "btnCommitments": "Lire nos engagements"
+  }
+}

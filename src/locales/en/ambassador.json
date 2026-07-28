@@ -1,0 +1,490 @@
+{
+  "selectPlaceholder": "Select",
+  "successModal": {
+    "eyebrow": "Biogance Professional",
+    "titleLine1": "Application",
+    "titleLine2": "Submitted.",
+    "message": "Thank you for sharing your universe with us. Our Marketing team will carefully review your partner application and come back to you with the next steps.",
+    "nextStepLabel": "Next step",
+    "nextStepValue": "Marketing review",
+    "responseTimeLabel": "Response time",
+    "responseTimeValue": "5–10 business days",
+    "close": "Close"
+  },
+  "hero": {
+    "eyebrow": "Biogance professional network",
+    "titleLine1": "Become",
+    "titleSmall": "a",
+    "titleLine2": "Partner.",
+    "lead": "Join a human adventure built around animals, expertise and authentic stories. As a Biogance partner for pets or an Ekinat partner for horses, you help inspire our community, share trusted advice and actively contribute to the development of our brands.",
+    "startApplication": "Start application",
+    "howItWorks": "How it works"
+  },
+  "process": {
+    "kicker": "Join the adventure",
+    "titleLine1": "Choose.",
+    "titleLine2": "Share.",
+    "titleLine3": "Grow.",
+    "intro": "Biogance is looking for passionate ambassador partners ready to help strengthen brand visibility, grow awareness and inspire a community built around responsible animal care. In return, selected partners can receive products, access exclusive offers, be featured across our communication channels and take part in a meaningful human adventure where animal well-being always comes first.",
+    "steps": [
+      { "step": "Step 01", "title": "Choose your profile", "desc": "Tell us who you are, what you do and how your universe can naturally bring Biogance to life." },
+      { "step": "Step 02", "title": "Represent our universe", "desc": "Share your animal world, your community and the content or expertise you could bring to Biogance or Ekinat." },
+      { "step": "Step 03", "title": "Grow together", "desc": "Enjoy exclusive brand benefits, visibility opportunities and the chance to build something authentic with us." }
+    ]
+  },
+  "sidePanel": {
+    "label": "Your partnership journey"
+  },
+  "applicationPath": {
+    "legend": "Application path",
+    "profile": {
+      "label": "Partnership profile",
+      "placeholder": "Select your partnership profile",
+      "hint": "Choose the role that best reflects your activity."
+    },
+    "animal": {
+      "label": "My animal universe",
+      "placeholder": "Select your animal universe",
+      "hint": "Ekinat is exclusively for horses. Dog, cat, small mammal, bird and reptile profiles are guided toward Biogance."
+    }
+  },
+  "contact": {
+    "legend": "Contact information",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone number",
+    "country": "Country",
+    "city": "City",
+    "postalAddress": "Postal address",
+    "postalAddressHint": "Required for potential product deliveries, contracts or event shipments."
+  },
+  "social": {
+    "legend": "Social platforms",
+    "intro": "Tick only the platforms where you are active. For each selected platform, add the profile link and the follower / subscriber count. If you do not use a platform, leave it unchecked.",
+    "otherNamePlaceholder": "Platform name",
+    "platforms": {
+      "instagram": { "label": "Instagram", "urlPlaceholder": "Instagram profile URL", "followersPlaceholder": "Instagram followers" },
+      "tiktok": { "label": "TikTok", "urlPlaceholder": "TikTok profile URL", "followersPlaceholder": "TikTok followers" },
+      "youtube": { "label": "YouTube", "urlPlaceholder": "YouTube channel URL", "followersPlaceholder": "YouTube subscribers" },
+      "facebook": { "label": "Facebook", "urlPlaceholder": "Facebook page URL", "followersPlaceholder": "Facebook followers" },
+      "other": { "label": "Other platform / website", "urlPlaceholder": "Profile / website URL", "followersPlaceholder": "Followers / monthly visits" }
+    }
+  },
+  "consentSection": {
+    "legend": "Consent",
+    "portfolioLabel": "Media kit / portfolio link",
+    "portfolioHint": "Optional — add a link only if you already have one.",
+    "rights": "I agree that the relevant brand team may review my public profiles and, if a partnership is validated, may request permission to use selected photos or videos.",
+    "contact": "I agree to be contacted by the Biogance team regarding my application.",
+    "truth": "I confirm that the information provided is accurate."
+  },
+  "actions": {
+    "submit": "Submit application",
+    "submitting": "Submitting..."
+  },
+  "socialStrip": {
+    "kicker": "While we review your application",
+    "title": "Stay close to the Biogance universe.",
+    "text": "Thank you for taking the time to share your universe with us. While we discover your application, follow our latest routines, expert advice, product launches and community stories on social media.",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "youtube": "YouTube",
+    "tiktok": "TikTok"
+  },
+  "errors": {
+    "platformRequiredTitle": "Social platform required.",
+    "platformRequiredBody": "Please select at least one active platform and add the follower / subscriber count so our team can review your profile properly.",
+    "firstName": "Please enter your first name",
+    "lastName": "Please enter your last name",
+    "emailRequired": "Please enter your email",
+    "emailInvalid": "Please enter a valid email address",
+    "phoneRequired": "Please enter your phone number",
+    "phoneTooShort": "This phone number is too short",
+    "phoneTooLong": "This phone number is too long",
+    "phoneInvalid": "Please enter a valid phone number",
+    "country": "Please enter your country",
+    "city": "Please enter your city",
+    "postalAddress": "Please enter your postal address",
+    "selectFieldTemplate": "Please select {{field}}",
+    "enterFieldTemplate": "Please enter {{field}}",
+    "genericSubmit": "Something went wrong. Please try again."
+  },
+  "brand": {
+    "label": { "ekinat": "Ekinat", "bioganceEkinat": "Biogance for pets + Ekinat for horses", "biogance": "Biogance", "fallback": "selected universe" },
+    "shortLabel": { "ekinat": "Ekinat", "bioganceEkinat": "Biogance + Ekinat", "biogance": "Biogance", "fallback": "selected universe" },
+    "hashLabel": { "ekinat": "Ekinat", "bioganceEkinat": "BioganceEkinat", "biogance": "Biogance", "fallback": "Universe" }
+  },
+  "profileLabels": {
+    "content_creator": "Content creator",
+    "youtube": "YouTuber",
+    "breeder": "Breeder",
+    "club": "Club / association",
+    "behaviourist": "Behaviourist",
+    "trainer": "Educator / dog trainer",
+    "groomer": "Groomer",
+    "veterinarian": "Veterinarian",
+    "other": "Other project"
+  },
+  "animalLabels": {
+    "dog": "Dog",
+    "cat": "Cat",
+    "small_mammal": "Small mammal",
+    "bird": "Bird",
+    "reptile": "Reptile",
+    "horse": "Horse",
+    "all": "All of them"
+  },
+  "path": {
+    "suggestedUniverse": "Suggested universe: {{brand}}",
+    "genericFormTitle": "Partnership Application",
+    "genericFormSubtitle": "Select your partnership profile and animal universe to open the right questionnaire.",
+    "genericDynamicLegend": "Partnership details",
+    "neither": {
+      "sideTitle": "Choose your profile",
+      "sideDescription": "Start with your partnership profile, then tell us which animal universe represents your activity. Biogance is for pets and companion animals; Ekinat is exclusively for horses.",
+      "tags": ["#Profile", "#Animals", "#Story"],
+      "pathNote": "Once both fields are completed, the right questionnaire will appear automatically."
+    },
+    "profileOnly": {
+      "fallbackTitle": "Partner profile",
+      "sideDescription": "Now select the animal universe that represents your activity. Horse profiles open the Ekinat path; all other animals open the Biogance path.",
+      "fallbackTag": "Profile",
+      "tagAnimals": "#Animals",
+      "pathNote": "Select your animal universe to continue."
+    },
+    "animalOnly": {
+      "fallbackTitle": "Animal universe",
+      "sideDescriptionTemplate": "{{animal}} selected — {{brand}}. Now choose your partnership profile.",
+      "tagProfile": "#Profile",
+      "pathNote": "Select your partnership profile to continue."
+    },
+    "final": {
+      "sideDescriptionTemplate": "{{description}} Animal universe: {{animal}}. {{note}}",
+      "formSubtitleTemplate": "{{brand}} path selected — {{subtitle}}",
+      "pathNoteTemplate": "Your answers will be reviewed by the Marketing Team as a {{brand}} {{label}} application. {{note}}",
+      "dynamicLegendTemplate": "{{label}} details"
+    },
+    "brandNote": {
+      "ekinat": "Ekinat is dedicated to horses only.",
+      "biogance": "Biogance is dedicated to pets and companion animals.",
+      "both": "Biogance covers pets and Ekinat covers horses."
+    },
+    "reviewNote": {
+      "ekinat": "Ekinat applies to horse profiles only.",
+      "biogance": "Biogance applies to all non-horse animal profiles.",
+      "both": "Horse answers will be treated under Ekinat; other animals under Biogance."
+    }
+  },
+  "sidePanelCopy": {
+    "default": {
+      "missionTitle": "More than a collaboration",
+      "missionCopy": "Join a human brand adventure built around animals, expertise and authentic stories. Bring your voice, your community and your way of caring.",
+      "missionTags": ["#Trust", "#Expertise", "#Content", "#Community"],
+      "rewardTitle": "What you can expect",
+      "rewardCopy": "If your application is selected, our Marketing Team will contact you to imagine the right collaboration: Biogance for pets or Ekinat for horses.",
+      "rewardTags": ["#Visibility", "#Support", "#Community", "#Surprises"]
+    },
+    "content_creator": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Help Biogance grow its awareness and visibility through beautiful Reels, photos, stories and authentic content shared with your community.",
+      "missionTags": ["#Reels", "#Photos", "#Stories", "#Community"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Early access to products, features on our social media, a discount code for your followers and many other surprises along the way.",
+      "rewardTags": ["#EarlyAccess", "#DiscountCode", "#SocialFeature", "#Surprises"]
+    },
+    "biogance_creator": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Help Biogance grow its awareness and visibility through beautiful Reels, photos, stories and authentic content shared with your community.",
+      "missionTags": ["#Reels", "#Photos", "#Stories", "#Community"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Early access to products, features on our social media, a discount code for your followers and many other surprises along the way.",
+      "rewardTags": ["#EarlyAccess", "#DiscountCode", "#SocialFeature", "#Surprises"]
+    },
+    "youtube": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Bring {{brand}} to life through credible video content: reviews, routines, tutorials, Shorts or long-form stories that inspire your audience.",
+      "missionTags": ["#YouTube", "#Reviews", "#Tutorials", "#Shorts"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Products to test, social media visibility, a discount code for your community and exclusive collaboration opportunities.",
+      "rewardTags": ["#Products", "#DiscountCode", "#Visibility", "#Collaboration"]
+    },
+    "breeder": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Share your breed expertise through expert videos or articles, and give Biogance visibility when you attend shows, competitions or community events.",
+      "missionTags": ["#BreedExpertise", "#Articles", "#ExpertVideo", "#Shows"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Puppy or kitten kits for adopting families, product allocation, social media features, Biogance signage and other surprises to support your breeding program.",
+      "rewardTags": ["#PuppyKits", "#KittenKits", "#Products", "#Signage"]
+    },
+    "club": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Highlight Biogance during your events, on social media and across your communication supports while sharing beautiful moments from the show.",
+      "missionTags": ["#Events", "#BOB", "#BOS", "#BIS"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Prize lots for BOB, BOS and BIS, plus samples, discount vouchers and goodies for your members and participants.",
+      "rewardTags": ["#PrizeLots", "#Samples", "#Vouchers", "#Goodies"]
+    },
+    "behaviourist": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Share expert words, practical advice or videos that help pet owners better understand animal behaviour and build healthier routines.",
+      "missionTags": ["#ExpertVoice", "#Advice", "#Video", "#Education"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Product allocation, discount vouchers for your clients or community, samples and visibility on Biogance social media.",
+      "rewardTags": ["#Products", "#Vouchers", "#Samples", "#SocialFeature"]
+    },
+    "trainer": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Create expert tips, short videos or educational content that help pet owners progress with care, confidence and responsible training.",
+      "missionTags": ["#ExpertVoice", "#Training", "#Video", "#Education"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Product allocation, discount vouchers for your clients or community, samples and visibility on Biogance social media.",
+      "rewardTags": ["#Products", "#Vouchers", "#Samples", "#SocialFeature"]
+    },
+    "groomer": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Show your grooming expertise through high-quality videos: complete grooming routines, product use, before/after results and professional gestures.",
+      "missionTags": ["#Grooming", "#FullRoutine", "#BeforeAfter", "#Video"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Product allocation for each validated video, very advantageous discounts and the opportunity to actively contribute to our continuous product improvement.",
+      "rewardTags": ["#Products", "#PreferredDiscounts", "#ProductFeedback", "#Expertise"]
+    },
+    "veterinarian": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Share reliable expert words, articles or videos that help pet owners understand care routines with clarity, trust and professional insight.",
+      "missionTags": ["#ExpertVoice", "#VeterinaryAdvice", "#Video", "#Trust"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Product allocation, discount vouchers for your clients or community, samples and visibility on Biogance social media.",
+      "rewardTags": ["#Products", "#Vouchers", "#Samples", "#SocialFeature"]
+    },
+    "ekinat_creator": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Increase Ekinat visibility through elegant equestrian content: horse-care routines, stable life, competition moments, Reels, photos and stories.",
+      "missionTags": ["#HorseCare", "#StableLife", "#Reels", "#Community"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Early product access, features on our social media, a discount code for your community and exclusive Ekinat surprises.",
+      "rewardTags": ["#EarlyAccess", "#DiscountCode", "#SocialFeature", "#Ekinat"]
+    },
+    "stud_farms": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Give Ekinat visibility at the stable, during events and on your communication supports while sharing real care moments with your equestrian community.",
+      "missionTags": ["#Stable", "#Events", "#Club", "#Visibility"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Dedicated support, product allocation, samples, goodies and communication opportunities adapted to your equestrian structure.",
+      "rewardTags": ["#Products", "#Samples", "#Goodies", "#Support"]
+    },
+    "horse_groom": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Create practical, high-quality videos showing Ekinat routines, stable care, event preparation and professional gestures around the horse.",
+      "missionTags": ["#HorseGroom", "#Routine", "#Video", "#StableCare"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Ekinat product allocation, preferential discounts, social media visibility and the opportunity to share feedback for continuous improvement.",
+      "rewardTags": ["#Products", "#PreferredDiscounts", "#SocialFeature", "#Feedback"]
+    },
+    "other": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Tell us about your project and how you would like to bring Biogance for pets or Ekinat for horses to life through your community, event or expertise.",
+      "missionTags": ["#Project", "#Community", "#Visibility", "#Care"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Our Marketing Team will review your proposal and come back to you with the most relevant partnership opportunity.",
+      "rewardTags": ["#Review", "#Support", "#Opportunity", "#NextSteps"]
+    },
+    "other_biogance": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Tell us about your project and how you would like to bring Biogance to life through your community, event or expertise.",
+      "missionTags": ["#Project", "#Community", "#Visibility", "#Biogance"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Our Marketing Team will review your proposal and come back to you with the most relevant partnership opportunity.",
+      "rewardTags": ["#Review", "#Support", "#Opportunity", "#NextSteps"]
+    },
+    "other_ekinat": {
+      "missionTitle": "Your mission",
+      "missionCopy": "Tell us about your project and how you would like to bring Ekinat to life through your equestrian community, event or expertise.",
+      "missionTags": ["#Project", "#Community", "#Visibility", "#Ekinat"],
+      "rewardTitle": "What you receive",
+      "rewardCopy": "Our Marketing Team will review your proposal and come back to you with the most relevant partnership opportunity.",
+      "rewardTags": ["#Review", "#Support", "#Opportunity", "#NextSteps"]
+    }
+  },
+  "programs": {
+    "biogance_creator": {
+      "label": "Content Creators",
+      "title": "Content Creator Application",
+      "side": "Content Creator",
+      "description": "For creators who can share authentic pet-care routines, product moments and community stories.",
+      "subtitle": "A short application to understand your universe, your animals and your content potential.",
+      "fields": {
+        "pets_featured": { "label": "Animal(s) featured" },
+        "content_formats": { "label": "Preferred content format", "options": ["Photos", "Short videos / Reels", "Long-form videos", "Articles / expert words", "Event content", "Other"] },
+        "publishing_frequency": { "label": "Publishing frequency", "options": ["Several times per week", "Weekly", "A few times per month", "Occasionally"] },
+        "content_comfort": { "label": "Photo / video comfort", "options": ["Very comfortable", "Comfortable", "Not yet, but willing to improve", "Not comfortable"] },
+        "content_type": { "label": "Content you can create", "options": ["Reels / short videos", "Photos", "Stories", "UGC product content", "Expert tips", "Not sure yet"] }
+      }
+    },
+    "youtube": {
+      "label": "YouTubers",
+      "title": "YouTube Partner Application",
+      "side": "YouTube Partner",
+      "description": "For creators who can produce credible video content, reviews, routines or educational animal-care videos.",
+      "subtitle": "Tell us what your channel is about and how {{brand}} could naturally appear in your videos.",
+      "fields": {
+        "youtube_content_type": { "label": "Main video theme", "options": ["Pet care advice", "Breed / animal education", "Grooming tutorials", "Equestrian care", "Lifestyle with animals", "Other"] },
+        "average_youtube_views": { "label": "Average views per video" },
+        "video_format": { "label": "Preferred collaboration format", "options": ["Dedicated review", "Routine / tutorial", "Integrated segment", "Shorts series", "Not sure"] },
+        "tracking_ready": { "label": "Can you share a link or promo code?", "options": ["Yes", "No", "Not sure"] },
+        "youtube_video_style": { "label": "Video content you can create", "options": ["Product review", "Routine / tutorial", "Shorts series", "Integrated segment", "Educational video", "Not sure yet"] }
+      }
+    },
+    "breeder": {
+      "label": "Breeders",
+      "title": "Breeder Application",
+      "side": "Breeder Partner",
+      "description": "For responsible small-scale breeders with strong ethics, breed expertise and ability to share advice.",
+      "subtitle": "A short form to understand your breeding activity and how you could contribute expert content.",
+      "fields": {
+        "breeding_name": { "label": "Breeding name / kennel / cattery" },
+        "breeds": { "label": "Breed(s)" },
+        "litters_per_year": { "label": "Litters per year" },
+        "champion_titles": { "label": "Champion titles / awards, if any" },
+        "article_writing": { "label": "Comfortable writing expert articles?", "options": ["Yes", "With editorial support", "No"] }
+      }
+    },
+    "club": {
+      "label": "Clubs / Associations",
+      "title": "Club Application",
+      "side": "Club Partner",
+      "description": "For dog, cat or animal clubs with regular events, active members and community visibility.",
+      "subtitle": "Tell us about your club, your events and the visibility you can offer after sponsored moments.",
+      "fields": {
+        "club_name": { "label": "Club / association name" },
+        "club_scope": { "label": "Breed, species or activity" },
+        "club_members": { "label": "Number of members" },
+        "events_per_year": { "label": "Events per year" },
+        "post_event_content": { "label": "Can you send photos/videos after events?", "options": ["Yes — photos and videos", "Yes — photos only", "Maybe", "No"] },
+        "sponsorship_request": { "label": "Support requested", "options": ["BOB / BOS / BIS prize lots", "Samples", "Discount vouchers", "Goodies", "Event partnership", "Not sure yet"] }
+      }
+    },
+    "behaviourist": {
+      "label": "Behaviourists",
+      "title": "Behaviourist Application",
+      "side": "Behaviourist",
+      "description": "For behaviour experts who can share practical advice through expert words, articles or videos.",
+      "subtitle": "Share your expertise and the type of advice you could bring to our community.",
+      "fields": {
+        "professional_title": { "label": "Professional title / certification" },
+        "years_experience": { "label": "Years of experience" },
+        "specialties": { "label": "Main specialty", "options": ["Anxiety / stress", "Reactivity", "Puppy / kitten education", "Cat behaviour", "Everyday behaviour", "Other"] },
+        "expert_content_format": { "label": "Preferred expert content format", "options": ["Text", "Video", "Text + video", "Interview"] }
+      }
+    },
+    "trainer": {
+      "label": "Educators / Dog Trainers",
+      "title": "Educator Application",
+      "side": "Educator",
+      "description": "For educators and trainers able to create useful tips, tutorials or expert advice.",
+      "subtitle": "A short application to understand your expertise and content comfort.",
+      "fields": {
+        "business_name": { "label": "Business / professional name" },
+        "certifications": { "label": "Certifications / training background" },
+        "years_experience": { "label": "Years of experience" },
+        "tutorial_ready": { "label": "Comfortable creating tips or tutorials?", "options": ["Yes — video", "Yes — text", "Text + video", "Not yet"] },
+        "training_topic": { "label": "Topic you can cover", "options": ["Puppy education", "Recall / walking", "Positive training", "Dog confidence", "Daily routines", "Other"] }
+      }
+    },
+    "groomer": {
+      "label": "Groomers",
+      "title": "Groomer Application",
+      "side": "Groomer",
+      "description": "For groomers comfortable creating audiovisual content, routines, tutorials or before/after visuals.",
+      "subtitle": "Tell us about your salon and your ability to showcase Biogance routines in image or video.",
+      "fields": {
+        "salon_name": { "label": "Salon name" },
+        "clients_per_month": { "label": "Approx. clients per month" },
+        "audiovisual_comfort": { "label": "Comfortable creating videos?", "options": ["Very comfortable", "Comfortable", "Not yet, but willing to improve", "Not comfortable"] },
+        "before_after_ready": { "label": "Can you provide before/after visuals?", "options": ["Yes — photos and videos", "Yes — photos only", "Maybe", "No"] },
+        "tutorial_type": { "label": "Tutorial you can create", "options": ["Complete grooming routine", "Before / after", "Shampoo routine", "Coat care tip", "Sensitive skin routine", "Other"] }
+      }
+    },
+    "veterinarian": {
+      "label": "Veterinarians",
+      "title": "Veterinarian Application",
+      "side": "Veterinarian",
+      "description": "For veterinary professionals comfortable sharing reliable expert advice in text or video format.",
+      "subtitle": "A short form to understand your expertise and the topics you could help explain.",
+      "fields": {
+        "clinic_name": { "label": "Clinic / practice name" },
+        "veterinary_registration": { "label": "Professional registration / ID" },
+        "specialties": { "label": "Specialties" },
+        "expert_content_format": { "label": "Preferred expert content format", "options": ["Text", "Video", "Text + video", "Interview"] },
+        "expert_topic": { "label": "Expert topic you can cover", "options": ["Skin and coat care", "Hygiene routine", "Puppy / kitten care", "Sensitive animals", "Prevention and well-being", "Other"] }
+      }
+    },
+    "ekinat_creator": {
+      "label": "Equestrian Creators",
+      "title": "Equestrian Creator Application",
+      "side": "Equestrian Creator",
+      "description": "For equestrian profiles who can show horse-care routines, competition moments or stable-life content.",
+      "subtitle": "Tell us about your equestrian world and how Ekinat could naturally fit into your content.",
+      "fields": {
+        "equestrian_profile": { "label": "Rider / stable / creator profile" },
+        "discipline": { "label": "Main discipline", "options": ["Show jumping", "Dressage", "Eventing", "Racing", "Endurance", "Leisure riding", "Other"] },
+        "horses_featured": { "label": "Horses regularly featured" },
+        "competition_level": { "label": "Competition level", "options": ["International", "National", "Regional", "Local", "No competition"] },
+        "ekinat_content_type": { "label": "Ekinat content you can create", "options": ["Horse-care routine", "Stable-life content", "Competition preparation", "Product demonstration", "Before / after", "Other"] }
+      }
+    },
+    "stud_farms": {
+      "label": "Stud Farms & Clubs",
+      "title": "Stud Farm / Club Application",
+      "side": "Stud Farms & Clubs",
+      "description": "For riding centres, stud farms, clubs and equestrian institutions with horses, members and visibility.",
+      "subtitle": "Share your structure, your audience and the support you are looking for.",
+      "fields": {
+        "institution_name": { "label": "Institution / stud farm / club name" },
+        "institution_type": { "label": "Structure type", "options": ["Stud farm", "Riding centre", "Pony club", "Training centre", "Equestrian club", "Other"] },
+        "horses_on_site": { "label": "Number of horses" },
+        "members_or_clients": { "label": "Members / regular clients" },
+        "events_per_year": { "label": "Events per year" },
+        "requested_support": { "label": "Support requested", "options": ["Product allocation", "Samples", "Goodies", "Event support", "Communication support", "Not sure yet"] }
+      }
+    },
+    "horse_groom": {
+      "label": "Horse Grooms",
+      "title": "Horse Groom Application",
+      "side": "Horse Groom",
+      "description": "For horse grooms able to create practical videos, routines or stable-life content with Ekinat.",
+      "subtitle": "Tell us about your role and your comfort with video content.",
+      "fields": {
+        "professional_role": { "label": "Professional role" },
+        "stable_or_team": { "label": "Stable / team / rider" },
+        "horses_cared_for": { "label": "Horses cared for weekly" },
+        "routine_video_ready": { "label": "Comfortable filming care routines?", "options": ["Yes", "With guidance", "Not yet"] },
+        "video_type": { "label": "Video you can create", "options": ["Horse-care routine", "Stable care tip", "Competition preparation", "Product demonstration", "Before / after", "Other"] }
+      }
+    },
+    "other_biogance": {
+      "label": "Other Project",
+      "title": "Other Project Application",
+      "side": "Other Project",
+      "description": "For any partnership idea that does not fit the predefined categories.",
+      "subtitle": "A few quick details to help our team identify the right opportunity.",
+      "fields": {
+        "project_type": { "label": "Project type", "options": ["Event", "Association / charity", "Media / press", "Retail activation", "Education project", "Other"] },
+        "project_name": { "label": "Project name / short title" },
+        "requested_support": { "label": "Support requested", "options": ["Products", "Samples", "Discount vouchers", "Goodies", "Event support", "Visibility", "Other"] }
+      }
+    },
+    "other_ekinat": {
+      "label": "Other Ekinat Project",
+      "title": "Other Project Application",
+      "side": "Other Ekinat Project",
+      "description": "For any partnership idea that does not fit the predefined categories.",
+      "subtitle": "A few quick details to help our team identify the right opportunity.",
+      "fields": {
+        "project_type": { "label": "Project type", "options": ["Event", "Association / charity", "Media / press", "Retail activation", "Education project", "Other"] },
+        "project_name": { "label": "Project name / short title" },
+        "requested_support": { "label": "Support requested", "options": ["Products", "Samples", "Discount vouchers", "Goodies", "Event support", "Visibility", "Other"] }
+      }
+    }
+  }
+}

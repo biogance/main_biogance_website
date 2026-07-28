@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlagImage, defaultCountries, parseCountry } from "react-international-phone";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import toast from "react-hot-toast";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
-import { MEDIA_URL } from "../../API/API";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
 
 // Ported 1:1 from the "contact distributeurs & revendeurs" reseller mockup —
 // same fonts/colors/layout, scoped to this component via styled-jsx so it
@@ -19,35 +22,27 @@ import { MEDIA_URL } from "../../API/API";
 // gives a real slide-down / slide-up. Only one section is open at a time and
 // section 01 (Company & contact) is open on first render.
 
-const BUSINESS_TYPE_OPTIONS = [
-  "Pet shop",
-  "Grooming salon",
-  "Veterinary clinic",
-  "Breeder",
-  "E-commerce retailer",
-  "Distributor / wholesaler",
-  "Concept store",
-  "Other professional activity",
+// Only the stable identifiers live in code — their labels are translated
+// (reseller.businessTypeOptions/salesChannelOptions/interests) and read via
+// t() at render time so the option text follows the active language.
+const INTEREST_VALUES = [
+  "biogance-dogs-cats",
+  "biogance-small-pets-birds-reptiles",
+  "organissime",
+  "biospotix",
+  "ekinat",
+  "gamme-pro",
 ];
 
-const SALES_CHANNEL_OPTIONS = [
-  "Physical store",
-  "Online store",
-  "Marketplace",
-  "Grooming salon retail",
-  "Veterinary retail",
-  "Distribution network",
-  "Mixed channels",
-];
-
-const INTEREST_OPTIONS = [
-  { value: "biogance-dogs-cats", label: "Biogance — Dogs, cats & puppies care" },
-  { value: "biogance-small-pets-birds-reptiles", label: "Biogance — Small mammals, birds & reptiles" },
-  { value: "organissime", label: "Organissime — Certified organic care" },
-  { value: "biospotix", label: "Biospotix — Plant-based anti-parasite protection" },
-  { value: "ekinat", label: "Ekinat — Premium horse care" },
-  { value: "gamme-pro", label: "Gamme Pro — Professional formats" },
-];
+// Maps getPhoneValidationErrorCode's return value to a reseller.json
+// errors.* key — same codes CheckOut.jsx and UserProfile.jsx map through
+// their own translation files.
+const PHONE_ERROR_KEYS = {
+  required: "errors.phoneRequired",
+  tooShort: "errors.phoneTooShort",
+  tooLong: "errors.phoneTooLong",
+  invalid: "errors.phoneInvalid",
+};
 
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -247,17 +242,30 @@ function PhoneFieldBox({ iso2, onCountryChange, value, onChange, onBlur, require
   );
 }
 
-function progressLabel(percent) {
-  if (percent === 100) return "Application ready to submit.";
-  if (percent >= 75) return "Almost there — complete the last required details.";
-  if (percent >= 45) return "Good progress — keep completing each section.";
-  if (percent > 0) return "The reseller profile is being built step by step.";
-  return "Start with company information to build your reseller profile.";
+function progressLabel(t, percent) {
+  if (percent === 100) return t("progress.ready");
+  if (percent >= 75) return t("progress.almost");
+  if (percent >= 45) return t("progress.good");
+  if (percent > 0) return t("progress.started");
+  return t("progress.start");
 }
 
 export default function Reseller() {
+  const { t } = useTranslation("reseller");
   const headerMedia = useSplashMedia("reseller_header");
   const footerMedia = useSplashMedia("reseller_footer");
+  const pdfData = useSplashMedia("reseller_pdf");
+  const catalogueFilename = "biogance-reseller-catalogue.pdf";
+  // Routed through the same-origin /api/download-file proxy rather than a
+  // direct link to MEDIA_URL (CloudFront): a cross-origin <a download>
+  // is silently ignored by browsers, so it just opens the PDF in a new tab
+  // instead of downloading it. The proxy fetches it server-side and replies
+  // with Content-Disposition: attachment, so the plain <a download> below
+  // works natively. The static /public fallback is already same-origin, so
+  // it's used directly without going through the proxy.
+  const catalogueUrl = pdfData?.media
+    ? `/api/download-file?${new URLSearchParams({ path: pdfData.media, filename: catalogueFilename }).toString()}`
+    : "/biogance-professional-catalogue.pdf";
 
   const [fields, setFields] = useState({
     company: "",
@@ -273,6 +281,8 @@ export default function Reseller() {
   const [interests, setInterests] = useState({});
   const [privacy, setPrivacy] = useState(false);
   const [phoneIso2, setPhoneIso2] = useState("fr");
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Section 01 open by default.
   const [openIndex, setOpenIndex] = useState(0);
   const accordionRefs = useRef([]);
@@ -358,7 +368,22 @@ export default function Reseller() {
     };
   }, []);
 
-  const setField = (name) => (e) => setFields((prev) => ({ ...prev, [name]: e.target.value }));
+  const setField = (name) => (e) => {
+    setFields((prev) => ({ ...prev, [name]: e.target.value }));
+    // Clear that field's error the moment the user starts fixing it, rather
+    // than making them re-submit before the red border/message goes away.
+    setErrors((prev) => (prev[name] ? { ...prev, [name]: "" } : prev));
+  };
+
+  // Validates the phone number's digit count and leading-digit pattern
+  // against whichever country is currently selected — same
+  // libphonenumber-js-backed check CheckOut.jsx and UserProfile.jsx use.
+  // Returns true when valid.
+  const validatePhone = () => {
+    const code = getPhoneValidationErrorCode(fields.phone, phoneIso2 || "fr");
+    setErrors((prev) => ({ ...prev, phone: code ? t(PHONE_ERROR_KEYS[code]) : "" }));
+    return !code;
+  };
   const toggleInterest = (value) => () =>
     setInterests((prev) => ({ ...prev, [value]: !prev[value] }));
 
@@ -387,31 +412,108 @@ export default function Reseller() {
 
   // Single source of truth for both the tabs and the accordions: clicking
   // either one toggles the same `openIndex`, so only one panel is ever open.
+  // Just toggles in place — no auto-scroll, so switching tabs doesn't yank
+  // the page away from wherever the user was looking.
   const handleStepClick = (index) => () => {
-    setOpenIndex((prev) => {
-      const next = prev === index ? null : index;
-      if (next !== null) {
-        // let the slide-down start before scrolling, otherwise the target
-        // rect is still the collapsed one and the scroll lands too high.
-        setTimeout(() => {
-          accordionRefs.current[index]?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }, 140);
-      }
-      return next;
-    });
+    setOpenIndex((prev) => (prev === index ? null : index));
   };
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const openStepOnInvalid = (index) => () => setOpenIndex(index);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowSuccessModal(true);
-    document.body.style.overflow = "hidden";
+
+    // Custom validation instead of native `required` — the 5 fields below
+    // no longer carry the `required` attribute (see their JSX), so this is
+    // the only thing gating submission for them, and it drives the red
+    // border/message UI instead of the browser's own validation popup.
+    const newErrors = {};
+    if (!fields.company.trim()) newErrors.company = t("errors.company");
+    if (!fields.businessType.trim()) newErrors.businessType = t("errors.businessType");
+    if (!fields.vat.trim()) newErrors.vat = t("errors.vat");
+    if (!fields.email.trim()) {
+      newErrors.email = t("errors.emailRequired");
+    } else if (!isValidEmail(fields.email)) {
+      newErrors.email = t("errors.emailInvalid");
+    }
+    const phoneErrorCode = getPhoneValidationErrorCode(fields.phone, phoneIso2 || "fr");
+    if (phoneErrorCode) newErrors.phone = t(PHONE_ERROR_KEYS[phoneErrorCode]);
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // All 5 required fields live in accordion step 0 — make sure it's
+      // open so the red-bordered fields are actually visible.
+      setOpenIndex(0);
+      setTimeout(() => {
+        accordionRefs.current[0]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 140);
+      return;
+    }
+
+    // country_code: dial code alone ("+33"). phone: the raw number alone.
+    // phone_number: the two combined — same three pieces ResellerPro.jsx
+    // sends, just under swapped phone/phone_number names.
+    const dialCode = getDialCodeByIso2(phoneIso2);
+    const interestValue = INTEREST_VALUES.filter((value) => interests[value])
+      .map((value) => t(`interests.${value}`))
+      .join(",");
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch(`${BASE_URL}/app/reseller`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_name: fields.company,
+          name: fields.company,
+          email: fields.email,
+          country_code: dialCode,
+          phone: fields.phone,
+          phone_number: `${dialCode}${fields.phone}`,
+          country: fields.country,
+          website: fields.website,
+          job_title: fields.businessType,
+          register_number: fields.vat,
+          reseller: fields.salesChannel,
+          message: fields.market,
+          interest: interestValue,
+        }),
+      });
+      const data = await res.json();
+      console.log("[reseller-debug] response", { status: res.status, ok: res.ok, data });
+      if (data.status === false || data.status === "false" || !res.ok) {
+        const msg =
+          data.errors?.length > 0
+            ? data.errors[0].message
+            : data.action || data.title || t("errors.genericSubmit");
+        console.log("[reseller-debug] calling toast.error with:", msg);
+        const toastId = toast.error(msg);
+        console.log("[reseller-debug] toast.error returned id:", toastId);
+        return;
+      }
+
+      setShowSuccessModal(true);
+      document.body.style.overflow = "hidden";
+      setFields({
+        company: "",
+        businessType: "",
+        vat: "",
+        email: "",
+        phone: "",
+        country: "",
+        website: "",
+        salesChannel: "",
+        market: "",
+      });
+      setInterests({});
+      setPrivacy(false);
+      setErrors({});
+    } catch (err) {
+      console.error("Reseller form error:", err);
+      toast.error(t("errors.genericSubmit"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const closeSuccessModal = () => {
@@ -468,7 +570,7 @@ export default function Reseller() {
               </div>
 
               <p style={{ fontSize: "10px", letterSpacing: "0.22em", textTransform: "uppercase", color: "#888", margin: "0 0 12px" }}>
-                Biogance Professional
+                {t("successModal.eyebrow")}
               </p>
               <h2 style={{
                 margin: "0 0 16px",
@@ -476,10 +578,10 @@ export default function Reseller() {
                 lineHeight: 1, letterSpacing: "-0.055em",
                 fontWeight: 700, textTransform: "uppercase", color: "#111",
               }}>
-                Application<br />Submitted.
+                {t("successModal.titleLine1")}<br />{t("successModal.titleLine2")}
               </h2>
               <p style={{ margin: "0 0 32px", fontSize: "14px", lineHeight: 1.75, color: "#555" }}>
-                Thank you for your reseller application. Our sales team will review your request and contact you with the next steps.
+                {t("successModal.message")}
               </p>
 
               <div style={{
@@ -488,12 +590,12 @@ export default function Reseller() {
                 display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px",
               }}>
                 <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
-                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Next step</p>
-                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>Commercial review</p>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>{t("successModal.nextStepLabel")}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>{t("successModal.nextStepValue")}</p>
                 </div>
                 <div style={{ padding: "16px", background: "#f8f8f6", borderLeft: "2px solid #111" }}>
-                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Response time</p>
-                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>3–5 business days</p>
+                  <p style={{ margin: 0, fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>{t("successModal.responseTimeLabel")}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", fontWeight: 600, color: "#111" }}>{t("successModal.responseTimeValue")}</p>
                 </div>
               </div>
 
@@ -510,7 +612,7 @@ export default function Reseller() {
                 onMouseEnter={(e) => e.currentTarget.style.background = "#000"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#111"}
               >
-                Close
+                {t("successModal.close")}
               </button>
             </div>
 
@@ -530,54 +632,40 @@ export default function Reseller() {
             <div className="hero-grid">
               <div className="hero-copy">
                 <div>
-                  <span className="eyebrow">Biogance Professional</span>
+                  <span className="eyebrow">{t("hero.eyebrow")}</span>
                   <h1 style={{ marginTop: "20px", lineHeight: "1" }} className="hero-title">
-                    Become a
+                    {t("hero.titleLine1")}
                     <br />
-                    Biogance
+                    {t("hero.titleLine2")}
                     <br />
-                    Reseller.
+                    {t("hero.titleLine3")}
                   </h1>
-                  <p className="hero-text">
-                    Bring naturally inspired, expert-led pet care to your customers. Complete the
-                    reseller application form and our sales team will review your request before
-                    contacting you with the next steps.
-                  </p>
+                  <p className="hero-text">{t("hero.text")}</p>
                   <div className="hero-actions">
                     <a style={{ color: "white", hover: { color: "black" } }} className="btn" href="#application">
-                      Apply now
+                      {t("hero.applyNow")}
                     </a>
-                    <a className="btn secondary" href="#catalogue">
-                      Download catalogue
+                    <a className="btn secondary" href={catalogueUrl} download={catalogueFilename}>
+                      {t("hero.downloadCatalogue")}
                     </a>
                   </div>
                 </div>
 
                 <div className="hero-note" aria-label="Reseller benefits">
-                  <div>
-                    <strong>Expert formulas</strong>
-                    <span>Care routines developed with a professional approach to hygiene and well-being.</span>
-                  </div>
-                  <div>
-                    <strong>French laboratory</strong>
-                    <span>A brand born in Angers, crafted with precision and long-term trust.</span>
-                  </div>
-                  <div>
-                    <strong>Sales support</strong>
-                    <span>Commercial follow-up to help qualified partners build the right assortment.</span>
-                  </div>
+                  {t("hero.notes", { returnObjects: true }).map((note) => (
+                    <div key={note.title}>
+                      <strong>{note.title}</strong>
+                      <span>{note.desc}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className={`hero-visual${headerMedia?.media || (headerMedia?.images && headerMedia.images.length > 0) ? " has-media" : ""}`} aria-label="Natural pet care visual placeholder">
                 <SplashMedia data={headerMedia} />
                 <div className="glass-card">
-                  <h2>Natural care, curated for professionals.</h2>
-                  <p>
-                    From pet shops and grooming salons to veterinary-led retail environments,
-                    Biogance supports partners who share the same ambition: cleaner routines,
-                    visible results and trusted care for every companion.
-                  </p>
+                  <h2>{t("hero.glassCard.title")}</h2>
+                  <p>{t("hero.glassCard.text")}</p>
                 </div>
               </div>
             </div>
@@ -586,22 +674,12 @@ export default function Reseller() {
           {/* PROOF STRIP */}
           <section className="proof-strip" aria-label="Biogance professional proof points">
             <div className="proof-inner">
-              <div className="proof-item">
-                <span className="proof-value">2008</span>
-                <span className="proof-label">Founded in Angers, France</span>
-              </div>
-              <div className="proof-item">
-                <span className="proof-value">40+</span>
-                <span className="proof-label">Countries trusting the brand</span>
-              </div>
-              <div className="proof-item">
-                <span className="proof-value">ISO</span>
-                <span className="proof-label">Professional manufacturing standards</span>
-              </div>
-              <div className="proof-item">
-                <span className="proof-value">ECO</span>
-                <span className="proof-label">Certified natural pet care expertise</span>
-              </div>
+              {t("proof.items", { returnObjects: true }).map((item) => (
+                <div className="proof-item" key={item.label}>
+                  <span className="proof-value">{item.value}</span>
+                  <span className="proof-label">{item.label}</span>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -609,57 +687,29 @@ export default function Reseller() {
           <section className="section" id="professional-care">
             <div className="section-header">
               <div>
-                <span className="eyebrow">Professional partnership</span>
+                <span className="eyebrow">{t("experience.eyebrow")}</span>
                 <h2 style={{ marginTop: "20px", lineHeight: "1" }} className="section-title">
-                  A refined
+                  {t("experience.titleLine1")}
                   <br />
-                  B2B
+                  {t("experience.titleLine2")}
                   <br />
-                  experience.
+                  {t("experience.titleLine3")}
                 </h2>
               </div>
-              <p className="section-copy">
-                The reseller journey has been designed to be clear, selective and efficient. Once
-                your information has been submitted, the Biogance sales team can qualify your
-                business profile, understand your distribution needs and guide you toward the
-                most relevant professional offer.
-              </p>
+              <p className="section-copy">{t("experience.copy")}</p>
             </div>
 
             <div className="experience-grid">
-              <article className="experience-card">
-                <div>
-                  <span className="card-number">Step 01</span>
-                  <h3>Share your company details</h3>
-                  <p>
-                    Complete your company, contact and VAT details so our team can identify your
-                    professional profile quickly.
-                  </p>
-                </div>
-                <span className="card-line" />
-              </article>
-              <article className="experience-card">
-                <div>
-                  <span className="card-number">Step 02</span>
-                  <h3>Define your product interests</h3>
-                  <p>
-                    Select the Biogance categories you would like to distribute, from grooming
-                    essentials to certified natural care routines.
-                  </p>
-                </div>
-                <span className="card-line" />
-              </article>
-              <article className="experience-card">
-                <div>
-                  <span className="card-number">Step 03</span>
-                  <h3>Get contacted by sales</h3>
-                  <p>
-                    After review, a Biogance sales representative will contact you to discuss
-                    reseller conditions, catalogue access and next steps.
-                  </p>
-                </div>
-                <span className="card-line" />
-              </article>
+              {t("experience.cards", { returnObjects: true }).map((card) => (
+                <article className="experience-card" key={card.step}>
+                  <div>
+                    <span className="card-number">{card.step}</span>
+                    <h3>{card.title}</h3>
+                    <p>{card.desc}</p>
+                  </div>
+                  <span className="card-line" />
+                </article>
+              ))}
             </div>
           </section>
 
@@ -667,51 +717,33 @@ export default function Reseller() {
           <section className="form-section" id="application">
             <div className="form-shell">
               <aside className="form-aside">
-                <span className="eyebrow">Reseller application</span>
-                <h2 style={{ marginTop: "20px" }}>Apply for professional access.</h2>
-                <p>
-                  Share a few essential details so our commercial team can qualify your request
-                  and contact you with the right B2B conditions.
-                </p>
+                <span className="eyebrow">{t("form.aside.eyebrow")}</span>
+                <h2 style={{ marginTop: "20px" }}>{t("form.aside.title")}</h2>
+                <p>{t("form.aside.intro")}</p>
 
                 <ul className="process-list">
-                  <li>
-                    <span>01</span>
-                    <div>
-                      <strong>Submit your request</strong>
-                      <p>Your business information is sent to the Biogance sales team.</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span>02</span>
-                    <div>
-                      <strong>Commercial review</strong>
-                      <p>We check your activity, market and product needs.</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span>03</span>
-                    <div>
-                      <strong>Personal follow-up</strong>
-                      <p>A sales representative contacts you with the next steps.</p>
-                    </div>
-                  </li>
+                  {t("form.aside.process", { returnObjects: true }).map((item, index) => (
+                    <li key={item.title}>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <p>{item.desc}</p>
+                      </div>
+                    </li>
+                  ))}
                 </ul>
 
-                <div className="form-note">
-                  This short form helps our sales team understand your business, your market and
-                  the product ranges you are interested in.
-                </div>
+                <div className="form-note">{t("form.aside.note")}</div>
 
                 <div className="completion-card" aria-live="polite">
                   <div className="completion-row">
                     <b>{overallPercent}%</b>
-                    <span>Form completed</span>
+                    <span>{t("form.aside.completed")}</span>
                   </div>
                   <div className="completion-meter" aria-hidden="true">
                     <span style={{ width: `${overallPercent}%` }} />
                   </div>
-                  <p className="completion-label">{progressLabel(overallPercent)}</p>
+                  <p className="completion-label">{progressLabel(t, overallPercent)}</p>
                 </div>
               </aside>
 
@@ -725,7 +757,7 @@ export default function Reseller() {
                     aria-expanded={openIndex === 0}
                     onClick={handleStepClick(0)}
                   >
-                    Company &amp; Contact
+                    {t("form.steps.companyContact")}
                   </button>
                   <button
                     type="button"
@@ -735,14 +767,14 @@ export default function Reseller() {
                     aria-expanded={openIndex === 1}
                     onClick={handleStepClick(1)}
                   >
-                    Business Needs
+                    {t("form.steps.businessNeeds")}
                   </button>
                 </div>
 
                 <div className="progress-overview" aria-live="polite">
                   <div className="progress-overview-head">
-                    <span>Application progress</span>
-                    <strong>{overallPercent}% completed</strong>
+                    <span>{t("form.overview.label")}</span>
+                    <strong>{overallPercent}{t("form.overview.completedSuffix")}</strong>
                   </div>
                   <div className="progress-overview-meter" aria-hidden="true">
                     <span style={{ width: `${overallPercent}%` }} />
@@ -764,93 +796,89 @@ export default function Reseller() {
                     onClick={handleStepClick(0)}
                   >
                     <span className="summary-title">
-                      <small>01</small>Company &amp; contact
+                      <small>01</small>{t("form.accordion1.summaryTitle")}
                     </span>
-                    <em className="accordion-status">{step0Percent}% complete</em>
+                    <em className="accordion-status">{step0Percent}{t("form.percentCompleteSuffix")}</em>
                   </button>
 
                   <div className="accordion-body">
                     <div className="accordion-body-inner">
                       <fieldset>
                         <legend>
-                          Company &amp; contact <span>Required</span>
+                          {t("form.accordion1.legend")} <span>{t("form.accordion1.required")}</span>
                         </legend>
                         <div className="form-grid">
-                          <div className="field full">
+                          <div className={`field full${errors.company ? " has-error" : ""}`}>
                             <label htmlFor="company">
                               <span>
-                                <b className="req">*</b> Company
+                                <b className="req">*</b> {t("form.accordion1.company.label")}
                               </span>
                             </label>
                             <input
                               id="company"
                               name="company"
                               type="text"
-                              placeholder="Your company name"
-                              required
+                              placeholder={t("form.accordion1.company.placeholder")}
                               value={fields.company}
                               onChange={setField("company")}
-                              onInvalid={openStepOnInvalid(0)}
                             />
+                            {errors.company && <p className="field-error">{errors.company}</p>}
                           </div>
-                          <div className="field">
+                          <div className={`field${errors.businessType ? " has-error" : ""}`}>
                             <label htmlFor="business-type">
                               <span>
-                                <b className="req">*</b> Type of business
+                                <b className="req">*</b> {t("form.accordion1.businessType.label")}
                               </span>
                             </label>
                             <select
                               id="business-type"
                               name="business-type"
-                              required
                               value={fields.businessType}
                               onChange={setField("businessType")}
-                              onInvalid={openStepOnInvalid(0)}
                             >
-                              <option value="">Select your activity</option>
-                              {BUSINESS_TYPE_OPTIONS.map((option) => (
+                              <option value="">{t("form.accordion1.businessType.placeholder")}</option>
+                              {t("businessTypeOptions", { returnObjects: true }).map((option) => (
                                 <option key={option}>{option}</option>
                               ))}
                             </select>
+                            {errors.businessType && <p className="field-error">{errors.businessType}</p>}
                           </div>
-                          <div className="field">
+                          <div className={`field${errors.vat ? " has-error" : ""}`}>
                             <label htmlFor="vat">
                               <span>
-                                <b className="req">*</b> VAT
+                                <b className="req">*</b> {t("form.accordion1.vat.label")}
                               </span>
                             </label>
                             <input
                               id="vat"
                               name="vat"
                               type="text"
-                              placeholder="VAT number"
-                              required
+                              placeholder={t("form.accordion1.vat.placeholder")}
                               value={fields.vat}
                               onChange={setField("vat")}
-                              onInvalid={openStepOnInvalid(0)}
                             />
+                            {errors.vat && <p className="field-error">{errors.vat}</p>}
                           </div>
-                          <div className="field">
+                          <div className={`field${errors.email ? " has-error" : ""}`}>
                             <label htmlFor="email">
                               <span>
-                                <b className="req">*</b> Email
+                                <b className="req">*</b> {t("form.accordion1.email.label")}
                               </span>
                             </label>
                             <input
                               id="email"
                               name="email"
                               type="email"
-                              placeholder="name@company.com"
-                              required
+                              placeholder={t("form.accordion1.email.placeholder")}
                               value={fields.email}
                               onChange={setField("email")}
-                              onInvalid={openStepOnInvalid(0)}
                             />
+                            {errors.email && <p className="field-error">{errors.email}</p>}
                           </div>
-                          <div className="field">
+                          <div className={`field${errors.phone ? " has-error" : ""}`}>
                             <label htmlFor="phone">
                               <span>
-                                <b className="req">*</b> Phone number
+                                <b className="req">*</b> {t("form.accordion1.phone.label")}
                               </span>
                             </label>
                             <PhoneFieldBox
@@ -858,35 +886,39 @@ export default function Reseller() {
                               onCountryChange={(iso2) => {
                                 phoneCountryEditedRef.current = true;
                                 setPhoneIso2(iso2);
+                                setErrors((prev) => (prev.phone ? { ...prev, phone: "" } : prev));
                               }}
                               value={fields.phone}
-                              onChange={(phone) => setFields((prev) => ({ ...prev, phone }))}
-                              required
-                              onInvalid={openStepOnInvalid(0)}
+                              onChange={(phone) => {
+                                setFields((prev) => ({ ...prev, phone }));
+                                setErrors((prev) => (prev.phone ? { ...prev, phone: "" } : prev));
+                              }}
+                              onBlur={validatePhone}
                             />
+                            {errors.phone && <p className="field-error">{errors.phone}</p>}
                           </div>
                           <div className="field">
                             <label htmlFor="country">
-                              <span>Country</span>
+                              <span>{t("form.accordion1.country.label")}</span>
                             </label>
                             <input
                               id="country"
                               name="country"
                               type="text"
-                              placeholder="Country"
+                              placeholder={t("form.accordion1.country.placeholder")}
                               value={fields.country}
                               onChange={setField("country")}
                             />
                           </div>
                           <div className="field">
                             <label htmlFor="website">
-                              <span>Website or social profile</span>
+                              <span>{t("form.accordion1.website.label")}</span>
                             </label>
                             <input
                               id="website"
                               name="website"
                               type="url"
-                              placeholder="https://"
+                              placeholder={t("form.accordion1.website.placeholder")}
                               value={fields.website}
                               onChange={setField("website")}
                             />
@@ -912,21 +944,21 @@ export default function Reseller() {
                     onClick={handleStepClick(1)}
                   >
                     <span className="summary-title">
-                      <small>02</small>Business needs
+                      <small>02</small>{t("form.accordion2.summaryTitle")}
                     </span>
-                    <em className="accordion-status">{step1Percent}% complete</em>
+                    <em className="accordion-status">{step1Percent}{t("form.percentCompleteSuffix")}</em>
                   </button>
 
                   <div className="accordion-body">
                     <div className="accordion-body-inner">
                       <fieldset>
                         <legend>
-                          Business needs <span>Required</span>
+                          {t("form.accordion2.legend")} <span>{t("form.accordion1.required")}</span>
                         </legend>
                         <div className="form-grid">
                           <div className="field">
                             <label htmlFor="sales-channel">
-                              <span>Main sales channel</span>
+                              <span>{t("form.accordion2.salesChannel.label")}</span>
                             </label>
                             <select
                               id="sales-channel"
@@ -934,42 +966,40 @@ export default function Reseller() {
                               value={fields.salesChannel}
                               onChange={setField("salesChannel")}
                             >
-                              <option value="">Select one option</option>
-                              {SALES_CHANNEL_OPTIONS.map((option) => (
+                              <option value="">{t("form.accordion2.salesChannel.placeholder")}</option>
+                              {t("salesChannelOptions", { returnObjects: true }).map((option) => (
                                 <option key={option}>{option}</option>
                               ))}
                             </select>
                           </div>
                           <div className="field">
                             <label htmlFor="market">
-                              <span>Market covered</span>
+                              <span>{t("form.accordion2.market.label")}</span>
                             </label>
                             <input
                               id="market"
                               name="market"
                               type="text"
-                              placeholder="France, Portugal, UAE, Singapore…"
+                              placeholder={t("form.accordion2.market.placeholder")}
                               value={fields.market}
                               onChange={setField("market")}
                             />
                           </div>
                           <div className="field full">
                             <label>
-                              Product interests <em>Select at least one</em>
+                              {t("form.accordion2.interests.label")} <em>{t("form.accordion2.interests.hint")}</em>
                             </label>
                             <div className="checkbox-grid">
-                              {INTEREST_OPTIONS.map((option, index) => (
-                                <label className="checkbox-card" key={option.value}>
+                              {INTEREST_VALUES.map((value) => (
+                                <label className="checkbox-card" key={value}>
                                   <input
                                     type="checkbox"
                                     name="interests"
-                                    value={option.value}
-                                    checked={!!interests[option.value]}
-                                    onChange={toggleInterest(option.value)}
-                                    required={index === 0 && !anyInterestChecked}
-                                    onInvalid={index === 0 ? openStepOnInvalid(1) : undefined}
+                                    value={value}
+                                    checked={!!interests[value]}
+                                    onChange={toggleInterest(value)}
                                   />{" "}
-                                  {option.label}
+                                  {t(`interests.${value}`)}
                                 </label>
                               ))}
                             </div>
@@ -988,19 +1018,13 @@ export default function Reseller() {
                     checked={privacy}
                     onChange={() => setPrivacy((prev) => !prev)}
                   />
-                  <span>
-                    I confirm that the information provided is accurate and agree to be contacted
-                    by the Biogance sales team regarding my reseller application.
-                  </span>
+                  <span>{t("form.consent")}</span>
                 </label>
 
                 <div className="form-actions">
-                  <p className="secure-note">
-                    Your request will be reviewed by our commercial team. Submitting this form
-                    does not automatically guarantee reseller access.
-                  </p>
-                  <button style={{fontSize:"10px"}} className="btn" type="submit">
-                    Submit application
+                  <p className="secure-note">{t("form.actions.secureNote")}</p>
+                  <button style={{fontSize:"10px"}} className="btn" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? t("form.actions.submitting") : t("form.actions.submit")}
                   </button>
                 </div>
               </form>
@@ -1011,20 +1035,16 @@ export default function Reseller() {
           <section className="catalogue-band" id="catalogue">
             <div className="catalogue-inner">
               <div className="catalogue-copy">
-                <span className="eyebrow">Product catalogue</span>
-                <h2 style={{marginTop:"20px", lineHeight:"1"}}>Explore the professional assortment.</h2>
-                <p>
-                  Download the Biogance product catalogue to discover our care ranges,
-                  professional formats and expert routines for dogs, cats and other companions.
-                </p>
-                <a className="btn white" href="/biogance-professional-catalogue.pdf" download>
-                  Download catalogue
+                <span className="eyebrow">{t("catalogue.eyebrow")}</span>
+                <h2 style={{marginTop:"20px", lineHeight:"1"}}>{t("catalogue.title")}</h2>
+                <p>{t("catalogue.text")}</p>
+                <a className="btn white" href={catalogueUrl} download={catalogueFilename}>
+                  {t("catalogue.cta")}
                 </a>
                 <div className="catalogue-tags" aria-label="Catalogue contents">
-                  <span>#GroomingCare</span>
-                  <span>#NaturalFormulas</span>
-                  <span>#CertifiedRanges</span>
-                  <span>#ProfessionalFormats</span>
+                  {t("catalogue.tags", { returnObjects: true }).map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
                 </div>
               </div>
               <div className={`catalogue-preview${footerMedia?.media || (footerMedia?.images && footerMedia.images.length > 0) ? " has-media" : ""}`} aria-label="Catalogue preview placeholder">
@@ -1146,6 +1166,15 @@ export default function Reseller() {
   color: #000 !important;
   border-color: #000 !important;
 }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .btn:disabled:hover {
+          background: var(--ink) !important;
+          color: var(--white) !important;
+          border-color: var(--ink) !important;
+        }
         .btn.secondary {
           background: transparent;
           color: var(--ink);
@@ -1191,8 +1220,8 @@ export default function Reseller() {
         .section-copy {
           max-width: 650px;
           color: #4f4f4f;
-          font-size: 15px;
-          line-height: 1.75;
+          font-size: 17px;
+          line-height: 1.6;
         }
 
         /* HERO */
@@ -1360,6 +1389,16 @@ export default function Reseller() {
           color: white;
           cursor: pointer;
         }
+
+        .experience-card:hover .card-number,
+.experience-card:hover :global(h3),
+.experience-card:hover :global(p) {
+  color: #fff !important;
+}
+
+.experience-card:hover .card-line {
+  background: #fff !important;
+}
         .experience-card:last-child {
           border-right: 0;
         }
@@ -1750,6 +1789,21 @@ export default function Reseller() {
           box-shadow: none;
         }
 
+        /* Required-field validation state — a field goes red the moment its
+           submit-time error is set, and clears back to normal on the next
+           keystroke/selection (see setField/clearFieldError below). */
+        .field.has-error :global(input),
+        .field.has-error :global(select),
+        .field.has-error :global(.phone-field-box) {
+          border-color: #dc2626;
+        }
+        .field-error {
+          margin: 6px 0 0;
+          color: #dc2626;
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
         .checkbox-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1998,16 +2052,27 @@ export default function Reseller() {
         .accordion-body-inner {
           overflow: hidden;
           min-height: 0;
+          /* Closing: snap back to overflow:hidden immediately (0s delay)
+             so the slide-up is clipped from the very first frame. */
+          transition: overflow 0s linear 0s;
         }
         /* Once a section is fully open, let its overflow go visible again —
            otherwise the clipping needed for the slide animation permanently
            traps popovers that need to escape it, like the phone field's
-           country dropdown. */
+           country dropdown. The transition-delay below (matching the
+           grid-template-rows duration) is the important part: without it,
+           overflow flips to visible the instant .is-open is added — i.e. at
+           the START of the slide-down, not the end — which strips the
+           clipping the 0fr→1fr grid trick depends on for its whole
+           duration and makes the open/close look like an instant snap
+           instead of a smooth slide. */
         .form-accordion.is-open {
           overflow: visible;
+          transition: overflow 0s linear 0.42s;
         }
         .form-accordion.is-open .accordion-body-inner {
           overflow: visible;
+          transition: overflow 0s linear 0.42s;
         }
 
         .form-accordion :global(.summary-title) {

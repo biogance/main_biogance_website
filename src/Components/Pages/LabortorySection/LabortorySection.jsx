@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { MEDIA_URL } from "../../API/API";
@@ -99,11 +100,16 @@ const DEFAULT_MARQUEE_TAGS = [
 ];
 
 export default function LabortorySection() {
+  const { t } = useTranslation('laboratory');
   const headerMedia = useSplashData("who_we_are_header");
   const footerData = useSplashData("who_we_are_footer");
 
+  const localizedDefaultTags = t('marquee.tags', { returnObjects: true });
+  const resolvedDefaultTags = Array.isArray(localizedDefaultTags) && localizedDefaultTags.length > 0
+    ? localizedDefaultTags
+    : DEFAULT_MARQUEE_TAGS;
   const marqueeTags =
-    Array.isArray(footerData?.tags) && footerData.tags.length > 0 ? footerData.tags : DEFAULT_MARQUEE_TAGS;
+    Array.isArray(footerData?.tags) && footerData.tags.length > 0 ? footerData.tags : resolvedDefaultTags;
   // Repeated several times (not just once) so the CSS keyframe
   // (translateX -50%) keeps looping seamlessly with no gap at the end —
   // if the API returns a short tag list, two copies alone can be narrower
@@ -142,22 +148,21 @@ export default function LabortorySection() {
           <div className="hero-viewport">
           <section className="hero" id="about">
             <div className="hero-copy">
-              <div className="eyebrow">About Biogance</div>
+              <div className="eyebrow">{t('hero.eyebrow')}</div>
               <h1 style={{lineHeight:"1"}}>
-                Natural care.
+                {t('hero.heading1')}
                 <br />
-                <span className="small-line">French</span> expertise.
+                <span className="small-line">{t('hero.heading2')}</span> {t('hero.heading3')}
               </h1>
               <p>
-                Biogance is an independent French family business dedicated to animal well-being.
-                As a pioneer in organic and natural hygiene and care for pets, the brand combines selected ingredients, Research & Innovation expertise and certified production standards to create safe, effective and responsible daily care.
+                {t('hero.description')}
               </p>
               <div className="hero-actions">
                 <a className="btn dark" href="#commitments">
-                  Our commitments
+                  {t('hero.btnCommitments')}
                 </a>
                 <a className="btn" href="#story">
-                  Our story
+                  {t('hero.btnStory')}
                 </a>
               </div>
             </div>
@@ -166,8 +171,8 @@ export default function LabortorySection() {
                 <SplashMedia data={headerMedia} />
               </div>
               <div className="hero-editorial-card">
-                <span>Organic & natural pet care</span>
-                <strong>Formulated for animals, designed with purpose.</strong>
+                <span>{t('hero.cardBadge')}</span>
+                <strong>{t('hero.cardStrong')}</strong>
               </div>
             </div>
           </section>
@@ -185,27 +190,27 @@ export default function LabortorySection() {
             <div className="wrap">
               <div className="section-head">
                 <div>
-                  <span className="kicker">Our identity</span>
-                  <h2 style={{lineHeight:"1"}}>Born in Angers. Built for animal care.</h2>
+                  <span className="kicker">{t('story.kicker')}</span>
+                  <h2 style={{lineHeight:"1"}}>{t('story.heading')}</h2>
                 </div>
-                <p>
-                  Born in Angers and guided by a responsible French laboratory culture, Biogance has grown with one clear ambition: creating natural, effective and desirable care routines that respect animals, their families and the planet.
+                <p style={{fontSize:"16px"}}>
+                  {t('story.description')}
                 </p>
               </div>
 
               <div className="story-grid">
                 <div className="story-aside">
-                  <span className="big-year">2008</span>
+                  <span className="big-year">{t('story.year')}</span>
                   <p>
-                    The beginning of a French pet-care laboratory with a clear ambition: make animal hygiene cleaner, softer and more responsible.
+                    {t('story.yearDesc')}
                   </p>
                 </div>
                 <div className="story-copy">
                   <p>
-                    Founded in Angers, in the heart of the Pays de la Loire, Biogance grew from a laboratory project into a recognised name in natural pet care. From the beginning, the brand has worked with experts to create formulas adapted to the needs of pets and companion animals.
+                    {t('story.copy1')}
                   </p>
                   <p>
-                    Today, Biogance continues to combine <strong>natural inspiration, scientific precision and French know-how</strong> to support families, breeders, groomers, veterinarians and pet professionals with trusted daily care routines.
+                    {t('story.copy2Prefix')} <strong>{t('story.copy2Bold')}</strong> {t('story.copy2Suffix')}
                   </p>
                 </div>
               </div>
@@ -216,41 +221,41 @@ export default function LabortorySection() {
             <div className="wrap">
               <div className="section-head">
                 <div>
-                  <span className="kicker">What guides us</span>
-                  <h2 style={{lineHeight:"1"}}>Care without excess.</h2>
+                  <span className="kicker">{t('values.kicker')}</span>
+                  <h2 style={{lineHeight:"1"}}>{t('values.heading')}</h2>
                 </div>
-                <p>
-                  Biogance is shaped by simple but demanding principles: respect for animals, carefully selected ingredients, controlled manufacturing and continuous improvement.
+                <p style={{fontSize:"16px"}}>
+                  {t('values.description')}
                 </p>
               </div>
 
               <div className="value-grid">
                 <article className="value-card">
-                  <span>01</span>
+                  <span>{t('values.card1.number')}</span>
                   <div>
-                    <h3>Animal well-being</h3>
-                    <p>Products developed to support comfort, hygiene, skin balance and coat beauty — paraben-free, phenoxyethanol-free, animal oil-free and not tested on animals.</p>
+                    <h3>{t('values.card1.title')}</h3>
+                    <p>{t('values.card1.desc')}</p>
                   </div>
                 </article>
                 <article className="value-card">
-                  <span>02</span>
+                  <span>{t('values.card2.number')}</span>
                   <div>
-                    <h3>Natural inspiration</h3>
-                    <p>Formulas enriched with organic and natural ingredients, selected for performance and softness.</p>
+                    <h3>{t('values.card2.title')}</h3>
+                    <p>{t('values.card2.desc')}</p>
                   </div>
                 </article>
                 <article className="value-card">
-                  <span>03</span>
+                  <span>{t('values.card3.number')}</span>
                   <div>
-                    <h3>Expert formulation</h3>
-                    <p>French laboratory know-how at every step, from ingredient selection to product control.</p>
+                    <h3>{t('values.card3.title')}</h3>
+                    <p>{t('values.card3.desc')}</p>
                   </div>
                 </article>
                 <article className="value-card">
-                  <span>04</span>
+                  <span>{t('values.card4.number')}</span>
                   <div>
-                    <h3>Responsible progress</h3>
-                    <p>A long-term approach guided by recyclable packaging, selected raw materials and improvement over time.</p>
+                    <h3>{t('values.card4.title')}</h3>
+                    <p>{t('values.card4.desc')}</p>
                   </div>
                 </article>
               </div>
@@ -260,33 +265,33 @@ export default function LabortorySection() {
           <section className="dark-feature" id="commitments">
             <div className="wrap">
               <div>
-                <span className="kicker">Our commitments</span>
-                <h2 style={{lineHeight:"1"}}>Better care starts with better choices.</h2>
+                <span className="kicker">{t('commitments.kicker')}</span>
+                <h2 style={{lineHeight:"1"}}>{t('commitments.heading')}</h2>
               </div>
               <div>
                 <p>
-                  At Biogance, every commitment is translated into concrete choices: formulas developed for animal welfare, carefully selected raw materials, recyclable packaging, certified production standards and a team culture built on respect, trust and continuous improvement.
+                  {t('commitments.description')}
                 </p>
                 <div className="dark-feature-list">
                   <div className="dark-feature-item">
-                    <span>Animal</span>
-                    <strong>Care routines designed for comfort, hygiene and well-being.</strong>
+                    <span>{t('commitments.items.animal.label')}</span>
+                    <strong>{t('commitments.items.animal.text')}</strong>
                   </div>
                   <div className="dark-feature-item">
-                    <span>Nature</span>
-                    <strong>Organic actives and ingredients of natural origin, carefully selected.</strong>
+                    <span>{t('commitments.items.nature.label')}</span>
+                    <strong>{t('commitments.items.nature.text')}</strong>
                   </div>
                   <div className="dark-feature-item">
-                    <span>Planet</span>
-                    <strong>Recyclable packaging and an eco-responsible approach.</strong>
+                    <span>{t('commitments.items.planet.label')}</span>
+                    <strong>{t('commitments.items.planet.text')}</strong>
                   </div>
                   <div className="dark-feature-item">
-                    <span>Quality</span>
-                    <strong>GMP / ISO 22716 certified production and controlled traceability.</strong>
+                    <span>{t('commitments.items.quality.label')}</span>
+                    <strong>{t('commitments.items.quality.text')}</strong>
                   </div>
                   <div className="dark-feature-item">
-                    <span>People</span>
-                    <strong>A family business driven by collaboration and respect.</strong>
+                    <span>{t('commitments.items.people.label')}</span>
+                    <strong>{t('commitments.items.people.text')}</strong>
                   </div>
                 </div>
               </div>
@@ -297,101 +302,101 @@ export default function LabortorySection() {
             <div className="wrap">
               <div className="section-head">
                 <div>
-                  <span className="kicker">From intention to product</span>
-                  <h2 style={{lineHeight:"1"}}>Natural care, made tangible.</h2>
+                  <span className="kicker">{t('proofs.kicker')}</span>
+                  <h2 style={{lineHeight:"1"}}>{t('proofs.heading')}</h2>
                 </div>
                 <p>
-                  The Biogance promise lives in five essential pillars: animal welfare, environmental responsibility, innovation, quality and respect for the people who make the brand move forward every day.
+                  {t('proofs.description')}
                 </p>
               </div>
 
               <div className="proof-row" aria-label="Biogance proof points">
                 <article className="proof proof-hero dark">
                   <div>
-                    <span className="proof-label">Signature fact</span>
-                    <strong>98%</strong>
-                    <h3 style={{lineHeight:"1"}}>Organic & natural ingredients at the heart of Biogance care.</h3>
+                    <span className="proof-label">{t('proofs.hero.label')}</span>
+                    <strong>{t('proofs.hero.stat')}</strong>
+                    <h3 style={{lineHeight:"1"}}>{t('proofs.hero.heading')}</h3>
                   </div>
-                  <p>A powerful proof point, designed to be seen first: Biogance care begins with a formula philosophy rooted in organic and natural ingredients.</p>
+                  <p style={{fontSize:"14px"}}>{t('proofs.hero.desc')}</p>
                 </article>
                 <article className="proof proof-iso">
                   <div>
-                    <span className="proof-label">Certified quality</span>
-                    <strong>ISO 22716</strong>
-                    <h3 style={{lineHeight:"1"}}>GMP-certified production standards.</h3>
+                    <span className="proof-label">{t('proofs.iso.label')}</span>
+                    <strong>{t('proofs.iso.stat')}</strong>
+                    <h3 style={{lineHeight:"1"}}>{t('proofs.iso.heading')}</h3>
                   </div>
-                  <p>Controlled traceability and quality standards at every stage.</p>
+                  <p style={{fontSize:"14px"}}>{t('proofs.iso.desc')}</p>
                 </article>
                 <article className="proof proof-pioneer">
                   <div>
-                    <span className="proof-label">Brand heritage</span>
-                    <strong>Pioneer</strong>
-                    <h3 style={{lineHeight:"1"}}>Natural pet care since the beginning.</h3>
+                    <span className="proof-label">{t('proofs.pioneer.label')}</span>
+                    <strong>{t('proofs.pioneer.stat')}</strong>
+                    <h3 style={{lineHeight:"1"}}>{t('proofs.pioneer.heading')}</h3>
                   </div>
-                  <p>Biogance has championed organic and natural hygiene and care from day one.</p>
+                  <p style={{fontSize:"14px"}}>{t('proofs.pioneer.desc')}</p>
                 </article>
                 <article className="proof proof-wide dark">
                   <div>
-                    <span className="proof-label">Laboratory DNA</span>
-                    <strong>Family business</strong>
-                    <h3 style={{lineHeight:"1.1"}}>Independent French laboratory with a long-term vision.</h3>
+                    <span className="proof-label">{t('proofs.family.label')}</span>
+                    <strong>{t('proofs.family.stat')}</strong>
+                    <h3 style={{lineHeight:"1.1"}}>{t('proofs.family.heading')}</h3>
                   </div>
-                  <p>A human brand built on expertise, trust and continuity.</p>
+                  <p style={{fontSize:"14px"}}>{t('proofs.family.desc')}</p>
                 </article>
               </div>
 
               <div className="commitment-grid">
                 <article className="commitment-card welfare">
                   <div>
-                    <span>Respect for the animal</span>
-                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>Welfare first</h3>
+                    <span>{t('pillars.welfare.kicker')}</span>
+                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>{t('pillars.welfare.title')}</h3>
                   </div>
-                  <p>Organic and natural care products formulated with certified organic active ingredients and ingredients of natural origin, designed for the specific needs of dogs, cats, small mammals, birds, reptiles and other companions.</p>
+                  <p style={{fontSize:"14px"}}>{t('pillars.welfare.desc')}</p>
                 </article>
-                <article  className="commitment-card responsible">
+                <article className="commitment-card responsible">
                   <div>
-                    <span>Respect for the environment</span>
-                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>Responsible by design</h3>
+                    <span>{t('pillars.responsible.kicker')}</span>
+                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>{t('pillars.responsible.title')}</h3>
                   </div>
-                  <p>Selected raw materials, recyclable packaging and an eco-responsible approach to reduce impact while preserving formula quality, safety and conservation.</p>
+                  <p style={{fontSize:"14px"}}>{t('pillars.responsible.desc')}</p>
                 </article>
                 <article className="commitment-card science">
                   <div>
-                    <span>Innovation</span>
-                    <h3 style={{lineHeight:"1",fontSize:"45px"}}>Science meets nature</h3>
+                    <span>{t('pillars.science.kicker')}</span>
+                    <h3 style={{lineHeight:"1",fontSize:"45px"}}>{t('pillars.science.title')}</h3>
                   </div>
-                  <p>A Research &amp; Development team inspired by aromatic and medicinal plants, constantly improving formulas to answer market expectations and the real needs of pets.</p>
+                  <p style={{fontSize:"14px"}}>{t('pillars.science.desc')}</p>
                 </article>
                 <article className="commitment-card quality">
                   <div>
-                    <span>Quality</span>
-                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>Controlled standards</h3>
+                    <span>{t('pillars.quality.kicker')}</span>
+                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>{t('pillars.quality.title')}</h3>
                   </div>
-                  <p>Production units certified GMP / ISO 22716, quality controls at every step and the Organissime range launched with ECOCERT as a reference for natural, ethical animal cosmetics.</p>
+                  <p style={{fontSize:"14px"}}>{t('pillars.quality.desc')}</p>
                 </article>
                 <article className="commitment-card human">
                   <div>
-                    <span>Sharing &amp; respect</span>
-                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>Human expertise</h3>
+                    <span>{t('pillars.human.kicker')}</span>
+                    <h3 style={{lineHeight:"1", fontSize:"45px"}}>{t('pillars.human.title')}</h3>
                   </div>
-                  <p>A family business where R&amp;D, quality, production, logistics and marketing work together with trust, dynamism and respect — because caring for animals also means respecting people.</p>
+                  <p style={{fontSize:"14px"}}>{t('pillars.human.desc')}</p>
                 </article>
               </div>
             </div>
           </section>
 
           <section className="closing" aria-label="Biogance closing statement">
-            <span className="kicker">The natural way</span>
-            <h2 style={{lineHeight:"1"}}>Care that respects animals, people and the planet.</h2>
+            <span className="kicker">{t('closing.kicker')}</span>
+            <h2 style={{lineHeight:"1"}}>{t('closing.heading')}</h2>
             <p>
-              Choosing Biogance means choosing an expert French brand that blends science and nature to create trusted, responsible and desirable pet-care routines.
+              {t('closing.description')}
             </p>
             <div className="closing-actions">
               <a className="btn dark" href="#">
-                Discover our products
+                {t('closing.btnProducts')}
               </a>
               <a className="btn" href="#commitments">
-                Read our commitments
+                {t('closing.btnCommitments')}
               </a>
             </div>
           </section>
