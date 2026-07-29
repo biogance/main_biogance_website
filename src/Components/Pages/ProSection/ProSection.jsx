@@ -632,7 +632,7 @@ export default function ProSection() {
         .hero h1 {
           margin: 42px 0 26px;
           max-width: 660px;
-          font-size: clamp(38px, 4.6vw, 70px);
+          font-size: clamp(38px, 3.9vw, 56px);
           line-height: 1;
           letter-spacing: -0.055em;
           font-weight: 700;
