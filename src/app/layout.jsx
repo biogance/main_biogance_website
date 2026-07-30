@@ -23,7 +23,8 @@ export const metadata = {
   description: "Pioneers in Natural Pet Care",
   icons: {
     icon: [
-      { url: "/FF.svg", type: "image/svg+xml" },
+      { url: "/logoblack.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
+      { url: "/FF.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
     ],
   },
 
@@ -56,7 +57,8 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)" />
         <meta name="color-scheme" content="light" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <link rel="icon" type="image/svg+xml" href="/FF.svg" />
+        <link rel="icon" type="image/svg+xml" href="/logoblack.svg" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/svg+xml" href="/FF.svg" media="(prefers-color-scheme: dark)" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />

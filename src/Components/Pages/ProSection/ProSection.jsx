@@ -639,7 +639,6 @@ export default function ProSection() {
           text-transform: uppercase;
           color: var(--ink);
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .hero h1 span {
           display: block;
@@ -740,7 +739,6 @@ export default function ProSection() {
           letter-spacing: -0.07em;
           text-transform: uppercase;
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .seal-grid {
           display: grid;
@@ -798,7 +796,6 @@ export default function ProSection() {
           text-transform: uppercase;
           max-width: 700px;
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .section-intro {
           color: #3d3d3d;
@@ -917,7 +914,6 @@ export default function ProSection() {
           text-transform: uppercase;
           font-weight: 500;
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .route-card-main :global(p) {
           max-width: 610px;
@@ -1057,7 +1053,6 @@ export default function ProSection() {
           letter-spacing: -0.06em;
           text-transform: uppercase;
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .steps {
           margin-top: 36px;
@@ -1230,7 +1225,6 @@ export default function ProSection() {
           text-transform: uppercase;
           max-width: 780px;
           overflow-wrap: break-word;
-          word-break: break-word;
         }
         .final-cta p {
           max-width: 560px;

@@ -1326,6 +1326,7 @@ export default function Reseller() {
           letter-spacing: -0.06em;
           font-weight: 500;
           text-transform: uppercase;
+          overflow-wrap: break-word;
         }
         .glass-card :global(p) {
           max-width: 680px;
@@ -1450,11 +1451,21 @@ export default function Reseller() {
         .catalogue-copy :global(h2) {
           max-width: 620px;
           margin: 18px 0 22px;
-          font-size: clamp(38px, 5.2vw, 76px);
+          /* Was clamp(38px, 5.2vw, 76px) — sized off full viewport width,
+             but this heading actually renders inside the narrower
+             .catalogue-copy grid column (minmax(300px, 0.82fr) of
+             .catalogue-inner), not the full viewport. At that real column
+             width a single long French word (e.g. "PROFESSIONNEL.") was
+             wider than the box, so overflow-wrap: break-word above was
+             splitting it mid-word across two lines instead of ever fitting
+             on one. Sized down so the longest realistic word fits within
+             the column without needing to break. */
+          font-size: clamp(30px, 3.6vw, 54px);
           line-height: 0.92;
           letter-spacing: -0.075em;
           font-weight: 500;
           text-transform: uppercase;
+          overflow-wrap: break-word;
         }
         .catalogue-copy :global(p) {
           max-width: 620px;
@@ -1542,11 +1553,17 @@ export default function Reseller() {
         .form-aside :global(h2) {
           margin: 20px 0 22px;
           max-width: 100%;
-          font-size: clamp(38px, 4.8vw, 62px);
+          /* Was clamp(38px, 4.8vw, 62px) — same viewport-vs-column mismatch
+             as .catalogue-copy h2 above: .form-aside is an even narrower
+             column (minmax(320px, 0.58fr) of .form-shell), so a long French
+             word overflowed and got split mid-word by overflow-wrap below.
+             Sized down to actually fit the column. */
+          font-size: clamp(30px, 3.2vw, 44px);
           line-height: 1;
           letter-spacing: -0.075em;
           font-weight: 500;
           text-transform: uppercase;
+          overflow-wrap: break-word;
         }
         .form-aside :global(p) {
           color: #555;
@@ -2133,18 +2150,16 @@ export default function Reseller() {
           .hero-title {
             font-size: clamp(34px, 5.4vw, 64px);
             overflow-wrap: break-word;
-            word-break: break-word;
           }
           .section-title {
             font-size: clamp(30px, 4.6vw, 58px);
             overflow-wrap: break-word;
-            word-break: break-word;
           }
           .form-aside :global(h2) {
-            font-size: clamp(28px, 4vw, 46px);
+            font-size: clamp(24px, 3vw, 36px);
           }
           .catalogue-copy :global(h2) {
-            font-size: clamp(28px, 4.2vw, 52px);
+            font-size: clamp(26px, 3.2vw, 40px);
           }
           .glass-card :global(h2) {
             font-size: clamp(20px, 2.6vw, 34px);
