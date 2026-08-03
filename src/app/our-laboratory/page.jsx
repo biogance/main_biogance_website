@@ -68,13 +68,13 @@ export async function generateMetadata() {
       type: "website",
       locale: "en_US",
       alternateLocale: "fr_FR",
-      images: [{ url: `${origin}/og-image.jpg`, width: 1200, height: 630, alt: "Our Laboratory | Biogance" }],
+      images: [{ url: `${origin}/opengraph-image`, width: 1200, height: 630, alt: "Our Laboratory | Biogance" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`${origin}/og-image.jpg`],
+      images: [`${origin}/opengraph-image`],
     },
   };
 }
