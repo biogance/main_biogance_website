@@ -310,6 +310,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   const [selectedSizes, setSelectedSizes] = useState({});
   const [addingBundleId, setAddingBundleId] = useState(null);
+  const [showAllProducts, setShowAllProducts] = useState(false);
   // const [addingAll, setAddingAll] = useState(false); // Add all — commented out
   const [cartOpen, setCartOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -330,6 +331,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") window.scrollTo(0, 0);
+    setShowAllProducts(false);
   }, [seoKeyword]);
 
   useEffect(() => {
@@ -799,7 +801,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   .products-sidebar-scroll::-webkit-scrollbar-thumb { background: #d1d1ce; border-radius: 999px; }
                   .products-sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a0a09c; }
                 `}</style>
-                {bundles.map((bundle) => {
+                {(showAllProducts ? bundles : bundles.slice(0, 3)).map((bundle) => {
                   const products = bundle.products || [];
                   const uniqueSizes = [
                     ...new Set(
@@ -962,6 +964,15 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                     </div>
                   );
                 })}
+                {!showAllProducts && bundles.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllProducts(true)}
+                    className="w-full my-3 py-2 text-xs sm:text-sm font-semibold bg-gray-900 text-white transition-colors cursor-pointer hover:bg-gray-800"
+                  >
+                    {t("seeMore")}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -980,7 +991,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             )}
 
             {/* 4. Tags */}
-            {tags.length > 0 && (
+            {/* {tags.length > 0 && (
               <div
                 className={`w-full order-4 lg:col-start-1 ${
                   youtubeId ? "mt-4 md:mt-6" : "mt-4 md:mt-4"
@@ -995,7 +1006,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   </span>
                 ))}
               </div>
-            )}
+            )} */}
           </div>
         ) : (
           /* No products: plain content, aligned with hero content */

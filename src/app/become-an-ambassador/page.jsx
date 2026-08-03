@@ -18,7 +18,9 @@ export async function generateMetadata() {
   // from the same ambassador.json source of truth.
   const partnershipProfiles = Object.values(ambassadorContent.profileLabels);
   const animalUniverses = Object.values(ambassadorContent.animalLabels);
-  const title =
+  // const title =
+  //   `Become a Brand Ambassador | Biogance & Ekinat Partners`;
+     const title =
     `Become a Brand Ambassador | Biogance & Ekinat Partners — ${partnershipProfiles.join(", ")} | ` +
     `My Animal Universe: ${animalUniverses.join(", ")}`;
   const description =
