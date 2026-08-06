@@ -11,6 +11,7 @@ import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
 import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
+import { HiArrowTrendingUp } from "react-icons/hi2";
 
 const toCleanAmount = (val) => {
   if (typeof val === "number") return val;
@@ -67,6 +68,10 @@ export const LandingCards = ({
   forceVideo = false,
   promoStyle = false,
   smallLabel = false,
+  // Only true for the Popular Products / Best Selling rows rendered from
+  // MainVideo.jsx — every other place this card is used (shop grid,
+  // wishlist, related products, etc.) stays borderless.
+  showBorder = false,
 }) => {
   const isSingleProduct = (product?.productsCount ?? 1) === 1;
   const { t, i18n } = useTranslation("home");
@@ -285,7 +290,7 @@ export const LandingCards = ({
         @keyframes btnSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
       <div
-        className={`bg-[#f3f3f3] relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
+        className={`bg-[#efefee] ${showBorder ? "border border-gray-300" : ""} relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
         onMouseEnter={() => {
           setIsCardHovered(true);
           handleMouseEnter();
@@ -950,6 +955,18 @@ export default function PopularProducts({
   const bestSellerProducts = data?.best_seller || [];
   const sectionSource = isBestSeller ? "best" : "popular";
 
+  // Heading — same editorial style as HOMEPAGE V2.html's .commerce-heading
+  // (eyebrow + big two-line uppercase title, last word gets a trailing period).
+  const headingEyebrow = isBestSeller
+    ? t("products.bestSellerEyebrow")
+    : t("products.eyebrow");
+  const headingSubtitle = isBestSeller
+    ? t("products.bestSellerSubtitle")
+    : t("products.subtitle");
+  const titleWords = title.trim().split(" ");
+  const titleLastWord = titleWords.pop() || "";
+  const titleFirstLine = titleWords.join(" ");
+
   const mapProducts = (items) =>
     items.map((item) => ({
       id: item.id,
@@ -1054,8 +1071,10 @@ export default function PopularProducts({
     setCanScrollRight(newIndex < maxIndex);
   };
 
+  const isDefaultRow = !useGrid && !isFavourite && !isWishlist;
+
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-[#f6f6f4]">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -1086,7 +1105,13 @@ export default function PopularProducts({
             ? "px-4 py-6"
             : isWishlist
               ? "px-4 py-6"
-              : "px-0 py-6 md:py-8 lg:py-10"
+              : isHorizontal || useGrid
+                ? "px-0 py-6 md:py-8 lg:py-10"
+                // Default heading (below) already carries html's own
+                // top/bottom rhythm, and html's .popular-products section
+                // has padding-bottom:0 (cards sit flush against whatever
+                // comes next) — so no extra top/bottom padding here at all.
+                : "px-0"
         }
       >
         {isFavourite ? null : isWishlist ? (
@@ -1158,41 +1183,77 @@ export default function PopularProducts({
             </div>
           </div>
         ) : useGrid ? null : (
-          <div className="flex items-center justify-between mb-6 px-4 md:px-6 lg:px-10">
-            <button
-              type="button"
-              onClick={() => {
-                start();
-                router.push(`/shop?source=${sectionSource}`);
-              }}
-              className="text-left text-2xl font-bold text-gray-900 transition hover:text-black hover:underline cursor-pointer"
-            >
-              {title} ›
-            </button>
-            <div className="flex gap-2">
+          // Heading — same design as .commerce-heading in HOMEPAGE V2.html
+          // (eyebrow + big two-line uppercase title on the left, copy on the
+          // right). The soft-gray background sits on this full-width wrapper
+          // (like html's .popular-products section) so it reaches the screen
+          // edges; the grid below just centers/pads the content inside it.
+          // Cards below are unchanged.
+          <div className="w-full bg-[#efefee] border-t border-[#d8d8d4]">
+          <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-4 lg:px-[clamp(24px,2.4vw,46px)] pt-[68px] min-[721px]:pt-[clamp(72px,8vw,118px)] pb-[34px] min-[721px]:pb-[46px]">
+            <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
+              <div>
+                <div className="flex items-center gap-3 text-black">
+                  <span className="w-[34px] h-px bg-current"></span>
+                  <span className="text-[10px] tracking-[0.22em] uppercase">{headingEyebrow}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    start();
+                    router.push(`/shop?source=${sectionSource}`);
+                  }}
+                  className="block mt-[18px] text-left text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-[100] text-black cursor-pointer"
+                >
+                  {titleFirstLine}<br />{titleLastWord}.
+                </button>
+              </div>
+              <div className="flex items-end justify-between gap-4">
+                <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+                  {headingSubtitle}
+                </p>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => scroll("prev")}
+                    disabled={!canScrollLeft}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      canScrollLeft
+                        ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
+                        : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
+                    }`}
+                  >
+                    <IoChevronBack className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => scroll("next")}
+                    disabled={!canScrollRight}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      canScrollRight
+                        ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
+                        : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
+                    }`}
+                  >
+                    <IoChevronForward className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Below the whole header row, right-aligned */}
+            <div className="flex justify-end mt-4 md:mt-5 -mb-6">
               <button
-                onClick={() => scroll("prev")}
-                disabled={!canScrollLeft}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? "bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
+                type="button"
+                onClick={() => {
+                  start();
+                  router.push("/shop");
+                }}
+                className="inline-flex items-center gap-2 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
               >
-                <IoChevronBack className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll("next")}
-                disabled={!canScrollRight}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? "bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                <IoChevronForward className="w-5 h-5" />
+                {t("products.seeMore")}
+                <HiArrowTrendingUp className="w-4.5 h-4.5" />
               </button>
             </div>
+          </div>
           </div>
         )}
 
@@ -1204,8 +1265,8 @@ export default function PopularProducts({
               : isFavourite || isWishlist
                 ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
                 : isHorizontal
-                  ? "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
-                  : "flex overflow-x-auto gap-[3px] pb-4 hide-scrollbar px-[5px]"
+                  ? "flex overflow-x-auto pb-4 hide-scrollbar"
+                  : "flex overflow-x-auto pb-4 hide-scrollbar"
           }
         >
           {isLoading
@@ -1215,7 +1276,11 @@ export default function PopularProducts({
                   className={
                     useGrid || isFavourite || isWishlist
                       ? "w-full"
-                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)]"
+                      // -ml-px (except the first card) makes each card's left
+                      // border sit exactly on top of the previous card's
+                      // right border instead of next to it — so the shared
+                      // seam stays a single 1px line instead of doubling up.
+                      : `flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 ${index > 0 ? "-ml-px" : ""}`
                   }
                 >
                   <LoadingCard />
@@ -1227,7 +1292,7 @@ export default function PopularProducts({
                   className={
                     useGrid || isFavourite || isWishlist
                       ? "w-full max-w-[240px] mx-auto"
-                      : "flex-shrink-0 w-[calc(50%-1px)] sm:w-[calc(33.333%-1.34px)] md:w-[calc(25%-1.5px)]"
+                      : `flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 ${index > 0 ? "-ml-px" : ""}`
                   }
                 >
                   <LandingCards
@@ -1235,6 +1300,7 @@ export default function PopularProducts({
                     showNav={true}
                     index={index}
                     compact={false}
+                    showBorder={isDefaultRow}
                   />
                 </div>
               ))}

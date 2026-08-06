@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from 'react-i18next';
-import { BiChevronRight } from "react-icons/bi";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { IoChevronForward } from 'react-icons/io5';
 import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getDeviceId } from '../../../utils/deviceId';
 import { startTopLoader } from "../TopLoader";
+import { BsArrowUpRight } from "react-icons/bs";
+import { HiArrowTrendingUp } from "react-icons/hi2";
 
 
 const FALLBACK_IMAGES = [
@@ -21,19 +22,15 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop",
 ];
 
-const ShimmerCard = () => (
-  <div className="article-card bg-[#F7F7F7] overflow-hidden border border-gray-100 flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
-    <div className="h-[180px] md:h-[240px] bg-gray-200 animate-pulse" />
-    <div className="p-4 md:p-6 lg:p-7 flex flex-col gap-3">
-      <div className="flex gap-2">
-        <div className="h-5 w-24 bg-gray-200 rounded-full animate-pulse" />
-        <div className="h-5 w-20 bg-gray-200 rounded-full animate-pulse" />
-      </div>
+// Shimmer for one card — `featured` gets the tall image used by the left,
+// full-height slot; the other 4 (right-side 2x2 grid) get the shorter one.
+const ShimmerCard = ({ featured = false }) => (
+  <div className={`bg-white border border-[#d8d8d4] overflow-hidden flex flex-col ${featured ? 'h-full' : ''}`}>
+    <div className={`${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'} bg-gray-200 animate-pulse`} />
+    <div className="p-4 md:p-[22px] flex flex-col gap-3">
+      <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
       <div className="h-5 bg-gray-200 rounded animate-pulse" />
       <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
-      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5" />
-      <div className="h-10 bg-gray-200 rounded-xl animate-pulse mt-2" />
     </div>
   </div>
 );
@@ -42,38 +39,22 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
   const router = useRouter();
-  const scrollContainerRef = useRef(null);
 
   const apiAdvice = data?.expert_advice || [];
   const isLoading = !data;
+
+  // Bento layout only ever shows 5 articles: one large "featured" card on the
+  // left, and the next 4 as a 2x2 grid on the right — same card design as
+  // .article/.article-image/.article-copy in HOMEPAGE V2.html, just a custom
+  // 1 + 4 arrangement instead of html's plain 3-card row.
+  const shownAdvice = apiAdvice.slice(0, 5);
+  const featuredArticle = shownAdvice[0];
+  const gridArticles = shownAdvice.slice(1, 5);
 
   const [favorites, setFavorites] = useState(() =>
     Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
   );
   const [loadingFav, setLoadingFav] = useState({});
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScrollPosition = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', checkScrollPosition);
-      window.addEventListener('resize', checkScrollPosition);
-      setTimeout(checkScrollPosition, 100);
-      return () => {
-        container.removeEventListener('scroll', checkScrollPosition);
-        window.removeEventListener('resize', checkScrollPosition);
-      };
-    }
-  }, [isLoading]);
 
   const toggleFavorite = async (id) => {
     if (loadingFav[id]) return;
@@ -108,17 +89,6 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
 
-  const scroll = (direction) => {
-    if (scrollContainerRef.current) {
-      const card = scrollContainerRef.current.querySelector('.article-card');
-      if (!card) return;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'next' ? card.offsetWidth + 24 : -(card.offsetWidth + 24),
-        behavior: 'smooth',
-      });
-    }
-  };
-
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     try {
@@ -128,127 +98,126 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     } catch { return dateStr; }
   };
 
+  // Renders one article card — `featured` makes the image taller and the
+  // headline bigger, matching .article.featured in HOMEPAGE V2.html.
+  const renderCard = (article, index, featured) => {
+    const apiImagePath = article.images?.[0]?.media;
+    const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+    const tagNames = (article.tags || []).map((tag) => tag.name).filter(Boolean);
+    const tagLabel = tagNames.slice(0, 2).join(' · ');
+    const isFav = favorites[article.id] ?? article.favorites_exists ?? false;
+    const displayName = isFrench && article.french_name ? article.french_name : article.name;
+    const displayDesc = isFrench && article.short_french_description ? article.short_french_description : article.short_description;
+
+    return (
+      <article
+        key={article.id}
+        onClick={() => navigateToDetail(article)}
+        className={`bg-white border border-[#d8d8d4] overflow-hidden cursor-pointer group flex flex-col ${featured ? 'h-full' : ''}`}
+      >
+        <div className={`relative overflow-hidden bg-gray-100 flex-shrink-0 ${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'}`}>
+          <img
+            src={imageUrl}
+            alt={displayName}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.025]"
+            onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
+          />
+          {/* <button
+            onClick={(e) => { e.stopPropagation(); toggleFavorite(article.id); }}
+            className="absolute top-3 left-3 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+          >
+            {isFav
+              ? <FaHeart className="w-4 h-4 text-black" />
+              : <FaRegHeart className="w-4 h-4 text-gray-700" />
+            }
+          </button> */}
+        </div>
+
+        <div className={`flex flex-col flex-grow ${featured ? 'p-5 md:p-[22px]' : 'p-4 md:p-[18px]'}`}>
+          <small className="text-[9px] tracking-[0.15em] uppercase text-[#858580]">
+            {tagLabel || t('expertAdvice.expertLabel', { defaultValue: 'Expert Advice' })}
+            {/* {' · '}{formatDate(article.created_at)} */}
+          </small>
+
+          <h3 className={`mt-[11px] font-medium mb-3 leading-[1.12] text-gray-900 ${featured ? 'text-xl md:text-[28px] line-clamp-2' : 'text-base md:text-[21px] line-clamp-2'}`}>
+            {displayName}
+          </h3>
+
+          {featured && displayDesc && (
+            <p className=" text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-3">
+              {displayDesc}
+            </p>
+          )}
+
+          <button
+            onClick={(e) => { e.stopPropagation(); navigateToDetail(article); }}
+            className={`cursor-pointer bg-black text-white font-semibold hover:bg-gray-800 transition mt-auto self-start ${featured ? 'mt-5 px-4 py-2.5 text-xs md:text-sm' : 'mt-4 px-3 py-2 text-[11px]'}`}
+          >
+            {t('expertAdvice.continueReading')}
+          </button>
+        </div>
+      </article>
+    );
+  };
+
   return (
-    <section className="bg-white py-8 md:py-12 lg:py-16 px-4 md:px-6">
-      <div className="max-w-10xl mx-auto">
+    <section className="bg-[#f6f6f4] mt-40 border-t border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
+      {/* Padding lives on this max-w-1840 div (not the outer section) — same
+          structure as LandingProductFinder.jsx's header, so both sections'
+          content end up the exact same width on wide screens. */}
+      <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
         {!hideHeader && (
-          <div className="flex flex-col lg:flex-row items-start justify-between mb-8 md:mb-12 gap-6 md:gap-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-gray-900">
-                {t('expertAdvice.heading')}
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 max-w-2xl">
-                {t('expertAdvice.description')}
+          <div className="mb-[34px] min-[721px]:mb-[52px]">
+            {/* Section header — same design as .section-head in HOMEPAGE V2.html
+                (eyebrow + big two-line uppercase title on the left, copy on the right).
+                Note: .section-head's own mobile gap is 28px — not the 26px used by
+                .collections-editorial-head/.commerce-heading/.finder-head. */}
+            <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[28px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
+              <div>
+                <div className="flex items-center gap-3 text-black">
+                  <span className="w-[34px] h-px bg-current"></span>
+                  <span className="text-[10px] tracking-[0.22em] uppercase">{t('expertAdvice.sectionEyebrow')}</span>
+                </div>
+                <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-medium text-black">
+                  {t('expertAdvice.sectionHeadingLine1')}<br />{t('expertAdvice.sectionHeadingLine2')}
+                </h2>
+              </div>
+              <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+                {t('expertAdvice.sectionSubtitle')}
               </p>
-              <a href="#" className="text-xs md:text-sm font-semibold text-black hover:underline inline-flex items-center gap-1">
-                {t('expertAdvice.discoverMore')}
-                <BiChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-              </a>
             </div>
-            <div className="flex gap-2">
+
+            {/* Below the whole header row, right-aligned under the right column */}
+            <div className="flex justify-end mt-4 md:mt-5 -mb-6">
               <button
-                onClick={() => scroll('prev')}
-                disabled={!canScrollLeft}
-                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
-                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
-                }`}
+                type="button"
+                onClick={() => { startTopLoader(); router.push('/advices'); }}
+                className="inline-flex items-center gap-2 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
               >
-                <IoChevronBack className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-              </button>
-              <button
-                onClick={() => scroll('next')}
-                disabled={!canScrollRight}
-                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? 'bg-gray-100 cursor-pointer hover:bg-gray-200'
-                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
-                }`}
-              >
-                <IoChevronForward className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+                {t('expertAdvice.seeAll')}
+            <HiArrowTrendingUp className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
         )}
 
-        <div className="relative overflow-hidden">
-          <style>{`.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}</style>
-          <div ref={scrollContainerRef} className="overflow-x-auto hide-scrollbar snap-x snap-mandatory">
-            <div className="flex gap-3 md:gap-6 pb-4">
-              {isLoading
-                ? Array.from({ length: 3 }).map((_, i) => <ShimmerCard key={i} />)
-                : apiAdvice.map((article, index) => {
-                    const apiImagePath = article.images?.[0]?.media;
-                    const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-                    const tagNames = (article.tags || []).map((tag) => tag.name).filter(Boolean);
-                    // Long tag text wraps the badge row onto a second line, which
-                    // breaks the fixed card height — drop to a single tag when
-                    // the first two together would run long.
-                    const tags = tagNames.slice(0, 2).join(' • ').length > 20
-                      ? tagNames.slice(0, 1)
-                      : tagNames.slice(0, 2);
-                    const isFav = favorites[article.id] ?? article.favorites_exists ?? false;
-
-                    const displayName = isFrench && article.french_name ? article.french_name : article.name;
-                    const displayDesc = isFrench && article.short_french_description ? article.short_french_description : article.short_description;
-
-                    return (
-                      <article key={article.id} onClick={() => navigateToDetail(article)} className="article-card bg-[#F7F7F7] overflow-hidden cursor-pointer border border-gray-100 hover:shadow-md transition-all duration-300 group flex-shrink-0 snap-start w-[85vw] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-16px)] flex flex-col">
-                        <div className="relative h-[180px] md:h-[240px] overflow-hidden bg-gray-100 flex-shrink-0">
-                          <img
-                            src={imageUrl}
-                            alt={displayName}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                            onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
-                          />
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleFavorite(article.id); }}
-                            className="absolute top-3 left-3 md:top-4 md:left-4 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm rounded-full  flex items-center justify-center hover:bg-gray-50 transition-colors"
-                          >
-                            {isFav
-                              ? <FaHeart className="w-4 h-4 md:w-5 md:h-5 text-black" />
-                              : <FaRegHeart className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
-                            }
-                          </button>
-                        </div>
-
-                        <div className="p-4 md:p-6 lg:p-7 flex flex-col flex-grow">
-                          <div className="flex flex-nowrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4 font-medium overflow-hidden">
-                            <span className="text-black border border-white shrink-0 px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
-                              {t('expertAdvice.expertLabel', { defaultValue: 'Expert Advice' })}
-                            </span>
-                            <span className="text-black border border-white shrink-0 px-2.5 py-0.5 md:px-3 md:py-1 bg-white whitespace-nowrap">
-                              {formatDate(article.created_at)}
-                            </span>
-                            {tags.length > 0 && (
-                              <span className="text-gray-600 border border-white px-2.5 py-0.5 md:px-3 md:py-1 bg-white truncate min-w-0">
-                                {tags.join(' • ')}
-                              </span>
-                            )}
-                          </div>
-
-                          <h3 className="text-base md:text-lg lg:text-xl font-bold mb-2 md:mb-3 text-gray-900 line-clamp-1">
-                            {displayName}
-                          </h3>
-
-                          <div className="flex-grow mb-4 md:mb-6">
-                            <p className="text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-2">
-                              {displayDesc}
-                            </p>
-                          </div>
-
-                          <button
-                            className="bg-black cursor-pointer text-white px-3.5 py-2.5 md:px-4 md:py-3 text-xs md:text-sm font-semibold hover:bg-gray-800 transition w-full sm:w-auto mt-auto"
-                          >
-                            {t('expertAdvice.continueReading')}
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
-            </div>
-          </div>
+        {/* Bento layout: 1 big card (left) + 2x2 grid of 4 cards (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 items-stretch">
+          {isLoading ? (
+            <>
+              <ShimmerCard featured />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {Array.from({ length: 4 }).map((_, i) => <ShimmerCard key={i} />)}
+              </div>
+            </>
+          ) : (
+            <>
+              {featuredArticle && renderCard(featuredArticle, 0, true)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {gridArticles.map((article, i) => renderCard(article, i + 1, false))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

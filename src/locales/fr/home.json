@@ -3,11 +3,16 @@
     "tagline": "Parce que les animaux méritent le meilleur",
     "heading": "Soins Biologiques, Inspirés par la Nature",
     "description": "Depuis 2008, Biogance crée des produits de soins pour animaux fabriqués en France avec des ingrédients naturels et biologiques pour des animaux en meilleure santé et plus heureux.",
-    "shopNow": "Acheter Maintenant",
-    "discover": "Découvrir"
+    "shopNow": "Explorez nos collections",
+    "discover": "Trouvez le produit idéal",
+    "meta": "Biogance · Soins naturels & biologiques pour animaux · France"
   },
   "categories": {
     "title": "Explorez nos collections sélectionnées",
+    "eyebrow": "Sélectionné par compagnon",
+    "headingLine1": "Explorez nos",
+    "headingLine2": "collections.",
+    "subtitle": "Six univers dédiés, une seule philosophie Biogance : des soins ciblés conçus autour des besoins spécifiques de chaque compagnon.",
     "dogs": "Chiens & Chiots",
     "cats": "Chats & Chatons",
     "birds": "Oiseaux",
@@ -21,6 +26,11 @@
   },
   "products": {
     "title": "Produits Populaires",
+    "eyebrow": "Découvrez les favoris de la communauté",
+    "subtitle": "Découvrez les produits Biogance plébiscités par les propriétaires d'animaux, sélectionnés pour vous aider à trouver le soin adapté à votre compagnon.",
+    "bestSellerEyebrow": "Adoré par les propriétaires d'animaux",
+    "bestSellerSubtitle": "Les indispensables Biogance que notre communauté redemande sans cesse, choisis par des propriétaires d'animaux comme vous.",
+    "seeMore": "Voir Plus",
     "addToCart": "Ajouter au Panier",
     "quickview": "Aperçu rapide",
     "size": "Taille",
@@ -55,9 +65,15 @@
   },
   "productFinder": {
     "title": "Trouvez Votre Produit Parfait",
+    "sectionEyebrow": "Trouvez le produit parfait",
+    "sectionHeadingLine1": "Pensé pour",
+    "sectionHeadingLine2": "leurs besoins.",
+    "sectionSubtitle": "Un chemin plus clair et guidé vers le bon produit : choisissez d'abord votre animal, puis la zone de soin, puis le besoin spécifique.",
     "heading": "Trouvez le Produit Parfait",
     "description": "Répondez à quelques questions rapides pour nous aider à trouver la meilleure option pour les besoins de votre animal",
     "whoIsYourPet": "Qui est votre animal ?",
+    "whatToCareFor": "Que souhaitez-vous soigner ?",
+    "mainConcern": "Quelle est la préoccupation principale ?",
     "petTypes": {
       "dog": "Chien",
       "puppy": "Chiot",
@@ -73,6 +89,11 @@
   },
   "expertAdvice": {
     "title": "Conseils d'Experts",
+    "sectionEyebrow": "Nos conseils d'experts",
+    "sectionHeadingLine1": "Apprenez.",
+    "sectionHeadingLine2": "Soignez mieux.",
+    "sectionSubtitle": "Découvrez des conseils pratiques et fiables de vétérinaires et d'experts en soins pour animaux, pour prendre soin de votre compagnon en toute confiance, chaque jour.",
+    "seeAll": "Voir tout",
     "heading": "Nos Conseils d'Experts",
     "description": "Obtenez des conseils et des orientations de vétérinaires et d'experts en soins pour animaux pour garder votre animal heureux et en bonne santé.",
     "discoverMore": "Découvrez plus de conseils de nos spécialistes",
@@ -141,6 +162,7 @@
   "reviews": {
     "title": "Ce Que Disent les Parents d'Animaux",
     "subtitle": "Lisez de vrais avis de parents d'animaux heureux qui font confiance à nos produits.",
+    "addReview": "Ajouter un avis",
     "readMore": "Lire la suite",
     "showLess": "Afficher moins",
     "googleAlt": "Google",
