@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AiOutlinePlus } from 'react-icons/ai';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export function LandingProductFinder({ data }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
+  // Three-tier cascading finder — same "pet → care area → concern" flow as
+  // HOMEPAGE V2.html's perfectMatchData finder, but built from the real
+  // category tree (sub_categories with type "universe"/"family") instead of
+  // hardcoded demo data.
   const [selectedPet, setSelectedPet] = useState('');
-  const [expandedSection, setExpandedSection] = useState(null);
+  const [selectedCare, setSelectedCare] = useState('');
+  const [selectedConcern, setSelectedConcern] = useState('');
   const [categories, setCategories] = useState([]);
 
-  // Top-level pet categories come from the splash API response, cached in
-  // localStorage as "splashData" (see PageLoader.jsx).
+  // Top-level pet categories (with their full sub_categories tree) come from
+  // the splash API response, cached in localStorage as "splashData" (see
+  // PageLoader.jsx) — same source FilterProducts.jsx reads for its filters.
   useEffect(() => {
     const loadCategories = () => {
       try {
@@ -29,6 +34,28 @@ export function LandingProductFinder({ data }) {
     window.addEventListener('splashDataReady', loadCategories);
     return () => window.removeEventListener('splashDataReady', loadCategories);
   }, []);
+
+  const selectedPetObj = categories.find((cat) => cat.id === selectedPet);
+  const careOptions = selectedPetObj?.sub_categories?.filter((s) => s.type === 'universe') || [];
+  const selectedCareObj = careOptions.find((c) => c.id === selectedCare);
+  const concernOptions = selectedCareObj?.sub_categories?.filter((s) => s.type === 'family') || [];
+
+  // Selecting a pet re-picks the first care option (and its first concern),
+  // same cascading behaviour as html's selectPet().
+  const handleSelectPet = (cat) => {
+    setSelectedPet(cat.id);
+    const care = cat.sub_categories?.filter((s) => s.type === 'universe') || [];
+    const firstCare = care[0] || null;
+    setSelectedCare(firstCare?.id ?? '');
+    const concerns = firstCare?.sub_categories?.filter((s) => s.type === 'family') || [];
+    setSelectedConcern(concerns[0]?.id ?? '');
+  };
+
+  const handleSelectCare = (careObj) => {
+    setSelectedCare(careObj.id);
+    const concerns = careObj.sub_categories?.filter((s) => s.type === 'family') || [];
+    setSelectedConcern(concerns[0]?.id ?? '');
+  };
 
   // Background images array
   const backgroundImages = [
@@ -66,6 +93,27 @@ export function LandingProductFinder({ data }) {
   };
 
   return (
+    <>
+      {/* Section header — same design as .finder-head in HOMEPAGE V2.html
+          (eyebrow + big two-line uppercase title on the left, copy on the
+          right). The slideshow/card below is unchanged. */}
+      <section id="finder" className="w-full bg-white pt-[clamp(82px,9vw,138px)] scroll-mt-24">
+        <div className="w-full max-w-[1840px] mx-auto grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-[34px] min-[721px]:mb-[46px]">
+          <div>
+            <div className="flex items-center gap-3 text-black">
+              <span className="w-[34px] h-px bg-current"></span>
+              <span className="text-[10px] tracking-[0.22em] uppercase">{t('productFinder.sectionEyebrow')}</span>
+            </div>
+            <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-[100] text-black">
+              {t('productFinder.sectionHeadingLine1')}<br />{t('productFinder.sectionHeadingLine2')}
+            </h2>
+          </div>
+          <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+            {t('productFinder.sectionSubtitle')}
+          </p>
+        </div>
+      </section>
+
     <div className="relative min-h-screen w-full overflow-hidden">
       {/* Background Slideshow */}
       <div className="absolute inset-0">
@@ -83,84 +131,100 @@ export function LandingProductFinder({ data }) {
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      {/* Content */}
+      {/* Content — card styled like .finder-card / .finder-intro / .question /
+          .choice / .finder-result in HOMEPAGE V2.html */}
       <div className="relative min-h-screen flex items-center justify-center sm:justify-start px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-12">
-        <div className="bg-white/10 backdrop-blur-sm  p-4 sm:p-5 md:p-6 max-w-md w-full border border-white/30">
-          
-          {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3">
+        <div className="bg-white/[0.14] backdrop-blur-[4px] p-6 sm:p-8 md:p-9 max-w-[360px] w-full border border-white/50">
+
+          {/* Header (.finder-intro) */}
+          <div className="mb-0">
+            <h2 className="text-white text-[34px] sm:text-[clamp(34px,3.7vw,60px)] leading-[0.9] tracking-[-0.065em] uppercase font-medium mb-[18px]">
               {t('productFinder.heading')}
             </h2>
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+            <p className="text-white/90 text-sm leading-[1.72] mb-6">
               {t('productFinder.description')}
             </p>
           </div>
 
-          {/* Pet Selector */}
-          <div className="mb-6 sm:mb-8">
-            <h3 className="text-white text-xs sm:text-sm font-medium mb-3 sm:mb-4">
-              {t('productFinder.whoIsYourPet')}
-            </h3>
-            <div className="flex flex-wrap gap-2 sm:gap-3"> 
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedPet(cat.id)}
-                  className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3  cursor-pointer text-xs sm:text-sm font-medium transition-all duration-200 ${
-                    selectedPet === cat.id
-                      ? 'bg-white text-black shadow-lg border border-white'
-                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/30'
-                  }`}
-                >
-                  {isFrench && cat.french_name ? cat.french_name : cat.name}
-                </button>
-              ))}
-            </div>
+          {/* Step 1 — Who is your pet? (.question + .choice-row.pet-tabs) */}
+          <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
+            {t('productFinder.whoIsYourPet')}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleSelectPet(cat)}
+                className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
+                  selectedPet === cat.id
+                    ? 'bg-white/[0.18] text-white border-white/70'
+                    : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
+                }`}
+              >
+                {isFrench && cat.french_name ? cat.french_name : cat.name}
+              </button>
+            ))}
           </div>
 
-          {/* Expandable Sections */}
-          <div className="space-y-4 sm:space-y-6">
-            <div>
-              <button
-                onClick={() => setExpandedSection(expandedSection === 'special' ? null : 'special')}
-                className="text-white/90 hover:text-white text-xs sm:text-sm font-medium transition"
-              >
-                {t('productFinder.specialAboutPet')}
-              </button>
-              <button
-                onClick={() => setExpandedSection(expandedSection === 'special' ? null : 'special')}
-                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30  flex items-center justify-center transition-all"
-              >
-                <AiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </button>
-            </div>
+          {/* Step 2 — What do you want to care for? (.choice-row.need-tabs) */}
+          {careOptions.length > 0 && (
+            <>
+              <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
+                {t('productFinder.whatToCareFor')}
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {careOptions.map((care) => (
+                  <button
+                    key={care.id}
+                    onClick={() => handleSelectCare(care)}
+                    className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
+                      selectedCare === care.id
+                        ? 'bg-white/[0.18] text-white border-white/70'
+                        : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
+                    }`}
+                  >
+                    {care.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
-            <div>
-              <button
-                onClick={() => setExpandedSection(expandedSection === 'universe' ? null : 'universe')}
-                className="text-white/90 hover:text-white text-xs sm:text-sm font-medium transition"
-              >
-                {t('productFinder.productUniverse')}
-              </button>
-              <button
-                onClick={() => setExpandedSection(expandedSection === 'universe' ? null : 'universe')}
-                className="w-9 h-9 sm:w-10 sm:h-10 mt-2 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30  flex items-center justify-center transition-all"
-              >
-                <AiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </button>
-            </div>
+          {/* Step 3 — What is the main concern? (.choice-row.concern-tabs) */}
+          {concernOptions.length > 0 && (
+            <>
+              <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
+                {t('productFinder.mainConcern')}
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {concernOptions.map((concern) => (
+                  <button
+                    key={concern.id}
+                    onClick={() => setSelectedConcern(concern.id)}
+                    className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
+                      selectedConcern === concern.id
+                        ? 'bg-white/[0.18] text-white border-white/70'
+                        : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
+                    }`}
+                  >
+                    {concern.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* View Products Button (.finder-result) */}
+          <div className="mt-[22px] pt-[18px] border-t border-white/25">
+            <button className="w-full min-h-[48px] cursor-pointer bg-white text-[#171717] border border-white hover:bg-transparent hover:text-white hover:border-white/70 uppercase text-[9px] tracking-[0.15em] font-bold transition-colors duration-200">
+              {t('productFinder.viewProducts')}
+            </button>
           </div>
-
-          {/* View Products Button */}
-          <button className="w-full mt-8 sm:mt-10 cursor-pointer bg-white text-black font-bold py-2.5 sm:py-4 md:py-2.5  hover:bg-gray-100 transition-all duration-200 text-base sm:text-lg shadow-lg">
-            {t('productFinder.viewProducts')}
-          </button>
         </div>
       </div>
 
       {/* Navigation Arrows */}
-      <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 right-4 sm:right-6 md:right-10 flex gap-2 sm:gap-3 md:gap-4">
+      {/* <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 right-4 sm:right-6 md:right-10 flex gap-2 sm:gap-3 md:gap-4">
         <button
           onClick={goToPrevious}
           className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 cursor-pointer backdrop-blur-md hover:bg-white/30 border border-white/40 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
@@ -173,7 +237,8 @@ export function LandingProductFinder({ data }) {
         >
           <FaChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
         </button>
-      </div>
+      </div> */}
     </div>
+    </>
   );
 }

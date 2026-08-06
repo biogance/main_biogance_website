@@ -3,11 +3,16 @@
     "tagline": "Because pets deserve the best",
     "heading": "Organic Care, Inspired by Nature",
     "description": "Since 2008, Biogance creates pet care products made in France with natural and organic ingredients for healthier, happier pets.",
-    "shopNow": "Shop Now",
-    "discover": "Discover"
+    "shopNow": "Explore our collections",
+    "discover": "Find the perfect product",
+    "meta": "Biogance · Natural & organic pet care · France"
   },
   "categories": {
     "title": "Explore our curated collections",
+    "eyebrow": "Curated by companion",
+    "headingLine1": "Explore our",
+    "headingLine2": "collections.",
+    "subtitle": "Six dedicated universes, one Biogance philosophy: targeted care designed around the specific needs of every companion.",
     "dogs": "Dogs & Puppies",
     "cats": "Cats & Kittens",
     "birds": "Birds",
@@ -21,6 +26,11 @@
   },
   "products": {
     "title": "Popular Products",
+    "eyebrow": "Discover community favourites",
+    "subtitle": "Explore the Biogance products pet owners are loving right now, selected to help you find the right care for your companion.",
+    "bestSellerEyebrow": "Loved by pet owners everywhere",
+    "bestSellerSubtitle": "The Biogance essentials our community keeps coming back for, chosen by pet owners just like you.",
+    "seeMore": "See More",
     "addToCart": "Add to Cart",
     "quickview": "Quickview",
     "size": "Size",
@@ -55,9 +65,15 @@
   },
   "productFinder": {
     "title": "Find Your Perfect Product",
+    "sectionEyebrow": "Find the perfect product",
+    "sectionHeadingLine1": "Made for",
+    "sectionHeadingLine2": "their needs.",
+    "sectionSubtitle": "A clearer, more guided path to the right product: first choose your pet, then the care area, then the specific concern.",
     "heading": "Find the Perfect Product",
     "description": "Answer a few quick questions to help us find the best match for your pet's needs",
     "whoIsYourPet": "Who is your pet?",
+    "whatToCareFor": "What do you want to care for?",
+    "mainConcern": "What is the main concern?",
     "petTypes": {
       "dog": "Dog",
       "puppy": "Puppy",
@@ -73,6 +89,11 @@
   },
   "expertAdvice": {
     "title": "Expert Advice",
+    "sectionEyebrow": "Our expert advice",
+    "sectionHeadingLine1": "Learn.",
+    "sectionHeadingLine2": "Care better.",
+    "sectionSubtitle": "Discover practical tips and trusted guidance from vets and pet-care experts to help you care for your pet with confidence, every day.",
+    "seeAll": "See All",
     "heading": "Our Expert Advice",
     "description": "Get tips and guidance from vets and pet care experts to keep your pet happy and healthy.",
     "discoverMore": "Discover more tips from our specialists",
@@ -141,6 +162,7 @@
   "reviews": {
     "title": "What Pet Parents Are Saying",
     "subtitle": "Read real reviews from happy pet parents who trust our products.",
+    "addReview": "Add a review",
     "readMore": "Read more",
     "showLess": "Show less",
     "googleAlt": "Google",

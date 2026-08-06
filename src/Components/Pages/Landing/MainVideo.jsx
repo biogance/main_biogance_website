@@ -72,7 +72,8 @@ const preloadHeroVideos = () => {
 };
 
 export default function HeroSection() {
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
+  const isFrench = i18n.language === 'fr';
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
@@ -211,6 +212,7 @@ export default function HeroSection() {
     tagline: t('hero.tagline'),
     heading: t('hero.heading'),
     description: t('hero.description'),
+    meta: t('hero.meta'),
   };
 
 
@@ -238,6 +240,12 @@ export default function HeroSection() {
 
   const goToNext = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  // "Find the perfect product" scrolls down to the LandingProductFinder
+  // section instead of navigating away — matches html's href="#finder" anchor.
+  const scrollToFinder = () => {
+    document.getElementById('finder')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const currentImageUrl = currentSlideData?.url;
@@ -291,38 +299,60 @@ export default function HeroSection() {
             ></div>
           )}
           
-          {/* Dark Overlay */}
-          {/* <div className="absolute inset-0 bg-black/40"></div> */}
+          {/* Dark Overlay — same gradient used behind the hero text in HOMEPAGE V2.html so white text/buttons stay legible over the video */}
+          <div
+            className="absolute inset-0 z-[1] pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.18) 35%, rgba(0,0,0,.08) 60%, rgba(0,0,0,.05) 100%), linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.22))',
+            }}
+          ></div>
 
        {/* Content Container */}
       <div className="relative z-10 w-full h-full flex items-start pt-30 sm:pt-28 md:items-center md:pt-0">
-            <div className="w-full px-4 sm:px-6">
+            {/* Same "wrap" width/padding as LandingProductFinder.jsx's header
+                (max-w-[1840px] mx-auto + px-4/clamp page-x) so the hero text
+                lines up with the section headings below it. */}
+            <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
               <div className="max-w-3xl mt-0 md:mt-20 text-center md:text-left mx-auto md:mx-0">
-                
-                {/* Tagline */}
-                <p className="text-[11px] sm:text-sm md:text-base font-light mb-2 md:mb-4 tracking-wide text-black/90">
-                  {heroContent.tagline}
-                </p>
 
-                {/* Main Heading */}
-                <h1 className="text-2xl sm:text-3xl md:text-7xl lg:text-6xl xl:text-7xl font-semibold leading-tight mb-2 md:mb-6 text-black">
+                {/* Tagline */}
+                <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
+                  <span className="w-[34px] h-px bg-white/90"></span>
+                  <p className="text-[10px] font-normal tracking-[0.22em] uppercase text-white/90">
+                    {heroContent.tagline}
+                  </p>
+                </div>
+
+                {/* Main Heading — English keeps the original clamp(60px,8vw,138px)
+                    at every breakpoint. French ("Soins Biologiques, Inspirés
+                    par la Nature") runs ~25-30% longer, so at that same 60px
+                    mobile floor it overflowed the max-w-3xl column on small
+                    screens — only the French case gets a lower mobile/tablet
+                    floor; desktop (md+) is identical either way. */}
+                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,138px)]' : 'text-[clamp(60px,8vw,138px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-xs sm:text-base md:text-lg mb-4 md:mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed text-black/90">
+                <p className="text-[16px] mb-[28px] max-w-[520px] mx-auto md:mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
                   {heroContent.description}
                 </p>
 
                 {/* CTA Buttons */}
-                {/* <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-                  <button onClick={() => router.push('/shop')} className="bg-black cursor-pointer text-white px-6 md:px-8 py-2.5 md:py-3  font-medium hover:bg-gray-800 transition-colors text-sm md:text-base">
+                <div className="flex flex-col sm:flex-row gap-2.5 justify-center md:justify-start">
+                  <button onClick={() => router.push('/shop')} className="min-h-[48px] px-[26px] border border-white bg-[#171717] text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717]">
                     {t('hero.shopNow')}
                   </button>
-                  <button onClick={() => router.push('/shop')} className="bg-transparent cursor-pointer border-2 border-black text-black px-6 md:px-8 py-2.5 md:py-3 font-medium hover:bg-black/10 transition-colors text-sm md:text-base">
+                  <button onClick={scrollToFinder} className="min-h-[48px] px-[26px] border border-white/70 bg-transparent text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717] hover:border-white">
                     {t('hero.discover')}
                   </button>
-                </div> */}
+                </div>
+
+                {/* Meta line — matches html's .hero-meta below the CTA buttons */}
+                <p className="mt-5 md:mt-8 text-[9px] tracking-[0.16em] uppercase text-[rgba(255,255,255,.92)]">
+                  {heroContent.meta}
+                </p>
               </div>
             </div>
           </div>
@@ -409,10 +439,10 @@ export default function HeroSection() {
       <LandingCards data={apiData} apiData={apiData} />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
-      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} />
+      {/* <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} /> */}
       <LandingExpertAdvice data={apiData} />
       <LandingReview data={apiData} />
-      <LandingBanner data={apiData} />
+      {/* <LandingBanner data={apiData} /> */}
       <Footer />
     </>
   );
