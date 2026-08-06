@@ -330,7 +330,7 @@ export default function HeroSection() {
                     mobile floor it overflowed the max-w-3xl column on small
                     screens — only the French case gets a lower mobile/tablet
                     floor; desktop (md+) is identical either way. */}
-                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,138px)]' : 'text-[clamp(60px,8vw,138px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
+                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]' : 'text-[clamp(60px,8vw,120px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
                   {heroContent.heading}
                 </h1>
 
