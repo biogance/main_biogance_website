@@ -119,7 +119,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
           <img
             src={imageUrl}
             alt={displayName}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.025]"
+            className="w-full h-full object-cover grayscale transition-transform duration-700 group-hover:scale-[1.025] group-hover:grayscale-0"
             onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
           />
           {/* <button
@@ -144,7 +144,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
           </h3>
 
           {featured && displayDesc && (
-            <p className=" text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-3">
+            <p className="mb-3 text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-3">
               {displayDesc}
             </p>
           )}
@@ -162,23 +162,18 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
 
   return (
     <section className="bg-[#f6f6f4] mt-40 border-t border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
-      {/* Padding lives on this max-w-1840 div (not the outer section) — same
-          structure as LandingProductFinder.jsx's header, so both sections'
-          content end up the exact same width on wide screens. */}
+   
       <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
         {!hideHeader && (
           <div className="mb-[34px] min-[721px]:mb-[52px]">
-            {/* Section header — same design as .section-head in HOMEPAGE V2.html
-                (eyebrow + big two-line uppercase title on the left, copy on the right).
-                Note: .section-head's own mobile gap is 28px — not the 26px used by
-                .collections-editorial-head/.commerce-heading/.finder-head. */}
+           
             <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[28px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
               <div>
                 <div className="flex items-center gap-3 text-black">
                   <span className="w-[34px] h-px bg-current"></span>
                   <span className="text-[10px] tracking-[0.22em] uppercase">{t('expertAdvice.sectionEyebrow')}</span>
                 </div>
-                <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-medium text-black">
+                <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-medium text-black">
                   {t('expertAdvice.sectionHeadingLine1')}<br />{t('expertAdvice.sectionHeadingLine2')}
                 </h2>
               </div>

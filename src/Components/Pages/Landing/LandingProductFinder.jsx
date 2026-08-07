@@ -104,7 +104,7 @@ export function LandingProductFinder({ data }) {
               <span className="w-[34px] h-px bg-current"></span>
               <span className="text-[10px] tracking-[0.22em] uppercase">{t('productFinder.sectionEyebrow')}</span>
             </div>
-            <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-[100] text-black">
+            <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black">
               {t('productFinder.sectionHeadingLine1')}<br />{t('productFinder.sectionHeadingLine2')}
             </h2>
           </div>
