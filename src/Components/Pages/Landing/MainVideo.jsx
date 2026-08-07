@@ -310,31 +310,38 @@ export default function HeroSection() {
 
        {/* Content Container */}
       <div className="relative z-10 w-full h-full flex items-start pt-30 sm:pt-28 md:items-center md:pt-0">
-            {/* Same "wrap" width/padding as LandingProductFinder.jsx's header
-                (max-w-[1840px] mx-auto + px-4/clamp page-x) so the hero text
-                lines up with the section headings below it. */}
-            <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-center md:text-left mx-auto md:mx-0">
+            {/* Same left padding as LandingProductFinder.jsx's header
+                (px-4/clamp page-x) so the hero text lines up with the
+                section headings below it on normal screens. Unlike those
+                sections this wrap has NO max-w-[1840px]/mx-auto — the
+                video behind it is always full-bleed edge-to-edge, and
+                capping+centering this wrap made the heading sit flush
+                left up to 1840px viewport width, then visibly slide
+                inward (toward center) on wider monitors as the centered
+                cap opened up. Dropping the cap keeps the heading pinned
+                to the same left inset at every viewport width. */}
+            <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
+              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-left mx-0">
 
                 {/* Tagline */}
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
+                <div className="flex items-center justify-start gap-3 mb-2 md:mb-4">
                   <span className="w-[34px] h-px bg-white/90"></span>
                   <p className="text-[10px] font-normal tracking-[0.22em] uppercase text-white/90">
                     {heroContent.tagline}
                   </p>
                 </div>
 
-                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]' : 'text-[clamp(60px,8vw,120px)] lg:text-[clamp(58px,5.5vw,72px)] xl:text-[clamp(60px,5vw,76px)] 2xl:text-[clamp(60px,8vw,120px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
+                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]' : 'text-[clamp(60px,8vw,60px)] lg:text-[clamp(58px,5.5vw,72px)] xl:text-[clamp(60px,5vw,76px)] 2xl:text-[clamp(60px,8vw,80px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
                   {heroContent.heading}
                 </h1>
 
                 {/* Description */}
-                <p className="text-[16px] mb-[28px] max-w-[520px] mx-auto md:mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
+                <p className="text-[16px] mb-[28px] max-w-[520px] mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
                   {heroContent.description}
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-2.5 justify-start">
                   <button onClick={() => router.push('/shop')} className="min-h-[48px] px-[26px] border border-white bg-[#171717] text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717]">
                     {t('hero.shopNow')}
                   </button>

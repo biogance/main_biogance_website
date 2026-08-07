@@ -163,7 +163,13 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   return (
     <section className="bg-[#f6f6f4] mt-40 border-t border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
    
-      <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
+      {/* No max-w-[1840px]/mx-auto — that cap only centers once the
+          viewport passes 1840px, which made the header sit flush left
+          up to that width then visibly slide inward on wider monitors
+          as the centered cap opened up. Dropping the cap keeps it
+          pinned to the same left inset at every viewport width — same
+          fix as MainVideo.jsx's hero wrap. */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
         {!hideHeader && (
           <div className="mb-[34px] min-[721px]:mb-[52px]">
            

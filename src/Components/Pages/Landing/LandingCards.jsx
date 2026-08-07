@@ -1190,7 +1190,13 @@ export default function PopularProducts({
           // edges; the grid below just centers/pads the content inside it.
           // Cards below are unchanged.
           <div className="w-full bg-[#efefee] border-t border-[#d8d8d4]">
-          <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-4 lg:px-[clamp(24px,2.4vw,46px)] pt-[68px] min-[721px]:pt-[clamp(72px,8vw,118px)] pb-[34px] min-[721px]:pb-[46px]">
+          {/* No max-w-[1840px]/mx-auto — that cap only centers once the
+              viewport passes 1840px, which made the header sit flush
+              left up to that width then visibly slide inward on wider
+              monitors as the centered cap opened up. Dropping the cap
+              keeps it pinned to the same left inset at every viewport
+              width — same fix as MainVideo.jsx's hero wrap. */}
+          <div className="w-full px-4 min-[721px]:px-4 lg:px-[clamp(24px,2.4vw,46px)] pt-[68px] min-[721px]:pt-[clamp(72px,8vw,118px)] pb-[34px] min-[721px]:pb-[46px]">
             <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
               <div>
                 <div className="flex items-center gap-3 text-black">

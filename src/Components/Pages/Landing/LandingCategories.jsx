@@ -115,7 +115,13 @@ export default function LandingCategories({ data }) {
         }
       `}} />
 
-      <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
+      {/* No max-w-[1840px]/mx-auto here (unlike other sections) — that cap
+          only centers once the viewport passes 1840px, which made the
+          heading/header sit flush left up to that width then visibly
+          slide inward on wider monitors as the centered cap opened up.
+          Dropping the cap keeps it pinned to the same left inset at
+          every viewport width — same fix as MainVideo.jsx's hero wrap. */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
 
         {/* Editorial head — matches .collections-editorial-head */}
         <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end mb-[34px] min-[721px]:mb-[52px]">
