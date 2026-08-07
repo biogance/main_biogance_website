@@ -1163,7 +1163,15 @@ function ExpertAdvices() {
                 <HiOutlineArrowUpRight className="w-3.5 h-3.5" />
               </a>
             </div>
-            <div className="hidden lg:block relative lg:w-1/2 h-[420px]">
+            {/* items-stretch on the parent flex row (line 1105) stretches
+                this column to match the text column's height by default,
+                so a fixed-height box (h-420px) just sat at the TOP of that
+                taller row, leaving a gap below it instead of the image
+                reaching the row's bottom edge at every screen size.
+                self-end overrides the stretch for this one item and pins
+                it to the bottom of the row instead — object-contain and
+                the fixed height stay as they were. */}
+            <div className="hidden lg:block relative lg:w-1/2 self-end h-[420px]">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="w-9 h-9 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
               </div>
