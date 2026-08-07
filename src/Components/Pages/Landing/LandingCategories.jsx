@@ -3,9 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { MEDIA_URL } from '../../API/API';
 
-// A row shows 6 cards at a time, no gap between them (same as the html's
-// border-collapsed grid) — width is simply 1/6th of the scroll container.
-const CARD_WIDTH = 'w-[calc(100%/6)]';
+// A row shows 6 cards at a time on desktop, no gap between them (same as
+// the html's border-collapsed grid) — width is 1/6th of the scroll
+// container there. On small screens 6-across made every tile ~60px wide
+// (icon + label unreadable), so narrower viewports show fewer cards per
+// screen — the rest stay reachable via the existing horizontal scroll.
+// Whole-number fractions only (2, 3, 4, 5, 6) so each screen shows
+// complete tiles with no partial next-card peeking in at the edge.
+const CARD_WIDTH = 'w-[calc(100%/2)] min-[481px]:w-[calc(100%/3)] min-[721px]:w-[calc(100%/4)] min-[901px]:w-[calc(100%/5)] min-[1101px]:w-[calc(100%/6)]';
 
 // Shimmer tile — mirrors the real card box (same size, border, gaps as HOMEPAGE V2.html's .collection-tile)
 const ShimmerCard = () => (
@@ -119,7 +124,7 @@ export default function LandingCategories({ data }) {
               <span className="w-[34px] h-px bg-current"></span>
               <span className="text-[10px] tracking-[0.22em] uppercase">{t('categories.eyebrow')}</span>
             </div>
-            <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-[100] text-black">
+            <h2 className="mt-[18px] mb-0 text-[clamp(34px,11vw,50px)] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black">
               {t('categories.headingLine1')}<br />{t('categories.headingLine2')}
             </h2>
           </div>

@@ -314,7 +314,7 @@ export default function HeroSection() {
                 (max-w-[1840px] mx-auto + px-4/clamp page-x) so the hero text
                 lines up with the section headings below it. */}
             <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-              <div className="max-w-3xl mt-0 md:mt-20 text-center md:text-left mx-auto md:mx-0">
+              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-center md:text-left mx-auto md:mx-0">
 
                 {/* Tagline */}
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
@@ -324,13 +324,7 @@ export default function HeroSection() {
                   </p>
                 </div>
 
-                {/* Main Heading — English keeps the original clamp(60px,8vw,138px)
-                    at every breakpoint. French ("Soins Biologiques, Inspirés
-                    par la Nature") runs ~25-30% longer, so at that same 60px
-                    mobile floor it overflowed the max-w-3xl column on small
-                    screens — only the French case gets a lower mobile/tablet
-                    floor; desktop (md+) is identical either way. */}
-                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]' : 'text-[clamp(60px,8vw,120px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
+                <h1 className={`${isFrench ? 'text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]' : 'text-[clamp(60px,8vw,120px)] lg:text-[clamp(58px,5.5vw,72px)] xl:text-[clamp(60px,5vw,76px)] 2xl:text-[clamp(60px,8vw,120px)]'} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}>
                   {heroContent.heading}
                 </h1>
 

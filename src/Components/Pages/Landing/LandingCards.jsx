@@ -1203,7 +1203,7 @@ export default function PopularProducts({
                     start();
                     router.push(`/shop?source=${sectionSource}`);
                   }}
-                  className="block mt-[18px] text-left text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.87] tracking-[-0.072em] uppercase font-[100] text-black cursor-pointer"
+                  className="block mt-[18px] text-left text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black cursor-pointer"
                 >
                   {titleFirstLine}<br />{titleLastWord}.
                 </button>
