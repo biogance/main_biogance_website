@@ -98,7 +98,13 @@ export function LandingProductFinder({ data }) {
           (eyebrow + big two-line uppercase title on the left, copy on the
           right). The slideshow/card below is unchanged. */}
       <section id="finder" className="w-full bg-white pt-[clamp(82px,9vw,138px)] scroll-mt-24">
-        <div className="w-full max-w-[1840px] mx-auto grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-[34px] min-[721px]:mb-[46px]">
+        {/* No max-w-[1840px]/mx-auto — that cap only centers once the
+            viewport passes 1840px, which made the header sit flush left
+            up to that width then visibly slide inward on wider monitors
+            as the centered cap opened up. Dropping the cap keeps it
+            pinned to the same left inset at every viewport width — same
+            fix as MainVideo.jsx's hero wrap. */}
+        <div className="w-full grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-[34px] min-[721px]:mb-[46px]">
           <div>
             <div className="flex items-center gap-3 text-black">
               <span className="w-[34px] h-px bg-current"></span>
