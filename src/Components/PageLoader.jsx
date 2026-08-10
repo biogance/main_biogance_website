@@ -40,6 +40,11 @@ const VALID_ROUTES = [
   "/checkout",
   "/expert-advice",
   "/expert-detail",
+  "/breed-guide",
+  // Individual breed articles are root-level routes (/dog/slug, /cat/slug —
+  // see src/app/[species]/[slug]), not nested under /breed-guide.
+  "/dog",
+  "/cat",
 ];
 
 export function callSplashApi() {

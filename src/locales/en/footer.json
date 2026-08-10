@@ -1,7 +1,7 @@
 {
   "company": {
     "description": "Biogance blends science and nature to craft eco-certified pet care made in France — promoting animal well-being, sustainability, and safe, effective care for your companions.",
-    "address": "ZI Anjou Atlantique, Angers, France",
+    "address": "Z.I. Anjou Atlantique, 49123 Champtocé-sur-Loire, France",
     "email": "info@biogance.fr",
     "phone": "+33 2 41 73 15 15"
   },
@@ -130,30 +130,24 @@
       "Nos certifications",
       "Our expert tips",
       "Our ingredients",
+      "Breed",
       "Join the loyalty program",
       "Write to us"
     ]
   },
   "professional": {
-    "title": "Professional",
+    "title": "Professional & Ambassador ",
     "items": [
-      "Groomers & other Professionals",
-      "Become one of our Ambassadors"
+      "Resellers & Distributors",
+      "Become Partner/Ambassadors"
     ]
   },
-  "ambassador": {
-    "title": "Ambassador",
-    "items": [
-      "To become a Biogance ambassador",
-      "Join the Biogance partners",
-      "Become an Ekinat partner"
-    ]
-  },
+ 
   "news": {
     "title": "News",
     "items": [
-      "News",
-      "The latest expert advice"
+     
+      "Latest Expert Advices"
     ]
   },
   "bottom": {

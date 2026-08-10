@@ -683,6 +683,37 @@ export default function FilterProducts() {
     return () => window.removeEventListener("splashDataReady", loadFromSplash);
   }, []);
 
+  // splashData's own `.ranges` only covers the ~4 core consumer ranges
+  // (BIOGANCE/ORGANISSIME/PLOUF/DERMOCARE — same set as FALLBACK_RANGES
+  // below); the home API's `.ranges` (Footer.jsx's source for "Our Products
+  // Ranges") has the full ~10, including EKINAT/PHYTOCARE/BIOGANCE
+  // PROFESSIONNEL/BIOSPOTIX/OSSOBELLO/WEST PAW. Without also reading this,
+  // RANGES_LIST never contained those, so a Footer link to one of them
+  // landed here with ?range_name=.. but rangeParam wasn't in RANGES_LIST —
+  // the deep-link effect saw no match and silently gave up.
+  const [homeApiData, setHomeApiData] = useState(null);
+  useEffect(() => {
+    const loadFromHome = () => {
+      const cached = localStorage.getItem("homePageData");
+      if (cached) {
+        try {
+          setHomeApiData(JSON.parse(cached));
+        } catch (e) {}
+      }
+    };
+    loadFromHome();
+    window.addEventListener("homePageDataReady", loadFromHome);
+    return () => window.removeEventListener("homePageDataReady", loadFromHome);
+  }, []);
+
+  const allRanges = useMemo(() => {
+    const merged = new Map();
+    [...(apiData?.ranges || []), ...(homeApiData?.ranges || [])].forEach((r) => {
+      if (r?.name && !merged.has(r.name)) merged.set(r.name, r);
+    });
+    return [...merged.values()];
+  }, [apiData, homeApiData]);
+
   const apiProducts = apiData?.popular || [];
   const bestSellerProducts = apiData?.best_seller || [];
 
@@ -710,7 +741,10 @@ export default function FilterProducts() {
   };
 
   // Build dynamic filter lists from API data
-  const RANGES_LIST = useMemo(() => buildRangesList(apiData), [apiData]);
+  const RANGES_LIST = useMemo(
+    () => (allRanges.length ? allRanges.map((r) => r.name) : FALLBACK_RANGES),
+    [allRanges],
+  );
   const SIZES_LIST = useMemo(() => buildSizesList(apiData), [apiData]);
   const COLORS_LIST = useMemo(() => buildColorsList(apiData), [apiData]);
   const COLOR_SWATCHES_MAP = useMemo(
@@ -817,6 +851,8 @@ export default function FilterProducts() {
   const familyParam = searchParams
     ? searchParams.get("family_name")
     : undefined;
+  // Footer.jsx's "Our Products Ranges" links land here as /shop?range_name=..
+  const rangeParam = searchParams ? searchParams.get("range_name") : undefined;
 
   // Both deep-link effects below must only ever apply once. The URL query string is
   // never cleared after landing here, so without a "consumed" guard, anything that later
@@ -851,6 +887,85 @@ export default function FilterProducts() {
     }
   }, [familyParam, animals]);
 
+  // Deep-link from Footer.jsx's "Our Products Ranges" (/shop?range_name=..).
+  // RANGES_LIST/state.ranges both store the range's plain `.name` (English,
+  // never translated — see buildRangesList/getSelectedIds above), so the
+  // param just needs to match that directly once it's loaded.
+  const rangeParamAppliedRef = useRef(false);
+  useEffect(() => {
+    if (rangeParamAppliedRef.current) return;
+    // RANGES_LIST starts out as FALLBACK_RANGES (4 items) before splash/home
+    // data has loaded — marking "applied" just for reaching this branch
+    // (regardless of whether includes() actually matched) is what broke the
+    // last 6 ranges: they were never in that 4-item fallback, so the very
+    // first pass "consumed" the attempt and it never re-checked once the
+    // real ~10-item merged list arrived a moment later. Only the first 4
+    // ranges happened to match FALLBACK_RANGES, which is why those worked.
+    if (rangeParam && RANGES_LIST.includes(rangeParam)) {
+      setRanges((prev) => (prev.includes(rangeParam) ? prev : [rangeParam]));
+      rangeParamAppliedRef.current = true;
+    }
+  }, [rangeParam, RANGES_LIST]);
+
+  // Footer.jsx's category/family and range links carry their selection via
+  // sessionStorage ("shopDeepLink") instead of a query string, so /shop's
+  // URL stays plain. Read once on mount and clear it immediately — the
+  // matching effects below then behave exactly like catParam/familyParam/
+  // rangeParam above (retry until their data's loaded, only mark "applied"
+  // on an actual match).
+  const [shopDeepLink, setShopDeepLink] = useState(null);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("shopDeepLink");
+      if (raw) {
+        sessionStorage.removeItem("shopDeepLink");
+        setShopDeepLink(JSON.parse(raw));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const deepLinkCatAppliedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkCatAppliedRef.current) return;
+    if (shopDeepLink?.type === "family" && shopDeepLink.category_id && categoriesList.length > 0) {
+      const matchedCat = categoriesList.find(
+        (c) => String(c.id) === String(shopDeepLink.category_id),
+      );
+      if (matchedCat) {
+        setAnimals([matchedCat.name]);
+        deepLinkCatAppliedRef.current = true;
+      }
+    }
+  }, [shopDeepLink, categoriesList]);
+
+  const deepLinkFamilyAppliedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkFamilyAppliedRef.current) return;
+    if (shopDeepLink?.type === "family" && shopDeepLink.family_name && animals.length > 0) {
+      setFamilies((prev) =>
+        prev.includes(shopDeepLink.family_name) ? prev : [shopDeepLink.family_name],
+      );
+      deepLinkFamilyAppliedRef.current = true;
+    }
+  }, [shopDeepLink, animals]);
+
+  const deepLinkRangeAppliedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkRangeAppliedRef.current) return;
+    if (
+      shopDeepLink?.type === "range" &&
+      shopDeepLink.range_name &&
+      RANGES_LIST.includes(shopDeepLink.range_name)
+    ) {
+      setRanges((prev) =>
+        prev.includes(shopDeepLink.range_name) ? prev : [shopDeepLink.range_name],
+      );
+      deepLinkRangeAppliedRef.current = true;
+    }
+  }, [shopDeepLink, RANGES_LIST]);
+
   const getSelectedIds = () => {
     const categoryIds = categoriesList
       .filter((cat) => animals.includes(cat.name))
@@ -880,7 +995,7 @@ export default function FilterProducts() {
     const needIds = findSubcategoryIds("need", needs);
     const forWhichIds = findSubcategoryIds("for_which", forWhich);
 
-    const rangeIds = (apiData?.ranges || [])
+    const rangeIds = allRanges
       .filter((r) => ranges.includes(r.name))
       .map((r) => r.id)
       .join(",");

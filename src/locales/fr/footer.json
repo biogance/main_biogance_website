@@ -1,7 +1,7 @@
 {
   "company": {
     "description": "Biogance allie science et nature pour créer des soins pour animaux éco-certifiés fabriqués en France — promouvant le bien-être animal, la durabilité et des soins sûrs et efficaces pour vos compagnons.",
-    "address": "ZI Anjou Atlantique, Angers, France",
+    "address": "Z.I. Anjou Atlantique, 49123 Champtocé-sur-Loire, France",
     "email": "info@biogance.fr",
     "phone": "+33 2 41 73 15 15"
   },
@@ -130,30 +130,24 @@
       "Nos certifications",
       "Nos conseils d'experts",
       "Nos ingrédients",
+      "Race",
       "Rejoindre le programme de fidélité",
       "Écrivez-nous"
     ]
   },
   "professional": {
-    "title": "Professionnel",
+    "title": "Professionnel & Ambassadeur",
     "items": [
-      "Toiletteurs & autres Professionnels",
-      "Devenez l'un de nos Ambassadeurs"
+      "Revendeurs et distributeurs",
+      "Devenez partenaires/ambassadeurs"
     ]
   },
-  "ambassador": {
-    "title": "Ambassadeur",
-    "items": [
-      "Devenir ambassadeur Biogance",
-      "Rejoindre les partenaires Biogance",
-      "Devenir partenaire Ekinat"
-    ]
-  },
+  
   "news": {
     "title": "Actualités",
     "items": [
-      "Actualités",
-      "Les derniers conseils d'experts"
+    
+      "Derniers conseils d'experts"
     ]
   },
   "bottom": {
