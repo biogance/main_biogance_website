@@ -202,6 +202,11 @@ export default function HeroSection() {
         } else {
           localStorage.setItem('homePageData', JSON.stringify(res.data.data));
           setApiData(res.data.data);
+          // Lets Footer.jsx (rendered on every page, not just this one) pick
+          // up the freshly-fetched ranges/etc. without polling — same
+          // "fire an event, listeners re-read localStorage" pattern as
+          // PageLoader's 'splashDataReady'.
+          window.dispatchEvent(new Event('homePageDataReady'));
         }
       })
       .catch(err => console.error('API Error:', err))
@@ -309,7 +314,7 @@ export default function HeroSection() {
           ></div>
 
        {/* Content Container */}
-      <div className="relative z-10 w-full h-full flex items-start pt-30 sm:pt-28 md:items-center md:pt-0">
+      <div className="relative z-10 w-full h-full flex items-center">
             {/* Same left padding as LandingProductFinder.jsx's header
                 (px-4/clamp page-x) so the hero text lines up with the
                 section headings below it on normal screens. Unlike those
@@ -321,10 +326,10 @@ export default function HeroSection() {
                 cap opened up. Dropping the cap keeps the heading pinned
                 to the same left inset at every viewport width. */}
             <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-left mx-0">
+              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-center md:text-left mx-auto md:mx-0">
 
                 {/* Tagline */}
-                <div className="flex items-center justify-start gap-3 mb-2 md:mb-4">
+                <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
                   <span className="w-[34px] h-px bg-white/90"></span>
                   <p className="text-[10px] font-normal tracking-[0.22em] uppercase text-white/90">
                     {heroContent.tagline}
@@ -336,12 +341,12 @@ export default function HeroSection() {
                 </h1>
 
                 {/* Description */}
-                <p className="text-[16px] mb-[28px] max-w-[520px] mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
+                <p className="text-[16px] mb-[28px] max-w-[520px] mx-auto md:mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
                   {heroContent.description}
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-start">
+                <div className="flex flex-col sm:flex-row gap-2.5 justify-center md:justify-start">
                   <button onClick={() => router.push('/shop')} className="min-h-[48px] px-[26px] border border-white bg-[#171717] text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717]">
                     {t('hero.shopNow')}
                   </button>

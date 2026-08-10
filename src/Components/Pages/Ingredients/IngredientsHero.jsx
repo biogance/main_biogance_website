@@ -1,0 +1,42 @@
+'use client';
+
+import React from 'react';
+
+// Ported from https://kase-ho-connect.lovable.app/'s .hero — same real
+// Biogance photo, gradient and copy, just built with Tailwind instead of
+// the reference's own <style> block (--max:1840px/--x:clamp(22px,2.5vw,48px)
+// -> max-w-[1840px] + the same clamp() as an arbitrary padding value).
+export default function IngredientsHero() {
+  return (
+    <section className="relative flex items-center overflow-hidden min-h-screen">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg,#00000094,#0000001f 55%,#0000000d), url('https://www.biogance.com/wp-content/uploads/2023/02/IMG_9984-scaled.jpg') 50% 52%/cover no-repeat",
+        }}
+      />
+      {/* No max-w-[1840px]/mx-auto here — that cap only centers once the
+          viewport passes 1840px, which pins the text flush left below that
+          width then visibly slides it inward as the cap opens up above it
+          (exactly what browser zoom in/out exposes, since it changes the
+          effective CSS viewport width). Dropping the cap keeps this text at
+          the same left inset regardless of viewport/zoom — same fix as
+          MainVideo.jsx's hero wrap. */}
+      <div className="relative z-[1] w-full px-4 min-[641px]:px-[clamp(22px,2.5vw,48px)] py-[58px] min-[641px]:py-20 text-white">
+        <span className="flex items-center gap-3 text-[10px] tracking-[.18em] uppercase before:content-[''] before:w-[38px] before:h-px before:bg-current">
+          Inside every formula
+        </span>
+        <h1 className="mt-6 mb-7 text-[58px] min-[641px]:text-[clamp(62px,9vw,154px)] leading-[.82] tracking-[-.07em] uppercase font-medium">
+          Our
+          <br />
+          Ingredients.
+        </h1>
+        <p className="max-w-[620px] text-[17px] leading-[1.6] text-white/[.92]">
+          Discover the ingredients behind Biogance care — selected for their quality, their purpose and the benefits
+          they bring to your companion&apos;s everyday routine.
+        </p>
+      </div>
+    </section>
+  );
+}

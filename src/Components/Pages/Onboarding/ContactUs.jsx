@@ -1,184 +1,352 @@
 "use client"
 
-import { useState, useEffect } from 'react';
-import { PhoneInput } from 'react-international-phone';
-import 'react-international-phone/style.css';
+import { useState, useEffect, useRef } from 'react';
+import { AiOutlineClose } from 'react-icons/ai';
+import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
+import { FlagImage, defaultCountries, parseCountry } from 'react-international-phone';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { BASE_URL } from '../../API/API';
+import { lockBodyScroll, unlockBodyScroll } from './ScrollLock';
 
-export default function ContactUs({ onClose }) {
+const getDialCodeByIso2 = (iso2) => {
+  const country = defaultCountries.find((c) => parseCountry(c).iso2 === iso2);
+  return country ? `+${parseCountry(country).dialCode}` : '';
+};
+
+// Flag + dial code box, with a separate number field and a searchable
+// country dropdown — same component as UserProfile.jsx's PhoneFieldBox.
+function PhoneFieldBox({ iso2, onCountryChange, value, onChange, onBlur, error }) {
+  const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [search, setSearch] = useState('');
+  const wrapRef = useRef(null);
+  const dialCode = getDialCodeByIso2(iso2 || 'fr');
+
+  const filteredCountries = defaultCountries
+    .map((c) => parseCountry(c))
+    .filter((p) => {
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      return p.name.toLowerCase().includes(q) || p.dialCode.includes(q);
+    });
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div>
+      <div
+        ref={wrapRef}
+        className={`relative flex items-stretch bg-gray-50 border transition-colors ${
+          error ? 'border-red-500 ring-2 ring-red-200' : focused ? 'border-gray-400 ring-2 ring-gray-400' : 'border-gray-200'
+        }`}
+      >
+        {/* Flag + dial code */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-1.5 px-3 h-[42px] border-r border-gray-200 shrink-0 cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none"
+        >
+          <FlagImage iso2={iso2 || 'fr'} size="20px" />
+          <span className="text-sm text-gray-700">{dialCode}</span>
+          <MdOutlineKeyboardArrowDown
+            className={`text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            size={16}
+          />
+        </button>
+
+        {/* Number */}
+        <div className="relative flex-1">
+          <input
+            type="tel"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => {
+              setFocused(false);
+              onBlur?.();
+            }}
+            className="w-full h-[42px] px-4 bg-transparent focus:outline-none text-gray-900 text-sm"
+          />
+        </div>
+
+        {open && (
+          <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 shadow-lg z-20">
+            <div className="p-2 border-b border-gray-100">
+              <input
+                type="text"
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search country"
+                className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+            <div className="max-h-56 overflow-y-auto">
+              {filteredCountries.length === 0 ? (
+                <p className="px-3 py-4 text-sm text-gray-400 text-center">No country found</p>
+              ) : (
+                filteredCountries.map((p) => (
+                  <button
+                    key={p.iso2}
+                    type="button"
+                    onClick={() => { onCountryChange(p.iso2); setOpen(false); setSearch(''); }}
+                    className={`group w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-900 hover:bg-black hover:text-white transition-colors cursor-pointer ${p.iso2 === iso2 ? 'bg-gray-100' : ''}`}
+                  >
+                    <FlagImage iso2={p.iso2} size="18px" />
+                    <span className="flex-1 truncate">{p.name}</span>
+                    <span className="text-gray-400 group-hover:text-gray-300">+{p.dialCode}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// Used two ways: as a modal from Footer.jsx (isOpen + onClose passed — gets
+// the backdrop, Login.jsx-style open/close animation and a close button),
+// and as the plain page body of /contact (no props at all — just the card,
+// no backdrop/animation/close button, same as it always was there).
+export default function ContactUs({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
+  const isModal = typeof onClose === 'function';
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phoneNumber: '',
     message: ''
   });
+  const [countryIso2, setCountryIso2] = useState('fr');
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Prevent background scroll when component is mounted
+  // Same open/close lifecycle as Login.jsx — stays mounted for the exit
+  // animation's duration instead of unmounting the instant isOpen flips.
+  const [isClosing, setIsClosing] = useState(false);
+  const modalCardRef = useRef(null);
+
   useEffect(() => {
-    // Save current scroll position
-    const scrollY = window.scrollY;
-    
-    // Prevent scrolling
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    
-    return () => {
-      // Restore scrolling
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      
-      // Restore scroll position
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
+    if (isModal && isOpen) {
+      lockBodyScroll();
+      return () => unlockBodyScroll();
+    }
+  }, [isModal, isOpen]);
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+  if (isModal && !isOpen && !isClosing) return null;
+
+  const handleClose = () => {
+    if (!isModal) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose?.();
+    }, 250);
+  };
+
+  const handleBackdropClick = () => {
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const handleCancel = () => {
-    console.log('Cancel button clicked');
-    setFormData({
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      message: ''
-    });
-    if (onClose) onClose();
+    setFormData({ fullName: '', email: '', phoneNumber: '', message: '' });
+    setErrors({});
+    if (isModal) handleClose();
   };
 
-  const phoneInputStyles = `
-    .react-international-phone-input-container {
-      background-color: #F9FAFB !important;
-      border: 1px solid #E5E7EB !important;
-      border-radius: 8px !important;
-      height: 42px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .react-international-phone-input-container .react-international-phone-country-selector-button {
-      border: none !important;
-      background-color: transparent !important;
-      padding: 0 8px 0 12px !important;
-      height: 100% !important;
-    }
-    .react-international-phone-input-container .react-international-phone-country-selector-button__button-content {
-      gap: 6px !important;
-    }
-    .react-international-phone-input-container input {
-      border: none !important;
-      background-color: transparent !important;
-      height: 100% !important;
-      padding: 0 16px !important;
-      border-radius: 0 !important;
-    }
-    .react-international-phone-input-container input:focus {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-    .react-international-phone-input-container:focus-within {
-      ring: 2px !important;
-      ring-color: #9CA3AF !important;
-    }
-  `;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-  return (
+    const newErrors = {};
+    if (!formData.fullName.trim()) newErrors.fullName = 'Please enter the name.';
+    if (!formData.email.trim()) newErrors.email = 'Please enter the email.';
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Please enter the phone number.';
+    if (!formData.message.trim()) newErrors.message = 'Please enter the message.';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/app/contact-us`, {
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone_number: `${getDialCodeByIso2(countryIso2)}${formData.phoneNumber.trim()}`,
+        message: formData.message.trim(),
+      });
+      if (res.data.status === false) {
+        toast.error(res.data.action || 'Something went wrong. Please try again.');
+      } else {
+        toast.success('Your message has been sent.');
+        setFormData({ fullName: '', email: '', phoneNumber: '', message: '' });
+        if (isModal) handleClose();
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const formBody = (
     <>
-      <style>{phoneInputStyles}</style>
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold mb-2 text-black">{t('contactUs.title')}</h1>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {t('contactUs.description')}
-            </p>
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-semibold mb-2 text-black">{t('contactUs.title')}</h1>
+        <p className="text-gray-600 text-sm leading-relaxed">
+          {t('contactUs.description')}
+        </p>
+      </div>
+
+      {/* Form Fields */}
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {/* Full Name and Email Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="fullName" className="block text-sm mb-2 text-black font-medium">
+              {t('contactUs.form.fullName')}
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              placeholder={t('contactUs.form.fullNamePlaceholder')}
+              value={formData.fullName}
+              onChange={(e) => handleChange('fullName', e.target.value)}
+              className={`w-full px-3 py-2.5 bg-gray-50 border focus:outline-none text-black text-sm ${
+                errors.fullName ? 'border-red-500' : 'border-gray-200'
+              }`}
+            />
+            {errors.fullName && <p className="mt-1.5 text-xs text-red-600">{errors.fullName}</p>}
           </div>
-
-          {/* Form Fields */}
-          <div className="space-y-4">
-            {/* Full Name and Email Row */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="fullName" className="block text-sm mb-2 text-black font-medium">
-                  {t('contactUs.form.fullName')}
-                </label>
-                <input
-                  id="fullName"
-                  type="text"
-                  placeholder={t('contactUs.form.fullNamePlaceholder')}
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-black text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm mb-2 text-black font-medium">
-                  {t('contactUs.form.email')}
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder={t('contactUs.form.emailPlaceholder')}
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-black text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-medium">
-                {t('contactUs.form.phoneNumber')}
-              </label>
-              <PhoneInput
-                defaultCountry="fr"
-                value={formData.phoneNumber}
-                onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
-              />
-            </div>
-
-            {/* Message */}
-            <div>
-              <label htmlFor="message" className="block text-sm mb-2 text-black font-medium">
-                {t('contactUs.form.message')}
-              </label>
-              <textarea
-                id="message"
-                placeholder={t('contactUs.form.messagePlaceholder')}
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                rows={5}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-black text-sm resize-none"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="w-full bg-white text-black py-3 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors font-medium cursor-pointer"
-              >
-                {t('contactUs.buttons.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium cursor-pointer"
-              >
-                {t('contactUs.buttons.submit')}
-              </button>
-            </div>
+          <div>
+            <label htmlFor="email" className="block text-sm mb-2 text-black font-medium">
+              {t('contactUs.form.email')}
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder={t('contactUs.form.emailPlaceholder')}
+              value={formData.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              className={`w-full px-3 py-2.5 bg-gray-50 border focus:outline-none text-black text-sm ${
+                errors.email ? 'border-red-500' : 'border-gray-200'
+              }`}
+            />
+            {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>}
           </div>
         </div>
-      </div>
+
+        {/* Phone Number */}
+        <div>
+          <label htmlFor="phoneNumber" className="block text-sm mb-2 text-black font-medium">
+            {t('contactUs.form.phoneNumber')}
+          </label>
+          <PhoneFieldBox
+            iso2={countryIso2}
+            onCountryChange={setCountryIso2}
+            value={formData.phoneNumber}
+            onChange={(value) => handleChange('phoneNumber', value)}
+            error={errors.phoneNumber}
+          />
+        </div>
+
+        {/* Message */}
+        <div>
+          <label htmlFor="message" className="block text-sm mb-2 text-black font-medium">
+            {t('contactUs.form.message')}
+          </label>
+          <textarea
+            id="message"
+            placeholder={t('contactUs.form.messagePlaceholder')}
+            value={formData.message}
+            onChange={(e) => handleChange('message', e.target.value)}
+            rows={5}
+            className={`w-full px-3 py-2.5 bg-gray-50 border focus:outline-none text-black text-sm resize-none ${
+              errors.message ? 'border-red-500' : 'border-gray-200'
+            }`}
+          />
+          {errors.message && <p className="mt-1.5 text-xs text-red-600">{errors.message}</p>}
+        </div>
+
+        {/* Buttons */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="w-full bg-white text-black py-3 border-2 border-gray-300 hover:bg-gray-50 transition-colors font-medium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {t('contactUs.buttons.cancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors font-medium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Submitting...' : t('contactUs.buttons.submit')}
+          </button>
+        </div>
+      </form>
     </>
+  );
+
+  // Standalone /contact page — plain card, no backdrop/animation/close button.
+  if (!isModal) {
+    return (
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
+        <div className="relative bg-white w-full max-w-lg p-8 overflow-y-auto">
+          {formBody}
+        </div>
+      </div>
+    );
+  }
+
+  // Modal usage (Footer.jsx) — same backdrop/pop/shake animation as Login.jsx.
+  return (
+    <div
+      className={`fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1200] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+      onClick={handleBackdropClick}
+    >
+      <div className={`w-full max-w-lg ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        <div
+          ref={modalCardRef}
+          onClick={(e) => e.stopPropagation()}
+          className="relative bg-white w-full p-8 overflow-y-auto"
+        >
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
+          >
+            <AiOutlineClose size={20} />
+          </button>
+          {formBody}
+        </div>
+      </div>
+    </div>
   );
 }

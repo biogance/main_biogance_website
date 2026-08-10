@@ -298,7 +298,7 @@ export default function LabortorySection() {
             </div>
           </section>
 
-          <section className="section white">
+          <section className="section white" id="proofs">
             <div className="wrap">
               <div className="section-head">
                 <div>
@@ -439,14 +439,16 @@ export default function LabortorySection() {
 .hero,
 #story,
 #values,
-#commitments {
+#commitments,
+#proofs {
   scroll-margin-top: 104px;
 }
 @media (max-width: 1023px) {
   .hero,
   #story,
   #values,
-  #commitments {
+  #commitments,
+  #proofs {
     scroll-margin-top: 64px;
   }
 }
