@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from 'react-i18next';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoChevronForward } from 'react-icons/io5';
+import { FiClock } from 'react-icons/fi';
 import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getDeviceId } from '../../../utils/deviceId';
 import { startTopLoader } from "../TopLoader";
 import { BsArrowUpRight } from "react-icons/bs";
-import { HiArrowTrendingUp } from "react-icons/hi2";
+import { HiArrowTrendingUp, HiOutlineArrowUpRight } from "react-icons/hi2";
+import { GoArrowUpRight } from "react-icons/go";
 
 
 const FALLBACK_IMAGES = [
@@ -21,6 +23,16 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=800&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop",
 ];
+
+// Reads the categories entry whose type is "topic" (mirrors getCategoryName
+// in ExpertAdvices.jsx) and returns that topic's localized name. Falls back
+// to "⸻" when the blog has no topic category set, same as ExpertAdvices.jsx.
+function getCategoryName(article, isFrench) {
+  const topicEntry = article?.categories?.find((c) => c?.type === "topic");
+  const cat = topicEntry?.category;
+  if (!cat) return "⸻";
+  return isFrench && cat.french_name ? cat.french_name : (cat.name ?? "⸻");
+}
 
 // Shimmer for one card — `featured` gets the tall image used by the left,
 // full-height slot; the other 4 (right-side 2x2 grid) get the shorter one.
@@ -37,6 +49,7 @@ const ShimmerCard = ({ featured = false }) => (
 
 export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const { t, i18n } = useTranslation('home');
+  const { t: trAdvice } = useTranslation('expertadvice');
   const isFrench = i18n.language === 'fr';
   const router = useRouter();
 
@@ -103,25 +116,37 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const renderCard = (article, index, featured) => {
     const apiImagePath = article.images?.[0]?.media;
     const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-    const tagNames = (article.tags || []).map((tag) => tag.name).filter(Boolean);
-    const tagLabel = tagNames.slice(0, 2).join(' · ');
-    const isFav = favorites[article.id] ?? article.favorites_exists ?? false;
     const displayName = isFrench && article.french_name ? article.french_name : article.name;
-    const displayDesc = isFrench && article.short_french_description ? article.short_french_description : article.short_description;
+    const categoryLabel = getCategoryName(article, isFrench);
 
+    // Card design mirrors the "All Articles" desktop cards in ExpertAdvices.jsx:
+    // grayscale→color image on hover, a hover-revealed arrow box top-right,
+    // an uppercase topic-category eyebrow (⸻ when the blog has none), an
+    // uppercase bold title with its own arrow icon, and a company/reading-
+    // time meta row — just scaled up for the larger featured slot.
     return (
       <article
         key={article.id}
         onClick={() => navigateToDetail(article)}
         className={`bg-white border border-[#d8d8d4] overflow-hidden cursor-pointer group flex flex-col ${featured ? 'h-full' : ''}`}
       >
-        <div className={`relative overflow-hidden bg-gray-100 flex-shrink-0 ${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'}`}>
+        <div className={`relative overflow-hidden bg-gray-200 flex-shrink-0 ${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'}`}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          </div>
           <img
             src={imageUrl}
             alt={displayName}
-            className="w-full h-full object-cover grayscale transition-transform duration-700 group-hover:scale-[1.025] group-hover:grayscale-0"
+            onLoad={(e) => {
+              e.currentTarget.previousSibling?.remove();
+              e.currentTarget.classList.remove('opacity-0');
+            }}
             onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
+            className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
           />
+          {/* <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
+          </div> */}
           {/* <button
             onClick={(e) => { e.stopPropagation(); toggleFavorite(article.id); }}
             className="absolute top-3 left-3 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -134,27 +159,30 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
         </div>
 
         <div className={`flex flex-col flex-grow ${featured ? 'p-5 md:p-[22px]' : 'p-4 md:p-[18px]'}`}>
-          <small className="text-[9px] tracking-[0.15em] uppercase text-[#858580]">
-            {tagLabel || t('expertAdvice.expertLabel', { defaultValue: 'Expert Advice' })}
-            {/* {' · '}{formatDate(article.created_at)} */}
-          </small>
+          <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
+            {categoryLabel}
+          </p>
 
-          <h3 className={`mt-[11px] font-medium mb-3 leading-[1.12] text-gray-900 ${featured ? 'text-xl md:text-[28px] line-clamp-2' : 'text-base md:text-[21px] line-clamp-2'}`}>
-            {displayName}
-          </h3>
+          <div className={`flex items-start justify-between gap-2 ${featured ? 'mb-3' : 'mb-2'}`}>
+            <h3
+              className={`font-bold uppercase text-gray-900 leading-snug line-clamp-2 flex-1 group-hover:underline underline-offset-2 ${
+                featured ? 'text-xl md:text-3xl min-h-[3.5rem] md:min-h-[4.5rem]' : 'text-sm md:text-base min-h-[2.5rem]'
+              }`}
+            >
+              {displayName}
+            </h3>
+            <HiOutlineArrowUpRight
+              className={`shrink-0 text-gray-700 ${featured ? 'w-5 h-5 mt-1' : 'w-4 h-4 mt-0.5 -mr-0.5'}`}
+            />
+          </div>
 
-          {featured && displayDesc && (
-            <p className="mb-3 text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-3">
-              {displayDesc}
-            </p>
-          )}
-
-          <button
-            onClick={(e) => { e.stopPropagation(); navigateToDetail(article); }}
-            className={`cursor-pointer bg-black text-white font-semibold hover:bg-gray-800 transition mt-auto self-start ${featured ? 'mt-5 px-4 py-2.5 text-xs md:text-sm' : 'mt-4 px-3 py-2 text-[11px]'}`}
-          >
-            {t('expertAdvice.continueReading')}
-          </button>
+          <div className="mt-auto pt-2 flex items-center justify-between text-[11px] text-gray-400">
+            <span>{article.company_name || 'Biogance'}</span>
+            <span className="flex items-center gap-1">
+              <FiClock className="w-3 h-3" />
+              {trAdvice('minShort', { time: article.reading_time || '0' })}
+            </span>
+          </div>
         </div>
       </article>
     );
@@ -193,10 +221,10 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
               <button
                 type="button"
                 onClick={() => { startTopLoader(); router.push('/advices'); }}
-                className="inline-flex items-center gap-2 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
+                className="inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
               >
                 {t('expertAdvice.seeAll')}
-            <HiArrowTrendingUp className="w-4.5 h-4.5" />
+           <GoArrowUpRight className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
