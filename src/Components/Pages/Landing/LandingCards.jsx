@@ -12,6 +12,7 @@ import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import { HiArrowTrendingUp } from "react-icons/hi2";
+import { GoArrowUpRight } from "react-icons/go";
 
 const toCleanAmount = (val) => {
   if (typeof val === "number") return val;
@@ -1253,10 +1254,10 @@ export default function PopularProducts({
                   start();
                   router.push("/shop");
                 }}
-                className="inline-flex items-center gap-2 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
+                className="inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
               >
                 {t("products.seeMore")}
-                <HiArrowTrendingUp className="w-4.5 h-4.5" />
+                <GoArrowUpRight className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
