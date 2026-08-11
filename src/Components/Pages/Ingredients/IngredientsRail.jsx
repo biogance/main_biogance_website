@@ -9,8 +9,21 @@ import { INGREDIENT_NAMES } from './ingredientsData';
 // reference's own 76px/64px mockup header height.
 export default function IngredientsRail({ selected, onSelect }) {
   const trackRef = useRef(null);
+  // Only scroll the chip row when `selected` actually changes from what it
+  // was last time we scrolled to it — comparing against a ref (instead of a
+  // one-shot "skip the first run" boolean) so this stays correct even when
+  // React runs the effect an extra time on mount (React 18 Strict Mode's
+  // dev-only mount→cleanup→mount replay would otherwise flip a boolean flag
+  // and let the scroll fire anyway on that replay). At mount the ref starts
+  // equal to `selected`, so every mount-time invocation is a no-op; the
+  // rail sits below the full-viewport Hero + Editorial + Index sections, so
+  // scrolling to it on load was dragging the whole page down as soon as
+  // /ingredients opened.
+  const lastScrolledRef = useRef(selected);
 
   useEffect(() => {
+    if (lastScrolledRef.current === selected) return;
+    lastScrolledRef.current = selected;
     const active = trackRef.current?.querySelector('[data-active="true"]');
     active?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [selected]);

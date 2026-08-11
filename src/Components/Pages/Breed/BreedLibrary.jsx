@@ -1,9 +1,37 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import BreedCard from './BreedCard';
 import BreedFilterSelect from './BreedFilterSelect';
 import { normalize, searchText } from './breedHelpers';
+
+// Shown before the home API's categories have loaded — same static-fallback
+// pattern as Footer.jsx's productRanges/category lists.
+const SPECIES_KEYS = ['dogs', 'cats'];
+const FALLBACK_SPECIES_LABELS = { dogs: 'Dogs', cats: 'Cats' };
+
+// Strips accents/punctuation down to a plain a-z0-9 slug — used as the tab
+// key for whichever API categories aren't dogs/cats (see resolveSpeciesKey).
+const slugify = (name) =>
+  (name || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+// Maps an API category to the key allBreeds is indexed by. Dogs/Cats are
+// special-cased by substring match (so "Dogs" or "Dogs & Puppies" both land
+// on the same 'dogs' key data/breeds.json actually has breed profiles
+// under) — every other category (Horses, Small Mammals, …) gets its own
+// slug key, which just won't have a matching allBreeds entry yet.
+const resolveSpeciesKey = (cat) => {
+  const name = (cat?.name || '').toLowerCase();
+  if (name.includes('dog')) return 'dogs';
+  if (name.includes('cat')) return 'cats';
+  return slugify(cat?.name) || `category-${cat?.id}`;
+};
 
 const SIZE_OPTIONS = [
   { value: '', label: 'All sizes' },
@@ -36,6 +64,42 @@ const APARTMENT_OPTIONS = [
 // Breed library — search, species tabs, filters (dogs only), A-Z jump,
 // paginated grid ("Load more") — ported from .library / #library.
 export default function BreedLibrary({ allBreeds, onOpenBreed }) {
+  const { i18n } = useTranslation();
+  const isFrench = i18n.language?.startsWith('fr');
+
+  // Species tabs: same home-API categories OurProducts.jsx/Footer.jsx/
+  // MainVideo.jsx all read (splashData.categories in localStorage, kept
+  // fresh via the 'splashDataReady' event PageLoader fires) — every
+  // category the API returns becomes a tab here instead of a hardcoded
+  // Dogs/Cats pair. Species without breed data yet in data/breeds.json
+  // (currently only 'dogs'/'cats' have profiles) still get a tab, just an
+  // empty grid (see the `allBreeds[species] || []` guards below).
+  const [apiCategories, setApiCategories] = useState(null);
+  useEffect(() => {
+    const readCategories = () => {
+      try {
+        const cached = JSON.parse(localStorage.getItem('splashData') || 'null');
+        if (cached?.categories) setApiCategories(cached.categories);
+      } catch {
+        /* ignore */
+      }
+    };
+    readCategories();
+    window.addEventListener('splashDataReady', readCategories);
+    return () => window.removeEventListener('splashDataReady', readCategories);
+  }, []);
+
+  const speciesTabs = useMemo(() => {
+    if (apiCategories?.length) {
+      return apiCategories.map((cat) => ({
+        key: resolveSpeciesKey(cat),
+        label: (isFrench && cat.french_name ? cat.french_name : cat.name) || '',
+      }));
+    }
+    // Falls back to the static Dogs/Cats pair until the API categories load.
+    return SPECIES_KEYS.map((key) => ({ key, label: FALLBACK_SPECIES_LABELS[key] }));
+  }, [apiCategories, isFrench]);
+
   const [species, setSpecies] = useState('dogs');
   const [letter, setLetter] = useState('All');
   const [query, setQuery] = useState('');
@@ -52,12 +116,14 @@ export default function BreedLibrary({ allBreeds, onOpenBreed }) {
   const [panelSettled, setPanelSettled] = useState(false);
 
   const letters = useMemo(() => {
-    const set = new Set(allBreeds[species].map((b) => b.name.charAt(0).toUpperCase()));
+    const set = new Set((allBreeds[species] || []).map((b) => b.name.charAt(0).toUpperCase()));
     return ['All', ...set].sort((a, b) => (a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b, 'en')));
   }, [allBreeds, species]);
 
   const filtered = useMemo(() => {
-    let items = allBreeds[species];
+    // Species the API returns but data/breeds.json has no profiles for yet
+    // (e.g. Horses) fall through to an empty grid instead of crashing here.
+    let items = allBreeds[species] || [];
     const q = normalize(query);
     if (q) items = items.filter((b) => searchText(b).includes(q));
     if (letter !== 'All') items = items.filter((b) => normalize(b.name).startsWith(normalize(letter)));
@@ -120,17 +186,17 @@ export default function BreedLibrary({ allBreeds, onOpenBreed }) {
           clear the nav itself once scrolled past. */}
       <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-b border-[#d8d8d4]">
         <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
-          <div className="flex">
-            {['dogs', 'cats'].map((s) => (
+          <div className="flex overflow-x-auto">
+            {speciesTabs.map((tab) => (
               <button
-                key={s}
+                key={tab.key}
                 type="button"
-                onClick={() => switchSpecies(s)}
-                className={`min-h-[62px] px-7 border-0 border-r first:border-l border-[#d8d8d4] uppercase text-[10px] tracking-[.14em] cursor-pointer ${
-                  species === s ? 'bg-black text-white' : 'bg-transparent'
+                onClick={() => switchSpecies(tab.key)}
+                className={`shrink-0 min-h-[62px] px-7 border-0 border-r first:border-l border-[#d8d8d4] uppercase text-[10px] tracking-[.14em] cursor-pointer ${
+                  species === tab.key ? 'bg-black text-white' : 'bg-transparent'
                 }`}
               >
-                {s === 'dogs' ? 'Dogs' : 'Cats'}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -157,10 +223,7 @@ export default function BreedLibrary({ allBreeds, onOpenBreed }) {
         </div>
 
         {species === 'dogs' && (
-          // CSS-grid accordion: animating grid-template-rows (0fr → 1fr) instead of
-          // mount/unmount gives a smooth height transition without measuring content
-          // height in JS, and without the instant show/hide "jerk" the old
-          // `filtersOpen && (...)` conditional render had.
+         
           <div
             className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
               filtersOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
@@ -249,7 +312,11 @@ export default function BreedLibrary({ allBreeds, onOpenBreed }) {
             <BreedCard key={`${b.species}-${b.slug}`} breed={b} onClick={() => onOpenBreed(b)} />
           ))
         ) : (
-          <div className="col-span-full py-[90px] px-4 text-center text-base">No breed matches these filters.</div>
+          <div className="col-span-full py-[90px] px-4 text-center text-base">
+            {allBreeds[species]?.length
+              ? 'No breed matches these filters.'
+              : 'Breed profiles for this species are coming soon.'}
+          </div>
         )}
       </div>
 
