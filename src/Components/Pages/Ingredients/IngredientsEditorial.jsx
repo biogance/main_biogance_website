@@ -1,10 +1,13 @@
 'use client';
 
 import React from 'react';
-import { INGREDIENT_NAMES } from './ingredientsData';
 
-// Ported from .editorial / .statline — "Chosen with purpose." section.
-export default function IngredientsEditorial() {
+// Ported from .editorial / .statline — "Chosen with purpose." section. The
+// ingredient count now comes from OurIngredients.jsx's
+// POST {BASE_URL}/ingredient/list response (`data.total`) instead of a
+// hardcoded name list — shows a pulsing placeholder until that first
+// response lands.
+export default function IngredientsEditorial({ total, loading }) {
   return (
     /* No max-w-[1840px]/mx-auto — same zoom/viewport-width fix as
        IngredientsHero.jsx: that cap only centers past 1840px, pinning
@@ -32,7 +35,11 @@ export default function IngredientsEditorial() {
         </p>
         <div className="border-t border-[#d9d8d1] pt-[22px] mt-6 grid grid-cols-1 min-[641px]:grid-cols-3 gap-[18px]">
           <div>
-            <strong className="block text-[27px] font-medium">{INGREDIENT_NAMES.length}</strong>
+            {loading ? (
+              <span className="inline-block h-[27px] w-10 bg-[#eee] rounded animate-pulse" />
+            ) : (
+              <strong className="block text-[27px] font-medium">{total ?? 0}</strong>
+            )}
             <span className="text-[10px] tracking-[.12em] uppercase text-[#77766f]">Ingredients to explore</span>
           </div>
           <div>
