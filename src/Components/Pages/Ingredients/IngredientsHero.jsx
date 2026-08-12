@@ -2,13 +2,9 @@
 
 import React from 'react';
 
-// Ported from https://kase-ho-connect.lovable.app/'s .hero — same real
-// Biogance photo, gradient and copy, just built with Tailwind instead of
-// the reference's own <style> block (--max:1840px/--x:clamp(22px,2.5vw,48px)
-// -> max-w-[1840px] + the same clamp() as an arbitrary padding value).
 export default function IngredientsHero() {
   return (
-    <section className="relative flex items-center overflow-hidden min-h-screen">
+    <section className="relative overflow-hidden min-h-[100svh]">
       <div
         className="absolute inset-0"
         style={{
@@ -16,8 +12,8 @@ export default function IngredientsHero() {
             "linear-gradient(90deg,#00000094,#0000001f 55%,#0000000d), url('https://www.biogance.com/wp-content/uploads/2023/02/IMG_9984-scaled.jpg') 50% 52%/cover no-repeat",
         }}
       />
-    
-      <div className="relative z-[1] w-full px-4 min-[641px]:px-[clamp(22px,2.5vw,48px)] py-[58px] min-[641px]:py-20 text-white">
+
+      <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 z-[1] w-full px-4 min-[641px]:px-[clamp(22px,2.5vw,48px)] text-white">
         <span className="flex items-center gap-3 text-[10px] tracking-[.18em] uppercase before:content-[''] before:w-[38px] before:h-px before:bg-current">
           Inside every formula
         </span>
