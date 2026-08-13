@@ -31,7 +31,7 @@ import prosectionEN from "../src/locales/en/prosection.json";
 import resellerEN from "../src/locales/en/reseller.json";
 import ambassadorEN from "../src/locales/en/ambassador.json";
 import laboratoryEN from "../src/locales/en/laboratory.json";
-
+import breedEN from "../src/locales/en/breed.json";
 
 
 
@@ -64,6 +64,7 @@ import prosectionFR from "../src/locales/fr/prosection.json";
 import resellerFR from "../src/locales/fr/reseller.json";
 import ambassadorFR from "../src/locales/fr/ambassador.json";
 import laboratoryFR from "../src/locales/fr/laboratory.json";
+import breedFR from "../src/locales/fr/breed.json";
 
 i18n
     .use(LanguageDetector)
@@ -100,6 +101,7 @@ i18n
                 reseller: resellerEN,
                 ambassador: ambassadorEN,
                 laboratory: laboratoryEN,
+                breed: breedEN,
             },
             fr: {
                 common: commonFR,
@@ -131,10 +133,11 @@ i18n
                 reseller: resellerFR,
                 ambassador: ambassadorFR,
                 laboratory: laboratoryFR,
+                breed: breedFR,
             },
         },
         fallbackLng: "en",
-        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout, prosection, reseller, ambassador, laboratory"],
+        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout, prosection, reseller, ambassador, laboratory, breed"],
         defaultNS: "common",
         interpolation: {
             escapeValue: false,

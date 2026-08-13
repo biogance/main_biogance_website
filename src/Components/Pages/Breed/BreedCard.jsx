@@ -1,7 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { cardMeta } from './breedHelpers';
+import { useTranslation } from 'react-i18next';
+
+// `breed.apartment` is the raw 'Oui'/'Non' the API sends (see
+// BreedLibrary.jsx's mapListItem) — text comes from
+// src/locales/{en,fr}/breed.json via the `breed` namespace's `t()`.
+function apartmentChip(v, t) {
+  const key = v === 'Oui' ? 'suitable' : v === 'Non' ? 'notSuitable' : null;
+  return key ? t(`apartment.chip.${key}`) : '';
+}
+
+// Up to 3 small chips under the description — size + apartment suitability,
+// whichever the breed actually has (falsy entries drop out on their own).
+function cardMeta(breed, t) {
+  return [breed.size, breed.apartment ? apartmentChip(breed.apartment, t) : ''].filter(Boolean).slice(0, 3);
+}
+
+// "Dog breed"/"Cat breed"/… — dog/cat get proper translated copy
+// (src/locales/{en,fr}/breed.json); any other species key (e.g. a future
+// "horse") falls back to the generic "{{species}} breed" / "Race de
+// {{species}}" pattern instead of going untranslated.
+function speciesLabel(species, t) {
+  if (!species) return '';
+  const known = t(`card.speciesLabel.${species}`, { defaultValue: '' });
+  if (known) return known;
+  const capitalized = species.charAt(0).toUpperCase() + species.slice(1);
+  return t('card.speciesLabel.generic', { species: capitalized });
+}
 
 // Simple line-art placeholder icons — ported from the mockup's inline
 // dogIcon/catIcon <svg> strings, used whenever a breed has no `image`.
@@ -26,10 +52,26 @@ function CatIcon() {
 // One card in the breed-grid / related-grid — hover inverts to black/white,
 // same as `.breed-card:hover` in the mockup, done here with group-hover.
 export default function BreedCard({ breed, onClick }) {
-  const meta = cardMeta(breed);
+  const { t } = useTranslation('breed');
+  const meta = cardMeta(breed, t);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(breed.image) && !failed;
+
+  // Built from whatever species this card actually belongs to
+  // (BreedLibrary.jsx sets it from the active species tab), so a species
+  // like Horses reads "Horse breed" once breed data exists for it.
+  const speciesText = speciesLabel(breed.species, t);
+
+  // tags always comes as an array now (BreedLibrary.jsx/BreedArticle.jsx's
+  // API mapping) — kept as a defensive normalize here in case a caller ever
+  // hands this a comma-separated string instead.
+  const tagList = Array.isArray(breed.tags)
+    ? breed.tags
+    : (breed.tags || '')
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
 
   return (
     <article
@@ -61,29 +103,37 @@ export default function BreedCard({ breed, onClick }) {
           </>
         )}
         {!showImage && (
-          <div className="grid w-full h-full place-items-center bg-[#efefee] text-[#171717]">
-            {breed.species === 'dog' ? <DogIcon /> : <CatIcon />}
+          <div className="grid w-full h-full place-items-center bg-[#efefee] text-[#171717] group-hover:text-white">
+            <span className="w-[104px] h-[104px] rounded-full border border-[#d8d8d4] group-hover:border-white/25 flex items-center justify-center transition-colors duration-[250ms]">
+              {breed.species === 'dog' ? <DogIcon /> : <CatIcon />}
+            </span>
           </div>
         )}
       </div>
-      <div className="p-5 pb-6 min-h-[158px] flex flex-col">
+      <div className="p-5 pb-6 flex flex-col">
         <span className="text-[8px] tracking-[.15em] uppercase text-[#858580] group-hover:text-[#aaa]">
-          {breed.species === 'dog' ? 'Dog breed' : 'Cat breed'}
+          {speciesText}
         </span>
         <h3 className="text-2xl leading-[1.02] tracking-[-.04em] font-medium mt-3.5 mb-2">{breed.name}</h3>
-        <div className="text-xs text-[#777] mb-5 group-hover:text-[#bbb]">
-          {breed.frenchName && breed.frenchName !== breed.name ? breed.frenchName : ' '}
-        </div>
-        <div className="mt-auto flex gap-[7px] flex-wrap">
-          {meta.map((m) => (
-            <span
-              key={m}
-              className="border border-[#d8d8d4] group-hover:border-[#454545] px-[9px] py-[7px] text-[8px] tracking-[.08em] uppercase"
-            >
-              {m}
-            </span>
-          ))}
-        </div>
+       
+        {breed.description && (
+          <p className="text-xs leading-relaxed text-[#666] group-hover:text-[#ccc] line-clamp-3 mb-4">
+            {breed.description}
+          </p>
+        )}
+        {meta.length > 0 && (
+          <div className="flex gap-[7px] flex-wrap mb-3">
+            {meta.map((m) => (
+              <span
+                key={m}
+                className="border border-[#d8d8d4] group-hover:border-[#454545] px-[9px] py-[7px] text-[8px] tracking-[.08em] uppercase"
+              >
+                {m}
+              </span>
+            ))}
+          </div>
+        )}
+        
       </div>
     </article>
   );

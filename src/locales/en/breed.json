@@ -1,0 +1,109 @@
+{
+  "apartment": {
+    "unknown": "—",
+    "short": {
+      "suitable": "Suitable",
+      "notSuitable": "Not suitable"
+    },
+    "chip": {
+      "suitable": "Suitable apartment",
+      "notSuitable": "Not suitable apartment"
+    }
+  },
+  "hero": {
+    "eyebrow": "Biogance breed guide",
+    "titleLine1": "Know them.",
+    "titleLine2": "Care better.",
+    "intro": "Explore breed profiles designed around the questions pet parents actually ask: personality, lifestyle, grooming and the specific coat or skin needs that can shape an everyday care routine.",
+    "dogAlt": "Dog breed",
+    "catAlt": "Cat breed",
+    "dogLabel": "Dog breeds",
+    "catLabel": "Cat breeds"
+  },
+  "intro": {
+    "eyebrow": "Every companion is different",
+    "titleLine1": "A guide built",
+    "titleLine2": "for pet parents.",
+    "paragraph1": "Start with a breed, then discover the information that matters in daily life — from temperament and energy to grooming needs, coat profile and home lifestyle.",
+    "paragraph2": "Each profile uses the breed information prepared for Biogance and presents it in a clearer, more useful format.",
+    "disclaimer": "Breed traits are general guides. Every dog and cat remains an individual, with needs shaped by age, health, lifestyle and personality."
+  },
+  "library": {
+    "eyebrow": "Breed library",
+    "titleLine1": "Find their",
+    "titleLine2": "breed.",
+    "searchPlaceholder": "Search a breed, temperament or care need…",
+    "search": "Search",
+    "breedCount_one": "{{count}} breed",
+    "breedCount_other": "{{count}} breeds",
+    "clearFilters": "Clear filters",
+    "filters": "Filters",
+    "sizeLabel": "Size",
+    "groomingLabel": "Grooming",
+    "energyLabel": "Energy",
+    "apartmentLabel": "Apartment life",
+    "allSizes": "All sizes",
+    "allLevels": "All levels",
+    "all": "All",
+    "noBreeds": "No breed matches these filters.",
+    "noBreedsTitle": "No breeds found",
+    "noBreedsBody": "Try a different search or adjust your filters — a small tweak often reveals the right breed.",
+    "resetSearch": "Reset search & filters",
+    "loading": "Loading…",
+    "loadMore": "Load more breeds",
+    "genericError": "Something went wrong.",
+    "genericErrorRetry": "Something went wrong. Please try again.",
+    "dogsFallback": "Dogs",
+    "catsFallback": "Cats"
+  },
+  "card": {
+    "speciesLabel": {
+      "dog": "Dog breed",
+      "cat": "Cat breed",
+      "generic": "{{species}} breed"
+    }
+  },
+  "article": {
+    "notFound": "Breed not found.",
+    "back": "← Back to all breeds",
+    "liked": "Liked",
+    "likeArticle": "Like article",
+    "share": "Share",
+    "dogGuide": "Dog breed guide",
+    "catGuide": "Cat breed guide",
+    "frenchNamePrefix": "French name ·",
+    "facts": {
+      "size": "Size",
+      "group": "Group",
+      "energy": "Energy",
+      "grooming": "Grooming",
+      "apartment": "Apartment life",
+      "coat": "Coat profile",
+      "species": "Species",
+      "frenchName": "French name",
+      "guide": "Guide",
+      "catValue": "Cat",
+      "guideValue": "Breed overview"
+    },
+    "profileEyebrow": "Breed profile",
+    "aboutTitleLine1": "About the",
+    "aboutTitleLine2": "breed.",
+    "relatedEyebrow": "Keep exploring",
+    "relatedTitle": "Related breeds.",
+    "viewAll": "View all breeds →",
+    "shareTitleSuffix": "Biogance Breed Guide"
+  },
+  "drawer": {
+    "changeBreed": "Change breed",
+    "eyebrow": "Breed library",
+    "titleLine1": "Choose another",
+    "titleLine2": "breed.",
+    "searchPlaceholder": "Search a breed…",
+    "close": "Close",
+    "emptySearchTitle": "No breed matches your search",
+    "emptySearchBody": "Try a different name or check the other species tab.",
+    "clearSearch": "Clear search",
+    "dogsFallback": "Dogs",
+    "catsFallback": "Cats"
+  }
+}
