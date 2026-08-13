@@ -1,0 +1,109 @@
+{
+  "apartment": {
+    "unknown": "—",
+    "short": {
+      "suitable": "Adapté",
+      "notSuitable": "Non adapté"
+    },
+    "chip": {
+      "suitable": "Appartement adapté",
+      "notSuitable": "Appartement non adapté"
+    }
+  },
+  "hero": {
+    "eyebrow": "Guide des races Biogance",
+    "titleLine1": "Apprenez à les connaître.",
+    "titleLine2": "Prenez-en mieux soin.",
+    "intro": "Découvrez des profils de race conçus autour des questions que se posent réellement les propriétaires : personnalité, mode de vie, entretien et besoins spécifiques de la peau ou du pelage qui façonnent une routine de soins au quotidien.",
+    "dogAlt": "Race de chien",
+    "catAlt": "Race de chat",
+    "dogLabel": "Races de chiens",
+    "catLabel": "Races de chats"
+  },
+  "intro": {
+    "eyebrow": "Chaque compagnon est différent",
+    "titleLine1": "Un guide pensé",
+    "titleLine2": "pour les propriétaires.",
+    "paragraph1": "Commencez par une race, puis découvrez les informations qui comptent au quotidien — du tempérament et de l'énergie aux besoins d'entretien, au profil du pelage et au mode de vie.",
+    "paragraph2": "Chaque profil s'appuie sur les informations de race préparées pour Biogance et les présente sous une forme plus claire et plus utile.",
+    "disclaimer": "Les traits de race sont des repères généraux. Chaque chien et chat reste un individu, avec des besoins façonnés par l'âge, la santé, le mode de vie et la personnalité."
+  },
+  "library": {
+    "eyebrow": "Bibliothèque des races",
+    "titleLine1": "Trouvez leur",
+    "titleLine2": "race.",
+    "searchPlaceholder": "Rechercher une race, un tempérament ou un besoin…",
+    "search": "Rechercher",
+    "breedCount_one": "{{count}} race",
+    "breedCount_other": "{{count}} races",
+    "clearFilters": "Réinitialiser les filtres",
+    "filters": "Filtres",
+    "sizeLabel": "Taille",
+    "groomingLabel": "Entretien",
+    "energyLabel": "Énergie",
+    "apartmentLabel": "Vie en appartement",
+    "allSizes": "Toutes les tailles",
+    "allLevels": "Tous les niveaux",
+    "all": "Tous",
+    "noBreeds": "Aucune race ne correspond à ces filtres.",
+    "noBreedsTitle": "Aucune race trouvée",
+    "noBreedsBody": "Essayez une autre recherche ou ajustez vos filtres — un petit changement suffit souvent à révéler la bonne race.",
+    "resetSearch": "Réinitialiser la recherche et les filtres",
+    "loading": "Chargement…",
+    "loadMore": "Voir plus de races",
+    "genericError": "Une erreur est survenue.",
+    "genericErrorRetry": "Une erreur est survenue. Veuillez réessayer.",
+    "dogsFallback": "Chiens",
+    "catsFallback": "Chats"
+  },
+  "card": {
+    "speciesLabel": {
+      "dog": "Race de chien",
+      "cat": "Race de chat",
+      "generic": "Race de {{species}}"
+    }
+  },
+  "article": {
+    "notFound": "Race introuvable.",
+    "back": "← Retour à toutes les races",
+    "liked": "Aimé",
+    "likeArticle": "Aimer l'article",
+    "share": "Partager",
+    "dogGuide": "Guide de race canine",
+    "catGuide": "Guide de race féline",
+    "frenchNamePrefix": "Nom français ·",
+    "facts": {
+      "size": "Taille",
+      "group": "Groupe",
+      "energy": "Énergie",
+      "grooming": "Entretien",
+      "apartment": "Vie en appartement",
+      "coat": "Profil du pelage",
+      "species": "Espèce",
+      "frenchName": "Nom français",
+      "guide": "Guide",
+      "catValue": "Chat",
+      "guideValue": "Aperçu de la race"
+    },
+    "profileEyebrow": "Profil de race",
+    "aboutTitleLine1": "À propos de",
+    "aboutTitleLine2": "la race.",
+    "relatedEyebrow": "Continuez à explorer",
+    "relatedTitle": "Races similaires.",
+    "viewAll": "Voir toutes les races →",
+    "shareTitleSuffix": "Guide des races Biogance"
+  },
+  "drawer": {
+    "changeBreed": "Changer de race",
+    "eyebrow": "Bibliothèque des races",
+    "titleLine1": "Choisissez une autre",
+    "titleLine2": "race.",
+    "searchPlaceholder": "Rechercher une race…",
+    "close": "Fermer",
+    "emptySearchTitle": "Aucune race ne correspond à votre recherche",
+    "emptySearchBody": "Essayez un autre nom ou consultez l'autre onglet d'espèce.",
+    "clearSearch": "Effacer la recherche",
+    "dogsFallback": "Chiens",
+    "catsFallback": "Chats"
+  }
+}
