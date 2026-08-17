@@ -42,7 +42,7 @@ export default function BreedHero() {
         <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
           {t('hero.eyebrow')}
         </span>
-        <h1 className="mt-[18px] mb-[18px] min-[721px]:mt-[22px] min-[721px]:mb-[26px] text-[clamp(38px,11vw,58px)] min-[721px]:text-[clamp(48px,8vw,72px)] min-[1181px]:text-[clamp(62px,8.4vw,100px)] leading-[1.02] tracking-[-.05em] min-[1181px]:tracking-[-.08em] uppercase font-medium">
+        <h1 className="mt-[18px] mb-[18px] min-[721px]:mt-[22px] min-[721px]:mb-[26px] text-[clamp(38px,11vw,58px)] min-[721px]:text-[clamp(48px,8vw,72px)] min-[1181px]:text-[clamp(62px,8.4vw,85  px)] leading-[1.02] tracking-[-.05em] min-[1181px]:tracking-[-.08em] uppercase font-medium">
           {t('hero.titleLine1')}
           <br />
           {t('hero.titleLine2')}

@@ -45,20 +45,36 @@ export default function OurIngredients() {
   // search has already started — only the most recent call's result gets
   // applied.
   const fetchTokenRef = useRef(0);
+  // Guards against fetchIngredients firing again for a keyword it just
+  // fetched — belt-and-braces against a spurious extra effect run (e.g. if
+  // something upstream ever re-renders this page around a language switch)
+  // re-invoking it with the exact same keyword, same defensive pattern as
+  // BreedLibrary.jsx's lastFetchKeyRef.
+  const lastFetchedKeywordRef = useRef(null);
 
   const fetchIngredients = useCallback(async (keyword) => {
+    const trimmedKeyword = keyword.trim();
+    if (lastFetchedKeywordRef.current === trimmedKeyword) return;
+    lastFetchedKeywordRef.current = trimmedKeyword;
+
     const token = ++fetchTokenRef.current;
     setLoading(true);
 
     try {
       const body = {};
-      if (keyword.trim()) body.keyword = keyword.trim();
+      if (trimmedKeyword) body.keyword = trimmedKeyword;
 
       const res = await axios.post(`${BASE_URL}/ingredient/list`, body);
       if (token !== fetchTokenRef.current) return; // superseded by a newer search
 
       if (!res.data.status) {
-        toast.error(res.data.action || 'Something went wrong.');
+        // i18n.t (not a memoized `t`) so this stays correct for whatever
+        // language is active *when the error happens*, without needing `t`
+        // in fetchIngredients' deps — adding it there would give
+        // fetchIngredients a new identity on every language switch, same
+        // refetch-on-language-switch pitfall BreedLibrary.jsx's fetchBreeds
+        // avoids the same way.
+        toast.error(res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
         return;
       }
 
@@ -69,14 +85,17 @@ export default function OurIngredients() {
       // the new search instead of holding on to a stale/absent id.
       setSelectedId(items[0]?.id ?? null);
     } catch {
-      if (token === fetchTokenRef.current) toast.error('Something went wrong. Please try again.');
+      if (token === fetchTokenRef.current) toast.error(i18n.t('genericErrorRetry', { ns: 'ingredients' }));
     } finally {
       if (token === fetchTokenRef.current) {
         setLoading(false);
         setIsSearchPending(false);
       }
     }
-  }, []);
+    // `i18n` is a stable singleton reference (never changes identity), so
+    // including it here doesn't give fetchIngredients a new identity on
+    // language switch — unlike `t`, which would.
+  }, [i18n]);
 
   // Initial load.
   useEffect(() => {
@@ -145,18 +164,22 @@ export default function OurIngredients() {
     });
   };
 
-  // Detail panel: its own GET {BASE_URL}/ingredient/detail/{id} call, kept
-  // separate from the list fetch above — fires whenever the selected
-  // ingredient changes.
+  
   const [detailIngredient, setDetailIngredient] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const detailTokenRef = useRef(0);
+  
+  const lastFetchedDetailIdRef = useRef(null);
 
   useEffect(() => {
     if (selectedId == null) {
+      lastFetchedDetailIdRef.current = null;
       setDetailIngredient(null);
       return;
     }
+    if (lastFetchedDetailIdRef.current === selectedId) return;
+    lastFetchedDetailIdRef.current = selectedId;
+
     const token = ++detailTokenRef.current;
     setDetailLoading(true);
     axios
@@ -164,18 +187,19 @@ export default function OurIngredients() {
       .then((res) => {
         if (token !== detailTokenRef.current) return; // a newer selection already started
         if (!res.data.status) {
-          toast.error(res.data.action || 'Something went wrong.');
+          toast.error(res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
           return;
         }
         setDetailIngredient(res.data.data);
       })
       .catch(() => {
-        if (token === detailTokenRef.current) toast.error('Something went wrong. Please try again.');
+        if (token === detailTokenRef.current) toast.error(i18n.t('genericErrorRetry', { ns: 'ingredients' }));
       })
       .finally(() => {
         if (token === detailTokenRef.current) setDetailLoading(false);
       });
-  }, [selectedId]);
+    
+  }, [selectedId, i18n]);
 
   return (
     <>

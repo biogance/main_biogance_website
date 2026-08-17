@@ -28,7 +28,7 @@ function BreedArticleShimmer() {
   return (
     <main className="bg-white">
       <div className="border-b border-[#d8d8d4] py-6 bg-[#f6f6f4] mt-26">
-        <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex justify-between items-center gap-5">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex justify-between items-center gap-5">
           <div className="h-3 w-36 bg-[#e2e1dc] rounded animate-pulse" />
           <div className="flex gap-2">
             <div className="h-[42px] w-[132px] bg-[#e2e1dc] animate-pulse" />
@@ -55,7 +55,7 @@ function BreedArticleShimmer() {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        <div className="max-w-[1840px] mx-auto min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
+        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
               <div className="h-2 w-14 bg-[#e2e1dc] rounded animate-pulse" />
@@ -66,7 +66,7 @@ function BreedArticleShimmer() {
       </section>
 
       <section className="bg-white border-b border-[#d8d8d4] py-[clamp(80px,9vw,140px)]">
-        <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.72fr_1.28fr] gap-[clamp(50px,8vw,150px)]">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.72fr_1.28fr] gap-[clamp(50px,8vw,150px)]">
           <div>
             <div className="h-[10px] w-32 bg-[#e7e6e1] rounded animate-pulse" />
             <div className="mt-[18px] flex flex-col gap-3">
@@ -86,7 +86,7 @@ function BreedArticleShimmer() {
       </section>
 
       <section className="bg-[#f6f6f4] py-[clamp(78px,8vw,120px)]">
-        <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
+        <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
           <div className="flex justify-between items-end gap-5 mb-9">
             <div>
               <div className="h-[10px] w-32 bg-[#d8d8d4] rounded animate-pulse" />
@@ -278,6 +278,34 @@ export default function BreedArticle({ slug, onLoaded }) {
   const breed = raw?.breed ? mapBreed(raw.breed, isFrench, lookups) : null;
   const related = (raw?.related_breeds || []).map((item) => mapBreed(item, isFrench, lookups));
 
+  // Keeps the address bar's slug in the active language once the breed has
+  // loaded — a plain URL swap via history.replaceState, not a router
+  // navigation, so it doesn't re-trigger the fetch effect above (which is
+  // keyed only on the original `slug` prop, itself sourced from
+  // BreedArticleView's useParams()) or flash the shimmer. `breed.slug` is
+  // already the current language's sanitized seo keyword (see mapBreed
+  // above), so there's nothing left to re-derive here. Same pattern as
+  // ExpertAdvicesDetail.jsx's blog detail page.
+  useEffect(() => {
+    if (!breed?.slug || typeof window === 'undefined') return;
+    const newPath = `/breed-guide/${encodeURIComponent(breed.slug)}`;
+    if (window.location.pathname === newPath) return;
+    window.history.replaceState(window.history.state, '', newPath);
+  }, [breed?.slug]);
+
+  // Re-reports the (now language-aware) breed to onLoaded whenever its slug
+  // changes too, not just on a real id change — otherwise BreedDrawer.jsx's
+  // `current` prop keeps holding the previous language's slug after a
+  // switch, and its active-row match (current.slug === b.slug) silently
+  // stops matching. Kept as its own effect, separate from the one below,
+  // so a language switch doesn't also re-trigger that effect's scroll-to-top
+  // / "liked" re-check — those are scoped to an actual breed change.
+  useEffect(() => {
+    if (!breed) return;
+    onLoaded?.(breed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [breed?.slug]);
+
   useEffect(() => {
     if (!breed) return;
     onLoaded?.(breed);
@@ -348,8 +376,14 @@ export default function BreedArticle({ slug, onLoaded }) {
 
   return (
     <main className="bg-white">
+      {/* No max-w-[1840px]/mx-auto anywhere in this page (or its shimmer
+          above) — same zoom/viewport-width fix as BreedHero.jsx/
+          BreedIntro.jsx/BreedLibrary.jsx: that cap only centers past 1840px,
+          leaving equal margins on both sides instead of staying flush
+          left/right once the viewport (zooming out effectively widens it)
+          crosses that width. */}
       <div className="border-b border-[#d8d8d4] py-6 bg-[#f6f6f4] mt-26 ">
-        <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex justify-between items-center gap-5">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex justify-between items-center gap-5">
           <button type="button" onClick={goToBreedGuide} className="border-0 bg-transparent p-0 cursor-pointer uppercase text-[10px] tracking-[.15em] hover:opacity-55">
             {t('article.back')}
           </button>
@@ -387,7 +421,7 @@ export default function BreedArticle({ slug, onLoaded }) {
           <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
             {breed.species === 'dog' ? t('article.dogGuide') : t('article.catGuide')}
           </span>
-          <h1 className="mt-[18px] mb-3 text-[clamp(52px,16vw,78px)] min-[761px]:text-[clamp(58px,7.5vw,130px)] leading-[.82] tracking-[-.075em] uppercase font-[100] [overflow-wrap:anywhere]">
+          <h1 className="mt-[18px] mb-3 text-[clamp(52px,16vw,78px)] min-[761px]:text-[clamp(58px,7.5vw,92px)] leading-[.97] tracking-[-.075em] uppercase font-[100] [overflow-wrap:anywhere]">
             {breed.name}
           </h1>
           {breed.frenchName && breed.frenchName !== breed.name && (
@@ -400,7 +434,7 @@ export default function BreedArticle({ slug, onLoaded }) {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        <div className="max-w-[1840px] mx-auto min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
+        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {facts.map((f) => (
             <div key={f.label} className="min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
               <small className="text-[8px] tracking-[.15em] uppercase text-[#858580]">{f.label}</small>
@@ -414,12 +448,12 @@ export default function BreedArticle({ slug, onLoaded }) {
       </section>
 
       <section className="bg-white border-b border-[#d8d8d4] py-[clamp(80px,9vw,140px)]">
-        <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.72fr_1.28fr] gap-[clamp(50px,8vw,150px)]">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.72fr_1.28fr] gap-[clamp(50px,8vw,150px)]">
           <div className="min-[1181px]:sticky min-[1181px]:top-[130px] min-[1181px]:self-start">
             <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
               {t('article.profileEyebrow')}
             </span>
-            <h2 className="mt-[18px] text-[clamp(48px,6vw,92px)] leading-[.89] tracking-[-.065em] uppercase font-[100]">
+            <h2 className="mt-[18px] text-[clamp(48px,6vw,92px)] leading-[.97] tracking-[-.065em] uppercase font-[100]">
               {t('article.aboutTitleLine1')}
               <br />
               {t('article.aboutTitleLine2')}
@@ -437,7 +471,7 @@ export default function BreedArticle({ slug, onLoaded }) {
 
       {related.length > 0 && (
         <section className="bg-[#f6f6f4] py-[clamp(78px,8vw,120px)]">
-          <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
+          <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
             <div className="flex justify-between items-end gap-5 mb-9">
               <div>
                 <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">

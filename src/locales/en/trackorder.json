@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "bannerAlt": "Order confirmation banner"
+  },
+  "breadcrumb": {
+    "cart": "Shopping Cart",
+    "checkout": "Checkout",
+    "complete": "Order Complete"
+  },
+  "confirmed": {
+    "badge": "Order Confirmed",
+    "title": "Thank you for your order.",
+    "emailIntro": "A confirmation email has been sent to",
+    "preparing": "We are carefully preparing your order. You will receive a shipping notification as soon as it is on its way.",
+    "orderNumberLabel": "Order Number"
+  },
+  "deliveryCard": {
+    "title": "Delivery Information",
+    "estimatedDelivery": "Estimated Delivery",
+    "shippingMethod": "Shipping Method",
+    "storePickup": "Store pickup",
+    "homeDelivery": "Home delivery",
+    "pickupFree": "Free, 2-4 business days",
+    "standardShipping": "Standard, 2-4 business days",
+    "address": "Address",
+    "pickupLocationFallback": "Pickup Location",
+    "nameFallback": "Biogance",
+    "payment": "Payment",
+    "paymentFallback": "Visa card ••••",
+    "trackButton": "Track My Order"
+  },
+  "steps": {
+    "title": "Track my order",
+    "orderReceived": "ORDER RECEIVED",
+    "confirmedStatus": "Confirmed",
+    "todayAt": "Today, {{time}}",
+    "beingPrepared": "BEING PREPARED",
+    "inProgress": "In Progress",
+    "done": "Done",
+    "pending": "Pending",
+    "dispatched": "DISPATCHED",
+    "delivered": "DELIVERED",
+    "expected": "Expected: {{date}}"
+  },
+  "summary": {
+    "title": "Order Summary",
+    "itemsCount_one": "{{count}} item",
+    "itemsCount_other": "{{count}} items",
+    "hide": "Hide",
+    "show": "Show",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "shipping": "Shipping",
+    "free": "Free",
+    "total": "Total"
+  },
+  "petProfile": {
+    "eyebrow": "My Pet Profile",
+    "titleLine1": "Get recommendations",
+    "titleLine2": "made for your pet.",
+    "description": "Tell us a little about your companion: their breed, coat type, age and lifestyle, and we'll tailor every product suggestion, expert article, and routine tip specifically to them.",
+    "cta": "Create My Pet's Profile"
+  },
+  "social": {
+    "title": "Show us your pet's moment.",
+    "paragraph1Before": "Tag your photos with",
+    "paragraph1After": "and connect with pet owners who believe in gentler, cleaner and more natural care for their companions.",
+    "paragraph2": "Follow Biogance on social media to take part in exclusive giveaways, discover our latest news and product launches, and enjoy expert advice, practical tips and recommendations to support your pet's wellbeing every day.",
+    "paragraph3Before": "Follow us, share your photos and join the Biogance community with",
+    "instagram": "INSTAGRAM",
+    "facebook": "FACEBOOK"
+  },
+  "googleReview": {
+    "imageAlt": "Happy pet with owner",
+    "title": "Did we earn your trust?",
+    "paragraph1": "Biogance is an independent, family-owned French laboratory, no big group behind us, just a team passionate about natural pet care. Your Google review helps us stand out and reach other pet owners who care about what goes on their animals' skin.",
+    "paragraph2": "It takes 30 seconds and means everything to us.",
+    "cta": "Leave a Google review"
+  }
+}

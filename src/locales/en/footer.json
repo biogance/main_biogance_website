@@ -19,7 +19,8 @@
   "mobileApp": {
     "title": "Download App on Mobile",
     "googlePlay": "Download on Google Play",
-    "appStore": "Download on the App Store"
+    "appStore": "Download on the App Store",
+    "comingSoon": "Your Experience, Now on Mobile. Coming soon to the Google Play & App Store."
   },
   "categories": {
     "dogs": {
@@ -151,7 +152,7 @@
     ]
   },
   "bottom": {
-    "copyright": "© 2025 Biogance. All rights reserved.",
+    "copyright": "© {{year}} Biogance. All rights reserved.",
     "conception": "Conception",
     "agency": "Agency Fifteen",
     "faqs": "FAQs",

@@ -24,6 +24,12 @@ export default function Footer() {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
+  // Google Play / App Store badges — neither app is published yet, so both
+  // just surface that instead of linking out to a dead/placeholder store page.
+  const handleAppComingSoon = () => {
+    toast.success(t("mobileApp.comingSoon"));
+  };
+
   // Newsletter subscribe — POST {BASE_URL}/app/subscribers { email }.
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterError, setNewsletterError] = useState("");
@@ -112,6 +118,26 @@ export default function Footer() {
     return () => window.removeEventListener("splashDataReady", readCategories);
   }, []);
 
+  // Left-column blurb — splashData.footer (same localStorage cache every
+  // other Footer.jsx block above reads, no separate API hit) replaces the
+  // hardcoded company.description translation whenever the admin panel has
+  // actually filled it in; it stays on the hardcoded copy when that field
+  // comes back null/empty ("" in the /web/splash payload today).
+  const [apiFooterDescription, setApiFooterDescription] = useState(null);
+  useEffect(() => {
+    const readFooterDescription = () => {
+      try {
+        const cached = JSON.parse(localStorage.getItem("splashData") || "null");
+        setApiFooterDescription(cached?.footer || null);
+      } catch {
+        /* ignore */
+      }
+    };
+    readFooterDescription();
+    window.addEventListener("splashDataReady", readFooterDescription);
+    return () => window.removeEventListener("splashDataReady", readFooterDescription);
+  }, []);
+
   const getName = (item) => (isFrench && item?.french_name ? item.french_name : item?.name || "");
   const getFamilies = (category) =>
     (category.sub_categories || [])
@@ -146,10 +172,17 @@ export default function Footer() {
               <img src="/logo2.svg" alt="Biogance Logo" />
             </div>
 
-            {/* Description */}
-            <p className="text-sm text-gray-300 leading-relaxed">
-              {t("company.description")}
-            </p>
+           
+            {apiFooterDescription ? (
+              <p
+                className="text-sm text-gray-300 leading-relaxed line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: apiFooterDescription }}
+              />
+            ) : (
+              <p className="text-sm text-gray-300 leading-relaxed">
+                {t("company.description")}
+              </p>
+            )}
 
             {/* Contact Info */}
             <div className="space-y-3 text-sm">
@@ -244,21 +277,27 @@ export default function Footer() {
                 </p>
                 <div className="flex gap-2">
                   <a
-                    href="#"
+                    href="https://www.facebook.com/Ekinatofficiel"
+                    target="_blank"
+                    rel="noreferrer"
                     aria-label="Facebook"
                     className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
                   >
                     <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a
-                    href="#"
+                    href="https://www.instagram.com/ekinatofficiel/?hl=fr"
+                    target="_blank"
+                    rel="noreferrer"
                     aria-label="Instagram"
                     className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
                   >
                     <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a
-                    href="#"
+                    href="https://www.tiktok.com/@ekinatofficiel?_t=8m2Ye0GqQDo&_r=1"
+                    target="_blank"
+                    rel="noreferrer"
                     aria-label="TikTok"
                     className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
                   >
@@ -318,31 +357,34 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* App Download */}
+            {/* App Download — neither store listing exists yet, so these are
+                buttons that toast "coming soon" rather than links to # */}
            <div className="flex flex-row items-start gap-0">
-  <a
-    href="#"
+  <button
+    type="button"
+    onClick={handleAppComingSoon}
     aria-label={t("mobileApp.googlePlay")}
-    className="block"
+    className="block cursor-pointer"
   >
     <img
       src="/FPlay.png"
       alt="Google Play"
       className="block w-[140px] h-[81px] object-fill -mt-1"
     />
-  </a>
+  </button>
 
-  <a
-    href="#"
+  <button
+    type="button"
+    onClick={handleAppComingSoon}
     aria-label={t("mobileApp.appStore")}
-    className="block"
+    className="block cursor-pointer"
   >
     <img
       src="/FApple.png"
       alt="App Store"
       className="block w-[140px] h-[85px] object-fill"
     />
-  </a>
+  </button>
 </div>
           </div>
 
@@ -674,7 +716,7 @@ export default function Footer() {
       <div className="bg-white">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-5">
           <div className="flex flex-col md:flex-row justify-between items-center  gap-4 text-xs  text-[14px] text-black">
-            <p>{t("bottom.copyright")}</p>
+            <p>{t("bottom.copyright", { year: new Date().getFullYear() })}</p>
             <div className="flex flex-wrap gap-5 justify-center ">
               <a href="#" className="hover:text-gray-900 transition">
                 {t("bottom.conception")}

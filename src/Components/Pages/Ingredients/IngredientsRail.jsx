@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function ChipShimmer() {
   return <div className="shrink-0 w-24 h-[38px] bg-[#f0efe9] animate-pulse" />;
@@ -13,6 +14,7 @@ function ChipShimmer() {
 // `ingredients` OurIngredients.jsx currently has loaded (same list/search
 // results as IngredientsIndex.jsx) instead of a separate hardcoded name list.
 export default function IngredientsRail({ ingredients, loading, selectedId, onSelect, isFrench }) {
+  const { t } = useTranslation('ingredients');
   const trackRef = useRef(null);
   // Only scroll the chip row when `selectedId` actually changes from what it
   // was last time we scrolled to it (comparing against a ref, not a one-shot
@@ -26,25 +28,7 @@ export default function IngredientsRail({ ingredients, loading, selectedId, onSe
     const track = trackRef.current;
     const active = track?.querySelector('[data-active="true"]');
     if (!track || !active) return;
-    // Always recenter the active chip (not just nudge it into view when it
-    // happens to be outside the visible range) — picking an ingredient from
-    // the grid often lands on a chip that's already technically visible in
-    // the rail, which made an edge-only "scroll if out of bounds" check a
-    // no-op most of the time and looked like the rail wasn't responding to
-    // the selection at all.
-    //
-    // Computed as trackRef's OWN scrollLeft instead of
-    // active.scrollIntoView(...) — scrollIntoView walks every scrollable
-    // ancestor up to the window to bring the target into view, and
-    // `selectedId` goes from null to the first result's id as soon as
-    // OurIngredients.jsx's initial fetch resolves (still while the user is
-    // sitting at the top of the page, before ever scrolling to the rail).
-    // At that moment the rail is off-screen below the full-viewport Hero +
-    // Editorial + Index sections, so even `block: 'nearest'` ends up
-    // dragging the whole page down to bring the chip into view. Scoping the
-    // scroll to just this track's horizontal axis makes that impossible —
-    // it can never touch page/window scroll, regardless of when the
-    // selection changes.
+   
     const activeCenter = active.offsetLeft + active.offsetWidth / 2;
     const maxScrollLeft = track.scrollWidth - track.clientWidth;
     const target = Math.max(0, Math.min(activeCenter - track.clientWidth / 2, maxScrollLeft));
@@ -60,7 +44,7 @@ export default function IngredientsRail({ ingredients, loading, selectedId, onSe
           IngredientsHero.jsx. */}
       <div className="px-4 min-[641px]:px-[clamp(22px,2.5vw,48px)] py-3 flex items-center gap-4">
         <span className="hidden min-[641px]:inline text-[10px] tracking-[.14em] uppercase text-[#77766f] whitespace-nowrap">
-          Change ingredient
+          {t('rail.changeIngredient')}
         </span>
         <div
           ref={trackRef}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Footer from "../Footer";
 import Navbar from "../Navbar";
 import { FaArrowRightLong } from "react-icons/fa6";
@@ -98,12 +99,14 @@ const STATUS_STEP = {
   Delivered: 3,
 };
 
-// Format "2026-07-06 00:00:00" → "Monday, 6 July 2026"
-function formatDeliveryDate(raw) {
+// Format "2026-07-06 00:00:00" → "Monday, 6 July 2026" (or the French
+// equivalent when isFrench) — same isFr ? "fr-FR" : "en-GB" convention
+// ExpertAdvicesDetail.jsx/ExpertAdvices.jsx already use for date formatting.
+function formatDeliveryDate(raw, isFrench) {
   if (!raw) return null;
   try {
     const d = new Date(raw.replace(" ", "T"));
-    return d.toLocaleDateString("en-GB", {
+    return d.toLocaleDateString(isFrench ? "fr-FR" : "en-GB", {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -115,7 +118,7 @@ function formatDeliveryDate(raw) {
 }
 
 // Calculate estimated delivery: order_date + 3 to 4 days
-function getEstimatedDelivery(orderDate) {
+function getEstimatedDelivery(orderDate, isFrench) {
   if (!orderDate) return null;
   try {
     const from = new Date(orderDate.replace(" ", "T"));
@@ -123,18 +126,19 @@ function getEstimatedDelivery(orderDate) {
     from.setDate(from.getDate() + 3);
     to.setDate(to.getDate() + 4);
     const opts = { day: "numeric", month: "long", year: "numeric" };
-    return `${from.toLocaleDateString("en-GB", opts)} – ${to.toLocaleDateString("en-GB", opts)}`;
+    const locale = isFrench ? "fr-FR" : "en-GB";
+    return `${from.toLocaleDateString(locale, opts)} – ${to.toLocaleDateString(locale, opts)}`;
   } catch {
     return null;
   }
 }
 
 // Format order_date for step label e.g. "Today, 10:34 AM"
-function formatOrderTime(raw) {
+function formatOrderTime(raw, isFrench) {
   if (!raw) return "";
   try {
     const d = new Date(raw.replace(" ", "T"));
-    return d.toLocaleString("en-GB", {
+    return d.toLocaleString(isFrench ? "fr-FR" : "en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
@@ -145,6 +149,8 @@ function formatOrderTime(raw) {
 }
 
 function TrackOrder() {
+  const { t, i18n } = useTranslation("trackorder");
+  const isFrench = i18n.language?.startsWith("fr");
   const [showSummary, setShowSummary] = useState(false);
   const [orderSummary, setOrderSummary] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -252,18 +258,18 @@ function TrackOrder() {
       <div className="relative h-56 sm:h-72 md:h-90 bg-black/60 overflow-hidden">
         <img
           src="track.svg"
-          alt="banner"
+          alt={t("hero.bannerAlt")}
           className="w-full h-full object-cover"
         />
         {/* Breadcrumb */}
         <div className="absolute inset-0 flex items-center justify-center px-4">
           <div className="flex items-center gap-2 sm:gap-4 md:gap-8 text-white text-base sm:text-2xl md:text-[35px] flex-wrap justify-center text-center">
-            <span className="text-white  font-700">Shopping Cart</span>
+            <span className="text-white  font-700">{t("breadcrumb.cart")}</span>
             <FaArrowRightLong className="shrink-0" />
 
-            <span className="text-white  font-700">Checkout</span>
+            <span className="text-white  font-700">{t("breadcrumb.checkout")}</span>
             <FaArrowRightLong className="shrink-0" />
-            <span className="text-white font-700">Order Complete</span>
+            <span className="text-white font-700">{t("breadcrumb.complete")}</span>
           </div>
         </div>
       </div>
@@ -279,21 +285,20 @@ function TrackOrder() {
               <LuCircleCheckBig className="text-gray-500" />
 
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
-                Order Confirmed
+                {t("confirmed.badge")}
               </span>
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-              Thank you for your order.
+              {t("confirmed.title")}
             </h1>
             <p className="text-[13px] sm:text-[13px] w-full lg:w-120 text-gray-500 leading-relaxed mb-5">
-              A confirmation email has been sent to{" "}
+              {t("confirmed.emailIntro")}{" "}
               <span className="text-gray-800 font-medium">
                 {orderSummary?.email || "biogance@biogance.com"}
               </span>
               <br />
-              We are carefully preparing your order. You will receive a shipping
-              notification as soon as it is on its way.
+              {t("confirmed.preparing")}
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -310,7 +315,7 @@ function TrackOrder() {
                 />
                 <div>
                   <p className="text-[10px] text-black uppercase tracking-wider font-bold">
-                    Order Number
+                    {t("confirmed.orderNumberLabel")}
                   </p>
                   <p className="text-xs text-[#111] mt-0.5">
                     #{orderSummary?.order_number || orderSummary?.id || ""}
@@ -343,7 +348,7 @@ function TrackOrder() {
               {/* Header */}
               <div className="bg-white px-4 py-3 border-b border-gray-100">
                 <p className="font-semibold text-gray-900 text-base">
-                  Delivery Information
+                  {t("deliveryCard.title")}
                 </p>
               </div>
 
@@ -365,13 +370,13 @@ function TrackOrder() {
                     />
                   </svg>
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
-                    Estimated Delivery
+                    {t("deliveryCard.estimatedDelivery")}
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-gray-900 whitespace-nowrap">
                   {orderSummary?.delivery_date
-                    ? formatDeliveryDate(orderSummary.delivery_date)
-                    : getEstimatedDelivery(orderSummary?.order_date) || "—"}
+                    ? formatDeliveryDate(orderSummary.delivery_date, isFrench)
+                    : getEstimatedDelivery(orderSummary?.order_date, isFrench) || "—"}
                 </p>
               </div>
 
@@ -398,19 +403,19 @@ function TrackOrder() {
                     <path d="M12 11v10" strokeLinecap="round" />
                   </svg>
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
-                    Shipping Method
+                    {t("deliveryCard.shippingMethod")}
                   </span>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold text-gray-900">
                     {Number(orderSummary?.is_pickup) === 1
-                      ? "Store pickup"
-                      : "Home delivery"}
+                      ? t("deliveryCard.storePickup")
+                      : t("deliveryCard.homeDelivery")}
                   </p>
                   <p className="text-[11px] text-gray-400 mt-0.5">
                     {Number(orderSummary?.is_pickup) === 1
-                      ? "Free, 2-4 business days"
-                      : "Standard, 2-4 business days"}
+                      ? t("deliveryCard.pickupFree")
+                      : t("deliveryCard.standardShipping")}
                   </p>
                 </div>
               </div>
@@ -432,14 +437,14 @@ function TrackOrder() {
                     <circle cx="12" cy="11" r="2" />
                   </svg>
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
-                    Address
+                    {t("deliveryCard.address")}
                   </span>
                 </div>
                 <div className="text-right">
                   {Number(orderSummary?.is_pickup) === 1 ? (
                     <>
                       <p className="text-xs font-semibold text-gray-900">
-                        {orderSummary.pickup_name || "Pickup Location"}
+                        {orderSummary.pickup_name || t("deliveryCard.pickupLocationFallback")}
                       </p>
                       <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
                         {orderSummary.pickup_address}
@@ -448,7 +453,7 @@ function TrackOrder() {
                   ) : (
                     <>
                       <p className="text-xs font-semibold text-gray-900">
-                        {orderSummary?.full_name || "Biogance"}
+                        {orderSummary?.full_name || t("deliveryCard.nameFallback")}
                       </p>
                       <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
                         {orderSummary?.delivery_address_full ? (
@@ -490,13 +495,13 @@ function TrackOrder() {
                     <path d="M2 10h20" strokeLinecap="round" />
                   </svg>
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
-                    Payment
+                    {t("deliveryCard.payment")}
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-gray-900 whitespace-nowrap">
                   {orderSummary?.paymentInfo
                     ? `${orderSummary.paymentInfo.brand.charAt(0).toUpperCase() + orderSummary.paymentInfo.brand.slice(1)} card •••• ${orderSummary.paymentInfo.last4}`
-                    : "Visa card ••••"}
+                    : t("deliveryCard.paymentFallback")}
                 </p>
               </div>
 
@@ -506,7 +511,7 @@ function TrackOrder() {
                   onClick={handleTrackOrderClick}
                   className="w-full flex cursor-pointer items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold py-2.5 px-4 transition-colors"
                 >
-                  Track My Order
+                  {t("deliveryCard.trackButton")}
                   <GoArrowRight size={20} />
                 </button>
               </div>
@@ -517,16 +522,17 @@ function TrackOrder() {
         {/* Track my order progress steps */}
         <div id="track-order-section" className="mb-10 scroll-mt-28">
           <h2 className="text-lg font-bold text-gray-900 mb-6">
-            Track my order
+            {t("steps.title")}
           </h2>
 
           {/* Dynamic Steps based on order status */}
           {(() => {
             const status = orderSummary?.status || "Confirmed";
             const step = STATUS_STEP[status] ?? 0;
-            const orderTime = formatOrderTime(orderSummary?.order_date);
+            const orderTime = formatOrderTime(orderSummary?.order_date, isFrench);
             const deliveryDateFormatted = formatDeliveryDate(
               orderSummary?.delivery_date,
+              isFrench,
             );
 
             const stepDone =
@@ -558,10 +564,10 @@ function TrackOrder() {
                     </svg>
                   </div>
                   <p className="text-[10px] font-semibold text-gray-900 mt-2 text-center whitespace-nowrap">
-                    ORDER RECEIVED
+                    {t("steps.orderReceived")}
                   </p>
                   <p className="text-[10px] text-gray-400 text-center">
-                    {orderTime ? `Today, ${orderTime}` : "Confirmed"}
+                    {orderTime ? t("steps.todayAt", { time: orderTime }) : t("steps.confirmedStatus")}
                   </p>
                 </div>
 
@@ -614,12 +620,12 @@ function TrackOrder() {
                   <p
                     className={`text-[10px] font-semibold mt-2 text-center whitespace-nowrap ${step >= 0 ? "text-gray-900" : "text-gray-400"}`}
                   >
-                    BEING PREPARED
+                    {t("steps.beingPrepared")}
                   </p>
                   <p
                     className={`text-[10px] text-center ${step === 0 ? "text-gray-400" : step > 0 ? "text-gray-400" : "text-gray-300"}`}
                   >
-                    {step === 0 ? "In Progress" : step > 0 ? "Done" : "Pending"}
+                    {step === 0 ? t("steps.inProgress") : step > 0 ? t("steps.done") : t("steps.pending")}
                   </p>
                 </div>
 
@@ -672,12 +678,12 @@ function TrackOrder() {
                   <p
                     className={`text-[10px] font-semibold mt-2 text-center whitespace-nowrap ${step >= 1 ? "text-gray-900" : "text-gray-400"}`}
                   >
-                    DISPATCHED
+                    {t("steps.dispatched")}
                   </p>
                   <p
                     className={`text-[10px] text-center ${step === 1 ? "text-gray-400" : step > 1 ? "text-gray-400" : "text-gray-300"}`}
                   >
-                    {step === 1 ? "In Progress" : step > 1 ? "Done" : "Pending"}
+                    {step === 1 ? t("steps.inProgress") : step > 1 ? t("steps.done") : t("steps.pending")}
                   </p>
                 </div>
 
@@ -726,7 +732,7 @@ function TrackOrder() {
                   <p
                     className={`text-[10px] font-semibold mt-2 text-center whitespace-nowrap ${step >= 2 ? "text-gray-900" : "text-gray-400"}`}
                   >
-                    DELIVERED
+                    {t("steps.delivered")}
                   </p>
                   <p
                     className={`text-[10px] text-center ${step >= 2 ? "text-gray-400" : "text-gray-300"}`}
@@ -734,10 +740,10 @@ function TrackOrder() {
                     {step >= 3 && deliveryDateFormatted
                       ? deliveryDateFormatted
                       : step === 2 && deliveryDateFormatted
-                        ? `Expected: ${deliveryDateFormatted}`
+                        ? t("steps.expected", { date: deliveryDateFormatted })
                         : step === 2
-                          ? "In Progress"
-                          : "Pending"}
+                          ? t("steps.inProgress")
+                          : t("steps.pending")}
                   </p>
                 </div>
               </div>
@@ -763,17 +769,19 @@ function TrackOrder() {
 
               <div>
                 <p className="text-sm font-semibold text-gray-900">
-                  Order Summary
+                  {t("summary.title")}
                 </p>
                 <p className="text-xs text-gray-400">
                   {orderSummary?.items
-                    ? `${orderSummary.items.reduce((s, i) => s + (i.quantity ?? 0), 0)} items`
-                    : "3 items"}
+                    ? t("summary.itemsCount", {
+                        count: orderSummary.items.reduce((s, i) => s + (i.quantity ?? 0), 0),
+                      })
+                    : t("summary.itemsCount", { count: 3 })}
                 </p>
               </div>
             </div>
             <span className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors">
-              {showSummary ? "Hide" : "Show"}
+              {showSummary ? t("summary.hide") : t("summary.show")}
               <svg
                 className={`w-3 h-3  transition-transform duration-200 ${showSummary ? "" : "rotate-180"}`}
                 fill="none"
@@ -802,7 +810,11 @@ function TrackOrder() {
                 ? orderSummary.items.map((item, idx) => {
                     // API response: items[] directly on order object
                     // item.images[] has media path, item.name is product name
-                    const name = item.name || "";
+                    // — item.french_name is its French counterpart (same
+                    // field the /breed and /ingredient endpoints use), so
+                    // switching the site language re-labels order items too
+                    // instead of always showing the English name.
+                    const name = (isFrench && item.french_name) || item.name || "";
                     const qty = item.quantity ?? 1;
                     const unitPrice =
                       parseFloat(
@@ -869,7 +881,7 @@ function TrackOrder() {
               {/* Totals */}
               <div className="px-4 py-4 border border-[#E3E3E3] space-y-2">
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>Subtotal</span>
+                  <span>{t("summary.subtotal")}</span>
                   <span>
                     {orderSummary?.subtotal
                       ? parseFloat(orderSummary.subtotal).toFixed(2)
@@ -880,25 +892,25 @@ function TrackOrder() {
                 {orderSummary?.discount_amount &&
                   parseFloat(orderSummary.discount_amount) > 0 && (
                     <div className="flex justify-between text-sm text-gray-500">
-                      <span>Discount</span>
+                      <span>{t("summary.discount")}</span>
                       <span className="text-red-600 font-semibold">
                         -{parseFloat(orderSummary.discount_amount).toFixed(2)} €
                       </span>
                     </div>
                   )}
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>Shipping</span>
+                  <span>{t("summary.shipping")}</span>
                   {orderSummary?.shipping_cost &&
                   parseFloat(orderSummary.shipping_cost) > 0 ? (
                     <span>
                       {parseFloat(orderSummary.shipping_cost).toFixed(2)} €
                     </span>
                   ) : (
-                    <span className="text-green-600 font-semibold">Free</span>
+                    <span className="text-green-600 font-semibold">{t("summary.free")}</span>
                   )}
                 </div>
                 <div className="flex justify-between text-sm font-bold text-gray-900 pt-1">
-                  <span>Total</span>
+                  <span>{t("summary.total")}</span>
                   <span>
                     {orderSummary?.total_amount
                       ? parseFloat(orderSummary.total_amount).toFixed(2)
@@ -923,21 +935,18 @@ function TrackOrder() {
               <div className="flex-1 p-6 flex flex-col justify-between">
                 <div>
                   <p className="text-[12px] text-[#b8b8b8] uppercase tracking-widest mb-3">
-                    My Pet Profile
+                    {t("petProfile.eyebrow")}
                   </p>
-                  <h3 className="text-xl font-normal text-gray-800 leading-snug mb-3">
-                    Get recommendations
+                  <h3 className="text-xl font-normal text-gray-800 font-semibold leading-snug mb-3">
+                    {t("petProfile.titleLine1")}
                     <br />
-                    made for your pet.
+                    {t("petProfile.titleLine2")}
                   </h3>
                   <p className="text-sm text-black leading-relaxed mb-20">
-                  Tell us a little about your companion : their breed,<br/>
-coat type, age and lifestyle, and we'll tailor every<br/>
-product suggestion, expert article, and routine tip<br/>
-specifically to them.
+                    {t("petProfile.description")}
                   </p>
                   <button className="flex items-center uppercase cursor-pointer gap-2 bg-[#111] hover:bg-gray-700 hover:text-white text-[#fff] text-sm py-3 px-5  transition-colors w-full justify-center">
-                    Create My Pet's Profile
+                    {t("petProfile.cta")}
                     <svg
                       className="w-3.5 h-3.5"
                       fill="none"
@@ -1074,33 +1083,22 @@ specifically to them.
 
        {/* Right: Text + Buttons */}
 <div className="w-full md:w-1/2 flex flex-col justify-between h-full">
-  <h3 className="text-2xl sm:text-2xl text-gray-800 mb-6">
-    Show us your pet's moment.
+  <h3 className="text-2xl sm:text-2xl text-gray-800 font-semibold mb-6">
+    {t("social.title")}
   </h3>
 
   <div className="space-y-4 mb-6">
     <p className="text-sm text-black leading-relaxed">
-      Tag your photos with{" "}
-      <span>
-        #BioganceNaturally
-      </span>{" "}
-      and connect with<br/> pet owners who believe in gentler, cleaner and more
-      natural<br/> care for their companions.
+      {t("social.paragraph1Before")}{" "}
+      <span>#BioganceNaturally</span>{" "}
+      {t("social.paragraph1After")}
     </p>
 
-    <p className="text-sm leading-relaxed">
-      Follow Biogance on social media to take part in exclusive <br/> giveaways,
-      discover our latest news and product launches, <br/> and enjoy expert
-      advice, practical tips and recommendations <br/> to support your pet's
-      wellbeing every day.
-    </p>
+    <p className="text-sm leading-relaxed">{t("social.paragraph2")}</p>
 
     <p className="text-sm text-black leading-relaxed">
-      Follow us, share your photos and join the Biogance <br/> community with{" "}
-      <span>
-        #BioganceNaturally
-      </span>
-      .
+      {t("social.paragraph3Before")}{" "}
+      <span>#BioganceNaturally</span>.
     </p>
   </div>
 
@@ -1114,7 +1112,7 @@ specifically to them.
     <span className="text-[#fff] flex items-center justify-center shrink-0">
       <CiInstagram size={31} />
     </span>
-    INSTAGRAM
+    {t("social.instagram")}
   </a>
   <a
     href="https://www.facebook.com/bioganceofficiel/"
@@ -1125,7 +1123,7 @@ specifically to them.
     <span className="w-6 h-6 rounded-sm border border-current text-[#fff] flex items-center justify-center shrink-0">
       <FaFacebookF size={16} />
     </span>
-    FACEBOOK
+    {t("social.facebook")}
   </a>
 </div>
 </div>
@@ -1163,20 +1161,16 @@ specifically to them.
             </div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl text-gray-800 mb-6 leading-snug">
-            Did we earn your trust?
+          <h2 className="text-xl sm:text-2xl text-gray-800 mb-6 font-semibold leading-snug">
+            {t("googleReview.title")}
           </h2>
 
           <p className="text-sm text-[#111] leading-relaxed mb-4 text-justify">
-            Biogance is an independent, family-owned French laboratory,
-            no big group behind us, just a team  passionate about
-            natural pet care.
-            Your Google review helps us stand out and reach other pet
-            owners who care about what goes on their animals' skin.
+            {t("googleReview.paragraph1")}
           </p>
 
           <p className="text-sm text-[#111] leading-relaxed mb-6">
-            It takes 30 seconds and means everything to us.
+            {t("googleReview.paragraph2")}
           </p>
 
           {/* CTA */}
@@ -1186,7 +1180,7 @@ specifically to them.
             rel="noopener noreferrer"
             className="flex items-center text-center uppercase justify-center gap-2 bg-[#111] hover:bg-gray-700 hover:text-white text-[#fff] text-sm py-3.5 px-3 w-full transition-colors"
           >
-            Leave a Google review
+            {t("googleReview.cta")}
           </a>
         </div>
 
@@ -1199,7 +1193,7 @@ specifically to them.
             fallback={
               <img
                 src="/distributorImg.jpg"
-                alt="Happy pet with owner"
+                alt={t("googleReview.imageAlt")}
                 className="w-full h-full object-cover"
               />
             }
