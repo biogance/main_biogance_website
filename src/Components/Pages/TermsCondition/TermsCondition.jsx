@@ -42,7 +42,7 @@ function TermsConditionContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar/>
+        <Navbar bgWhite={true} />
       </div>
 
       {/* Mobile Navigation */}
@@ -96,7 +96,7 @@ function TermsConditionContent() {
         </div>
       </div>
       
-      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-20 px-8 transition-all duration-300 ${
+      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-33 px-8 transition-all duration-300 ${
         isTransitioning ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
       }`}>
         {activeSection === 'disclaimer' && t('sections.disclaimer')}
@@ -105,9 +105,10 @@ function TermsConditionContent() {
         {activeSection === 'terms' && t('sections.terms')}
       </h1>
 
-      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-6 mt-6 lg:mt-6 ml-6 mr-6 px-4 lg:px-0">
+     
+      <div className="max-w-8xl mx-auto grid grid-cols-1 lg:grid-cols-[16rem_1fr] items-start gap-6 lg:gap-6 mt-6 lg:mt-6 ml-6 mr-6 px-4 lg:px-0">
         {/* Desktop Left Sidebar */}
-        <div className="hidden lg:block w-64 flex-shrink-0 sticky top-20 self-start">
+        <div className="hidden lg:block lg:sticky lg:top-[134px]">
           <nav className="space-y-2">
             <button
               onClick={() => handleSectionChange('disclaimer')}

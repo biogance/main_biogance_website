@@ -32,6 +32,7 @@ import resellerEN from "../src/locales/en/reseller.json";
 import ambassadorEN from "../src/locales/en/ambassador.json";
 import laboratoryEN from "../src/locales/en/laboratory.json";
 import breedEN from "../src/locales/en/breed.json";
+import trackorderEN from "../src/locales/en/trackorder.json";
 
 
 
@@ -65,6 +66,7 @@ import resellerFR from "../src/locales/fr/reseller.json";
 import ambassadorFR from "../src/locales/fr/ambassador.json";
 import laboratoryFR from "../src/locales/fr/laboratory.json";
 import breedFR from "../src/locales/fr/breed.json";
+import trackorderFR from "../src/locales/fr/trackorder.json";
 
 i18n
     .use(LanguageDetector)
@@ -102,6 +104,7 @@ i18n
                 ambassador: ambassadorEN,
                 laboratory: laboratoryEN,
                 breed: breedEN,
+                trackorder: trackorderEN,
             },
             fr: {
                 common: commonFR,
@@ -134,6 +137,7 @@ i18n
                 ambassador: ambassadorFR,
                 laboratory: laboratoryFR,
                 breed: breedFR,
+                trackorder: trackorderFR,
             },
         },
         fallbackLng: "en",

@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "bannerAlt": "Bannière de confirmation de commande"
+  },
+  "breadcrumb": {
+    "cart": "Panier",
+    "checkout": "Paiement",
+    "complete": "Commande terminée"
+  },
+  "confirmed": {
+    "badge": "Commande confirmée",
+    "title": "Merci pour votre commande.",
+    "emailIntro": "Un e-mail de confirmation a été envoyé à",
+    "preparing": "Nous préparons votre commande avec soin. Vous recevrez une notification d'expédition dès qu'elle sera en route.",
+    "orderNumberLabel": "Numéro de commande"
+  },
+  "deliveryCard": {
+    "title": "Informations de livraison",
+    "estimatedDelivery": "Livraison estimée",
+    "shippingMethod": "Mode de livraison",
+    "storePickup": "Retrait en magasin",
+    "homeDelivery": "Livraison à domicile",
+    "pickupFree": "Gratuit, 2 à 4 jours ouvrés",
+    "standardShipping": "Standard, 2 à 4 jours ouvrés",
+    "address": "Adresse",
+    "pickupLocationFallback": "Point de retrait",
+    "nameFallback": "Biogance",
+    "payment": "Paiement",
+    "paymentFallback": "Carte Visa ••••",
+    "trackButton": "Suivre ma commande"
+  },
+  "steps": {
+    "title": "Suivre ma commande",
+    "orderReceived": "COMMANDE REÇUE",
+    "confirmedStatus": "Confirmée",
+    "todayAt": "Aujourd'hui, {{time}}",
+    "beingPrepared": "EN PRÉPARATION",
+    "inProgress": "En cours",
+    "done": "Terminé",
+    "pending": "En attente",
+    "dispatched": "EXPÉDIÉE",
+    "delivered": "LIVRÉE",
+    "expected": "Prévue le : {{date}}"
+  },
+  "summary": {
+    "title": "Récapitulatif de commande",
+    "itemsCount_one": "{{count}} article",
+    "itemsCount_other": "{{count}} articles",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "subtotal": "Sous-total",
+    "discount": "Réduction",
+    "shipping": "Livraison",
+    "free": "Gratuite",
+    "total": "Total"
+  },
+  "petProfile": {
+    "eyebrow": "Mon profil animal",
+    "titleLine1": "Obtenez des recommandations",
+    "titleLine2": "adaptées à votre compagnon.",
+    "description": "Parlez-nous un peu de votre compagnon : sa race, son type de pelage, son âge et son mode de vie, et nous adapterons chaque suggestion de produit, article d'expert et conseil de routine spécifiquement pour lui.",
+    "cta": "Créer le profil de mon animal"
+  },
+  "social": {
+    "title": "Montrez-nous le moment de votre animal.",
+    "paragraph1Before": "Identifiez vos photos avec",
+    "paragraph1After": "et connectez-vous avec des propriétaires d'animaux qui croient en des soins plus doux, plus propres et plus naturels pour leurs compagnons.",
+    "paragraph2": "Suivez Biogance sur les réseaux sociaux pour participer à des jeux-concours exclusifs, découvrir nos dernières actualités et lancements de produits, et profiter de conseils d'experts, d'astuces pratiques et de recommandations pour soutenir le bien-être de votre animal au quotidien.",
+    "paragraph3Before": "Suivez-nous, partagez vos photos et rejoignez la communauté Biogance avec",
+    "instagram": "INSTAGRAM",
+    "facebook": "FACEBOOK"
+  },
+  "googleReview": {
+    "imageAlt": "Animal heureux avec son propriétaire",
+    "title": "Avons-nous gagné votre confiance ?",
+    "paragraph1": "Biogance est un laboratoire français indépendant et familial, sans grand groupe derrière nous, juste une équipe passionnée par les soins naturels pour animaux. Votre avis Google nous aide à nous démarquer et à toucher d'autres propriétaires d'animaux soucieux de ce qui est appliqué sur la peau de leurs compagnons.",
+    "paragraph2": "Cela prend 30 secondes et signifie énormément pour nous.",
+    "cta": "Laisser un avis Google"
+  }
+}

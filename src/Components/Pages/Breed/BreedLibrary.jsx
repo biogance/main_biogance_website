@@ -233,6 +233,16 @@ export default function BreedLibrary({ onOpenBreed }) {
   const [hasMore, setHasMore] = useState(false);
 
   const fetchTokenRef = useRef(0);
+  // Signature of the last params page-1 was actually fetched with — guards
+  // the effect below against firing again when nothing real changed. Needed
+  // because PageLoader.jsx re-fetches splashData (and re-dispatches
+  // 'splashDataReady') on *every click* anywhere in the app, including a
+  // click on the language switcher — that gives `speciesTabs`/
+  // `currentSpeciesId` a new reference/recompute each time even though the
+  // resolved id is the same value, so this is a second, explicit line of
+  // defense on top of that (belt-and-braces, same spirit as fetchTokenRef
+  // above ignoring stale responses instead of stale requests).
+  const lastFetchKeyRef = useRef(null);
 
   const fetchBreeds = useCallback(
     async (pageNum, append, params) => {
@@ -298,6 +308,15 @@ export default function BreedLibrary({ onOpenBreed }) {
   // (or no) species scoped in, e.g. before splashData has loaded.
   useEffect(() => {
     if (!currentSpeciesId) return;
+    // String-normalized so a splash-triggered re-render that hands
+    // currentSpeciesId back as (say) a number one time and a numeric string
+    // another time still reads as "nothing changed" — see lastFetchKeyRef's
+    // comment above for why that churn happens at all.
+    const fetchKey = [currentSpeciesId, size, grooming, apartment, energy, debouncedSearch]
+      .map(String)
+      .join('|');
+    if (lastFetchKeyRef.current === fetchKey) return;
+    lastFetchKeyRef.current = fetchKey;
     setPage(1);
     fetchBreeds(1, false, {
       speciesId: currentSpeciesId,
@@ -371,7 +390,12 @@ export default function BreedLibrary({ onOpenBreed }) {
 
   return (
     <section className="bg-[#f6f6f4] border-b border-[#d8d8d4] pt-[clamp(76px,8vw,118px)]" id="library">
-      <div className="w-full max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.82fr_1.18fr] gap-[clamp(34px,4vw,64px)] items-end mb-[42px]">
+      {/* No max-w-[1840px]/mx-auto on this section's rows — same zoom/
+          viewport-width fix as BreedHero.jsx/IngredientsHero.jsx's siblings:
+          that cap only centers past 1840px, leaving equal margins on both
+          sides instead of staying flush left/right once the viewport
+          (zooming out effectively widens it) crosses that width. */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.82fr_1.18fr] gap-[clamp(34px,4vw,64px)] items-end mb-[42px]">
         <div>
           <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
             {t('library.eyebrow')}
@@ -394,13 +418,9 @@ export default function BreedLibrary({ onOpenBreed }) {
         </div>
       </div>
 
-      {/* Navbar's fixed header is 40px announcement + 64px nav = 104px on
-          desktop (lg: 1024px+, pinned permanently there — see Navbar.jsx's
-          headerWrapperRef). Below that it slides the announcement bar away
-          on scroll, leaving just the 64px nav pinned, so this only needs to
-          clear the nav itself once scrolled past. */}
+      
       <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-b border-[#d8d8d4]">
-        <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
           <div className="flex overflow-x-auto">
             {speciesTabs.map((tab) => (
               <button
@@ -458,7 +478,7 @@ export default function BreedLibrary({ onOpenBreed }) {
             }}
           >
             <div className={panelSettled ? 'overflow-visible' : 'overflow-hidden'}>
-              <div className="max-w-[1840px] mx-auto px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[761px]:grid-cols-2 min-[1051px]:grid-cols-4 border-b border-[#d8d8d4]">
+              <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[761px]:grid-cols-2 min-[1051px]:grid-cols-4 border-b border-[#d8d8d4]">
                 <div className="p-5 border-l border-[#d8d8d4] min-[761px]:border-r">
                   <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.sizeLabel')}</span>
                   <BreedFilterSelect label={t('library.sizeLabel')} value={size} options={sizeOptions} onChange={setSize} />
@@ -481,7 +501,7 @@ export default function BreedLibrary({ onOpenBreed }) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 min-[481px]:grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-4 border-l border-[#d8d8d4] max-w-[1840px] mx-auto">
+      <div className="grid grid-cols-1 min-[481px]:grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-4 border-l border-[#d8d8d4]">
         {showShimmer ? (
           Array.from({ length: SHIMMER_COUNT }).map((_, i) => <BreedCardShimmer key={i} />)
         ) : breeds.length ? (
@@ -508,7 +528,7 @@ export default function BreedLibrary({ onOpenBreed }) {
         )}
       </div>
 
-      <div className="py-[34px] px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pb-[70px] text-center max-w-[1840px] mx-auto">
+      <div className="py-[34px] px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pb-[70px] text-center">
         {!showShimmer && hasMore && (
           <button
             type="button"

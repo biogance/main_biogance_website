@@ -118,10 +118,7 @@ function PhoneFieldBox({ iso2, onCountryChange, value, onChange, onBlur, error }
   );
 }
 
-// Used two ways: as a modal from Footer.jsx (isOpen + onClose passed — gets
-// the backdrop, Login.jsx-style open/close animation and a close button),
-// and as the plain page body of /contact (no props at all — just the card,
-// no backdrop/animation/close button, same as it always was there).
+
 export default function ContactUs({ isOpen, onClose }) {
   const { t } = useTranslation('onboarding');
   const isModal = typeof onClose === 'function';
@@ -135,8 +132,74 @@ export default function ContactUs({ isOpen, onClose }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Same open/close lifecycle as Login.jsx — stays mounted for the exit
-  // animation's duration instead of unmounting the instant isOpen flips.
+  const phoneCountryEditedRef = useRef(false);
+  useEffect(() => {
+    let cancelled = false;
+
+    const applyDetectedCountry = (code) => {
+      if (cancelled || phoneCountryEditedRef.current) return;
+      const matched = defaultCountries.find((c) => parseCountry(c).iso2 === code);
+      if (matched) setCountryIso2(code);
+    };
+
+    const cached = sessionStorage.getItem('_visitorCountry');
+    if (cached) {
+      applyDetectedCountry(cached);
+      return;
+    }
+
+    // Firefox ETP / uBlock can block fetch() to same-origin API routes with
+    // geo-related path segments — XHR goes through a different pipeline and
+    // isn't caught by the same filter lists (same fallback as CheckOut.jsx).
+    const fetchLocaleViaXhr = () =>
+      new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/visitor-locale', true);
+        xhr.timeout = 5000;
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch {
+              reject(new Error('Invalid JSON'));
+            }
+          } else {
+            reject(new Error(`HTTP ${xhr.status}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error('XHR network error'));
+        xhr.ontimeout = () => reject(new Error('XHR timeout'));
+        xhr.send();
+      });
+
+    (async () => {
+      try {
+        let data;
+        try {
+          const res = await fetch('/api/visitor-locale', { credentials: 'same-origin' });
+          data = await res.json();
+        } catch {
+          data = await fetchLocaleViaXhr();
+        }
+        const code = (data?.countryCode || '').toLowerCase();
+        if (!code) return;
+        try {
+          sessionStorage.setItem('_visitorCountry', code);
+        } catch {
+          /* ignore */
+        }
+        applyDetectedCountry(code);
+      } catch {
+        /* silent — the 'fr' default still applies */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  
   const [isClosing, setIsClosing] = useState(false);
   const modalCardRef = useRef(null);
 
@@ -267,7 +330,10 @@ export default function ContactUs({ isOpen, onClose }) {
           </label>
           <PhoneFieldBox
             iso2={countryIso2}
-            onCountryChange={setCountryIso2}
+            onCountryChange={(iso2) => {
+              phoneCountryEditedRef.current = true;
+              setCountryIso2(iso2);
+            }}
             value={formData.phoneNumber}
             onChange={(value) => handleChange('phoneNumber', value)}
             error={errors.phoneNumber}
@@ -298,7 +364,7 @@ export default function ContactUs({ isOpen, onClose }) {
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="w-full bg-white text-black py-3 border-2 border-gray-300 hover:bg-gray-50 transition-colors font-medium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-white text-black py-3 border border-gray-300 hover:bg-gray-50 transition-colors font-medium cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {t('contactUs.buttons.cancel')}
           </button>
@@ -337,13 +403,13 @@ export default function ContactUs({ isOpen, onClose }) {
           onClick={(e) => e.stopPropagation()}
           className="relative bg-white w-full p-8 overflow-y-auto"
         >
-          <button
+          {/* <button
             type="button"
             onClick={handleClose}
             className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
           >
             <AiOutlineClose size={20} />
-          </button>
+          </button> */}
           {formBody}
         </div>
       </div>

@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTranslation, Trans } from "react-i18next";
-import { parseCountry, defaultCountries } from "react-international-phone";
+import { FlagImage, parseCountry, defaultCountries } from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
 import LoginModal from "../Onboarding/Login";
@@ -754,12 +754,15 @@ function PhoneFieldBox({
     return c ? `+${parseCountry(c).dialCode}` : "";
   };
   const dialCode = getDialCode(iso2 || "fr");
-  // Convert iso2 code to emoji flag — works in all browsers, no network
-  // request, never blocked by Firefox ETP or ad-blockers.
-  const flagEmoji = (code) => {
-    const c = (code || "fr").toUpperCase();
-    return [...c].map((ch) => String.fromCodePoint(0x1F1E6 - 65 + ch.charCodeAt(0))).join("");
-  };
+  // FlagImage (react-international-phone) instead of a codepoint-composed
+  // emoji flag — Windows' Segoe UI Emoji font doesn't include country flag
+  // glyphs for regional-indicator pairs in Chrome/Edge (Chromium falls back
+  // to plain "FR"-style letters or a blank glyph there), so the emoji
+  // version showed the correct dial code but no flag, Chrome-only — Firefox
+  // ships its own emoji fallback that happens to cover flags. FlagImage
+  // renders an actual image (Twemoji via cdnjs), so it's identical across
+  // every browser/OS regardless of what emoji glyphs the platform ships —
+  // same component UserProfile.jsx/ContactUs.jsx's phone fields already use.
 
   const filteredCountries = defaultCountries
     .map((c) => parseCountry(c))
@@ -811,7 +814,7 @@ function PhoneFieldBox({
           userSelect: "none",
         }}
       >
-        <span style={{ fontSize: "18px", lineHeight: 1 }}>{flagEmoji(iso2)}</span>
+        <FlagImage iso2={iso2 || "fr"} size="20px" />
         <span style={{ fontSize: "13px", color: "#333", fontFamily: FONT }}>
           {dialCode}
         </span>
@@ -953,7 +956,7 @@ function PhoneFieldBox({
                     if (dialEl) dialEl.style.color = "#888";
                   }}
                 >
-                  <span style={{ fontSize: "16px", lineHeight: 1, flexShrink: 0 }}>{flagEmoji(p.iso2)}</span>
+                  <FlagImage iso2={p.iso2} size="18px" style={{ flexShrink: 0 }} />
                   <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
                   <span style={{ color: "#888" }}>+{p.dialCode}</span>
                 </div>
@@ -3819,10 +3822,7 @@ function Checkout({ cartItems = [] }) {
         }
       }
 
-      // Firefox ETP / uBlock can block fetch() to same-origin API routes
-      // that contain geo-related path segments. Use XMLHttpRequest as a
-      // fallback — it goes through a different request pipeline and is not
-      // subject to the same filter-list URL matching that kills fetch().
+  
       const fetchLocale = () =>
         new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
@@ -3891,16 +3891,12 @@ function Checkout({ cartItems = [] }) {
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("card");
-  // Controls which row is highlighted/expanded in the lower Payment list.
-  // Kept separate from paymentMethod so Express Payment (PayPal/Google Pay)
-  // can drive checkout without touching the list's radio selection.
+  
   const [radioActiveMethod, setRadioActiveMethod] = useState("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [formError, setFormError] = useState(null);
-  // Reflects each Stripe card element's own "complete" flag — all start
-  // false so an untouched field is correctly flagged as empty on the first
-  // submit attempt, matching the other required fields.
+  
   const [cardNumberComplete, setCardNumberComplete] = useState(false);
   const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
   const [cardCvcComplete, setCardCvcComplete] = useState(false);
@@ -3964,11 +3960,7 @@ function Checkout({ cartItems = [] }) {
   }, [useDifferentBilling]);
 
   const handleCountryChange = (iso2) => {
-    // countryIso2 is what PhoneFieldBox actually reads its flag/dial-code
-    // from — it was never being set here, so the field kept showing the old
-    // country after a change, and phone validation would run against the
-    // wrong country's rules. deliveryCountryIso2 defaulting to match is the
-    // existing behavior; only the missing setCountryIso2 call is new.
+
     setCountryIso2(iso2);
     setDeliveryCountryIso2(iso2);
     setPhone("");
@@ -3978,10 +3970,7 @@ function Checkout({ cartItems = [] }) {
     markEdited("phone");
   };
 
-  // Validates the phone number's digit count and leading-digit pattern
-  // against whichever country is currently selected (e.g. a French number
-  // needs 9 digits after +33 starting 6/7; a Pakistani number needs 10
-  // digits after +92 starting 3) — returns true when valid.
+  
   const validatePhone = () => {
     const code = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
     setPhoneError(code ? t(PHONE_ERROR_KEYS[code]) : null);
@@ -4224,10 +4213,7 @@ function Checkout({ cartItems = [] }) {
         localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
       } catch { }
 
-      // Re-fetch the (now-emptied) cart straight from the server and save it
-      // — same pattern Login.jsx uses after login — so ModalAddToCart reads
-      // the correct data from localStorage the instant it next opens,
-      // instead of showing whatever was cached until its own refetch lands.
+      
       await refreshCartFromServer();
 
       router.push("/track-order");
@@ -4242,10 +4228,7 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler (Express Checkout Element onConfirm) ────────
   const handleExpressCheckoutConfirm = async () => {
-    // Validate delivery fields first. Note: the Express Checkout Element
-    // opens its own payment sheet directly on click, so this only surfaces
-    // as an error after the user has already gone through Face ID/Touch ID —
-    // Stripe doesn't provide a way to block the sheet from opening beforehand.
+   
     if (!deliveryCountryIso2) { setFormError(t("errorSelectCountryDelivery")); return; }
     if (!street.trim()) { setFormError(t("errorFullAddressDelivery")); return; }
     if (!postcode.trim()) { setFormError(t("errorPostcodeDelivery")); return; }
@@ -4434,11 +4417,7 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
-  // Checks every required field in on-screen top-to-bottom order and stops
-  // at the FIRST one that's invalid — only that field gets flagged (red
-  // border + message below it) and scrolled to. Fix it and click "Order"
-  // again: this re-runs from the top, so it either passes or reports the
-  // next invalid field. Never more than one field flagged at once.
+  
   const FIELD_REFS = {
     email: emailFieldRef,
     name: nameFieldRef,
@@ -4798,7 +4777,7 @@ function Checkout({ cartItems = [] }) {
   // Keep ref in sync so loginStateChange handler (defined earlier) can call it
   refreshCartRef.current = refreshCartFromServer;
 
-  // ✅ CHANGE 2: handleQtyChange — hits API same as ModalAddToCart
+  // CHANGE 2: handleQtyChange — hits API same as ModalAddToCart
   const handleQtyChange = async (index, qty, cartId) => {
     setIsRemoving(true);
     try {
@@ -4902,15 +4881,7 @@ function Checkout({ cartItems = [] }) {
     />
   );
 
-  // Express Checkout PayPal button — same create-order/approve handlers as
-  // the sidebar PayPal button, but rendered directly inside the Express
-  // Checkout row so PayPal's own SDK opens immediately on click (no
-  // intermediate "select a payment method" step in between).
-  // A factory (not a single shared element) because the conveyor-belt
-  // Express Payment bar below mounts two live copies at once — @paypal/
-  // react-paypal-js supports multiple simultaneous <PayPalButtons/> under
-  // one PayPalScriptProvider, but each needs its own fresh element instance
-  // rather than the exact same JSX object placed in two spots.
+ 
   const renderPayPalExpressButton = () => (
     <PayPalButtons
       style={{ layout: "horizontal", color: "gold", shape: "rect", label: "paypal", height: 45, tagline: false }}
@@ -4922,19 +4893,14 @@ function Checkout({ cartItems = [] }) {
     />
   );
 
-  // Shared Apple Pay button (Express Checkout Element) — rendered in place of
-  // the Order button (sidebar on desktop, bottom wrapper on mobile) when
-  // Apple Pay is selected. Only Apple Pay is enabled — Google Pay/Link/PayPal
-  // are handled by their own dedicated UI elsewhere in this checkout.
+  
   const expressCheckoutNode = (
     <ExpressCheckoutElement
       options={{
         buttonType: { applePay: "buy" },
         buttonTheme: { applePay: "black" },
         buttonHeight: 48,
-        // TEMP DEBUG: leave every wallet on "auto" (Stripe's own default) to
-        // check whether ANYTHING renders at all, isolating whether this is an
-        // Apple-Pay-specific account/domain issue or a broader config problem.
+       
       }}
       onReady={({ availablePaymentMethods }) => {
         console.log("[ExpressCheckout] onReady availablePaymentMethods:", availablePaymentMethods);
@@ -5136,11 +5102,7 @@ function Checkout({ cartItems = [] }) {
               />
             </div>
 
-            {/* Pinned "conveyor belt" copy — only mounted once scrolling has
-                actually started tucking the copy above behind the sticky
-                header. Its reveal (translateY) is driven 1:1 by
-                expressScrollProgress, not a timed transition, so it always
-                exactly matches how much of the copy above is hidden. */}
+           
             {expressScrollProgress > 0 && (
               <div
                 style={{
@@ -5148,11 +5110,7 @@ function Checkout({ cartItems = [] }) {
                   top: "80px",
                   left: expressBarBox.left,
                   width: expressBarBox.width,
-                  // Below the checkout header's own z-index (10, opaque
-                  // white background) — while hidden (translateY negative),
-                  // this sits in the header's 0–80px band and behind it, not
-                  // overlapping the sidebar/Order Summary below at any
-                  // progress value, so nothing needs opacity to look "gone".
+                
                   zIndex: 5,
                   transform: `translateY(${(1 - expressScrollProgress) * -100}%)`,
                   pointerEvents: expressScrollProgress >= 1 ? "auto" : "none",
