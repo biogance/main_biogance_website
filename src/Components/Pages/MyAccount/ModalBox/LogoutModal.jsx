@@ -19,33 +19,46 @@ export default function LogoutModal({
   const dispatch = useDispatch();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  // Same open/close lifecycle as Login.jsx — stays mounted for the exit
+  // animation's duration instead of unmounting the instant isOpen flips.
+  const [isClosing, setIsClosing] = useState(false);
 
 
    useEffect(() => {
       if (isOpen) {
         // Save current scroll position
         const scrollY = window.scrollY;
-        
+
         // Prevent scrolling
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${scrollY}px`;
         document.body.style.width = '100%';
-        
+
         return () => {
           // Restore scrolling
           document.body.style.overflow = '';
           document.body.style.position = '';
           document.body.style.top = '';
           document.body.style.width = '';
-          
+
           // Restore scroll position
           window.scrollTo(0, scrollY);
         };
       }
     }, [isOpen]);
-  if (!isOpen) return null;
-  
+  if (!isOpen && !isClosing) return null;
+
+  // Plays the pop-out/backdrop-out animation, then unmounts — same 250ms
+  // pattern as Login.jsx's handleClose. handleLogout's own success path
+  // still calls onClose() directly (no animation), matching how Login.jsx's
+  // successful-login path also skips it: the user's already being taken
+  // elsewhere, so the extra delay would just be lag.
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); onClose(); }, 250);
+  };
+
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -100,13 +113,14 @@ export default function LogoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4"
-      onClick={onClose}
+      className={`fixed inset-0 z-60 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+      onClick={handleClose}
     >
-      <div
-        className="w-full max-w-md bg-white shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`w-full max-w-md ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        <div
+          className="bg-white shadow-2xl overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="px-6 pt-8 pb-7 text-center">
           <h2 className="text-2xl font-semibold text-black mb-4">
             {t('logoutModal.title')}
@@ -140,7 +154,7 @@ export default function LogoutModal({
             </button>
              <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className={`
                 px-8 py-3.5  font-medium text-gray-800
                 border border-gray-300 hover:bg-gray-100 active:bg-gray-300
@@ -152,6 +166,7 @@ export default function LogoutModal({
               {t('logoutModal.cancelButton')}
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

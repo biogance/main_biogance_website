@@ -45,13 +45,22 @@ function TermsConditionContent() {
         <Navbar bgWhite={true} />
       </div>
 
-      {/* Mobile Navigation */}
-      <div className="lg:hidden lg:top-0 sticky top-16 bg-white z-100">
+      {/* Mobile Navigation — mt-26 (104px) so this starts in normal flow
+          right below the fixed Navbar's full at-rest height (40px
+          announcement bar + 64px nav), not overlapping it. Without this,
+          this row's natural (pre-scroll) position sat underneath the fixed
+          header instead of below it, since `sticky top-16` only controls
+          where it re-pins once scrolled — it doesn't add the clearance
+          needed before that point — so the tab row visually overlapped the
+          navbar logo on small screens. lg:hidden means this margin has no
+          effect at all on large screens (the element isn't rendered there). */}
+      <div className="lg:hidden lg:top-0 sticky top-16 mt-26 bg-white z-100">
         <div className="overflow-x-auto">
           <nav className="flex space-x-2 px-4 py-3 min-w-max">
             <button
               onClick={() => handleSectionChange('disclaimer')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+              className={`whitespace-nowrap px-4 py-2 text-sm 
+                 transition-all duration-300 transform ${
                 activeSection === 'disclaimer'
                   ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
@@ -62,7 +71,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('shipping')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+              className={`whitespace-nowrap px-4 py-2 text-sm 
+                 transition-all duration-300 transform ${
                 activeSection === 'shipping'
                   ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
@@ -73,7 +83,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('privacy')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+              className={`whitespace-nowrap px-4 py-2 text-sm 
+                 transition-all duration-300 transform ${
                 activeSection === 'privacy'
                   ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
@@ -84,7 +95,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('terms')}
-              className={`whitespace-nowrap px-4 py-2 text-sm rounded-lg transition-all duration-300 transform ${
+              className={`whitespace-nowrap px-4 py-2 text-sm 
+                 transition-all duration-300 transform ${
                 activeSection === 'terms'
                   ? 'bg-gray-900 text-white font-medium scale-105 shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-102'
@@ -96,7 +108,13 @@ function TermsConditionContent() {
         </div>
       </div>
       
-      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-33 px-8 transition-all duration-300 ${
+      {/* mt-8 on mobile, not mt-33 — the mobile tab bar right above already
+          carries its own mt-26 clearance from the fixed Navbar (see that
+          comment), so this heading only needs a normal small gap under it
+          there. lg:mt-33 keeps the desktop value as-is: at that breakpoint
+          the tab bar is lg:hidden, so this heading is the first thing after
+          the fixed Navbar and still needs the full clearance itself. */}
+      <h1 className={`text-2xl lg:text-2xl font-bold text-gray-900 mb-2 mt-8 lg:mt-33 px-8 transition-all duration-300 ${
         isTransitioning ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
       }`}>
         {activeSection === 'disclaimer' && t('sections.disclaimer')}
@@ -112,7 +130,7 @@ function TermsConditionContent() {
           <nav className="space-y-2">
             <button
               onClick={() => handleSectionChange('disclaimer')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+              className={`w-full text-left px-4 py-3 text-sm  cursor-pointer transition-all duration-300 transform ${
                 activeSection === 'disclaimer'
                   ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
                   : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
@@ -123,7 +141,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('shipping')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+              className={`w-full text-left px-4 py-3 text-sm 
+                 cursor-pointer transition-all duration-300 transform ${
                 activeSection === 'shipping'
                   ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
                   : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
@@ -134,7 +153,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('privacy')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+              className={`w-full text-left px-4 py-3 text-sm 
+                 cursor-pointer transition-all duration-300 transform ${
                 activeSection === 'privacy'
                   ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
                   : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
@@ -145,7 +165,8 @@ function TermsConditionContent() {
 
             <button
               onClick={() => handleSectionChange('terms')}
-              className={`w-full text-left px-4 py-3 text-sm rounded-lg cursor-pointer transition-all duration-300 transform ${
+              className={`w-full text-left px-4 py-3 text-sm 
+                 cursor-pointer transition-all duration-300 transform ${
                 activeSection === 'terms'
                   ? 'bg-gray-100 text-gray-900 font-medium shadow-sm scale-102'
                   : 'text-gray-600 hover:bg-gray-50 hover:translate-x-1'
@@ -166,7 +187,8 @@ function TermsConditionContent() {
           {/* DISCLAIMER SECTION */}
           {activeSection === 'disclaimer' && (
             <div className="space-y-6 lg:space-y-8">
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.presentation.title')}
                 </h2>
@@ -190,7 +212,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.generalConditions.title')}
                 </h2>
@@ -200,7 +223,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.servicesProvided.title')}
                 </h2>
@@ -210,7 +234,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.technicalLimitations.title')}
                 </h2>
@@ -221,7 +246,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.intellectualProperty.title')}
                 </h2>
@@ -231,7 +257,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.liability.title')}
                 </h2>
@@ -241,7 +268,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.personalData.title')}
                 </h2>
@@ -257,7 +285,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.cookies.title')}
                 </h2>
@@ -269,7 +298,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.applicableLaw.title')}
                 </h2>
@@ -284,7 +314,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.referenceText.title')}
                 </h2>
@@ -297,7 +328,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('disclaimer.glossary.title')}
                 </h2>
@@ -314,7 +346,8 @@ function TermsConditionContent() {
           {/* SHIPPING SECTION */}
           {activeSection === 'shipping' && (
             <div className="space-y-6 lg:space-y-8">
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('shipping.orderValidation.title')}
                 </h2>
@@ -334,7 +367,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('shipping.delivery.title')}
                 </h2>
@@ -360,7 +394,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('shipping.withdrawal.title')}
                 </h2>
@@ -377,7 +412,8 @@ function TermsConditionContent() {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
+              <div className="border border-gray-200 
+               p-4 lg:p-6 hover:shadow-md transition-shadow duration-300">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('shipping.claims.title')}
                 </h2>
@@ -397,7 +433,7 @@ function TermsConditionContent() {
           {activeSection === 'privacy' && (
             <div className="space-y-6 lg:space-y-8">
               {/* Privacy Policy Header */}
-              <div className="rounded-lg p-4 lg:p-2">
+              <div className=" p-4 lg:p-2">
                 <h2 className="text-base lg:text-2xl font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.header.title')}
                 </h2>
@@ -410,7 +446,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Who are we? */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.whoAreWe.title')}
                 </h2>
@@ -422,7 +459,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Comments */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.comments.title')}
                 </h2>
@@ -433,7 +471,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Media */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.media.title')}
                 </h2>
@@ -443,7 +482,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Cookies */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.cookies.title')}
                 </h2>
@@ -456,7 +496,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Embedded content from other sites */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.embeddedContent.title')}
                 </h2>
@@ -467,7 +508,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Use and transmission of your personal data */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.useAndTransmission.title')}
                 </h2>
@@ -477,7 +519,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Services used */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.servicesUsed.title')}
                 </h2>
@@ -492,7 +535,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Storage durations of your data */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.storageDuration.title')}
                 </h2>
@@ -503,7 +547,8 @@ function TermsConditionContent() {
               </div>
 
               {/* Security of your data */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200 
+               p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.security.title')}
                 </h2>
@@ -513,7 +558,7 @@ function TermsConditionContent() {
               </div>
 
               {/* The rights you have over your data */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.rights.title')}
                 </h2>
@@ -531,7 +576,7 @@ function TermsConditionContent() {
               </div>
 
               {/* Transmission of your personal data */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('privacy.transmission.title')}
                 </h2>
@@ -546,7 +591,7 @@ function TermsConditionContent() {
           {activeSection === 'terms' && (
             <div className="space-y-6 lg:space-y-8">
               {/* SCOPE OF APPLICATION */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.scope.title')}
                 </h2>
@@ -559,7 +604,7 @@ function TermsConditionContent() {
               </div>
 
               {/* PRODUCTS & PRICE */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.products.title')}
                 </h2>
@@ -574,7 +619,7 @@ function TermsConditionContent() {
               </div>
 
               {/* PAYMENT AND SECURITY */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.payment.title')}
                 </h2>
@@ -606,7 +651,7 @@ function TermsConditionContent() {
               </div>
 
               {/* RESERVATION OF OWNERSHIP */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.ownership.title')}
                 </h2>
@@ -618,7 +663,7 @@ function TermsConditionContent() {
               </div>
 
               {/* LEGAL GUARANTEES */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.guarantees.title')}
                 </h2>
@@ -650,7 +695,7 @@ function TermsConditionContent() {
               </div>
 
               {/* APPLICABLE LAW AND LANGUAGE OF THE CONTRACT */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.law.title')}
                 </h2>
@@ -661,7 +706,7 @@ function TermsConditionContent() {
               </div>
 
               {/* PERSONAL DATA SCOPE */}
-              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+              <div className="border border-gray-200  p-4 lg:p-6">
                 <h2 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
                   {t('terms.personalDataScope.title')}
                 </h2>

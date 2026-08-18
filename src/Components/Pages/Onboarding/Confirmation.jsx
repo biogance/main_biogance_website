@@ -9,11 +9,11 @@ export default function PasswordResetModal() {
   const { t } = useTranslation('onboarding');
 
   const handleResendOTP = () => {
-    console.log('Resend OTP clicked');
+   
   };
 
   const handleClose = () => {
-    console.log('Close button clicked - redirect to previous page');
+   
     // Add your navigation logic here, e.g., router.back() or navigate(-1)
   };
 

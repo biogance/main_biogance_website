@@ -237,7 +237,11 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
             >
               {selectedCategory?.label || t("selectCategory")}
             </button>
-            <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <IoChevronDown
+              className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none transition-transform duration-200 ${
+                isDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
             {isDropdownOpen && (
               <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
                 {categories.map((category, index) => (
@@ -282,7 +286,11 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
             >
               {selectedCategory?.label || t("selectCategory")}
             </button>
-            <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <IoChevronDown
+              className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none transition-transform duration-200 ${
+                isDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
             {isDropdownOpen && (
               <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
                 {categories.map((category, index) => (

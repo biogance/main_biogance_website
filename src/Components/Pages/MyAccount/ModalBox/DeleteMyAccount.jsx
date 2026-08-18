@@ -7,13 +7,13 @@ export default function DeleteMyAccount({ isOpen, onClose, onFeedback }) {
   const { t } = useTranslation("myaccount"); // ← your namespace
 
   const handleConfirm = () => {
-    console.log("Account deletion confirmed");
+   
     onClose();
     onFeedback(); // probably triggers actual deletion + feedback flow
   };
 
   const handleClose = () => {
-    console.log("Modal closed");
+  
     onClose();
   };
 

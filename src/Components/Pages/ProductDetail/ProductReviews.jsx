@@ -93,7 +93,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
   };
 
   const handleReviewSubmit = ({ rating, feedback }) => {
-    console.log("Review submitted:", { rating, feedback });
+   
   };
 
   const visibleReviews = allReviews.slice(0, visibleCount);
@@ -281,6 +281,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
           <ProductLoadMore
             isOpen={isLoadMoreOpen}
             onClose={() => setIsLoadMoreOpen(false)}
+            reviewImage={apiProduct?.review_image}
           />
         </>
       )}

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaPlus } from "react-icons/fa";
 import ProductModalAddReview from "./ProductModalAddReview";
 import { RxCross2 } from "react-icons/rx";
+import { MEDIA_URL } from "@/Components/API/API";
 
 const getReviews = (t) => [
   {
@@ -75,7 +76,68 @@ const StarRow = ({ rating, size = 14 }) => (
   </div>
 );
 
-export default function ProductLoadMore({ isOpen, onClose }) {
+// Same API-driven review image ProductReviews.jsx's right column shows
+// (apiProduct.review_image via MEDIA_URL) — used for both this modal's
+// mobile "summary" tab image and its desktop sidebar image, which
+// previously just rendered an empty grey box regardless of the API data.
+// Reuses the .plm-img-loader spinner class already defined in this file's
+// <style> block below (it went unused until now).
+function ReviewImage({ reviewImage, height }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(reviewImage) && !failed;
+
+  return (
+    <div
+      style={{
+        background: "#E1E1E1",
+        height,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {showImage && (
+        <>
+          {/* Absolutely-positioned overlay, not a flex sibling of the <img>
+              — the image below stays in the DOM (at opacity 0) while it
+              loads so onLoad still fires, and without this the invisible
+              image would still take up flex space next to the loader and
+              push it off-center instead of the loader sitting centered
+              over the whole box. */}
+          {!loaded && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1,
+              }}
+            >
+              <div className="plm-img-loader" />
+            </div>
+          )}
+          <img
+            src={`${MEDIA_URL}${reviewImage}`}
+            alt="Biogance Product Review"
+            onLoad={() => setLoaded(true)}
+            onError={() => setFailed(true)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: loaded ? 1 : 0,
+              transition: "opacity 0.3s ease",
+            }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function ProductLoadMore({ isOpen, onClose, reviewImage }) {
   const { t } = useTranslation("productreviews");
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("reviews");
@@ -114,7 +176,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
   }, [isOpen]);
 
   const handleReviewSubmit = ({ rating, feedback }) => {
-    console.log("Review submitted:", { rating, feedback });
+   
   };
 
   if (!isOpen) return null;
@@ -145,8 +207,9 @@ export default function ProductLoadMore({ isOpen, onClose }) {
           display: none;
         }
         .plm-img-loader {
-          border: 4px solid rgba(0, 0, 0, 0.1);
-          border-left-color: transparent;
+          border-radius: 50%;
+          border: 4px solid rgba(0, 0, 0, 0.12);
+          border-top-color: #111111;
           width: 36px;
           height: 36px;
 
@@ -400,20 +463,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               }}
             >
               {/* Mobile image with loader */}
-              <div
-                style={{
-                  background: "#E1E1E1",
-               
-                  height: 220,
-                  overflow: "hidden",
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {/* Just show grey background - no image */}
-              </div>
+              <ReviewImage reviewImage={reviewImage} height={220} />
 
               {/* Rating breakdown */}
               <div
@@ -559,19 +609,7 @@ export default function ProductLoadMore({ isOpen, onClose }) {
               }}
             >
               {/* Sidebar image with loader */}
-              <div
-                style={{
-                  background: "#E1E1E1",
-                  height: 260,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                  position: "relative",
-                }}
-              >
-                {/* Just show grey background - no image */}
-              </div>
+              <ReviewImage reviewImage={reviewImage} height={260} />
 
               <div style={{ padding: "16px 18px 18px" }}>
                 <div

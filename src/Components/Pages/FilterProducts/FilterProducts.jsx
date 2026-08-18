@@ -619,13 +619,7 @@ export default function FilterProducts() {
       const widthMultiplier = window.innerWidth <= 1440 ? 0.85 : 0.8;
       const w = h * widthMultiplier;
       setCardDimensions({ height: h, width: w });
-      console.log("Card dimensions:", {
-        windowInnerHeight: window.innerHeight,
-        reservedTop,
-        availableHeight,
-        cardHeight: h,
-        cardWidth: w,
-      });
+     
     };
     update();
     window.addEventListener("resize", update);

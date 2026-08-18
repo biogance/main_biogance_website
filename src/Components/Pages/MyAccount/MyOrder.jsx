@@ -207,7 +207,7 @@ export default function MyOrder() {
     try {
       const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
       const token = loginData?.data?.token;
-      console.log('Token:', token); // debug: token exist karta hai ya nahi
+     
 
       const body = {};
       if (keyword) body.keyword = keyword;
@@ -226,7 +226,7 @@ export default function MyOrder() {
 });
 
 const data = await res.json().catch(() => null);
-console.log('API response:', res.status, data);
+
 
 
 if (data && data.status === false) {
@@ -248,7 +248,7 @@ const list = pagination?.data;
 setOrders(Array.isArray(list) ? list : []);
 setPagination({ current_page: pagination?.current_page ?? 1, last_page: pagination?.last_page ?? 1 });
     } catch (e) {
-      console.log('🔥 Catch block hit:', e); // debug: catch chal raha hai ya nahi
+    
       toast.error(e?.action || 'Something went wrong. Please try again.');
       setOrders([]);
     } finally {

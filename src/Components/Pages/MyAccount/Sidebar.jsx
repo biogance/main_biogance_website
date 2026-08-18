@@ -15,7 +15,13 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
     <div className="w-full lg:w-80 bg-gray-100 flex flex-col p-4 lg:p-10 lg:flex-shrink-0">
       {/* Menu Items */}
       <nav className="flex-1">
-        <ul className="flex overflow-x-auto lg:flex-col lg:overflow-visible px-4 py-6 lg:px-0 lg:py-6 space-x-2 lg:space-x-0 lg:space-y-5">
+        {/* py-2 on mobile, not py-6 — that was on top of this whole
+            component's own p-4 (Sidebar's outer wrapper below), so the
+            tab row on small screens carried two stacked paddings' worth of
+            empty space underneath it before the page content started.
+            lg:py-6 keeps the desktop vertical list's spacing exactly as it
+            was. */}
+        <ul className="flex overflow-x-auto lg:flex-col lg:overflow-visible px-4 py-2 lg:px-0 lg:py-6 space-x-2 lg:space-x-0 lg:space-y-5">
           <li>
             <button
               onClick={() => onItemClick('dashboard')}
@@ -150,7 +156,12 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
         activeItem === 'support' ? 'brightness-0 invert' : ''
       }`}
     />
-    <span className="flex-1 text-left break-words">{t('support')}</span>
+    {/* Short "Help" tab label below lg — "Help & Support" was wrapping to
+        two lines on the small-screen horizontal tab row (see this list's
+        overflow-x-auto above). Full "Help & Support" label unchanged from
+        lg up. */}
+    <span className="flex-1 text-left break-words lg:hidden">{t('supportShort')}</span>
+    <span className="flex-1 text-left break-words hidden lg:block">{t('support')}</span>
   </button>
 </li>
 

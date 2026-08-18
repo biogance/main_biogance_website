@@ -8,22 +8,26 @@ const ShimmerLoader = ({ className = "" }) => (
   <div className={`bg-gray-200 animate-pulse ${className}`} />
 );
 
-const getYouTubeEmbedUrl = (url) => {
+const getYouTubeVideoId = (url) => {
   if (!url) return null;
-  
+
   // Handle YouTube Shorts: https://www.youtube.com/shorts/VIDEO_ID
   const shortsMatch = url.match(/youtube\.com\/shorts\/([^&\n?#]+)/);
-  if (shortsMatch) {
-    return `https://www.youtube.com/embed/${shortsMatch[1]}`;
-  }
-  
+  if (shortsMatch) return shortsMatch[1];
+
   // Handle regular YouTube: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID
   const videoMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  if (videoMatch) {
-    return `https://www.youtube.com/embed/${videoMatch[1]}`;
-  }
-  
+  if (videoMatch) return videoMatch[1];
+
   return null;
+};
+
+const getYouTubeEmbedUrl = (url) => {
+  const videoId = getYouTubeVideoId(url);
+  if (!videoId) return null;
+
+  
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1`;
 };
 
 export default function ProductVideo({ videoLink, frenchVideoLink, isLoading }) {

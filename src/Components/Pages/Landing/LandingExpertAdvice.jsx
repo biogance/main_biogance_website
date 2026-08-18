@@ -24,6 +24,17 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop",
 ];
 
+// article.reading_time sometimes comes back from the API already carrying
+// its own unit text (e.g. "5 min") instead of a bare number — appending the
+// translated minShort suffix ("{{time}} min") on top of that would show
+// "5 min min". Only append it when the raw API value doesn't already say
+// "min" itself; otherwise show it exactly as the API sent it.
+function formatReadingTime(value, t) {
+  const raw = String(value ?? '').trim();
+  if (raw && /min/i.test(raw)) return raw;
+  return t('minShort', { time: raw || '0' });
+}
+
 // Reads the categories entry whose type is "topic" (mirrors getCategoryName
 // in ExpertAdvices.jsx) and returns that topic's localized name. Falls back
 // to "⸻" when the blog has no topic category set, same as ExpertAdvices.jsx.
@@ -180,7 +191,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
             <span>{article.company_name || 'Biogance'}</span>
             <span className="flex items-center gap-1">
               <FiClock className="w-3 h-3" />
-              {trAdvice('minShort', { time: article.reading_time || '0' })}
+              {formatReadingTime(article.reading_time, trAdvice)}
             </span>
           </div>
         </div>

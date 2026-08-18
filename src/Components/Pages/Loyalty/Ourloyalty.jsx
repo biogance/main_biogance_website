@@ -65,7 +65,11 @@ export default function Loyalty() {
       {/* Hero Section — matches the reference image: eyebrow label, a two-line
                 heading, description stacked naturally below it, and a soft left-side
                 fade over the photo so the text stays readable. */}
-      <div className="relative h-[420px] sm:h-[420px] md:h-[460px] lg:h-[600px] w-[100%] mx-auto overflow-hidden ">
+      {/* h-[520px] on small screens, not the original 420px — needed to fit
+          the extra top clearance below (pt-[110px] instead of py-8's 32px)
+          without pushing the description out past the box's own
+          overflow-hidden bottom edge. md/lg unchanged. */}
+      <div className="relative h-[520px] sm:h-[520px] md:h-[460px] lg:h-[600px] w-[100%] mx-auto overflow-hidden ">
         <div className="absolute inset-0 ">
           <Image
             src={dog}
@@ -77,7 +81,15 @@ export default function Loyalty() {
         {/* Fade so the photo stays visible on the right while the text on the left stays readable */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/75 via-white to-transparent md:from-white md:via-white/10 md:to-transparent" />
 
-        <div className="relative h-full flex flex-col justify-center text-black px-5 sm:px-6 md:px-8 lg:px-12 py-8">
+        {/* pt-[110px] on small screens instead of the plain py-8 (32px) this
+            used everywhere — the fixed Navbar (40px announcement + 64px nav
+            = 104px) sits over this box, and the eyebrow span's own -mt-10
+            pulls it up another 40px on top of that, so 32px of clearance
+            left the eyebrow/heading rendering underneath the navbar on the
+            short mobile hero. md:pt-8/lg:pt-8 restore the original value
+            unchanged (the taller md/lg heroes already had enough room via
+            justify-center for this not to be an issue there). */}
+        <div className="relative h-full flex flex-col justify-center text-black px-5 sm:px-6 md:px-8 lg:px-12 pt-[110px] sm:pt-[110px] md:pt-8 lg:pt-8 pb-8">
           <span className="text-xs tracking-[0.2em] text-black/50 mb-10 -mt-10">
             {t("eyebrow")}
           </span>
