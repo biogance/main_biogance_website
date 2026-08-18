@@ -421,7 +421,14 @@ export default function BreedLibrary({ onOpenBreed }) {
       
       <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-b border-[#d8d8d4]">
         <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
-          <div className="flex overflow-x-auto">
+          {/* min-w-0 — a flex item's default min-width is its content's
+              natural width, which overrides overflow-x-auto and makes the
+              *whole row* (and so the page) scroll horizontally instead of
+              just this tab strip once there are enough species tabs (or
+              long enough labels) to not fit. min-w-0 lets it actually
+              shrink so its own overflow-x-auto takes over, scoped to just
+              these tabs, on small/medium screens. */}
+          <div className="flex overflow-x-auto min-w-0">
             {speciesTabs.map((tab) => (
               <button
                 key={tab.key}

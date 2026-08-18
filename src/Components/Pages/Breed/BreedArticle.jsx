@@ -55,9 +55,14 @@ function BreedArticleShimmer() {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
+        {/* flex + overflow-x-auto below 761px — same single "one horizontal
+            row" shape the min-[761px]:grid-cols-3/min-[1181px]:grid-cols-6
+            layout already has, just swiped instead of wrapped into stacked
+            rows on small screens. min-[761px]: switches back to the
+            untouched grid. */}
+        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] flex overflow-x-auto min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:overflow-visible min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
+            <div key={i} className="shrink-0 w-[160px] min-[761px]:w-auto min-h-[125px] min-[761px]:min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
               <div className="h-2 w-14 bg-[#e2e1dc] rounded animate-pulse" />
               <div className="h-[17px] w-20 bg-[#e2e1dc] rounded animate-pulse" />
             </div>
@@ -383,7 +388,12 @@ export default function BreedArticle({ slug, onLoaded }) {
           left/right once the viewport (zooming out effectively widens it)
           crosses that width. */}
       <div className="border-b border-[#d8d8d4] py-6 bg-[#f6f6f4] mt-26 ">
-        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex justify-between items-center gap-5">
+        {/* flex-wrap + gap-y-3 — "← Back to all breeds" plus the Like/Share
+            buttons don't reliably fit on one line on narrow phones (no
+            desktop impact: they already fit there, so wrap never triggers).
+            Without this they either overlapped or squeezed together instead
+            of dropping the button group to its own line. */}
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex flex-wrap justify-between items-center gap-x-5 gap-y-3">
           <button type="button" onClick={goToBreedGuide} className="border-0 bg-transparent p-0 cursor-pointer uppercase text-[10px] tracking-[.15em] hover:opacity-55">
             {t('article.back')}
           </button>
@@ -434,9 +444,20 @@ export default function BreedArticle({ slug, onLoaded }) {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
+        {/* flex + overflow-x-auto below 761px — keeps this one horizontal
+            row (same shape as the min-[761px]:grid-cols-3/
+            min-[1181px]:grid-cols-6 layout already is) instead of wrapping
+            into stacked 2-column rows on small screens; swipe instead of
+            wrap. min-[761px]: switches back to the untouched grid. */}
+        <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] flex overflow-x-auto min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:overflow-visible min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {facts.map((f) => (
-            <div key={f.label} className="min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
+            // shrink-0 w-[160px] keeps each fact a fixed, swipeable width
+            // while this row scrolls below 761px; min-[761px]:w-auto lets
+            // the grid size it from tablet up, unchanged. min-h-[125px] (vs
+            // the tablet/desktop 155px) avoids the big empty gap
+            // justify-between used to leave between the label and the
+            // value at this narrower card width.
+            <div key={f.label} className="shrink-0 w-[160px] min-[761px]:w-auto min-h-[125px] min-[761px]:min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
               <small className="text-[8px] tracking-[.15em] uppercase text-[#858580]">{f.label}</small>
               <div>
                 <strong className="block text-[17px] leading-[1.25] font-medium">{f.value}</strong>
@@ -472,7 +493,12 @@ export default function BreedArticle({ slug, onLoaded }) {
       {related.length > 0 && (
         <section className="bg-[#f6f6f4] py-[clamp(78px,8vw,120px)]">
           <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-            <div className="flex justify-between items-end gap-5 mb-9">
+            {/* flex-wrap — the clamp(44px,…) heading alone can run close to
+                (or past) a narrow phone's width, leaving no room for "View
+                all breeds →" beside it; wrapping drops the button to its
+                own line there instead of overlapping/clipping it. No
+                desktop effect: the row already fits on one line there. */}
+            <div className="flex flex-wrap justify-between items-end gap-x-5 gap-y-3 mb-9">
               <div>
                 <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
                   {t('article.relatedEyebrow')}

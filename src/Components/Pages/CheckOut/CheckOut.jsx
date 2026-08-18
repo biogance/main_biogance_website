@@ -3,7 +3,11 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTranslation, Trans } from "react-i18next";
-import { FlagImage, parseCountry, defaultCountries } from "react-international-phone";
+import {
+  FlagImage,
+  parseCountry,
+  defaultCountries,
+} from "react-international-phone";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
 import LoginModal from "../Onboarding/Login";
@@ -18,7 +22,11 @@ import {
   CardCvcElement,
   ExpressCheckoutElement,
 } from "@stripe/react-stripe-js";
-import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+import {
+  PayPalScriptProvider,
+  PayPalButtons,
+  usePayPalScriptReducer,
+} from "@paypal/react-paypal-js";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -87,9 +95,13 @@ function resolveCountryIso2(countryRaw) {
 // checkout page fall through to an IP-based guess even when splash already
 // had the real country.
 function resolveIso2ByDialCode(dialCode) {
-  const clean = String(dialCode || "").replace("+", "").trim();
+  const clean = String(dialCode || "")
+    .replace("+", "")
+    .trim();
   if (!clean) return "";
-  const found = defaultCountries.find((c) => parseCountry(c).dialCode === clean);
+  const found = defaultCountries.find(
+    (c) => parseCountry(c).dialCode === clean,
+  );
   return found ? parseCountry(found).iso2 : "";
 }
 
@@ -137,7 +149,8 @@ const getErrorMsg = (data) => {
   // instead of letting it get coerced into "[object Object]".
   if (data?.action && typeof data.action === "object") {
     const firstVal = Object.values(data.action)[0];
-    if (Array.isArray(firstVal) && typeof firstVal[0] === "string") return firstVal[0];
+    if (Array.isArray(firstVal) && typeof firstVal[0] === "string")
+      return firstVal[0];
     if (typeof firstVal === "string") return firstVal;
   }
   return null;
@@ -374,10 +387,11 @@ function CustomDropdown({ value, onChange }) {
                 <li
                   key={num}
                   onClick={() => handleSelect(num)}
-                  className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${num === selectedQty
+                  className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
+                    num === selectedQty
                       ? "font-medium text-black"
                       : "text-gray-800"
-                    }`}
+                  }`}
                 >
                   {num}
                 </li>
@@ -552,7 +566,8 @@ function ButtonSpinner({ color = "#111" }) {
 // just the trailing "*" in red so it stands out as the "required" marker,
 // leaving the rest of the label its normal color.
 function FieldLabel({ text }) {
-  if (typeof text !== "string" || !text.trim().endsWith("*")) return <>{text}</>;
+  if (typeof text !== "string" || !text.trim().endsWith("*"))
+    return <>{text}</>;
   const base = text.slice(0, text.lastIndexOf("*"));
   return (
     <>
@@ -785,199 +800,205 @@ function PhoneFieldBox({
 
   return (
     <div>
-    <div
-      ref={wrapRef}
-      style={{
-        position: "relative",
-        display: "flex",
-        alignItems: "stretch",
-        border: `1px solid ${error ? "#e02424" : focused ? "#111" : "#ddd"}`,
-        borderRadius: "3px",
-        background: disabled ? "#f7f7f7" : "#fff",
-        transition: "border-color 0.2s",
-      }}
-    >
       <div
-        onClick={() => {
-          if (disabled) return;
-          setOpen((v) => !v);
-          setSearch("");
-        }}
+        ref={wrapRef}
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          padding: "0 12px",
-          borderRight: "1px solid #eee",
-          cursor: disabled ? "default" : "pointer",
-          flexShrink: 0,
-          userSelect: "none",
-        }}
-      >
-        <FlagImage iso2={iso2 || "fr"} size="20px" />
-        <span style={{ fontSize: "13px", color: "#333", fontFamily: FONT }}>
-          {dialCode}
-        </span>
-        <span
-          style={{
-            width: 0,
-            height: 0,
-            borderLeft: "3px solid transparent",
-            borderRight: "3px solid transparent",
-            borderTop: "4px solid #888",
-          }}
-        />
-      </div>
-      <div
-        style={{
-          flex: 1,
           position: "relative",
-          padding: floatedPhone ? "18px 14px 6px" : "14px 14px",
-          transition: "padding 0.15s",
+          display: "flex",
+          alignItems: "stretch",
+          border: `1px solid ${error ? "#e02424" : focused ? "#111" : "#ddd"}`,
+          borderRadius: "3px",
+          background: disabled ? "#f7f7f7" : "#fff",
+          transition: "border-color 0.2s",
         }}
       >
-        <label
+        <div
+          onClick={() => {
+            if (disabled) return;
+            setOpen((v) => !v);
+            setSearch("");
+          }}
           style={{
-            position: "absolute",
-            left: "14px",
-            top: floatedPhone ? "6px" : "50%",
-            transform: floatedPhone ? "none" : "translateY(-50%)",
-            fontSize: floatedPhone ? "10px" : "14px",
-            color: focused ? "#111" : "#999",
-            transition: "all 0.15s ease",
-            pointerEvents: "none",
-            fontFamily: FONT,
-            lineHeight: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "0 12px",
+            borderRight: "1px solid #eee",
+            cursor: disabled ? "default" : "pointer",
+            flexShrink: 0,
+            userSelect: "none",
           }}
         >
-          <FieldLabel text={t("phoneNumber")} />
-        </label>
-        <input
-          type="tel"
-          value={value}
-          disabled={disabled}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => {
-            setFocused(false);
-            onBlur?.();
-          }}
-          style={{
-            width: "100%",
-            border: "none",
-            outline: "none",
-            padding: 0,
-            fontSize: "14px",
-            color: disabled ? "#888" : "#111",
-            background: "transparent",
-            fontFamily: FONT,
-          }}
-        />
-      </div>
-
-      {open && (
+          <FlagImage iso2={iso2 || "fr"} size="20px" />
+          <span style={{ fontSize: "13px", color: "#333", fontFamily: FONT }}>
+            {dialCode}
+          </span>
+          <span
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: "3px solid transparent",
+              borderRight: "3px solid transparent",
+              borderTop: "4px solid #888",
+            }}
+          />
+        </div>
         <div
           style={{
-            position: "absolute",
-            top: "calc(100% + 4px)",
-            left: 0,
-            zIndex: 50,
-            background: "#fff",
-            border: "1px solid #ddd",
-            borderRadius: "3px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            minWidth: "240px",
+            flex: 1,
+            position: "relative",
+            padding: floatedPhone ? "18px 14px 6px" : "14px 14px",
+            transition: "padding 0.15s",
           }}
         >
-          <div style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
-            <input
-              type="text"
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              placeholder={t("searchCountry")}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                border: "1px solid #ddd",
-                borderRadius: "3px",
-                padding: "6px 10px",
-                fontSize: "13px",
-                fontFamily: FONT,
-                outline: "none",
-                color: "#111",
-              }}
-            />
-          </div>
-          <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-            {filteredCountries.length === 0 ? (
-              <p
+          <label
+            style={{
+              position: "absolute",
+              left: "14px",
+              top: floatedPhone ? "6px" : "50%",
+              transform: floatedPhone ? "none" : "translateY(-50%)",
+              fontSize: floatedPhone ? "10px" : "14px",
+              color: focused ? "#111" : "#999",
+              transition: "all 0.15s ease",
+              pointerEvents: "none",
+              fontFamily: FONT,
+              lineHeight: 1,
+            }}
+          >
+            <FieldLabel text={t("phoneNumber")} />
+          </label>
+          <input
+            type="tel"
+            value={value}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => {
+              setFocused(false);
+              onBlur?.();
+            }}
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              padding: 0,
+              fontSize: "14px",
+              color: disabled ? "#888" : "#111",
+              background: "transparent",
+              fontFamily: FONT,
+            }}
+          />
+        </div>
+
+        {open && (
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              zIndex: 50,
+              background: "#fff",
+              border: "1px solid #ddd",
+              borderRadius: "3px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              minWidth: "240px",
+            }}
+          >
+            <div style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+              <input
+                type="text"
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                placeholder={t("searchCountry")}
                 style={{
-                  padding: "14px",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  border: "1px solid #ddd",
+                  borderRadius: "3px",
+                  padding: "6px 10px",
                   fontSize: "13px",
-                  color: "#999",
-                  textAlign: "center",
                   fontFamily: FONT,
+                  outline: "none",
+                  color: "#111",
                 }}
-              >
-                {t("noCountryFound")}
-              </p>
-            ) : (
-              filteredCountries.map((p) => (
-                <div
-                  key={p.iso2}
-                  onClick={() => {
-                    onCountryChange(p.iso2);
-                    setOpen(false);
-                    setSearch("");
-                  }}
+              />
+            </div>
+            <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+              {filteredCountries.length === 0 ? (
+                <p
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "8px 14px",
+                    padding: "14px",
                     fontSize: "13px",
-                    cursor: "pointer",
-                    background: p.iso2 === iso2 ? "#f5f5f5" : "#fff",
+                    color: "#999",
+                    textAlign: "center",
                     fontFamily: FONT,
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#000";
-                    const [nameEl, dialEl] = e.currentTarget.querySelectorAll("span");
-                    if (nameEl) nameEl.style.color = "#fff";
-                    if (dialEl) dialEl.style.color = "#ccc";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      p.iso2 === iso2 ? "#f5f5f5" : "#fff";
-                    const [nameEl, dialEl] = e.currentTarget.querySelectorAll("span");
-                    if (nameEl) nameEl.style.color = "#111";
-                    if (dialEl) dialEl.style.color = "#888";
-                  }}
                 >
-                  <FlagImage iso2={p.iso2} size="18px" style={{ flexShrink: 0 }} />
-                  <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
-                  <span style={{ color: "#888" }}>+{p.dialCode}</span>
-                </div>
-              ))
-            )}
+                  {t("noCountryFound")}
+                </p>
+              ) : (
+                filteredCountries.map((p) => (
+                  <div
+                    key={p.iso2}
+                    onClick={() => {
+                      onCountryChange(p.iso2);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "8px 14px",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      background: p.iso2 === iso2 ? "#f5f5f5" : "#fff",
+                      fontFamily: FONT,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#000";
+                      const [nameEl, dialEl] =
+                        e.currentTarget.querySelectorAll("span");
+                      if (nameEl) nameEl.style.color = "#fff";
+                      if (dialEl) dialEl.style.color = "#ccc";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background =
+                        p.iso2 === iso2 ? "#f5f5f5" : "#fff";
+                      const [nameEl, dialEl] =
+                        e.currentTarget.querySelectorAll("span");
+                      if (nameEl) nameEl.style.color = "#111";
+                      if (dialEl) dialEl.style.color = "#888";
+                    }}
+                  >
+                    <FlagImage
+                      iso2={p.iso2}
+                      size="18px"
+                      style={{ flexShrink: 0 }}
+                    />
+                    <span style={{ flex: 1, color: "#111" }}>{p.name}</span>
+                    <span style={{ color: "#888" }}>+{p.dialCode}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+      {error && (
+        <p
+          style={{
+            margin: "4px 0 0",
+            fontSize: "12px",
+            color: "#e02424",
+            fontFamily: FONT,
+          }}
+        >
+          {error}
+        </p>
       )}
-    </div>
-    {error && (
-      <p
-        style={{
-          margin: "4px 0 0",
-          fontSize: "12px",
-          color: "#e02424",
-          fontFamily: FONT,
-        }}
-      >
-        {error}
-      </p>
-    )}
     </div>
   );
 }
@@ -1293,7 +1314,12 @@ function Section({ title, action, children }) {
   );
 }
 
-function ExpressPaymentBar({ selectedMethod, onSelect, paypalExpressNode, isSafari }) {
+function ExpressPaymentBar({
+  selectedMethod,
+  onSelect,
+  paypalExpressNode,
+  isSafari,
+}) {
   const { t } = useTranslation("checkout");
   const { isMobile, isIOS, isAndroid } = usePaymentVisibility();
 
@@ -1647,7 +1673,7 @@ function CartItemRow({ item, index, onQtyChange, onRemove, lang }) {
             <SizeDropdown
               options={sizeOptions}
               value={sizeOptions[0]}
-              onChange={() => { }}
+              onChange={() => {}}
               disabled={isSingleSize}
             />
           )}
@@ -1956,9 +1982,9 @@ function OrderSummary({
         method: "POST",
         headers: token
           ? {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          }
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token
@@ -2301,14 +2327,14 @@ function OrderSummary({
               borderLeft: "1px solid #ddd",
               background:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                  loggedVoucherApplied
+                loggedVoucherApplied
                   ? "#f3f3f3"
                   : loggedApplyHovered
                     ? "#111"
                     : "transparent",
               color:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                  loggedVoucherApplied
+                loggedVoucherApplied
                   ? "#aaa"
                   : loggedApplyHovered
                     ? "#fff"
@@ -2320,7 +2346,7 @@ function OrderSummary({
               textTransform: "uppercase",
               cursor:
                 (!selectedPill && !loggedVoucherInput.trim()) ||
-                  loggedVoucherApplied
+                loggedVoucherApplied
                   ? "default"
                   : "pointer",
               transition: "background 0.2s, color 0.2s",
@@ -2512,7 +2538,10 @@ function OrderSummary({
               >
                 <Trans
                   i18nKey="checkout:pointsRedeemMessage"
-                  values={{ points: voucherPoints, amount: Math.floor(voucherPoints / 10) }}
+                  values={{
+                    points: voucherPoints,
+                    amount: Math.floor(voucherPoints / 10),
+                  }}
                   components={{ b1: <strong />, b2: <strong /> }}
                 />
               </p>
@@ -2661,9 +2690,16 @@ function OrderSummary({
 
       {/* ── Order button — moved to top ── */}
       {paymentMethod === "paypal" ? (
-        <div className="checkout-right-order-btn" style={{ width: "100%", marginBottom: "16px" }}>{paypalButton}</div>
+        <div
+          className="checkout-right-order-btn"
+          style={{ width: "100%", marginBottom: "16px" }}
+        >
+          {paypalButton}
+        </div>
       ) : paymentMethod === "applepay" ? (
-        <div style={{ width: "100%", marginBottom: "16px" }}>{expressCheckoutButton}</div>
+        <div style={{ width: "100%", marginBottom: "16px" }}>
+          {expressCheckoutButton}
+        </div>
       ) : (
         <button
           className="checkout-right-order-btn"
@@ -3179,7 +3215,9 @@ function OrderSummary({
                 }}
               >
                 <span>
-                  {deliveryMethod === "home" ? t("homeDelivery") : t("pickupPoint")}
+                  {deliveryMethod === "home"
+                    ? t("homeDelivery")
+                    : t("pickupPoint")}
                 </span>
                 <span
                   style={{
@@ -3322,7 +3360,10 @@ function OrderSummary({
                 <div
                   style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}
                 >
-                  {t("latLng", { lat: selectedLocation.lat, lng: selectedLocation.lng })}
+                  {t("latLng", {
+                    lat: selectedLocation.lat,
+                    lng: selectedLocation.lng,
+                  })}
                 </div>
               </div>
             ) : (
@@ -3409,7 +3450,9 @@ function OrderSummary({
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
         onSelectLocation={handleSelectLocation}
-        initialCountry={deliveryCountryIso2 ? deliveryCountryIso2.toUpperCase() : undefined}
+        initialCountry={
+          deliveryCountryIso2 ? deliveryCountryIso2.toUpperCase() : undefined
+        }
         initialPostalCode={postcode || undefined}
       />
       <LoginModal
@@ -3424,7 +3467,9 @@ export default function CheckoutWithStripe(props) {
   return (
     <PayPalScriptProvider
       options={{
-        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "AeWBw6O7gyyHyeTYXU23P6lwrvAgZtVGU057C8ZoOpKuvdRGZxoSGlpYcohePC3093v_p20idGzj-7mo",
+        clientId:
+          process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+          "AeWBw6O7gyyHyeTYXU23P6lwrvAgZtVGU057C8ZoOpKuvdRGZxoSGlpYcohePC3093v_p20idGzj-7mo",
         currency: "EUR",
         intent: "capture",
         components: "buttons",
@@ -3571,7 +3616,12 @@ function Checkout({ cartItems = [] }) {
     const fieldsToClear =
       activeAddressTab === "delivery"
         ? ["street", "postcode", "city", "deliveryCountryIso2"]
-        : ["billingStreet", "billingPostcode", "billingCity", "billingCountryIso2"];
+        : [
+            "billingStreet",
+            "billingPostcode",
+            "billingCity",
+            "billingCountryIso2",
+          ];
     fieldsToClear.forEach((f) => editedFieldsRef.current.delete(f));
 
     prefillFromSplash();
@@ -3717,7 +3767,9 @@ function Checkout({ cartItems = [] }) {
 
         let splashUser = null;
         try {
-          const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+          const splash = JSON.parse(
+            localStorage.getItem("splashData") || "null",
+          );
           splashUser = splash?.user || null;
         } catch {}
         const splashEmail = splashUser?.email || "";
@@ -3814,15 +3866,18 @@ function Checkout({ cartItems = [] }) {
       // render/retry and works around Firefox ETP blocking repeated requests.
       const cached = sessionStorage.getItem("_visitorCountry");
       if (cached) {
-        const matched = defaultCountries.find((c) => parseCountry(c).iso2 === cached);
+        const matched = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === cached,
+        );
         if (matched) {
           countryDetectedRef.current = true;
-          setCountryIso2((prev) => (!prev && !isEdited("countryIso2")) ? cached : prev);
+          setCountryIso2((prev) =>
+            !prev && !isEdited("countryIso2") ? cached : prev,
+          );
           return;
         }
       }
 
-  
       const fetchLocale = () =>
         new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
@@ -3830,8 +3885,11 @@ function Checkout({ cartItems = [] }) {
           xhr.timeout = 5000;
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
-              try { resolve(JSON.parse(xhr.responseText)); }
-              catch { reject(new Error("Invalid JSON")); }
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch {
+                reject(new Error("Invalid JSON"));
+              }
             } else {
               reject(new Error(`HTTP ${xhr.status}`));
             }
@@ -3844,7 +3902,9 @@ function Checkout({ cartItems = [] }) {
       let data;
       try {
         // Try fetch first (Chrome/Edge), fall back to XHR (Firefox)
-        const res = await fetch("/api/visitor-locale", { credentials: "same-origin" });
+        const res = await fetch("/api/visitor-locale", {
+          credentials: "same-origin",
+        });
         data = await res.json();
       } catch {
         data = await fetchLocale();
@@ -3853,12 +3913,20 @@ function Checkout({ cartItems = [] }) {
       const code = (data?.countryCode || "").toLowerCase();
       if (!code) return;
 
-      const matched = defaultCountries.find((c) => parseCountry(c).iso2 === code);
+      const matched = defaultCountries.find(
+        (c) => parseCountry(c).iso2 === code,
+      );
       if (!matched) return;
 
-      try { sessionStorage.setItem("_visitorCountry", code); } catch { /* ignore */ }
+      try {
+        sessionStorage.setItem("_visitorCountry", code);
+      } catch {
+        /* ignore */
+      }
       countryDetectedRef.current = true;
-      setCountryIso2((prev) => (!prev && !isEdited("countryIso2")) ? code : prev);
+      setCountryIso2((prev) =>
+        !prev && !isEdited("countryIso2") ? code : prev,
+      );
     } catch {
       /* silent — the existing "|| 'fr'" fallback still applies */
     }
@@ -3891,12 +3959,12 @@ function Checkout({ cartItems = [] }) {
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("card");
-  
+
   const [radioActiveMethod, setRadioActiveMethod] = useState("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [formError, setFormError] = useState(null);
-  
+
   const [cardNumberComplete, setCardNumberComplete] = useState(false);
   const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
   const [cardCvcComplete, setCardCvcComplete] = useState(false);
@@ -3908,7 +3976,9 @@ function Checkout({ cartItems = [] }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const ua = window.navigator.userAgent || "";
-      const safari = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+      const safari =
+        /Safari/i.test(ua) &&
+        !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
       setIsSafari(safari);
     }
   }, []);
@@ -3944,7 +4014,10 @@ function Checkout({ cartItems = [] }) {
   // Element (Apple Pay) always shows/confirms the current cart total.
   useEffect(() => {
     if (!elements) return;
-    const amount = Math.max(1, Math.round(toCleanAmount(summaryState.total) * 100));
+    const amount = Math.max(
+      1,
+      Math.round(toCleanAmount(summaryState.total) * 100),
+    );
     elements.update({ amount });
   }, [elements, summaryState.total]);
 
@@ -3960,7 +4033,6 @@ function Checkout({ cartItems = [] }) {
   }, [useDifferentBilling]);
 
   const handleCountryChange = (iso2) => {
-
     setCountryIso2(iso2);
     setDeliveryCountryIso2(iso2);
     setPhone("");
@@ -3970,7 +4042,6 @@ function Checkout({ cartItems = [] }) {
     markEdited("phone");
   };
 
-  
   const validatePhone = () => {
     const code = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
     setPhoneError(code ? t(PHONE_ERROR_KEYS[code]) : null);
@@ -3979,9 +4050,7 @@ function Checkout({ cartItems = [] }) {
 
   const handleExpressSelect = (method) => {
     if (method === "applepay" && !applePayReady && !isSafari && !isIOS) {
-      const openInSafari = window.confirm(
-        t("applePayRequiresSafariConfirm")
-      );
+      const openInSafari = window.confirm(t("applePayRequiresSafariConfirm"));
       if (openInSafari) {
         window.location.href = `safari-https://${window.location.host}${window.location.pathname}${window.location.search}`;
       }
@@ -3996,20 +4065,36 @@ function Checkout({ cartItems = [] }) {
     }
 
     setRadioActiveMethod(method);
-    paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    paymentSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const handlePayPalCreateOrder = async () => {
     let token;
-    try { token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data?.token; } catch { }
-    if (!token) { setIsLoginModalOpen(true); throw new Error("Login required"); }
+    try {
+      token = JSON.parse(localStorage.getItem("LoginData") || "null")?.data
+        ?.token;
+    } catch {}
+    if (!token) {
+      setIsLoginModalOpen(true);
+      throw new Error("Login required");
+    }
     const res = await fetch(`${BASE_URL}/user/payment/paypal/create-order`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ amount: toCleanAmount(summaryState.total), envi: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox" }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount: toCleanAmount(summaryState.total),
+        envi: process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox",
+      }),
     });
     const data = await res.json();
-    if (!res.ok || !data?.data?.order_id) throw new Error(getErrorMsg(data) || t("errorCouldNotCreatePaypalOrder"));
+    if (!res.ok || !data?.data?.order_id)
+      throw new Error(getErrorMsg(data) || t("errorCouldNotCreatePaypalOrder"));
     return data.data.order_id;
   };
 
@@ -4104,7 +4189,7 @@ function Checkout({ cartItems = [] }) {
       if (!token) {
         const dialCode = (() => {
           const c = defaultCountries.find(
-            (c) => parseCountry(c).iso2 === (countryIso2 || "fr")
+            (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
           );
           return c ? `+${parseCountry(c).dialCode}` : "";
         })();
@@ -4112,10 +4197,14 @@ function Checkout({ cartItems = [] }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: finalName, email: finalEmail,
-            country_code: dialCode, phone: phone,
-            phone_number: dialCode + phone, device: "web",
-            device_id: getDeviceId(), fcm_token: "web123",
+            name: finalName,
+            email: finalEmail,
+            country_code: dialCode,
+            phone: phone,
+            phone_number: dialCode + phone,
+            device: "web",
+            device_id: getDeviceId(),
+            fcm_token: "web123",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
         });
@@ -4133,27 +4222,36 @@ function Checkout({ cartItems = [] }) {
       }
 
       // Step 1: Capture payment — direct Biogance backend call
-      const captureRes = await fetch(`${BASE_URL}/user/payment/paypal/order/capture/${ppData.orderID}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const captureRes = await fetch(
+        `${BASE_URL}/user/payment/paypal/order/capture/${ppData.orderID}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const captureData = await captureRes.json();
       if (!captureRes.ok || !captureData?.status)
-        throw new Error(getErrorMsg(captureData) || t("errorPaymentCaptureFailed"));
+        throw new Error(
+          getErrorMsg(captureData) || t("errorPaymentCaptureFailed"),
+        );
 
       // Step 2: Place order
       const dialCode = (() => {
         const c = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === (countryIso2 || "fr")
+          (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
         );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
       const deliveryCountryName = (() => {
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === finalDeliveryCountryIso2);
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === finalDeliveryCountryIso2,
+        );
         return c ? parseCountry(c).name : finalDeliveryCountryIso2;
       })();
       const billingCountryName = (() => {
-        const iso = useDifferentBilling ? billingCountryIso2 : finalDeliveryCountryIso2;
+        const iso = useDifferentBilling
+          ? billingCountryIso2
+          : finalDeliveryCountryIso2;
         const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
         return c ? parseCountry(c).name : iso;
       })();
@@ -4169,20 +4267,29 @@ function Checkout({ cartItems = [] }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          full_name: finalName, email: finalEmail,
-          country_code: dialCode, phone: phone, phone_number: dialCode + phone,
+          full_name: finalName,
+          email: finalEmail,
+          country_code: dialCode,
+          phone: phone,
+          phone_number: dialCode + phone,
           delivery_address_full: finalStreet,
           delivery_address_country: deliveryCountryName,
           delivery_address_city: finalCity,
           delivery_address_postal_code: finalPostcode,
           delivery_address_type: "delivery_address",
           delivery_address_state: finalRegion,
-          invoice_address_full: useDifferentBilling ? billingStreet : finalStreet,
+          invoice_address_full: useDifferentBilling
+            ? billingStreet
+            : finalStreet,
           invoice_address_country: billingCountryName,
           invoice_address_city: useDifferentBilling ? billingCity : finalCity,
-          invoice_address_postal_code: useDifferentBilling ? billingPostcode : finalPostcode,
+          invoice_address_postal_code: useDifferentBilling
+            ? billingPostcode
+            : finalPostcode,
           invoice_address_type: "invoice_address",
-          invoice_address_state: useDifferentBilling ? billingRegion : finalRegion,
+          invoice_address_state: useDifferentBilling
+            ? billingRegion
+            : finalRegion,
           is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
           payment_status: "Confirmed",
           payment_method: "Paypal",
@@ -4198,26 +4305,31 @@ function Checkout({ cartItems = [] }) {
           delivery_cost: summaryState.deliveryCost,
           ...(isPickup === 1 && summaryState.selectedLocation
             ? {
-              pickup_name: summaryState.selectedLocation.name,
-              pickup_address: summaryState.selectedLocation.address,
-              pickup_service_point_id: summaryState.selectedLocation.id,
-              pickup_carrier_service_point_id: summaryState.selectedLocation.code,
-            }
+                pickup_name: summaryState.selectedLocation.name,
+                pickup_address: summaryState.selectedLocation.address,
+                pickup_service_point_id: summaryState.selectedLocation.id,
+                pickup_carrier_service_point_id:
+                  summaryState.selectedLocation.code,
+              }
             : {}),
         }),
       });
       const placeData = await placeRes.json();
-      if (!placeRes.ok) throw new Error(getErrorMsg(placeData) || t("errorOrderPlacementFailed"));
+      if (!placeRes.ok)
+        throw new Error(
+          getErrorMsg(placeData) || t("errorOrderPlacementFailed"),
+        );
 
       try {
-        localStorage.setItem("lastPlacedOrder", JSON.stringify(placeData.data?.order || placeData.data || {}));
-      } catch { }
+        localStorage.setItem(
+          "lastPlacedOrder",
+          JSON.stringify(placeData.data?.order || placeData.data || {}),
+        );
+      } catch {}
 
-      
       await refreshCartFromServer();
 
       router.push("/track-order");
-
     } catch (err) {
       console.error(err);
       setPaymentError(err.message || t("errorPaypalPaymentFailedTryAgain"));
@@ -4228,16 +4340,39 @@ function Checkout({ cartItems = [] }) {
 
   // ── Apple Pay handler (Express Checkout Element onConfirm) ────────
   const handleExpressCheckoutConfirm = async () => {
-   
-    if (!deliveryCountryIso2) { setFormError(t("errorSelectCountryDelivery")); return; }
-    if (!street.trim()) { setFormError(t("errorFullAddressDelivery")); return; }
-    if (!postcode.trim()) { setFormError(t("errorPostcodeDelivery")); return; }
-    if (!city.trim()) { setFormError(t("errorCityDelivery")); return; }
+    if (!deliveryCountryIso2) {
+      setFormError(t("errorSelectCountryDelivery"));
+      return;
+    }
+    if (!street.trim()) {
+      setFormError(t("errorFullAddressDelivery"));
+      return;
+    }
+    if (!postcode.trim()) {
+      setFormError(t("errorPostcodeDelivery"));
+      return;
+    }
+    if (!city.trim()) {
+      setFormError(t("errorCityDelivery"));
+      return;
+    }
     if (useDifferentBilling) {
-      if (!billingCountryIso2) { setFormError(t("errorSelectCountryInvoice")); return; }
-      if (!billingStreet.trim()) { setFormError(t("errorFullAddressInvoice")); return; }
-      if (!billingPostcode.trim()) { setFormError(t("errorPostcodeInvoice")); return; }
-      if (!billingCity.trim()) { setFormError(t("errorCityInvoice")); return; }
+      if (!billingCountryIso2) {
+        setFormError(t("errorSelectCountryInvoice"));
+        return;
+      }
+      if (!billingStreet.trim()) {
+        setFormError(t("errorFullAddressInvoice"));
+        return;
+      }
+      if (!billingPostcode.trim()) {
+        setFormError(t("errorPostcodeInvoice"));
+        return;
+      }
+      if (!billingCity.trim()) {
+        setFormError(t("errorCityInvoice"));
+        return;
+      }
     }
 
     if (!stripe || !elements) {
@@ -4252,7 +4387,9 @@ function Checkout({ cartItems = [] }) {
     try {
       const { error: submitError } = await elements.submit();
       if (submitError) {
-        setPaymentError(submitError.message || t("errorPaymentDetailsIncomplete"));
+        setPaymentError(
+          submitError.message || t("errorPaymentDetailsIncomplete"),
+        );
         setIsSubmitting(false);
         return;
       }
@@ -4263,17 +4400,23 @@ function Checkout({ cartItems = [] }) {
 
       if (!token) {
         const dialCode = (() => {
-          const c = defaultCountries.find((c) => parseCountry(c).iso2 === (countryIso2 || "fr"));
+          const c = defaultCountries.find(
+            (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
+          );
           return c ? `+${parseCountry(c).dialCode}` : "";
         })();
         const verifyRes = await fetch(`${BASE_URL}/app/user/account/verify`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: lastName, email,
-            country_code: dialCode, phone: phone,
-            phone_number: dialCode + phone, device: "web",
-            device_id: getDeviceId(), fcm_token: "web123",
+            name: lastName,
+            email,
+            country_code: dialCode,
+            phone: phone,
+            phone_number: dialCode + phone,
+            device: "web",
+            device_id: getDeviceId(),
+            fcm_token: "web123",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
         });
@@ -4305,7 +4448,9 @@ function Checkout({ cartItems = [] }) {
       const intentData = await intentRes.json();
 
       if (!intentData.status || !intentData.data?.client_secret) {
-        setPaymentError(getErrorMsg(intentData) || t("errorPaymentSetupFailed"));
+        setPaymentError(
+          getErrorMsg(intentData) || t("errorPaymentSetupFailed"),
+        );
         setIsSubmitting(false);
         return;
       }
@@ -4330,15 +4475,21 @@ function Checkout({ cartItems = [] }) {
 
       // Step 3: Place Order
       const dialCode = (() => {
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === (countryIso2 || "fr"));
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === (countryIso2 || "fr"),
+        );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
       const deliveryCountryName = (() => {
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === deliveryCountryIso2);
+        const c = defaultCountries.find(
+          (c) => parseCountry(c).iso2 === deliveryCountryIso2,
+        );
         return c ? parseCountry(c).name : deliveryCountryIso2;
       })();
       const billingCountryName = (() => {
-        const iso = useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2;
+        const iso = useDifferentBilling
+          ? billingCountryIso2
+          : deliveryCountryIso2;
         const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
         return c ? parseCountry(c).name : iso;
       })();
@@ -4366,7 +4517,9 @@ function Checkout({ cartItems = [] }) {
           invoice_address_full: useDifferentBilling ? billingStreet : street,
           invoice_address_country: billingCountryName,
           invoice_address_city: useDifferentBilling ? billingCity : city,
-          invoice_address_postal_code: useDifferentBilling ? billingPostcode : postcode,
+          invoice_address_postal_code: useDifferentBilling
+            ? billingPostcode
+            : postcode,
           invoice_address_type: "invoice_address",
           invoice_address_state: useDifferentBilling ? billingRegion : region,
           is_invoice_same_as_delivery: useDifferentBilling ? 1 : 0,
@@ -4384,11 +4537,12 @@ function Checkout({ cartItems = [] }) {
           delivery_cost: summaryState.deliveryCost,
           ...(isPickup === 1 && summaryState.selectedLocation
             ? {
-              pickup_name: summaryState.selectedLocation.name,
-              pickup_address: summaryState.selectedLocation.address,
-              pickup_service_point_id: summaryState.selectedLocation.id,
-              pickup_carrier_service_point_id: summaryState.selectedLocation.code,
-            }
+                pickup_name: summaryState.selectedLocation.name,
+                pickup_address: summaryState.selectedLocation.address,
+                pickup_service_point_id: summaryState.selectedLocation.id,
+                pickup_carrier_service_point_id:
+                  summaryState.selectedLocation.code,
+              }
             : {}),
         }),
       });
@@ -4397,19 +4551,23 @@ function Checkout({ cartItems = [] }) {
       setIsSubmitting(false);
 
       if (!orderData.status) {
-        setPaymentError(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
+        setPaymentError(
+          getErrorMsg(orderData) || t("errorOrderPlacementFailed"),
+        );
         toast.error(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
         return;
       }
 
       try {
-        localStorage.setItem("lastPlacedOrder", JSON.stringify(orderData.data?.order || orderData.data || {}));
-      } catch { }
+        localStorage.setItem(
+          "lastPlacedOrder",
+          JSON.stringify(orderData.data?.order || orderData.data || {}),
+        );
+      } catch {}
 
       await refreshCartFromServer();
 
       router.push("/track-order");
-
     } catch (err) {
       setIsSubmitting(false);
       setPaymentError(err.message || t("errorSomethingWentWrong"));
@@ -4417,7 +4575,6 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
-  
   const FIELD_REFS = {
     email: emailFieldRef,
     name: nameFieldRef,
@@ -4436,13 +4593,17 @@ function Checkout({ cartItems = [] }) {
   };
 
   const getFirstFieldError = () => {
-    if (!email.trim()) return { key: "email", message: t("errorEmailRequired") };
+    if (!email.trim())
+      return { key: "email", message: t("errorEmailRequired") };
     if (!EMAIL_REGEX.test(email.trim()))
       return { key: "email", message: t("errorEmailInvalid") };
     if (!lastName.trim())
       return { key: "name", message: t("errorNameRequired") };
 
-    const phoneErrorCode = getPhoneValidationErrorCode(phone, countryIso2 || "fr");
+    const phoneErrorCode = getPhoneValidationErrorCode(
+      phone,
+      countryIso2 || "fr",
+    );
     if (phoneErrorCode)
       return { key: "phone", message: t(PHONE_ERROR_KEYS[phoneErrorCode]) };
 
@@ -4452,12 +4613,14 @@ function Checkout({ cartItems = [] }) {
       return { key: "street", message: t("errorFullAddressDelivery") };
     if (!postcode.trim())
       return { key: "postcode", message: t("errorPostcodeDelivery") };
-    if (!city.trim())
-      return { key: "city", message: t("errorCityDelivery") };
+    if (!city.trim()) return { key: "city", message: t("errorCityDelivery") };
 
     if (useDifferentBilling) {
       if (!billingCountryIso2)
-        return { key: "billingCountry", message: t("errorSelectCountryInvoice") };
+        return {
+          key: "billingCountry",
+          message: t("errorSelectCountryInvoice"),
+        };
       if (!billingStreet.trim())
         return { key: "billingStreet", message: t("errorFullAddressInvoice") };
       if (!billingPostcode.trim())
@@ -4510,9 +4673,7 @@ function Checkout({ cartItems = [] }) {
         setIsSubmitting(false);
         if (changedAttributes.length > 0) {
           const fields = changedAttributes
-            .map((attr) =>
-              t(ADDRESS_FIELD_LABEL_KEYS[attr] || attr, attr),
-            )
+            .map((attr) => t(ADDRESS_FIELD_LABEL_KEYS[attr] || attr, attr))
             .join(", ");
           toast.error(t("errorInvalidDeliveryAddressFields", { fields }));
         } else {
@@ -4681,11 +4842,12 @@ function Checkout({ cartItems = [] }) {
         delivery_cost: deliveryCostValue,
         ...(isPickup === 1 && summaryState.selectedLocation
           ? {
-            pickup_name: summaryState.selectedLocation.name,
-            pickup_address: summaryState.selectedLocation.address,
-            pickup_service_point_id: summaryState.selectedLocation.id,
-            pickup_carrier_service_point_id: summaryState.selectedLocation.code,
-          }
+              pickup_name: summaryState.selectedLocation.name,
+              pickup_address: summaryState.selectedLocation.address,
+              pickup_service_point_id: summaryState.selectedLocation.id,
+              pickup_carrier_service_point_id:
+                summaryState.selectedLocation.code,
+            }
           : {}),
       };
 
@@ -4699,7 +4861,9 @@ function Checkout({ cartItems = [] }) {
       });
       const orderData = await orderRes.json();
       if (!orderData.status) {
-        setPaymentError(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
+        setPaymentError(
+          getErrorMsg(orderData) || t("errorOrderPlacementFailed"),
+        );
         setIsSubmitting(false);
         toast.error(getErrorMsg(orderData) || t("errorOrderPlacementFailed"));
         return;
@@ -4752,9 +4916,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          }
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(token ? {} : { device_id: getDeviceId() }),
       });
@@ -4787,9 +4951,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          }
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token
@@ -4821,9 +4985,9 @@ function Checkout({ cartItems = [] }) {
         method: "POST",
         headers: token
           ? {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          }
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
           : { "Content-Type": "application/json" },
         body: JSON.stringify(
           token ? { cartId } : { device_id: getDeviceId(), cartId },
@@ -4872,52 +5036,70 @@ function Checkout({ cartItems = [] }) {
   // (sidebar on desktop, bottom wrapper on mobile) when PayPal is selected.
   const payPalButtonNode = (
     <PayPalButtons
-      style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 40 }}
+      style={{
+        layout: "vertical",
+        color: "blue",
+        shape: "rect",
+        label: "pay",
+        height: 40,
+      }}
       createOrder={handlePayPalCreateOrder}
       onApprove={handlePayPalApprove}
-      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError(t("errorPaymentFailedTryAgain")); }}
+      onError={(err) => {
+        console.error("[PayPal Error]", err);
+        setPaymentError(t("errorPaymentFailedTryAgain"));
+      }}
       onCancel={() => setPaymentError(t("errorPaymentCancelled"))}
       forceReRender={[summaryState.total]}
     />
   );
 
- 
   const renderPayPalExpressButton = () => (
     <PayPalButtons
-      style={{ layout: "horizontal", color: "gold", shape: "rect", label: "paypal", height: 45, tagline: false }}
+      style={{
+        layout: "horizontal",
+        color: "gold",
+        shape: "rect",
+        label: "paypal",
+        height: 45,
+        tagline: false,
+      }}
       createOrder={handlePayPalCreateOrder}
       onApprove={handlePayPalApprove}
-      onError={(err) => { console.error("[PayPal Error]", err); setPaymentError(t("errorPaymentFailedTryAgain")); }}
+      onError={(err) => {
+        console.error("[PayPal Error]", err);
+        setPaymentError(t("errorPaymentFailedTryAgain"));
+      }}
       onCancel={() => setPaymentError(t("errorPaymentCancelled"))}
       forceReRender={[summaryState.total]}
     />
   );
 
-  
   const expressCheckoutNode = (
     <ExpressCheckoutElement
       options={{
         buttonType: { applePay: "buy" },
         buttonTheme: { applePay: "black" },
         buttonHeight: 48,
-       
       }}
       onReady={({ availablePaymentMethods }) => {
-        console.log("[ExpressCheckout] onReady availablePaymentMethods:", availablePaymentMethods);
+       
         setApplePayReady(!!availablePaymentMethods?.applePay);
       }}
       onLoadError={({ error }) => {
         console.error("[ExpressCheckout] onLoadError:", error);
         if (typeof window !== "undefined" && window.innerWidth < 1024) {
-          window.alert(`[ExpressCheckout] onLoadError\n${error?.type || ""}: ${error?.message || JSON.stringify(error)}`);
+          window.alert(
+            `[ExpressCheckout] onLoadError\n${error?.type || ""}: ${error?.message || JSON.stringify(error)}`,
+          );
         }
       }}
       onAvailablePaymentMethodsChange={({ paymentMethods }) => {
-        console.log("[ExpressCheckout] onAvailablePaymentMethodsChange:", paymentMethods);
+        
         if (typeof window !== "undefined" && window.innerWidth < 1024) {
           window.alert(
             `[ExpressCheckout] paymentMethods: ${JSON.stringify(paymentMethods)}\n` +
-              `hostname: ${window.location.hostname}`
+              `hostname: ${window.location.hostname}`,
           );
         }
         setApplePayReady(!!paymentMethods?.applePay?.available);
@@ -5039,12 +5221,12 @@ function Checkout({ cartItems = [] }) {
           zIndex: 10,
         }}
       >
-       <div
-  onClick={() => router.push("/")}
-  style={{ cursor: "pointer", display: "inline-block" }}
->
-  <img src="logo.svg" alt="" style={{ height: "40px" }} />
-</div>
+        <div
+          onClick={() => router.push("/")}
+          style={{ cursor: "pointer", display: "inline-block" }}
+        >
+          <img src="logo.svg" alt="" style={{ height: "40px" }} />
+        </div>
         {!isLoggedIn && (
           <div
             style={{
@@ -5082,7 +5264,7 @@ function Checkout({ cartItems = [] }) {
           style={{
             maxWidth: "1280px",
             margin: "0 auto",
-         padding: "0px 44px 30px 44px",
+            padding: "0px 44px 30px 44px",
             display: "flex",
             gap: "32px",
             alignItems: "flex-start",
@@ -5102,7 +5284,6 @@ function Checkout({ cartItems = [] }) {
               />
             </div>
 
-           
             {expressScrollProgress > 0 && (
               <div
                 style={{
@@ -5110,7 +5291,7 @@ function Checkout({ cartItems = [] }) {
                   top: "80px",
                   left: expressBarBox.left,
                   width: expressBarBox.width,
-                
+
                   zIndex: 5,
                   transform: `translateY(${(1 - expressScrollProgress) * -100}%)`,
                   pointerEvents: expressScrollProgress >= 1 ? "auto" : "none",
@@ -5376,7 +5557,10 @@ function Checkout({ cartItems = [] }) {
                 >
                   <PaymentMethodRow
                     active={radioActiveMethod === "card"}
-                    onSelect={() => { setPaymentMethod("card"); setRadioActiveMethod("card"); }}
+                    onSelect={() => {
+                      setPaymentMethod("card");
+                      setRadioActiveMethod("card");
+                    }}
                     label={t("creditCard")}
                     right={<CardBrandIcons />}
                   >
@@ -5532,7 +5716,10 @@ function Checkout({ cartItems = [] }) {
                   {isMobile && isAndroid && (
                     <PaymentMethodRow
                       active={radioActiveMethod === "googlepay"}
-                      onSelect={() => { setPaymentMethod("googlepay"); setRadioActiveMethod("googlepay"); }}
+                      onSelect={() => {
+                        setPaymentMethod("googlepay");
+                        setRadioActiveMethod("googlepay");
+                      }}
                       label={t("googlePay")}
                       right={<GooglePayBadge />}
                     />
@@ -5542,7 +5729,10 @@ function Checkout({ cartItems = [] }) {
                   {(applePayReady || isIOS || isSafari) && (
                     <PaymentMethodRow
                       active={radioActiveMethod === "applepay"}
-                      onSelect={() => { setPaymentMethod("applepay"); setRadioActiveMethod("applepay"); }}
+                      onSelect={() => {
+                        setPaymentMethod("applepay");
+                        setRadioActiveMethod("applepay");
+                      }}
                       label={t("applePay")}
                       right={<ApplePayBadge />}
                     />
@@ -5560,9 +5750,21 @@ function Checkout({ cartItems = [] }) {
                         background: "#f7f7f7",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
                         <ApplePayBadge />
-                        <span style={{ fontSize: "13px", color: "#555", fontFamily: FONT }}>
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            color: "#555",
+                            fontFamily: FONT,
+                          }}
+                        >
                           {t("applePaySafariOnly")}
                         </span>
                       </div>
@@ -5571,12 +5773,24 @@ function Checkout({ cartItems = [] }) {
                   <PaymentMethodRow
                     last
                     active={radioActiveMethod === "paypal"}
-                    onSelect={() => { setPaymentMethod("paypal"); setRadioActiveMethod("paypal"); }}
+                    onSelect={() => {
+                      setPaymentMethod("paypal");
+                      setRadioActiveMethod("paypal");
+                    }}
                     label={t("paypal")}
                     right={<PayPalBadge />}
                   >
                     {radioActiveMethod === "paypal" && paymentError && (
-                      <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#e02424", fontFamily: FONT }}>{paymentError}</p>
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontSize: "12px",
+                          color: "#e02424",
+                          fontFamily: FONT,
+                        }}
+                      >
+                        {paymentError}
+                      </p>
                     )}
                   </PaymentMethodRow>
                 </div>
@@ -5614,10 +5828,12 @@ function Checkout({ cartItems = [] }) {
                     gap: "10px",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isSubmitting) e.currentTarget.style.background = "#333";
+                    if (!isSubmitting)
+                      e.currentTarget.style.background = "#333";
                   }}
                   onMouseLeave={(e) => {
-                    if (!isSubmitting) e.currentTarget.style.background = "#111";
+                    if (!isSubmitting)
+                      e.currentTarget.style.background = "#111";
                   }}
                 >
                   {isSubmitting ? (
@@ -5666,9 +5882,12 @@ function Checkout({ cartItems = [] }) {
                 <Trans
                   i18nKey="checkout:privacyNote"
                   components={{
+                    // Same /termsCondition?section=privacy target Footer.jsx's
+                    // "Privacy Policy" link uses — TermsCondition.jsx reads
+                    // `section` off the URL and opens straight to that tab.
                     privacyLink: (
                       <a
-                        href="#"
+                        href="/termsCondition?section=privacy"
                         style={{
                           color: "#111",
                           fontWeight: 600,
@@ -5704,23 +5923,23 @@ function Checkout({ cartItems = [] }) {
                 transform: `translateY(${expressScrollProgress * (expressBarBox.height + 16)}px)`,
               }}
             >
-            <OrderSummary
-              items={items}
-              onQtyChange={handleQtyChange}
-              onRemoveItem={handleRemoveItem}
-              subtotal={subtotal}
-              totalUnits={totalUnits}
-              isRemoving={isRemoving}
-              onSummaryStateChange={setSummaryState}
-              lang={lang}
-              onPlaceOrder={handlePlaceOrder}
-              isSubmitting={isSubmitting}
-              paymentMethod={paymentMethod}
-              paypalButton={payPalButtonNode}
-              expressCheckoutButton={expressCheckoutNode}
-              deliveryCountryIso2={deliveryCountryIso2}
-              postcode={postcode}
-            />
+              <OrderSummary
+                items={items}
+                onQtyChange={handleQtyChange}
+                onRemoveItem={handleRemoveItem}
+                subtotal={subtotal}
+                totalUnits={totalUnits}
+                isRemoving={isRemoving}
+                onSummaryStateChange={setSummaryState}
+                lang={lang}
+                onPlaceOrder={handlePlaceOrder}
+                isSubmitting={isSubmitting}
+                paymentMethod={paymentMethod}
+                paypalButton={payPalButtonNode}
+                expressCheckoutButton={expressCheckoutNode}
+                deliveryCountryIso2={deliveryCountryIso2}
+                postcode={postcode}
+              />
             </div>
             {/* <button
               onClick={handlePlaceOrder}

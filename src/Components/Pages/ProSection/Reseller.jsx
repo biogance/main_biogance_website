@@ -480,15 +480,15 @@ export default function Reseller() {
         }),
       });
       const data = await res.json();
-      console.log("[reseller-debug] response", { status: res.status, ok: res.ok, data });
+    
       if (data.status === false || data.status === "false" || !res.ok) {
         const msg =
           data.errors?.length > 0
             ? data.errors[0].message
             : data.action || data.title || t("errors.genericSubmit");
-        console.log("[reseller-debug] calling toast.error with:", msg);
+       
         const toastId = toast.error(msg);
-        console.log("[reseller-debug] toast.error returned id:", toastId);
+       
         return;
       }
 

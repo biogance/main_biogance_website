@@ -16,7 +16,7 @@ const AccordionItem = ({ question, answer, isOpen, onToggle }) => {
   }, [isOpen]);
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden ">
+    <div className="border border-gray-200  overflow-hidden ">
       <button
         onClick={onToggle}
         className="w-full flex items-center cursor-pointer justify-between p-4 text-left bg-white hover:bg-gray-50 transition-colors duration-200"
@@ -77,8 +77,10 @@ export default function FAQ() {
           </div>
     
       <div className="min-h-screen bg-white">
-        <div className="max-w-10xl mx-auto px-6 py-22">
-          <div className="grid md:grid-cols-[280px_1fr] gap-12">
+        
+        <div className="max-w-10xl mx-auto px-6 pt-32 pb-22">
+        
+          <div className="grid md:grid-cols-[280px_1fr] gap-4 md:gap-12">
             {/* Sidebar */}
             <div className="md:sticky md:top-30 md:self-start">
               <h1 className="mb-1 text-black font-semibold text-xl">
@@ -87,8 +89,8 @@ export default function FAQ() {
               <p className="text-black font-semibold text-xl">{t('faq.subtitle')}</p>
             </div>
 
-            {/* Main Content */}
-            <div className="space-y-8 mt-9">
+         
+            <div className="space-y-8 md:mt-0.5">
               {/* Section 1: About Biogance */}
               <section>
                 <h2 className="mb-6 text-black font-semibold text-lg">{t('faq.sections.aboutBiogance.title')}</h2>

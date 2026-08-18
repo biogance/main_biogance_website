@@ -1011,7 +1011,7 @@ export default function Navbar({
                     left: "16px",
                     background: "none",
                     border: "1px solid #fff",
-                    borderRadius: "50%",
+                   
                     color: "#fff",
                     cursor: "pointer",
                     display: "flex",
@@ -1060,7 +1060,7 @@ export default function Navbar({
                     right: "16px",
                     background: "none",
                     border: "1px solid #fff",
-                    borderRadius: "50%",
+                  
                     color: "#fff",
                     cursor: "pointer",
                     display: "flex",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
@@ -101,8 +102,22 @@ const DEFAULT_MARQUEE_TAGS = [
 
 export default function LabortorySection() {
   const { t } = useTranslation('laboratory');
+  const router = useRouter();
   const headerMedia = useSplashData("who_we_are_header");
   const footerData = useSplashData("who_we_are_footer");
+
+  // Kept as a plain <a> (not next/link's <Link>) — this file scopes its CSS
+  // with styled-jsx (<style jsx> below), which only knows how to attach its
+  // scoping attribute to plain host elements written in this file, not to
+  // a component from another package. Swapping this to <Link> silently
+  // dropped every .btn/.btn.dark rule (no scoping attribute to match), so
+  // client-side routing is wired up manually here instead: preventDefault
+  // stops the plain <a>'s full-page navigation, router.push does the actual
+  // route change, and the href stays for keyboard/middle-click/no-JS.
+  const goToShop = (e) => {
+    e.preventDefault();
+    router.push('/shop');
+  };
 
   const localizedDefaultTags = t('marquee.tags', { returnObjects: true });
   const resolvedDefaultTags = Array.isArray(localizedDefaultTags) && localizedDefaultTags.length > 0
@@ -392,7 +407,7 @@ export default function LabortorySection() {
               {t('closing.description')}
             </p>
             <div className="closing-actions">
-              <a className="btn dark" href="#">
+              <a className="btn dark" href="#" onClick={goToShop}>
                 {t('closing.btnProducts')}
               </a>
               <a className="btn" href="#commitments">

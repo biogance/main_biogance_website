@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { IoStarOutline } from "react-icons/io5";
@@ -10,6 +10,7 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
   const [hovered, setHovered] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [visible, setVisible] = useState(false);
+  const modalCardRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,11 +39,24 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
     handleClose();
   };
 
+  // Same shake-instead-of-close-on-backdrop-click as Login.jsx's
+  // handleBackdropClick — .modal-shake/@keyframes modalShake are global
+  // classes already defined in globals.css for that.
+  const handleBackdropClick = () => {
+    if (modalCardRef.current) {
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
+      }, { once: true });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center"
+      onClick={handleBackdropClick}
       style={{
         background: "rgba(0,0,0,0.38)",
         transition: "background 0.25s",
@@ -50,10 +64,11 @@ export default function ProductModalAddReview({ isOpen, onClose, onSubmit }) {
     >
       {/* Modal Box */}
       <div
+        ref={modalCardRef}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",
-        
+
           width: "100%",
           maxWidth: "420px",
           padding: "40px 32px 32px 32px",

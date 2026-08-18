@@ -254,8 +254,11 @@ export default function Dashboard() {
       `}} />
 
       <div className="p-4 md:p-8 max-w-10xl mx-auto">
-        {/* Welcome Message */}
-        <h1 className="text-xl md:text-2xl mb-6 md:mb-8 mt-6 md:mt-10 font-semibold text-gray-900">
+        {/* Welcome Message — mt-2 on mobile, not mt-6: stacked on top of
+            Sidebar.jsx's own trailing space under the mobile tab row, that
+            combination was the large empty gap between the tabs and this
+            heading on small screens. md:mt-10 keeps desktop unchanged. */}
+        <h1 className="text-xl md:text-2xl mb-6 md:mb-8 mt-2 md:mt-10 font-semibold text-gray-900">
           {t('dashboard.welcome', { name: userName })}
         </h1>
 

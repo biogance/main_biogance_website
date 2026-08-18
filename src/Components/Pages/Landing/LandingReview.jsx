@@ -195,7 +195,7 @@ export default function LandingReview({ data }) {
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         onSubmit={({ rating, feedback }) => {
-          console.log('Review submitted:', { rating, feedback });
+        
         }}
       />
     </section>

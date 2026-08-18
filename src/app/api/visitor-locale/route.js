@@ -97,21 +97,21 @@ export async function GET(request) {
   // outbound server IP instead, which is still better than returning null.
   const target = isPrivate(rawIp) ? null : rawIp;
 
-  console.log("[visitor-locale] incoming request:", {
-    "x-forwarded-for": forwarded,
-    "x-real-ip": realIp,
-    "cf-connecting-ip": cfIp,
-    "true-client-ip": trueClientIp,
-    resolvedIp: rawIp,
-    isPrivate: isPrivate(rawIp),
-    lookupTarget: target || "(self)",
-  });
+  // console.log("[visitor-locale] incoming request:", {
+  //   "x-forwarded-for": forwarded,
+  //   "x-real-ip": realIp,
+  //   "cf-connecting-ip": cfIp,
+  //   "true-client-ip": trueClientIp,
+  //   resolvedIp: rawIp,
+  //   isPrivate: isPrivate(rawIp),
+  //   lookupTarget: target || "(self)",
+  // });
 
   const cacheKey = target || "self";
   const cached = cache.get(cacheKey);
   const isFresh = cached && Date.now() - cached.at < CACHE_TTL_MS;
   if (isFresh) {
-    console.log("[visitor-locale] serving cached result for", cacheKey, cached.result);
+    // console.log("[visitor-locale] serving cached result for", cacheKey, cached.result);
     return Response.json(cached.result);
   }
 
@@ -125,7 +125,7 @@ export async function GET(request) {
   for (const { name, fn } of providers) {
     try {
       result = await fn();
-      console.log(`[visitor-locale] ${name} succeeded:`, result);
+      // console.log(`[visitor-locale] ${name} succeeded:`, result);
       break;
     } catch (err) {
       console.error(`[visitor-locale] ${name} failed:`, err?.message);
@@ -143,6 +143,6 @@ export async function GET(request) {
   if (result.countryCode) {
     cache.set(cacheKey, { result, at: Date.now() });
   }
-  console.log("[visitor-locale] final response:", result);
+  // console.log("[visitor-locale] final response:", result);
   return Response.json(result);
 }
