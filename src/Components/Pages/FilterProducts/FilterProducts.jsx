@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -540,6 +540,7 @@ const FeaturedSkeleton = ({ rowHeight, cardDimensions }) => (
 
 // ───────────── Page Component ─────────────
 export default function FilterProducts() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const source = searchParams ? searchParams.get("source") : undefined;
   const q = searchParams ? searchParams.get("q") : undefined;
@@ -640,6 +641,8 @@ export default function FilterProducts() {
   const [sort, setSort] = useState("Featured");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  
+  const [isSearchPending, setIsSearchPending] = useState(false);
   const queryDebounceRef = useRef(null);
 
   useEffect(() => {
@@ -648,13 +651,30 @@ export default function FilterProducts() {
     setDebouncedQuery(val);
   }, [q]);
 
+ 
+  const hasUserEditedSearchRef = useRef(false);
+
   const handleQueryChange = (val) => {
+    hasUserEditedSearchRef.current = true;
     setQuery(val);
+    setIsSearchPending(true);
     clearTimeout(queryDebounceRef.current);
     queryDebounceRef.current = setTimeout(() => {
       setDebouncedQuery(val);
     }, 1000);
   };
+
+  
+  useEffect(() => {
+    if (!hasUserEditedSearchRef.current) return;
+    if (debouncedQuery.trim() !== "") return;
+    if (!searchParams.get("q") && !searchParams.get("source")) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    params.delete("source");
+    const qs = params.toString();
+    router.replace(qs ? `/shop?${qs}` : "/shop", { scroll: false });
+  }, [debouncedQuery, searchParams, router]);
 
   const [apiData, setApiData] = useState(null);
 
@@ -677,14 +697,7 @@ export default function FilterProducts() {
     return () => window.removeEventListener("splashDataReady", loadFromSplash);
   }, []);
 
-  // splashData's own `.ranges` only covers the ~4 core consumer ranges
-  // (BIOGANCE/ORGANISSIME/PLOUF/DERMOCARE — same set as FALLBACK_RANGES
-  // below); the home API's `.ranges` (Footer.jsx's source for "Our Products
-  // Ranges") has the full ~10, including EKINAT/PHYTOCARE/BIOGANCE
-  // PROFESSIONNEL/BIOSPOTIX/OSSOBELLO/WEST PAW. Without also reading this,
-  // RANGES_LIST never contained those, so a Footer link to one of them
-  // landed here with ?range_name=.. but rangeParam wasn't in RANGES_LIST —
-  // the deep-link effect saw no match and silently gave up.
+  
   const [homeApiData, setHomeApiData] = useState(null);
   useEffect(() => {
     const loadFromHome = () => {
@@ -797,11 +810,7 @@ export default function FilterProducts() {
   const [lastPage, setLastPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
-  // Same value is used for every page of a given query — the API paginates
-  // by page*per_page offset, so changing per_page between page 1 and later
-  // pages would skip/duplicate items and break `last_page`/hasMore. The
-  // fixed 18-item featured layout just slices however many have
-  // accumulated across page(s) so far; it isn't tied to this per-request size.
+  
   const columns = useResponsiveColumns();
   const perPage = 18 + columns * ROWS_PER_PAGE;
 
@@ -809,9 +818,7 @@ export default function FilterProducts() {
     searchedProductsRef.current = searchedProducts;
   }, [searchedProducts]);
 
-  // Index (within restProducts) of the first card that Load More is about to
-  // fetch — once the new page lands, we scroll that card up into view so the
-  // user sees fresh products immediately instead of the button just moving down.
+  
   const loadMoreAnchorRef = useRef(null);
 
   const handleLoadMore = () => {
@@ -848,11 +855,7 @@ export default function FilterProducts() {
   // Footer.jsx's "Our Products Ranges" links land here as /shop?range_name=..
   const rangeParam = searchParams ? searchParams.get("range_name") : undefined;
 
-  // Both deep-link effects below must only ever apply once. The URL query string is
-  // never cleared after landing here, so without a "consumed" guard, anything that later
-  // recomputes categoriesList/animals for an unrelated reason (e.g. a splashData refresh)
-  // would re-run these and silently re-select the category/family right after the user
-  // hits Reset — making Reset look like it doesn't work.
+  
   const catParamAppliedRef = useRef(false);
   useEffect(() => {
     if (catParamAppliedRef.current) return;
@@ -867,9 +870,7 @@ export default function FilterProducts() {
     }
   }, [catParam, categoriesList]);
 
-  // Deep-link from OurProducts/Navbar's family links (/shop?category_id=..&family_name=..) —
-  // family options only exist once the matching category above has landed in `animals`, so
-  // this waits on that instead of racing it.
+  
   const familyParamAppliedRef = useRef(false);
   useEffect(() => {
     if (familyParamAppliedRef.current) return;
@@ -881,32 +882,18 @@ export default function FilterProducts() {
     }
   }, [familyParam, animals]);
 
-  // Deep-link from Footer.jsx's "Our Products Ranges" (/shop?range_name=..).
-  // RANGES_LIST/state.ranges both store the range's plain `.name` (English,
-  // never translated — see buildRangesList/getSelectedIds above), so the
-  // param just needs to match that directly once it's loaded.
+
   const rangeParamAppliedRef = useRef(false);
   useEffect(() => {
     if (rangeParamAppliedRef.current) return;
-    // RANGES_LIST starts out as FALLBACK_RANGES (4 items) before splash/home
-    // data has loaded — marking "applied" just for reaching this branch
-    // (regardless of whether includes() actually matched) is what broke the
-    // last 6 ranges: they were never in that 4-item fallback, so the very
-    // first pass "consumed" the attempt and it never re-checked once the
-    // real ~10-item merged list arrived a moment later. Only the first 4
-    // ranges happened to match FALLBACK_RANGES, which is why those worked.
+    
     if (rangeParam && RANGES_LIST.includes(rangeParam)) {
       setRanges((prev) => (prev.includes(rangeParam) ? prev : [rangeParam]));
       rangeParamAppliedRef.current = true;
     }
   }, [rangeParam, RANGES_LIST]);
 
-  // Footer.jsx's category/family and range links carry their selection via
-  // sessionStorage ("shopDeepLink") instead of a query string, so /shop's
-  // URL stays plain. Read once on mount and clear it immediately — the
-  // matching effects below then behave exactly like catParam/familyParam/
-  // rangeParam above (retry until their data's loaded, only mark "applied"
-  // on an actual match).
+ 
   const [shopDeepLink, setShopDeepLink] = useState(null);
   useEffect(() => {
     try {
@@ -1058,16 +1045,7 @@ export default function FilterProducts() {
     let targetPage = page;
     const filtersChanged = prevFiltersRef.current !== filtersSerialized;
     const pageChanged = prevPageRef.current !== page;
-    // categoriesList starts out as FALLBACK_CATEGORIES (ids only, no universe/family tree)
-    // until splashData finishes loading. getSelectedIds() below resolves family_id/universe_id
-    // etc. by walking this tree, so a request fired before it's ready silently drops those ids
-    // even though `families`/`universe` state is already set (e.g. from an OurProducts deep
-    // link). Once the real categoriesList lands, that must trigger a refetch too — filters and
-    // page may be unchanged, but the ids they resolve to are not.
-    // Note: this only cares about the one real fallback→real transition, not raw reference
-    // equality — `apiData` gets a brand-new object from JSON.parse() on every "splashDataReady"
-    // refresh even when the underlying data hasn't changed, which would otherwise refetch on
-    // every single refresh forever.
+  
     const categoriesListChanged =
       prevCategoriesListRef.current === FALLBACK_CATEGORIES &&
       categoriesList !== FALLBACK_CATEGORIES;
@@ -1124,7 +1102,8 @@ export default function FilterProducts() {
     } = getSelectedIds();
 
     const body = {
-      keyword: (debouncedQuery || q || "").trim(),
+    
+      keyword: (debouncedQuery || "").trim(),
       ...(categoryIds ? { category_id: categoryIds } : {}),
       ...(universeIds ? { universe_id: universeIds } : {}),
       ...(familyIds ? { family_id: familyIds } : {}),
@@ -1144,11 +1123,7 @@ export default function FilterProducts() {
       ...(token ? {} : { device_id: getDeviceId() }),
     };
 
-    // Guard against out-of-order responses: with two fetches now able to be in flight close
-    // together (e.g. one fired on filter change, another right after when the real
-    // categoriesList replaces the fallback), a stale request can resolve after a newer one.
-    // Without this, a slow earlier response full of now-irrelevant results can land after a
-    // fresh, correctly-empty response and clobber it back into showing stale cards.
+   
     const requestSeq = ++searchRequestSeqRef.current;
 
     axios
@@ -1222,6 +1197,7 @@ export default function FilterProducts() {
         if (requestSeq !== searchRequestSeqRef.current) return;
         setIsSearching(false);
         setIsFetchingMore(false);
+        setIsSearchPending(false);
         isFetchingRef.current = false;
       });
   }, [apiData, filtersSerialized, page]);
@@ -1240,10 +1216,7 @@ export default function FilterProducts() {
   const featuredRow2Video = featuredProducts[9];
   const featuredRow2Grid = featuredProducts.slice(10, 18);
 
-  // Mobile/tablet (below lg) featured layout: 2-column blocks of 4 instead of the
-  // desktop's 4-column blocks of 8 (a full 8-item block is too tall in 2 columns).
-  // Whatever doesn't fit in the two 4-item blocks falls through into the plain
-  // grid below, alongside restProducts, instead of being dropped.
+  
   const mobileFeaturedBlockA = featuredRow1Grid.slice(0, 4);
   const mobileFeaturedBlockB = featuredRow2Grid.slice(0, 4);
   const mobileFeaturedLeftover = [
@@ -1686,7 +1659,7 @@ export default function FilterProducts() {
 
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
-        {isSearching ? (
+        {isSearching || isSearchPending ? (
           <>
             <div className="grid grid-cols-2 gap-[3px] md:grid-cols-3 lg:hidden">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -2015,7 +1988,7 @@ export default function FilterProducts() {
         )}
       </section>
 
-      {!isSearching && recentViews.length > 0 && (
+      {!isSearching && !isSearchPending && recentViews.length > 0 && (
         <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-16">
           <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
             {t("recentlyViewed", "Recently Viewed")}
@@ -2036,7 +2009,7 @@ export default function FilterProducts() {
         </section>
       )}
 
-      {!isSearching && featuredBlog && (
+      {!isSearching && !isSearchPending && featuredBlog && (
         <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-20">
           <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
             <div className="lg:sticky lg:top-[200px] lg:self-start">
