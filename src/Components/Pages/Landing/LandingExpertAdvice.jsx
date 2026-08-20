@@ -2,19 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslation } from 'react-i18next';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { IoChevronForward } from 'react-icons/io5';
-import { FiClock } from 'react-icons/fi';
+import { useTranslation } from "react-i18next";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { IoChevronForward } from "react-icons/io5";
+import { FiClock } from "react-icons/fi";
 import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { getDeviceId } from '../../../utils/deviceId';
+import axios from "axios";
+import toast from "react-hot-toast";
+import { getDeviceId } from "../../../utils/deviceId";
 import { startTopLoader } from "../TopLoader";
 import { BsArrowUpRight } from "react-icons/bs";
 import { HiArrowTrendingUp, HiOutlineArrowUpRight } from "react-icons/hi2";
 import { GoArrowUpRight } from "react-icons/go";
-
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1572296374832-8737db0d011b?q=80&w=800&auto=format&fit=crop",
@@ -30,9 +29,9 @@ const FALLBACK_IMAGES = [
 // "5 min min". Only append it when the raw API value doesn't already say
 // "min" itself; otherwise show it exactly as the API sent it.
 function formatReadingTime(value, t) {
-  const raw = String(value ?? '').trim();
+  const raw = String(value ?? "").trim();
   if (raw && /min/i.test(raw)) return raw;
-  return t('minShort', { time: raw || '0' });
+  return t("minShort", { time: raw || "0" });
 }
 
 // Reads the categories entry whose type is "topic" (mirrors getCategoryName
@@ -48,8 +47,12 @@ function getCategoryName(article, isFrench) {
 // Shimmer for one card — `featured` gets the tall image used by the left,
 // full-height slot; the other 4 (right-side 2x2 grid) get the shorter one.
 const ShimmerCard = ({ featured = false }) => (
-  <div className={`bg-white border border-[#d8d8d4] overflow-hidden flex flex-col ${featured ? 'h-full' : ''}`}>
-    <div className={`${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'} bg-gray-200 animate-pulse`} />
+  <div
+    className={`bg-white border border-[#d8d8d4] overflow-hidden flex flex-col ${featured ? "h-full" : ""}`}
+  >
+    <div
+      className={`${featured ? "h-[300px] md:h-[480px]" : "h-[160px] md:h-[220px]"} bg-gray-200 animate-pulse`}
+    />
     <div className="p-4 md:p-[22px] flex flex-col gap-3">
       <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
       <div className="h-5 bg-gray-200 rounded animate-pulse" />
@@ -59,9 +62,9 @@ const ShimmerCard = ({ featured = false }) => (
 );
 
 export default function LandingExpertAdvice({ data, hideHeader = false }) {
-  const { t, i18n } = useTranslation('home');
-  const { t: trAdvice } = useTranslation('expertadvice');
-  const isFrench = i18n.language === 'fr';
+  const { t, i18n } = useTranslation("home");
+  const { t: trAdvice } = useTranslation("expertadvice");
+  const isFrench = i18n.language === "fr";
   const router = useRouter();
 
   const apiAdvice = data?.expert_advice || [];
@@ -76,7 +79,12 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const gridArticles = shownAdvice.slice(1, 5);
 
   const [favorites, setFavorites] = useState(() =>
-    Object.fromEntries((data?.expert_advice || []).map(a => [a.id, a.favorites_exists ?? false]))
+    Object.fromEntries(
+      (data?.expert_advice || []).map((a) => [
+        a.id,
+        a.favorites_exists ?? false,
+      ]),
+    ),
   );
   const [loadingFav, setLoadingFav] = useState({});
 
@@ -84,22 +92,28 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     if (loadingFav[id]) return;
     setLoadingFav((prev) => ({ ...prev, [id]: true }));
     try {
-      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const payload = {};
       if (loginData?.data?.token) {
         payload.token = loginData.data.token;
       } else {
         payload.device_id = getDeviceId();
       }
-      const res = await axios.post(`${BASE_URL}/user/add/favorite/blog/${id}`, payload);
+      const res = await axios.post(
+        `${BASE_URL}/user/add/favorite/blog/${id}`,
+        payload,
+      );
       if (res.data.status === false) {
-        const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
+        const msg =
+          res.data.errors?.length > 0
+            ? res.data.errors[0].message
+            : res.data.action;
         toast.error(msg);
       } else {
         setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
       }
     } catch (err) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoadingFav((prev) => ({ ...prev, [id]: false }));
     }
@@ -114,20 +128,38 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '';
+    if (!dateStr) return "";
     try {
       const d = new Date(dateStr);
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-    } catch { return dateStr; }
+    } catch {
+      return dateStr;
+    }
   };
 
   // Renders one article card — `featured` makes the image taller and the
   // headline bigger, matching .article.featured in HOMEPAGE V2.html.
   const renderCard = (article, index, featured) => {
     const apiImagePath = article.images?.[0]?.media;
-    const imageUrl = apiImagePath ? `${MEDIA_URL}${apiImagePath}` : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-    const displayName = isFrench && article.french_name ? article.french_name : article.name;
+    const imageUrl = apiImagePath
+      ? `${MEDIA_URL}${apiImagePath}`
+      : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+    const displayName =
+      isFrench && article.french_name ? article.french_name : article.name;
     const categoryLabel = getCategoryName(article, isFrench);
 
     // Card design mirrors the "All Articles" desktop cards in ExpertAdvices.jsx:
@@ -139,9 +171,11 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
       <article
         key={article.id}
         onClick={() => navigateToDetail(article)}
-        className={`bg-white border border-[#d8d8d4] overflow-hidden cursor-pointer group flex flex-col ${featured ? 'h-full' : ''}`}
+        className={`bg-white border border-[#d8d8d4] overflow-hidden cursor-pointer group flex flex-col ${featured ? "h-full" : ""}`}
       >
-        <div className={`relative overflow-hidden bg-gray-200 flex-shrink-0 ${featured ? 'h-[300px] md:h-[480px]' : 'h-[160px] md:h-[220px]'}`}>
+        <div
+          className={`relative overflow-hidden bg-gray-200 flex-shrink-0 ${featured ? "h-[300px] md:h-[480px]" : "h-[160px] md:h-[220px]"}`}
+        >
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
           </div>
@@ -150,9 +184,11 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
             alt={displayName}
             onLoad={(e) => {
               e.currentTarget.previousSibling?.remove();
-              e.currentTarget.classList.remove('opacity-0');
+              e.currentTarget.classList.remove("opacity-0");
             }}
-            onError={(e) => { e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]; }}
+            onError={(e) => {
+              e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+            }}
             className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
           />
           {/* <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -169,26 +205,32 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
           </button> */}
         </div>
 
-        <div className={`flex flex-col flex-grow ${featured ? 'p-5 md:p-[22px]' : 'p-4 md:p-[18px]'}`}>
+        <div
+          className={`flex flex-col flex-grow ${featured ? "p-5 md:p-[22px]" : "p-4 md:p-[18px]"}`}
+        >
           <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
             {categoryLabel}
           </p>
 
-          <div className={`flex items-start justify-between gap-2 ${featured ? 'mb-3' : 'mb-2'}`}>
+          <div
+            className={`flex items-start justify-between gap-2 ${featured ? "mb-3" : "mb-2"}`}
+          >
             <h3
               className={`font-bold uppercase text-gray-900 leading-snug line-clamp-2 flex-1 group-hover:underline underline-offset-2 ${
-                featured ? 'text-xl md:text-3xl min-h-[3.5rem] md:min-h-[4.5rem]' : 'text-sm md:text-base min-h-[2.5rem]'
+                featured
+                  ? "text-xl md:text-3xl min-h-[3.5rem] md:min-h-[4.5rem]"
+                  : "text-sm md:text-base min-h-[2.5rem]"
               }`}
             >
               {displayName}
             </h3>
             <HiOutlineArrowUpRight
-              className={`shrink-0 text-gray-700 ${featured ? 'w-5 h-5 mt-1' : 'w-4 h-4 mt-0.5 -mr-0.5'}`}
+              className={`shrink-0 text-gray-700 ${featured ? "w-5 h-5 mt-1" : "w-4 h-4 mt-0.5 -mr-0.5"}`}
             />
           </div>
 
           <div className="mt-auto pt-2 flex items-center justify-between text-[11px] text-gray-400">
-            <span>{article.company_name || 'Biogance'}</span>
+            <span>{article.company_name || "Biogance"}</span>
             <span className="flex items-center gap-1">
               <FiClock className="w-3 h-3" />
               {formatReadingTime(article.reading_time, trAdvice)}
@@ -201,29 +243,25 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
 
   return (
     <section className="bg-[#f6f6f4] mt-40 border-t border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
-   
-      {/* No max-w-[1840px]/mx-auto — that cap only centers once the
-          viewport passes 1840px, which made the header sit flush left
-          up to that width then visibly slide inward on wider monitors
-          as the centered cap opened up. Dropping the cap keeps it
-          pinned to the same left inset at every viewport width — same
-          fix as MainVideo.jsx's hero wrap. */}
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
         {!hideHeader && (
           <div className="mb-[34px] min-[721px]:mb-[52px]">
-           
             <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[28px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
               <div>
                 <div className="flex items-center gap-3 text-black">
                   <span className="w-[34px] h-px bg-current"></span>
-                  <span className="text-[10px] tracking-[0.22em] uppercase">{t('expertAdvice.sectionEyebrow')}</span>
+                  <span className="text-[10px] tracking-[0.22em] uppercase">
+                    {t("expertAdvice.sectionEyebrow")}
+                  </span>
                 </div>
                 <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-medium text-black">
-                  {t('expertAdvice.sectionHeadingLine1')}<br />{t('expertAdvice.sectionHeadingLine2')}
+                  {t("expertAdvice.sectionHeadingLine1")}
+                  <br />
+                  {t("expertAdvice.sectionHeadingLine2")}
                 </h2>
               </div>
               <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
-                {t('expertAdvice.sectionSubtitle')}
+                {t("expertAdvice.sectionSubtitle")}
               </p>
             </div>
 
@@ -231,11 +269,18 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
             <div className="flex justify-end mt-4 md:mt-5 -mb-6">
               <button
                 type="button"
-                onClick={() => { startTopLoader(); router.push('/advices'); }}
-                className="inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
+                onClick={() => {
+                  startTopLoader();
+                  router.push("/advices");
+                }}
+                className="group inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
               >
-                {t('expertAdvice.seeAll')}
-           <GoArrowUpRight className="w-4.5 h-4.5" />
+                <span className="relative">
+                  {t("expertAdvice.seeAll")}
+                  <span className="absolute left-0 bottom-[-3px] h-[1px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
+                </span>
+
+                <GoArrowUpRight className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
@@ -247,14 +292,18 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
             <>
               <ShimmerCard featured />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {Array.from({ length: 4 }).map((_, i) => <ShimmerCard key={i} />)}
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ShimmerCard key={i} />
+                ))}
               </div>
             </>
           ) : (
             <>
               {featuredArticle && renderCard(featuredArticle, 0, true)}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {gridArticles.map((article, i) => renderCard(article, i + 1, false))}
+                {gridArticles.map((article, i) =>
+                  renderCard(article, i + 1, false),
+                )}
               </div>
             </>
           )}

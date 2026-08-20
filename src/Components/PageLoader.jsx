@@ -56,7 +56,17 @@ export function callSplashApi() {
     .post(`${BASE_URL}/web/splash`, payload, { headers })
     .then((res) => {
       if (res.data.status !== false) {
-        localStorage.setItem("splashData", JSON.stringify(res.data.data));
+        // Cache write is best-effort — a QuotaExceededError here (small
+        // mobile quota, or 0 in Safari Private mode) must not stop the
+        // event below from firing, or every listener (LandingCategories,
+        // LandingProductFinder, etc.) is stuck waiting forever even though
+        // the API call itself succeeded. Same failure mode fixed in
+        // MainVideo.jsx's home fetch.
+        try {
+          localStorage.setItem("splashData", JSON.stringify(res.data.data));
+        } catch (e) {
+          console.warn("Could not cache splashData in localStorage:", e);
+        }
         window.dispatchEvent(new Event("splashDataReady"));
       }
     })

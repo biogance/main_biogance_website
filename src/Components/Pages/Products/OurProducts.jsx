@@ -36,13 +36,24 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const menuRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const wasOpenRef = useRef(false);
 
-  // Issue 1: Har baar open ho to first category select ho
+  // Issue 1: Har baar open ho to first category select ho — only on the
+  // actual open transition, not on every re-render of `categories`.
+  // PageLoader.jsx re-calls /web/splash on every click anywhere on the
+  // page, and once that resolves Navbar does
+  // setHomeCategories(parsed.categories || []) with a brand new array
+  // reference (same content, new identity). That used to re-run this
+  // effect and snap activeCategory back to categories[0] a moment after
+  // the user picked a different species — since clicking a tab is itself
+  // a click that re-triggers the same splash refetch.
   useEffect(() => {
-    if (categories.length > 0) {
+    const justOpened = isOpen && !wasOpenRef.current;
+    wasOpenRef.current = isOpen;
+    if (categories.length > 0 && (justOpened || !activeCategory)) {
       setActiveCategory(categories[0]);
     }
-  }, [isOpen, categories]);
+  }, [isOpen, categories, activeCategory]);
 
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartHovered, setCartHovered] = useState(false);
@@ -180,14 +191,16 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             zIndex: 10000,
           }}
         />
-        {/* Slide-up panel */}
+        {/* Slide-up panel — full page on small screens, so it covers the
+            whole viewport instead of leaving a gap at the top showing the
+            dark backdrop over the navbar behind it. */}
         <div
           style={{
             position: 'fixed',
             left: 0,
             right: 0,
             bottom: 0,
-            top: '60px',
+            top: 0,
             backgroundColor: '#fff',
             zIndex: 10001,
             display: 'flex',
@@ -196,14 +209,17 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             animation: 'mobileProductsSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both',
           }}
         >
-          {/* Header */}
+          {/* Header — extra top padding for env(safe-area-inset-top) since
+              the panel now sits at top:0 (full page) and would otherwise
+              land under the iOS status bar/notch. */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '16px 20px',
-              borderBottom: '1px solid #111',
+              paddingTop: 'calc(16px + env(safe-area-inset-top))',
+              borderBottom: '1px solid #dadada',
               flexShrink: 0,
               position: 'sticky',
               top: 0,
@@ -253,7 +269,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                     color: isActive ? '#111' : '#999',
                     background: 'none',
                     border: 'none',
-                    borderBottom: isActive ? '2px solid #111' : '2px solid transparent',
+                    borderBottom: isActive ? '1px solid #111' : '2px solid transparent',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                     transition: 'color 0.2s, border-color 0.2s',
@@ -291,14 +307,14 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                   const families = (universe.sub_categories || []).filter(s => s.type === 'family');
                   return (
                     <div key={universe.id}>
-                      <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #111' }}>
+                      <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '0.5px solid #dadada' }}>
                         {getName(universe)}
                       </h3>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {families.map((fam) => (
                           <div
                             key={fam.id}
-                            style={{ fontSize: '13px', color: '#444', padding: '10px 0', cursor: 'pointer', borderBottom: '1px solid #f2f2f2' }}
+                            style={{ fontSize: '13px', color: '#444', padding: '10px 0', cursor: 'pointer', }}
                             onClick={() => goToFamily(activeCategory, fam)}
                           >
                             {getName(fam)}

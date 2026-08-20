@@ -21,6 +21,64 @@ export default function SupportChat({ ticket, onClose }) {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosingTicket, setIsClosingTicket] = useState(false);
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+  // The attach ("+") button next to the textarea — its rendered height
+  // (bigger than the textarea's own single-line height, since its icon +
+  // padding add up taller) is measured and used as the textarea's own
+  // starting height, so an empty message box lines up exactly with the
+  // buttons beside it.
+  const attachButtonRef = useRef(null);
+  const minHeightRef = useRef(0);
+
+  // Grows the message box one line at a time as the user types (Shift+Enter
+  // adds a line via the textarea's own default behavior below); after 5
+  // lines it stops growing and scrolls internally instead.
+  const LINE_HEIGHT = 20;
+  const MAX_VISIBLE_LINES = 5;
+  const TEXTAREA_VERTICAL_PADDING = 24; // py-3 = 12px top + 12px bottom
+  const TEXTAREA_BORDER = 2; // 1px border top + bottom
+
+  // The empty/1-line height is pinned to exactly minHeightRef (the button's
+  // measured height) rather than just floored at it — Math.max(button,
+  // ownNaturalHeight) would pick whichever is naturally taller instead of
+  // actually matching. Measuring how much *extra* height the current
+  // content needs beyond one line, and adding only that on top of the
+  // button's height, keeps the empty state an exact match regardless of
+  // which one (button or textarea) would otherwise be taller on its own.
+  const autoResize = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const baseHeight = minHeightRef.current || el.offsetHeight;
+    const singleLineHeight = LINE_HEIGHT + TEXTAREA_VERTICAL_PADDING + TEXTAREA_BORDER;
+    const maxExtra = LINE_HEIGHT * (MAX_VISIBLE_LINES - 1);
+    el.style.height = 'auto';
+    const extra = Math.max(0, el.scrollHeight - singleLineHeight);
+    const next = baseHeight + Math.min(extra, maxExtra);
+    el.style.height = `${next}px`;
+    el.style.overflowY = extra > maxExtra ? 'auto' : 'hidden';
+  };
+
+  useEffect(() => {
+    const measureMinHeight = () => {
+      if (attachButtonRef.current) {
+        minHeightRef.current = attachButtonRef.current.offsetHeight;
+        autoResize();
+      }
+    };
+    measureMinHeight();
+    window.addEventListener('resize', measureMinHeight);
+    return () => window.removeEventListener('resize', measureMinHeight);
+    // `loading` is required here — the attach button (and the textarea)
+    // only exist in the DOM once the ticket data has loaded and the
+    // `!loading && (...)` block below actually renders them. `selectedImage`
+    // is required too — the button swaps between the plus icon and the
+    // selected-image thumbnail (see JSX below), which can render at a
+    // slightly different height, so it needs remeasuring on that swap too.
+  }, [loading, selectedImage]);
+
+  useEffect(() => {
+    autoResize();
+  }, [message]);
 
   const handleImageLoad = (id) => {
     setLoadedImages((prev) => ({ ...prev, [id]: true }));
@@ -177,7 +235,9 @@ export default function SupportChat({ ticket, onClose }) {
     }
   };
 
-  const handleKeyPress = (e) => {
+  // Enter sends the message; Shift+Enter is left alone so the textarea's
+  // own default behavior inserts a newline instead.
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -441,19 +501,19 @@ export default function SupportChat({ ticket, onClose }) {
                 <div key={msg.id}>
                 {msg.type === 'support' ? (
                     // Support Message (Left Side)
-                    <div className="flex items-end gap-3 mb-2">
+                    <div className="flex items-end gap-2 mb-2">
                       {msg.hasIcon && (
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
                             <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
                           </div>
-                          <span className="text-[10px] sm:text-xs text-gray-500 mt-1 whitespace-nowrap">{msg.time}</span>
+                          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{msg.time}</span>
                         </div>
                       )}
                       <div className="max-w-xl">
-                        <div className="text-black border border-gray-300  rounded-bl-sm px-5 py-4 inline-block">
+                        <div className="text-black border border-gray-300  rounded-bl-sm px-2 py-2 inline-block">
                           {msg.image && (
-                            <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-3' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                            <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-2' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
                               {!loadedImages[msg.id] && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -470,7 +530,8 @@ export default function SupportChat({ ticket, onClose }) {
                             </div>
                           )}
                           {msg.text && (
-                            <p className="text-sm leading-relaxed">
+                          
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap">
                               {msg.textKey ? t(msg.textKey) : msg.text}
                             </p>
                           )}
@@ -480,11 +541,11 @@ export default function SupportChat({ ticket, onClose }) {
                  ) : (
                     // Customer Message (Right Side)
                     <div className="flex justify-end mb-2">
-                      <div className="flex items-end gap-3">
+                      <div className="flex items-end gap-2">
                         <div className="max-w-xl">
-                          <div className="bg-white  rounded-br-sm px-5 py-4 inline-block border border-gray-300">
+                          <div className="bg-white  rounded-br-sm px-2 py-2   inline-block border border-gray-300">
                             {msg.image && (
-                              <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-3' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                              <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-2' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
                                 {!loadedImages[msg.id] && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                     <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -501,14 +562,16 @@ export default function SupportChat({ ticket, onClose }) {
                               </div>
                             )}
                             {msg.text && (
-                              <p className="text-sm leading-relaxed text-gray-800">
+                              // whitespace-pre-wrap — same reason as the
+                              // support-message bubble above.
+                              <p className="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap">
                                 {msg.textKey ? t(msg.textKey) : msg.text}
                               </p>
                             )}
                           </div>
                         </div>
                         {msg.avatar && (
-                          <div className="flex flex-col items-center gap-2">
+                          <div className="flex flex-col items-center gap-1">
                             <div className="w-10 h-10 bg-gray-300  flex-shrink-0 overflow-hidden">
                               {userAvatar ? (
                                 <img
@@ -520,7 +583,7 @@ export default function SupportChat({ ticket, onClose }) {
                                 <div className="w-full h-full bg-gray-300" />
                               )}
                             </div>
-                            <div className="flex items-center gap-1 mt-1">
+                            <div className="flex items-center gap-1">
                               {msg.status === 'sending' && (
                                 <BsClock className="text-gray-400" size={11} />
                               )}
@@ -541,7 +604,7 @@ export default function SupportChat({ ticket, onClose }) {
 
           {/* Message Input */}
           <div>
-            <div className="max-w-10xl mx-auto flex items-center gap-3 mt-10">
+            <div className="max-w-10xl mx-auto flex items-center gap-3">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -549,48 +612,59 @@ export default function SupportChat({ ticket, onClose }) {
                 accept="image/*"
                 className="hidden"
               />
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="py-3 px-3 bg-gray-100 cursor-pointer border border-gray-300  flex items-center justify-center text-gray-600 hover:text-black transition-colors"
-              >
-                <FiPlus size={24} />
-              </button>
+             
+              {selectedImage ? (
+                <div
+                  ref={attachButtonRef}
+                  className="relative flex-shrink-0 w-[46px] h-[46px] border border-gray-300 overflow-hidden"
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Selected"
+                    className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setPreviewImage(selectedImage)}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(null);
+                      setSelectedImageFile(null);
+                    }}
+                    className="absolute top-0.5 right-0.5 cursor-pointer bg-white text-black rounded-full p-0.5"
+                  >
+                    <FiX size={10} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  ref={attachButtonRef}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="py-2.5 px-2.5 bg-gray-100 cursor-pointer border border-gray-300  flex items-center justify-center text-gray-600 hover:text-black transition-colors"
+                >
+                  <FiPlus size={24} />
+                </button>
+              )}
               <div className="flex-1 relative">
-                {/* Image Thumbnail inside Input */}
-                {selectedImage && (
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
-                    <div className="relative group">
-                      <img 
-                        src={selectedImage} 
-                        alt="Selected" 
-                        className="w-20 h-20  object-cover border border-gray-300 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setPreviewImage(selectedImage)}
-                      />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImage(null);
-                          setSelectedImageFile(null);
-                        }}
-                        className="absolute top-1 right-1 cursor-pointer bg-white text-black rounded-full p-0.5"
-                      >
-                        <FiX size={12} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-               <input
-                  type="text"
+               <textarea
+                  ref={textareaRef}
                   placeholder={t('support.chat.writeMessage')}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className={`w-full ${selectedImage ? 'pl-25 py-10' : 'pl-4 py-3'} pr-4 text-black bg-gray-100  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all`}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  style={{
+                    resize: 'none',
+                    overflowY: 'hidden',
+                    lineHeight: '20px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                  className="w-full pl-4 py-3 pr-4 mt-1.5 text-black bg-gray-100  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all [&::-webkit-scrollbar]:hidden"
                 />
               </div>
               <button
                 onClick={handleSendMessage}
-                className="py-3 px-3 flex bg-gray-100 cursor-pointer   border border-gray-300  items-center justify-center text-gray-700 hover:text-black transition-colors"
+                className="py-2.5 px-2.5 flex bg-gray-100 cursor-pointer   border border-gray-300  items-center justify-center text-gray-700 hover:text-black transition-colors"
               >
                 <IoSend size={22} />
               </button>
@@ -603,7 +677,7 @@ export default function SupportChat({ ticket, onClose }) {
       {/* Image Preview Modal */}
       {previewImage && (
         <div 
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50"
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-60"
           onClick={() => setPreviewImage(null)}
         >
           <div className="relative">

@@ -143,6 +143,28 @@ export default function ProductLoadMore({ isOpen, onClose, reviewImage }) {
   const [activeTab, setActiveTab] = useState("reviews");
   const allReviews = getReviews(t);
 
+  // Same open/close animation pattern as ProductModalAddReview.jsx: `visible`
+  // (not `isOpen` directly) drives the transform/opacity transition, so
+  // closing fades/slides the shell out over 250ms before handleClose calls
+  // the real onClose (which is what actually unmounts this component via
+  // the parent's isOpen state) instead of just vanishing instantly.
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => setVisible(true), 10);
+    } else {
+      setVisible(false);
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => {
+      onClose();
+    }, 250);
+  };
+
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.scrollY;
@@ -323,7 +345,7 @@ export default function ProductLoadMore({ isOpen, onClose, reviewImage }) {
 
       <div
         className="plm-backdrop"
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: "fixed",
           inset: 0,
@@ -343,11 +365,15 @@ export default function ProductLoadMore({ isOpen, onClose, reviewImage }) {
           onClick={(e) => e.stopPropagation()}
           style={{
             background: "#fff",
-           
             boxShadow: "0 20px 80px rgba(0,0,0,0.25)",
             display: "flex",
             position: "relative",
             pointerEvents: "auto",
+            // Same transform/opacity animation as ProductModalAddReview.jsx's
+            // modal box.
+            transform: visible ? "translateY(0) scale(1)" : "translateY(32px) scale(0.97)",
+            opacity: visible ? 1 : 0,
+            transition: "transform 0.28s cubic-bezier(.4,0,.2,1), opacity 0.25s",
           }}
         >
           {/* ── LEFT PANEL ── */}
@@ -729,7 +755,7 @@ export default function ProductLoadMore({ isOpen, onClose, reviewImage }) {
 
           {/* Close button */}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               position: "absolute",
               top: 18,

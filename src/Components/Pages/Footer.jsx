@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { FaInstagram } from "react-icons/fa";
-import { FiMail, FiPhone, FiMapPin, FiCheck } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin, FiCheck, FiChevronDown } from "react-icons/fi";
 import {
   SlSocialFacebook,
   SlSocialLinkedin,
@@ -17,6 +17,44 @@ import ContactUs from "./Onboarding/ContactUs";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../API/API";
+
+// Every footer link group (Dogs, Cats, Our Products Ranges, Our Laboratory,
+// ...) is a heading + a <ul>. Below `lg` that used to just be a long wall of
+// links stacked under every heading — collapsed to a tap-to-expand
+// accordion there instead, so a small screen shows a scannable list of
+// headings first. At `lg` and up it's forced back open (lg:grid-rows-[1fr]
+// lg:opacity-100 override the collapsed state unconditionally) and the
+// heading stops being a button (lg:pointer-events-none lg:cursor-default),
+// so desktop is visually and behaviorally unchanged from before.
+function FooterAccordionSection({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-white/10 lg:border-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-2 py-3.5 lg:py-0 text-left cursor-pointer lg:pointer-events-none lg:cursor-default"
+      >
+        <h3 className="font-semibold text-white text-md m-0 lg:mb-4">{title}</h3>
+        <FiChevronDown
+          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 lg:hidden ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      <div
+        className={`grid transition-all duration-300 ease-in-out lg:grid-rows-[1fr] lg:opacity-100 ${
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="pb-3.5 lg:pb-0">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Footer() {
   const { t, i18n } = useTranslation("footer");
@@ -70,31 +108,51 @@ export default function Footer() {
   // Both the ranges and the category/family links below need to hand a
   // filter selection to FilterProducts.jsx without it showing up in the URL
   // — sessionStorage carries it instead of a ?range_name=/?family_name=
-  // query string, read once on mount by FilterProducts.jsx then cleared, so
-  // the address bar just says /shop.
+  // query string, read by FilterProducts.jsx then cleared, so the address
+  // bar just says /shop. router.push("/shop") only remounts FilterProducts
+  // (and re-reads sessionStorage) when navigating there from a different
+  // page — clicking a Footer link while already on /shop is a same-route
+  // push that reuses the mounted component, so this also fires an event
+  // FilterProducts.jsx listens for to pick up the fresh value directly.
   const goToShop = (deepLink) => {
     sessionStorage.setItem("shopDeepLink", JSON.stringify(deepLink));
+    window.dispatchEvent(new Event("shopDeepLinkReady"));
     router.push("/shop");
   };
 
   // Home API's `ranges` (see MainVideo.jsx's /web/home call) replaces the
-  // hardcoded productRanges.items translation — read from the same
-  // localStorage cache MainVideo.jsx writes to, and refresh once it fires
-  // 'homePageDataReady' (needed here since Footer renders on every page,
-  // not just the one that actually fetches this data).
+  // hardcoded productRanges.items translation. That API only ever runs on
+  // the home page though — a session that never visits "/" (deep link
+  // straight to /shop, a product page, a refresh on any other route, etc.)
+  // left apiRanges null forever, so Footer silently fell back to the
+  // static <a href="#"> placeholder list below, whose links go nowhere —
+  // clicking one just appended "#" to the URL instead of navigating.
+  // splashData's `ranges` (the same field, fetched by PageLoader.jsx's
+  // callSplashApi() on literally every page load) covers that gap, so
+  // merge it in too — same dedup-by-name merge FilterProducts.jsx's
+  // allRanges already does for these two sources.
   const [apiRanges, setApiRanges] = useState(null);
   useEffect(() => {
     const readRanges = () => {
       try {
-        const cached = JSON.parse(localStorage.getItem("homePageData") || "null");
-        if (cached?.ranges) setApiRanges(cached.ranges);
+        const home = JSON.parse(localStorage.getItem("homePageData") || "null");
+        const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+        const merged = new Map();
+        [...(splash?.ranges || []), ...(home?.ranges || [])].forEach((r) => {
+          if (r?.name && !merged.has(r.name)) merged.set(r.name, r);
+        });
+        if (merged.size > 0) setApiRanges([...merged.values()]);
       } catch {
         /* ignore */
       }
     };
     readRanges();
     window.addEventListener("homePageDataReady", readRanges);
-    return () => window.removeEventListener("homePageDataReady", readRanges);
+    window.addEventListener("splashDataReady", readRanges);
+    return () => {
+      window.removeEventListener("homePageDataReady", readRanges);
+      window.removeEventListener("splashDataReady", readRanges);
+    };
   }, []);
 
   // Middle "Product Categories" columns — same splashData.categories tree
@@ -166,7 +224,7 @@ export default function Footer() {
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
           {/* Left Column - Logo & Contact */}
-          <div className="lg:col-span-3 space-y-6 p-8 lg:pr-6">
+          <div className="lg:col-span-3 space-y-6 p-6 sm:p-8 lg:pr-6">
             {/* Logo */}
             <div className="flex items-center gap-3">
               <img src="/logo2.svg" alt="Biogance Logo" />
@@ -175,7 +233,7 @@ export default function Footer() {
            
             {apiFooterDescription ? (
               <p
-                className="text-sm text-gray-300 leading-relaxed line-clamp-3"
+                className="text-sm text-gray-300 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: apiFooterDescription }}
               />
             ) : (
@@ -358,8 +416,12 @@ export default function Footer() {
             </div>
 
             {/* App Download — neither store listing exists yet, so these are
-                buttons that toast "coming soon" rather than links to # */}
-           <div className="flex flex-row items-start gap-0">
+                buttons that toast "coming soon" rather than links to #.
+                Sized down (w-[120px]) below sm — at 320-360px viewports two
+                140px badges side by side ran past the column's content
+                width (p-6's 24px padding still leaves less room than the
+                pair needs) and pushed the row into horizontal overflow. */}
+           <div className="flex flex-row flex-wrap items-start gap-2 sm:gap-0">
   <button
     type="button"
     onClick={handleAppComingSoon}
@@ -369,7 +431,7 @@ export default function Footer() {
     <img
       src="/FPlay.png"
       alt="Google Play"
-      className="block w-[140px] h-[81px] object-fill -mt-1"
+      className="block w-[120px] h-[69px] sm:w-[140px] sm:h-[81px] object-fill -mt-1"
     />
   </button>
 
@@ -382,21 +444,28 @@ export default function Footer() {
     <img
       src="/FApple.png"
       alt="App Store"
-      className="block w-[140px] h-[85px] object-fill"
+      className="block w-[120px] h-[73px] sm:w-[140px] sm:h-[85px] object-fill"
     />
   </button>
 </div>
           </div>
 
-          {/* Middle Section - Product Categories */}
-          <div className="lg:col-span-6 bg-[#1c1c1c] px-6 sm:px-8">
+          {/* Middle Section - Product Categories — px-6 sm:px-8 matches the
+              Left/Right columns' p-6 sm:p-8 horizontal padding exactly at
+              every breakpoint, so on small screens (where all three columns
+              stack full-width) this column's content lines up with theirs
+              instead of sitting off by a few px. pb-12 (desktop only, see
+              lg:pb-12) mirrors the mt-8 + pt-4 (= 48px) gap the content
+              gets above it there, so the category lists get the same
+              breathing room below them instead of sitting flush against
+              the column's bottom edge; below lg the accordion rows already
+              carry their own bottom padding so this column just needs a
+              little (pb-2). */}
+          <div className="lg:col-span-6 bg-[#1c1c1c] px-6 sm:px-8 pb-2 lg:pb-12">
             {apiCategories && apiCategories.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 lg:gap-8 mt-2 lg:mt-8 pt-2 lg:pt-4">
                 {apiCategories.map((category) => (
-                  <div key={category.id}>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {getName(category)}
-                    </h3>
+                  <FooterAccordionSection key={category.id} title={getName(category)}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {getFamilies(category).map((fam) => (
                         <li
@@ -420,19 +489,16 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
                 ))}
               </div>
             ) : (
               // Falls back to the static translation lists until
               // splashData's categories have loaded.
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 lg:gap-8 mt-2 lg:mt-8 pt-2 lg:pt-4">
                   {/* Dogs & Puppies */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.dogs.title")}
-                    </h3>
+                  <FooterAccordionSection title={t("categories.dogs.title")}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {dogsItems.map((item, index) => (
                         <li
@@ -445,13 +511,10 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
 
                   {/* Cats & Kittens */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.cats.title")}
-                    </h3>
+                  <FooterAccordionSection title={t("categories.cats.title")}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {catsItems.map((item, index) => (
                         <li
@@ -464,13 +527,10 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
 
                   {/* Horses */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.horses.title")}
-                    </h3>
+                  <FooterAccordionSection title={t("categories.horses.title")}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {horsesItems.map((item, index) => (
                         <li
@@ -483,19 +543,18 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
 
-                  {/* Empty column for spacing */}
-                  <div></div>
+                  {/* Empty column for spacing — desktop only, the accordion
+                      rows above stack full-width below lg so this would
+                      otherwise leave a dangling empty block there. */}
+                  <div className="hidden lg:block"></div>
                 </div>
 
                 {/* Bottom row - Small Mammals, Birds & Poultry, Reptiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-4 pt-2 ">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 lg:gap-8 lg:mt-4 lg:pt-2">
                   {/* Small Mammals */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.smallMammals.title")}
-                    </h3>
+                  <FooterAccordionSection title={t("categories.smallMammals.title")}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {smallMammalsItems.map((item, index) => (
                         <li
@@ -508,13 +567,10 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
 
                   {/* Birds & Poultry */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.birdsPoultry.title")}
-                    </h3>
+                  <FooterAccordionSection title={t("categories.birdsPoultry.title")}>
                     <ul className="space-y-2.5 text-sm text-gray-300">
                       {birdsPoultryItems.map((item, index) => (
                         <li
@@ -527,14 +583,11 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
 
                   {/* Reptiles */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.reptiles.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300 mb-4">
+                  <FooterAccordionSection title={t("categories.reptiles.title")}>
+                    <ul className="space-y-2.5 text-sm text-gray-300">
                       {reptilesItems.map((item, index) => (
                         <li
                           key={index}
@@ -546,19 +599,21 @@ export default function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </FooterAccordionSection>
                 </div>
               </>
             )}
           </div>
 
-          {/* Right Column */}
-          <div className="lg:col-span-3 space-y-6 p-8 lg:pl-6">
+          {/* Right Column — lg:space-y-6 only (no gap below lg): each
+              FooterAccordionSection already carries its own border-bottom
+              divider + vertical padding as the mobile row separator, so an
+              extra 24px gap between them there would just double up on top
+              of that. At lg the accordion look/border/padding are switched
+              off, so space-y-6 goes back to being the section spacing. */}
+          <div className="lg:col-span-3 lg:space-y-6 p-6 sm:p-8 lg:pl-6">
             {/* Our Products Ranges */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("productRanges.title")}
-              </h3>
+            <FooterAccordionSection title={t("productRanges.title")}>
               <ul className="space-y-2.5 text-sm text-gray-300">
                 {apiRanges && apiRanges.length > 0
                   ? apiRanges.map((range) => (
@@ -593,13 +648,10 @@ export default function Footer() {
                       </li>
                     ))}
               </ul>
-            </div>
+            </FooterAccordionSection>
 
             {/* Our Laboratory */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("laboratory.title")}
-              </h3>
+            <FooterAccordionSection title={t("laboratory.title")}>
               <ul className="space-y-2.5 text-sm text-gray-300">
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
                   <Link
@@ -660,14 +712,11 @@ export default function Footer() {
                   </button>
                 </li>
               </ul>
-            </div>
+            </FooterAccordionSection>
 
             {/* Professional — items[0] Resellers & Distributors, items[1]
                 Become Partner/Ambassadors (see footer.json) */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("professional.title")}
-              </h3>
+            <FooterAccordionSection title={t("professional.title")}>
               <ul className="space-y-2.5 text-sm text-gray-300">
                 <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
                   <Link
@@ -686,15 +735,10 @@ export default function Footer() {
                   </Link>
                 </li>
               </ul>
-            </div>
-
-
+            </FooterAccordionSection>
 
             {/* News */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md ">
-                {t("news.title")}
-              </h3>
+            <FooterAccordionSection title={t("news.title")}>
               <ul className="space-y-2.5 text-sm text-gray-300 ">
                 {newsItems.map((item, index) => (
                   <li
@@ -707,7 +751,7 @@ export default function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </FooterAccordionSection>
           </div>
         </div>
       </div>
@@ -715,9 +759,13 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="bg-white">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-5">
-          <div className="flex flex-col md:flex-row justify-between items-center  gap-4 text-xs  text-[14px] text-black">
+          {/* text-xs sm:text-sm replaces the old "text-xs  text-[14px]" —
+              two conflicting size utilities on the same element (both
+              single-class specificity, so whichever Tailwind happened to
+              emit later in the generated stylesheet silently won). */}
+          <div className="flex flex-col md:flex-row justify-between items-center  gap-4 text-xs sm:text-sm text-black">
             <p>{t("bottom.copyright", { year: new Date().getFullYear() })}</p>
-            <div className="flex flex-wrap gap-5 justify-center ">
+            <div className="flex flex-wrap gap-3 sm:gap-5 justify-center ">
               <a href="#" className="hover:text-gray-900 transition">
                 {t("bottom.conception")}
               </a>

@@ -418,7 +418,7 @@ export default function Settings() {
 
         <div className="bg-white  p-3  mb-6 border border-gray-200">
           <div className="flex items-start gap-1 mb-4">
-            <FiTrash2 className="text-gray-700 mt-1" size={20} />
+            <FiTrash2 className="text-gray-700 mt-0.5" size={20} />
             <div className="flex-1">
               <h2 className="font-medium text-black mb-4">{t('settings.deleteAccount.title')}</h2>
 
