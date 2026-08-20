@@ -294,7 +294,7 @@ export default function Support({ onOpenChat }) {
 
                       {showFilterDropdown && (
                         <div 
-                          className="fixed inset-0 bg-black/50 z-50"
+                          className="fixed inset-0 bg-black/50 z-60"
                           onClick={() => setShowFilterDropdown(false)}
                         />
                       )}
@@ -308,7 +308,7 @@ export default function Support({ onOpenChat }) {
                       </button>
 
                       {showFilterDropdown && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200  shadow-lg z-50 overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg z-70 overflow-hidden">
                           {filterOptions.map((option) => (
                             <button
                               key={option.key}

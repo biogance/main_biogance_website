@@ -50,7 +50,7 @@ export default function DeleteAddressModal({ isOpen, onClose, onDeleted, address
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-[rgba(0,0,0,0.5)] p-4"
       onClick={onClose}
     >
       <div

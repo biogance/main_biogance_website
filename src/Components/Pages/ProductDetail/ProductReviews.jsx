@@ -200,7 +200,7 @@ export default function ProductReviews({ isLoading, apiProduct }) {
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={() => setIsLoadMoreOpen(true)}
-                    className="px-8 py-2.5 bg-black border border-[#C0C0C0]  text-sm font-medium text-white cursor-pointer"
+                    className="px-8 py-2.5 bg-black border border-[#C0C0C0]  text-sm font-medium text-white cursor-pointer hover:bg-[#fff] transition-all duration-200 hover:text-black"
                   >
                     {t("loadMore")}
                   </button>

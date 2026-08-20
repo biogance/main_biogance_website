@@ -620,7 +620,6 @@ export default function FilterProducts() {
       const widthMultiplier = window.innerWidth <= 1440 ? 0.85 : 0.8;
       const w = h * widthMultiplier;
       setCardDimensions({ height: h, width: w });
-     
     };
     update();
     window.addEventListener("resize", update);
@@ -641,7 +640,7 @@ export default function FilterProducts() {
   const [sort, setSort] = useState("Featured");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  
+
   const [isSearchPending, setIsSearchPending] = useState(false);
   const queryDebounceRef = useRef(null);
 
@@ -651,7 +650,6 @@ export default function FilterProducts() {
     setDebouncedQuery(val);
   }, [q]);
 
- 
   const hasUserEditedSearchRef = useRef(false);
 
   const handleQueryChange = (val) => {
@@ -664,7 +662,6 @@ export default function FilterProducts() {
     }, 1000);
   };
 
-  
   useEffect(() => {
     if (!hasUserEditedSearchRef.current) return;
     if (debouncedQuery.trim() !== "") return;
@@ -697,7 +694,6 @@ export default function FilterProducts() {
     return () => window.removeEventListener("splashDataReady", loadFromSplash);
   }, []);
 
-  
   const [homeApiData, setHomeApiData] = useState(null);
   useEffect(() => {
     const loadFromHome = () => {
@@ -715,9 +711,11 @@ export default function FilterProducts() {
 
   const allRanges = useMemo(() => {
     const merged = new Map();
-    [...(apiData?.ranges || []), ...(homeApiData?.ranges || [])].forEach((r) => {
-      if (r?.name && !merged.has(r.name)) merged.set(r.name, r);
-    });
+    [...(apiData?.ranges || []), ...(homeApiData?.ranges || [])].forEach(
+      (r) => {
+        if (r?.name && !merged.has(r.name)) merged.set(r.name, r);
+      },
+    );
     return [...merged.values()];
   }, [apiData, homeApiData]);
 
@@ -810,7 +808,7 @@ export default function FilterProducts() {
   const [lastPage, setLastPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const isFetchingRef = useRef(false);
-  
+
   const columns = useResponsiveColumns();
   const perPage = 18 + columns * ROWS_PER_PAGE;
 
@@ -818,7 +816,6 @@ export default function FilterProducts() {
     searchedProductsRef.current = searchedProducts;
   }, [searchedProducts]);
 
-  
   const loadMoreAnchorRef = useRef(null);
 
   const handleLoadMore = () => {
@@ -855,95 +852,125 @@ export default function FilterProducts() {
   // Footer.jsx's "Our Products Ranges" links land here as /shop?range_name=..
   const rangeParam = searchParams ? searchParams.get("range_name") : undefined;
 
-  
-  const catParamAppliedRef = useRef(false);
+  // Tracks the last catParam/familyParam/rangeParam value actually applied
+  // (not just "was one ever applied") — a plain "applied once" boolean ref
+  // would permanently block re-applying after the first OurProducts.jsx
+  // family click, so clicking a *different* one later while still on /shop
+  // (searchParams updates without a remount) would silently do nothing.
+  const lastAppliedCatParamRef = useRef(null);
   useEffect(() => {
-    if (catParamAppliedRef.current) return;
-    if (catParam && categoriesList.length > 0) {
+    if (!catParam || catParam === lastAppliedCatParamRef.current) return;
+    if (categoriesList.length > 0) {
       const matchedCat = categoriesList.find(
         (c) => String(c.id) === String(catParam),
       );
       if (matchedCat) {
         setAnimals([matchedCat.name]);
-        catParamAppliedRef.current = true;
+        lastAppliedCatParamRef.current = catParam;
       }
     }
   }, [catParam, categoriesList]);
 
-  
-  const familyParamAppliedRef = useRef(false);
+  const lastAppliedFamilyParamRef = useRef(null);
   useEffect(() => {
-    if (familyParamAppliedRef.current) return;
-    if (familyParam && animals.length > 0) {
+    if (!familyParam || familyParam === lastAppliedFamilyParamRef.current)
+      return;
+    if (animals.length > 0) {
       setFamilies((prev) =>
         prev.includes(familyParam) ? prev : [familyParam],
       );
-      familyParamAppliedRef.current = true;
+      lastAppliedFamilyParamRef.current = familyParam;
     }
   }, [familyParam, animals]);
 
-
-  const rangeParamAppliedRef = useRef(false);
+  const lastAppliedRangeParamRef = useRef(null);
   useEffect(() => {
-    if (rangeParamAppliedRef.current) return;
-    
-    if (rangeParam && RANGES_LIST.includes(rangeParam)) {
+    if (!rangeParam || rangeParam === lastAppliedRangeParamRef.current) return;
+    if (RANGES_LIST.includes(rangeParam)) {
       setRanges((prev) => (prev.includes(rangeParam) ? prev : [rangeParam]));
-      rangeParamAppliedRef.current = true;
+      lastAppliedRangeParamRef.current = rangeParam;
     }
   }, [rangeParam, RANGES_LIST]);
 
- 
   const [shopDeepLink, setShopDeepLink] = useState(null);
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("shopDeepLink");
-      if (raw) {
-        sessionStorage.removeItem("shopDeepLink");
-        setShopDeepLink(JSON.parse(raw));
+    const readDeepLink = () => {
+      try {
+        const raw = sessionStorage.getItem("shopDeepLink");
+        if (raw) {
+          sessionStorage.removeItem("shopDeepLink");
+          setShopDeepLink(JSON.parse(raw));
+        }
+      } catch {
+        /* ignore */
       }
-    } catch {
-      /* ignore */
-    }
+    };
+    readDeepLink();
+    // Footer.jsx's goToShop() dispatches this right after writing a fresh
+    // deep link. Clicking a Footer link while already on /shop is a
+    // same-route router.push() — Next.js reuses this already-mounted
+    // component instead of remounting it, so the mount-only read above
+    // would otherwise never see the new sessionStorage value and the
+    // filter would silently not apply.
+    window.addEventListener("shopDeepLinkReady", readDeepLink);
+    return () => window.removeEventListener("shopDeepLinkReady", readDeepLink);
   }, []);
 
-  const deepLinkCatAppliedRef = useRef(false);
+  // Tracks the last shopDeepLink object actually applied (not just "was any
+  // deep link ever applied") — a plain "applied once" boolean ref would
+  // permanently block a second Footer.jsx click while still on /shop, since
+  // this component never remounts to reset it. setShopDeepLink always
+  // stores a freshly-parsed object, so identity comparison alone tells us
+  // whether this is a new deep link.
+  const lastAppliedCatDeepLinkRef = useRef(null);
   useEffect(() => {
-    if (deepLinkCatAppliedRef.current) return;
-    if (shopDeepLink?.type === "family" && shopDeepLink.category_id && categoriesList.length > 0) {
+    if (
+      shopDeepLink?.type === "family" &&
+      shopDeepLink.category_id &&
+      shopDeepLink !== lastAppliedCatDeepLinkRef.current &&
+      categoriesList.length > 0
+    ) {
       const matchedCat = categoriesList.find(
         (c) => String(c.id) === String(shopDeepLink.category_id),
       );
       if (matchedCat) {
         setAnimals([matchedCat.name]);
-        deepLinkCatAppliedRef.current = true;
+        lastAppliedCatDeepLinkRef.current = shopDeepLink;
       }
     }
   }, [shopDeepLink, categoriesList]);
 
-  const deepLinkFamilyAppliedRef = useRef(false);
+  const lastAppliedFamilyDeepLinkRef = useRef(null);
   useEffect(() => {
-    if (deepLinkFamilyAppliedRef.current) return;
-    if (shopDeepLink?.type === "family" && shopDeepLink.family_name && animals.length > 0) {
+    if (
+      shopDeepLink?.type === "family" &&
+      shopDeepLink.family_name &&
+      shopDeepLink !== lastAppliedFamilyDeepLinkRef.current &&
+      animals.length > 0
+    ) {
       setFamilies((prev) =>
-        prev.includes(shopDeepLink.family_name) ? prev : [shopDeepLink.family_name],
+        prev.includes(shopDeepLink.family_name)
+          ? prev
+          : [shopDeepLink.family_name],
       );
-      deepLinkFamilyAppliedRef.current = true;
+      lastAppliedFamilyDeepLinkRef.current = shopDeepLink;
     }
   }, [shopDeepLink, animals]);
 
-  const deepLinkRangeAppliedRef = useRef(false);
+  const lastAppliedRangeDeepLinkRef = useRef(null);
   useEffect(() => {
-    if (deepLinkRangeAppliedRef.current) return;
     if (
       shopDeepLink?.type === "range" &&
       shopDeepLink.range_name &&
+      shopDeepLink !== lastAppliedRangeDeepLinkRef.current &&
       RANGES_LIST.includes(shopDeepLink.range_name)
     ) {
       setRanges((prev) =>
-        prev.includes(shopDeepLink.range_name) ? prev : [shopDeepLink.range_name],
+        prev.includes(shopDeepLink.range_name)
+          ? prev
+          : [shopDeepLink.range_name],
       );
-      deepLinkRangeAppliedRef.current = true;
+      lastAppliedRangeDeepLinkRef.current = shopDeepLink;
     }
   }, [shopDeepLink, RANGES_LIST]);
 
@@ -1045,7 +1072,7 @@ export default function FilterProducts() {
     let targetPage = page;
     const filtersChanged = prevFiltersRef.current !== filtersSerialized;
     const pageChanged = prevPageRef.current !== page;
-  
+
     const categoriesListChanged =
       prevCategoriesListRef.current === FALLBACK_CATEGORIES &&
       categoriesList !== FALLBACK_CATEGORIES;
@@ -1102,7 +1129,6 @@ export default function FilterProducts() {
     } = getSelectedIds();
 
     const body = {
-    
       keyword: (debouncedQuery || "").trim(),
       ...(categoryIds ? { category_id: categoryIds } : {}),
       ...(universeIds ? { universe_id: universeIds } : {}),
@@ -1123,7 +1149,6 @@ export default function FilterProducts() {
       ...(token ? {} : { device_id: getDeviceId() }),
     };
 
-   
     const requestSeq = ++searchRequestSeqRef.current;
 
     axios
@@ -1216,7 +1241,6 @@ export default function FilterProducts() {
   const featuredRow2Video = featuredProducts[9];
   const featuredRow2Grid = featuredProducts.slice(10, 18);
 
-  
   const mobileFeaturedBlockA = featuredRow1Grid.slice(0, 4);
   const mobileFeaturedBlockB = featuredRow2Grid.slice(0, 4);
   const mobileFeaturedLeftover = [
@@ -1551,7 +1575,7 @@ export default function FilterProducts() {
             <div className="grid grid-cols-12 gap-x-8 gap-y-6 pt-6 pb-6">
               {/* Left: headline + count, description underneath */}
               <div className="col-span-12 lg:col-span-8">
-               <h4 className="mt-0 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
+                <h4 className="mt-0 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
                   <span
                     style={{
                       display: "-webkit-box",
@@ -1681,7 +1705,10 @@ export default function FilterProducts() {
                   {mobileFeaturedBlockA.length > 0 && (
                     <div className="grid grid-cols-2 gap-[3px]">
                       {mobileFeaturedBlockA.map((p, i) => (
-                        <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
+                        <div
+                          key={p.id}
+                          className="w-full h-[220px] sm:h-[280px]"
+                        >
                           <LandingCards
                             product={p}
                             showNav={true}
@@ -1712,7 +1739,10 @@ export default function FilterProducts() {
                   {mobileFeaturedBlockB.length > 0 && (
                     <div className="grid grid-cols-2 gap-[3px]">
                       {mobileFeaturedBlockB.map((p, i) => (
-                        <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
+                        <div
+                          key={p.id}
+                          className="w-full h-[220px] sm:h-[280px]"
+                        >
                           <LandingCards
                             product={p}
                             showNav={true}
@@ -1903,7 +1933,10 @@ export default function FilterProducts() {
                 8-wide featured rows above. */}
             <div
               className="hidden lg:grid gap-[3px]"
-              style={{ overflowAnchor: "none", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+              style={{
+                overflowAnchor: "none",
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              }}
             >
               {restProducts.map((p, i) => (
                 <div key={p.id} className="w-full" data-rest-index={i}>
@@ -1922,7 +1955,10 @@ export default function FilterProducts() {
                 each 8-item group — the leftover half rejoins here, ahead of restProducts. */}
             <div
               className="grid gap-[3px] lg:hidden"
-              style={{ overflowAnchor: "none", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+              style={{
+                overflowAnchor: "none",
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              }}
             >
               {mobileFeaturedLeftover.map((p, i) => (
                 <div key={p.id} className="w-full h-[220px] sm:h-[280px]">
@@ -1937,7 +1973,11 @@ export default function FilterProducts() {
                 </div>
               ))}
               {restProducts.map((p, i) => (
-                <div key={p.id} className="w-full h-[220px] sm:h-[280px]" data-rest-index={i}>
+                <div
+                  key={p.id}
+                  className="w-full h-[220px] sm:h-[280px]"
+                  data-rest-index={i}
+                >
                   <LandingCards
                     product={p}
                     showNav={true}
@@ -2208,7 +2248,12 @@ function FilterRail({
               className="relative ml-1 shrink-0 rounded-full bg-white"
               style={{
                 height: "20px",
-                width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+                width:
+                  totalActive >= 100
+                    ? "34px"
+                    : totalActive >= 10
+                      ? "26px"
+                      : "20px",
               }}
             >
               <span
@@ -2253,7 +2298,12 @@ function FilterRail({
                   className="relative shrink-0 rounded-full bg-stone-900 ai-style-change-1"
                   style={{
                     height: "20px",
-                    width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+                    width:
+                      totalActive >= 100
+                        ? "34px"
+                        : totalActive >= 10
+                          ? "26px"
+                          : "20px",
                   }}
                 >
                   <span
@@ -2390,7 +2440,12 @@ function AllFiltersModal({
                 className="relative shrink-0 rounded-full bg-stone-900"
                 style={{
                   height: "20px",
-                  width: totalActive >= 100 ? "34px" : totalActive >= 10 ? "26px" : "20px",
+                  width:
+                    totalActive >= 100
+                      ? "34px"
+                      : totalActive >= 10
+                        ? "26px"
+                        : "20px",
                 }}
               >
                 <span
