@@ -66,7 +66,13 @@ export default function IngredientsIndex({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 min-[641px]:grid-cols-2 min-[1001px]:grid-cols-4 border-t border-l border-[#d9d8d1]">
+        {/* grid-cols-2 (not 1) below 641px — on a small screen with a lot of
+            ingredients, one full-width row per item meant a very long
+            scroll just to get past this list. 2 columns halves that.
+            min-[641px] already was 2 (now redundant, dropped) and
+            min-[1001px]:grid-cols-4 is untouched, so nothing changes on
+            larger screens. */}
+        <div className="grid grid-cols-2 min-[1001px]:grid-cols-4 border-t border-l border-[#d9d8d1]">
           {showShimmer ? (
             Array.from({ length: 36 }).map((_, i) => <TileShimmer key={i} />)
           ) : ingredients.length ? (

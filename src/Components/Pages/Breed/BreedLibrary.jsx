@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -56,6 +56,43 @@ function BreedCardShimmer() {
     </div>
   );
 }
+// Same "how many cards fit the screen right now, so ask the API for
+// exactly that many" pattern ExpertAdvices.jsx uses (its
+// useResponsiveColumns/COLUMN_BREAKPOINTS/ROWS_PER_PAGE/MOBILE_PER_PAGE) —
+// duplicated here (not imported) rather than shared, same as this file's
+// own local `slugify` above: the two grids' breakpoints don't match
+// (ExpertAdvices' CARD_GRID goes up to 5 columns at 2xl; this one — see
+// the grid className below — tops out at 4 at min-[1181px]), so a shared
+// constant would need per-caller overrides anyway.
+const BREED_COLUMN_BREAKPOINTS = [
+  { minWidth: 1181, columns: 4 },
+  { minWidth: 761, columns: 3 },
+  { minWidth: 481, columns: 2 },
+  { minWidth: 0, columns: 1 },
+];
+const ROWS_PER_PAGE = 3;
+// Single-column (mobile) layout loads a flat 15 cards per page instead of
+// columns * ROWS_PER_PAGE (which would be just 1 * 3 = 3, triggering "Load
+// more" almost immediately on a long vertical scroll).
+const MOBILE_PER_PAGE = 15;
+
+function useResponsiveColumns() {
+  const [columns, setColumns] = useState(null);
+  // useLayoutEffect (not useEffect) so the real column count is resolved
+  // and committed before the browser paints — otherwise the first frame
+  // renders with columns=null (SHIMMER_COUNT/perPage falling back to their
+  // defaults) and only snaps to the real grid on the next frame.
+  useLayoutEffect(() => {
+    const calc = () =>
+      BREED_COLUMN_BREAKPOINTS.find((b) => window.innerWidth >= b.minWidth).columns;
+    const update = () => setColumns(calc());
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return columns;
+}
+
 const SHIMMER_COUNT = 12;
 
 // Line-art search glyph for the "no breeds" empty state — same
@@ -232,6 +269,13 @@ export default function BreedLibrary({ onOpenBreed }) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
+  // How many cards actually fit the screen right now — same
+  // useResponsiveColumns()-driven per_page ExpertAdvices.jsx sends, so a
+  // "page" of breeds is exactly enough to fill whole rows instead of a
+  // fixed count that under-fills wide screens or over-fetches narrow ones.
+  const columns = useResponsiveColumns();
+  const perPage = columns ? (columns === 1 ? MOBILE_PER_PAGE : columns * ROWS_PER_PAGE) : 0;
+
   const fetchTokenRef = useRef(0);
   // Signature of the last params page-1 was actually fetched with — guards
   // the effect below against firing again when nothing real changed. Needed
@@ -252,6 +296,7 @@ export default function BreedLibrary({ onOpenBreed }) {
 
       try {
         const body = { page: pageNum, collection_ids: params.speciesId };
+        if (params.perPage) body.per_page = params.perPage;
         if (params.sizeId) body.type_categories = params.sizeId;
         if (params.groomingId) body.hygiene_level_categories = params.groomingId;
         if (params.apartmentId) body.suitable_for_apartment_categories = params.apartmentId;
@@ -305,9 +350,16 @@ export default function BreedLibrary({ onOpenBreed }) {
 
   // Fetches page 1 whenever the species/filters/search settle — waits for a
   // real collection id (currentSpeciesId) so it never fires with the wrong
-  // (or no) species scoped in, e.g. before splashData has loaded.
+  // (or no) species scoped in, e.g. before splashData has loaded. Also
+  // waits for `columns` to have resolved at least once, so the very first
+  // fetch already asks for the right per_page instead of a 0/fallback
+  // count. `columns` is a dependency (so this re-runs the moment it first
+  // resolves) but deliberately isn't part of `fetchKey` below — a later
+  // resize alone (columns changing without any filter changing) re-runs
+  // this effect but hits the unchanged fetchKey and returns early, same as
+  // ExpertAdvices.jsx not refetching on every breakpoint crossing either.
   useEffect(() => {
-    if (!currentSpeciesId) return;
+    if (!currentSpeciesId || !columns) return;
     // String-normalized so a splash-triggered re-render that hands
     // currentSpeciesId back as (say) a number one time and a numeric string
     // another time still reads as "nothing changed" — see lastFetchKeyRef's
@@ -321,6 +373,7 @@ export default function BreedLibrary({ onOpenBreed }) {
     fetchBreeds(1, false, {
       speciesId: currentSpeciesId,
       speciesWord: toSpeciesWord(species),
+      perPage,
       sizeId: size,
       groomingId: grooming,
       apartmentId: apartment,
@@ -328,7 +381,7 @@ export default function BreedLibrary({ onOpenBreed }) {
       keyword: debouncedSearch,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSpeciesId, size, grooming, apartment, energy, debouncedSearch, fetchBreeds]);
+  }, [currentSpeciesId, columns, size, grooming, apartment, energy, debouncedSearch, fetchBreeds]);
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -336,6 +389,7 @@ export default function BreedLibrary({ onOpenBreed }) {
     fetchBreeds(next, true, {
       speciesId: currentSpeciesId,
       speciesWord: toSpeciesWord(species),
+      perPage,
       sizeId: size,
       groomingId: grooming,
       apartmentId: apartment,
@@ -510,7 +564,7 @@ export default function BreedLibrary({ onOpenBreed }) {
 
       <div className="grid grid-cols-1 min-[481px]:grid-cols-2 min-[761px]:grid-cols-3 min-[1181px]:grid-cols-4 border-l border-[#d8d8d4]">
         {showShimmer ? (
-          Array.from({ length: SHIMMER_COUNT }).map((_, i) => <BreedCardShimmer key={i} />)
+          Array.from({ length: perPage || SHIMMER_COUNT }).map((_, i) => <BreedCardShimmer key={i} />)
         ) : breeds.length ? (
           breeds.map((b) => <BreedCard key={b.id} breed={b} onClick={() => onOpenBreed(b)} />)
         ) : (

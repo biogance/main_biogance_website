@@ -333,7 +333,11 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
         }
       `}} />
 
-      <div className="p-4 md:p-8 mt-8 max-w-10xl mx-auto">
+      {/* mt-2 on mobile, not mt-8 — that was stacking on top of Sidebar.jsx's
+          own bottom padding on the mobile tab row, leaving a big empty gap
+          before this card started. md:mt-8 keeps desktop unchanged, same
+          pattern as Dashboard.jsx's mt-2 md:mt-10 fix. */}
+      <div className="p-4 md:p-8 mt-2 md:mt-8 max-w-10xl mx-auto">
         <div className="bg-white  shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">

@@ -1065,7 +1065,6 @@ export default function PopularProducts({
       newIndex = Math.max(currentIndex - 1, 0);
     }
 
-    // Dono update karo — ref turant, state re-render ke liye
     currentCardIndexRef.current = newIndex;
 
     const targetCard = cards[newIndex];
@@ -1168,24 +1167,24 @@ export default function PopularProducts({
               <button
                 onClick={() => scroll("prev")}
                 disabled={!canScrollLeft}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
                   canScrollLeft
                     ? "bg-gray-100 cursor-pointer hover:bg-gray-200"
                     : "bg-white border border-gray-400 cursor-not-allowed"
                 }`}
               >
-                <IoChevronBack className="w-5 h-5 text-gray-700" />
+                <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5 text-gray-700" />
               </button>
               <button
                 onClick={() => scroll("next")}
                 disabled={!canScrollRight}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
                   canScrollRight
                     ? "bg-gray-100 cursor-pointer hover:bg-gray-200"
                     : "bg-white border border-gray-400 cursor-not-allowed"
                 }`}
               >
-                <IoChevronForward className="w-5 h-5 text-gray-700" />
+                <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5 text-gray-700" />
               </button>
             </div>
           </div>
@@ -1229,45 +1228,45 @@ export default function PopularProducts({
                     <button
                       onClick={() => scroll("prev")}
                       disabled={!canScrollLeft}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
                         canScrollLeft
                           ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
                           : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
                       }`}
                     >
-                      <IoChevronBack className="w-5 h-5" />
+                      <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5" />
                     </button>
                     <button
                       onClick={() => scroll("next")}
                       disabled={!canScrollRight}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
                         canScrollRight
                           ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
                           : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
                       }`}
                     >
-                      <IoChevronForward className="w-5 h-5" />
+                      <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Below the whole header row, right-aligned */}
-              <div className="flex justify-end mt-4 md:mt-5 -mb-6">
+              <div className="flex justify-end mt-4 md:mt-5 -mb-4 md:-mb-6">
                 <button
                   type="button"
                   onClick={() => {
                     start();
                     router.push("/shop");
                   }}
-                  className="group inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
+                  className="group inline-flex items-center gap-0.5 md:gap-1 cursor-pointer text-[10px] md:text-[12px] tracking-[0.1em] md:tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
                 >
                   <span className="relative">
                     {t("products.seeMore")}
                     <span className="absolute left-0 bottom-[-3px] h-[1px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
                   </span>
 
-                  <GoArrowUpRight className="w-4.5 h-4.5" />
+                  <GoArrowUpRight className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />
                 </button>
               </div>
             </div>

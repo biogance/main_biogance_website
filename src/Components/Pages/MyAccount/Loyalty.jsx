@@ -220,7 +220,12 @@ export default function Loyalty() {
            }
          `}} />
          <div className="min-h-screen bg-gray-100">
-          <div className="p-4 mt-9 sm:p-6 md:p-8 max-w-10xl mx-auto">
+          {/* mt-2 on mobile, not mt-9 — that was stacking on top of
+              Sidebar.jsx's own bottom padding on the mobile tab row,
+              leaving a big empty gap before this card started. md:mt-9
+              keeps desktop unchanged, same pattern as Dashboard.jsx's
+              mt-2 md:mt-10 fix. */}
+          <div className="p-4 mt-2 md:mt-9 sm:p-6 md:p-8 max-w-10xl mx-auto">
             <div className="bg-white  shadow-sm p-6 md:p-8">
               {/* Header - always visible */}
               <div className="mb-6 md:mb-8 flex justify-between items-start">

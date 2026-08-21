@@ -201,7 +201,7 @@ export default function Favourite() {
 
   return (
     <div className="min-h-screen ">
-      <div className="max-w-10xl mx-auto px-4 mt-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-10xl -mt-1 md:mt-9 mx-auto px-4 sm:px-6 py-8">
       {/* Wishlist Section */}
         <div className="bg-white  p-6 md:p-8 mb-10">
           <div className="mb-6 md:mb-8 flex items-start justify-between">

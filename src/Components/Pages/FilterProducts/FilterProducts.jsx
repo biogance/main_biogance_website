@@ -1833,7 +1833,15 @@ export default function FilterProducts() {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-[3px] mb-2">
+                    // No video to sit alongside (8 or fewer products total,
+                    // so featuredRow1Video came back undefined) — grid-cols-4
+                    // (not 2) so this still reads as the same "four wide"
+                    // layout the video variant above uses. CSS grid wraps
+                    // this on its own: 8 items become two rows of 4, 5-7
+                    // items become a full row of 4 + a partial second row,
+                    // 1-4 items stay a single row of (up to) 4 — no video,
+                    // exactly matching however many products there are.
+                    <div className="grid grid-cols-4 gap-[3px] mb-2">
                       {featuredRow1Grid.map((p, i) => (
                         <div key={p.id} className="w-full">
                           <LandingCards

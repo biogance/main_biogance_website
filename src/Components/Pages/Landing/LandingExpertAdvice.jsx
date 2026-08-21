@@ -273,14 +273,14 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
                   startTopLoader();
                   router.push("/advices");
                 }}
-                className="group inline-flex items-center gap-1 cursor-pointer text-[12px] tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
+                className="group inline-flex items-center gap-1 cursor-pointer text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.1em] md:tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
               >
                 <span className="relative">
                   {t("expertAdvice.seeAll")}
                   <span className="absolute left-0 bottom-[-3px] h-[1px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
                 </span>
 
-                <GoArrowUpRight className="w-4.5 h-4.5" />
+                <GoArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4.5 md:h-4.5" />
               </button>
             </div>
           </div>

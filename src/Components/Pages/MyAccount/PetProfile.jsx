@@ -308,7 +308,11 @@ export default function PetProfile() {
       `}} />
 
       <div className="min-h-screen">
-        <div className="max-w-10xl mt-9 mx-auto px-4 sm:px-6 py-8">
+        {/* mt-2 on mobile, not mt-9 — that was stacking on top of
+            Sidebar.jsx's own bottom padding on the mobile tab row, leaving
+            a big empty gap before this card started. md:mt-9 keeps desktop
+            unchanged, same pattern as Dashboard.jsx's mt-2 md:mt-10 fix. */}
+        <div className="max-w-10xl mt-2 md:mt-9 mx-auto px-4 sm:px-6 py-8">
           <div className="bg-white  p-4 sm:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
               <div>

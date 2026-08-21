@@ -18,6 +18,12 @@ const VALID_ROUTES = [
   "/contact",
   "/faq",
   "/ingredients",
+  // Individual ingredient pages are their own /ingredient/[slug] route (see
+  // src/app/ingredient/[slug]) — singular, not nested under "/ingredients"
+  // (plural), so it needs its own entry here or a direct/shared link to one
+  // gets bounced straight back to "/" for anyone not logged in, same
+  // startsWith(r + "/") pattern "/breed-guide" already relies on below.
+  "/ingredient",
   "/certifications",
   "/commitments",
   "/ambassador",

@@ -311,7 +311,12 @@ export default function UserProfile() {
 
     return(
         <>
-            <div className="max-w-10xl mt-9 mx-auto px-4 py-4 sm:px-6 sm:py-8">
+            {/* mt-2 on mobile, not mt-9 — that was stacking on top of
+                Sidebar.jsx's own bottom padding on the mobile tab row,
+                leaving a big empty gap before this card started. md:mt-9
+                keeps desktop unchanged, same pattern as Dashboard.jsx's
+                mt-2 md:mt-10 fix. */}
+            <div className="max-w-10xl mt-2 md:mt-9 mx-auto px-4 py-4 sm:px-6 sm:py-8">
                 <div className="bg-white  p-4 sm:p-8">
                     {/* Header */}
                     <h2 className="text-2xl text-black font-semibold mb-1">{t('userProfile.title')}</h2>
