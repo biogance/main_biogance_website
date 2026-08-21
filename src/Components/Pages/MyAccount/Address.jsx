@@ -247,7 +247,11 @@ export default function Address() {
       `}} />
 
       <div className="min-h-screen bg-gray-100">
-        <div className="p-4 sm:p-6 md:p-8 mt-9 max-w-10xl mx-auto">
+        {/* mt-2 on mobile, not mt-9 — that was stacking on top of
+            Sidebar.jsx's own bottom padding on the mobile tab row, leaving
+            a big empty gap before this card started. md:mt-9 keeps desktop
+            unchanged, same pattern as Dashboard.jsx's mt-2 md:mt-10 fix. */}
+        <div className="p-4 sm:p-6 md:p-8 mt-2 md:mt-9 max-w-10xl mx-auto">
           <div className="bg-white p-6 md:p-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 md:mb-8">

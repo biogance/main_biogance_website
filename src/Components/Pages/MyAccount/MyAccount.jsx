@@ -108,7 +108,13 @@ export default function MyAccount() {
                         <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
                     </div>
                 </div>
-                <div className="lg:hidden">
+                {/* Sticky on small screens (bg-gray-100 so scrolling content
+                    doesn't show through underneath it) — same top-16
+                    "stick right below the navbar" convention already used
+                    by BreedLibrary.jsx's species tabs / IngredientsRail.jsx.
+                    Desktop's own sidebar above already handles its own
+                    sticky positioning, untouched. */}
+                <div className="lg:hidden sticky top-16 z-30 bg-gray-100">
                     <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />
                 </div>
                 <div className="flex-1 min-w-0">

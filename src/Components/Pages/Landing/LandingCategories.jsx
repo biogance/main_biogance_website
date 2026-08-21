@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { MEDIA_URL } from '../../API/API';
 
 // A row shows 6 cards at a time on desktop, no gap between them (same as
@@ -81,6 +82,69 @@ export default function LandingCategories({ data }) {
     };
   }, [categories.length]);
 
+  // Left/right scroll-by-page arrows — same pattern as LandingCards.jsx's
+  // PopularProducts default heading row (scrollContainerRef + a page-based
+  // scroll() using currentCardIndexRef so repeated clicks don't fight a
+  // stale closure, plus canScrollLeft/canScrollRight to enable/disable and
+  // style the buttons).
+  const scrollContainerRef = useRef(null);
+  const currentCardIndexRef = useRef(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollPosition = () => {
+    if (currentCardIndexRef.current > 0) return;
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    if (loadingState !== 'loaded') return;
+    setTimeout(checkScrollPosition, 100);
+  }, [loadingState]);
+
+  useEffect(() => {
+    window.addEventListener('resize', checkScrollPosition);
+    return () => window.removeEventListener('resize', checkScrollPosition);
+  }, []);
+
+  const scroll = (direction) => {
+    if (!scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const cards = container.querySelectorAll(':scope > div');
+    if (!cards.length) return;
+
+    const totalCards = cards.length;
+    const firstCard = cards[0];
+    const cardWidth = firstCard.offsetWidth;
+    const visibleCount = Math.round(container.clientWidth / cardWidth);
+    const maxIndex = totalCards - visibleCount;
+
+    const currentIndex = currentCardIndexRef.current;
+
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = Math.min(currentIndex + 1, maxIndex);
+    } else {
+      newIndex = Math.max(currentIndex - 1, 0);
+    }
+
+    currentCardIndexRef.current = newIndex;
+
+    const targetCard = cards[newIndex];
+    container.scrollTo({
+      left: targetCard.offsetLeft,
+      behavior: 'smooth',
+    });
+
+    setCanScrollLeft(newIndex > 0);
+    setCanScrollRight(newIndex < maxIndex);
+  };
+
   return (
     // "Explore our collections" section — same editorial/monochrome design as
     // HOMEPAGE V2.html's .collections section, kept as a horizontal scroller
@@ -120,7 +184,10 @@ export default function LandingCategories({ data }) {
           heading/header sit flush left up to that width then visibly
           slide inward on wider monitors as the centered cap opened up.
           Dropping the cap keeps it pinned to the same left inset at
-          every viewport width — same fix as MainVideo.jsx's hero wrap. */}
+          every viewport width — same fix as MainVideo.jsx's hero wrap.
+          Only the heading lives in here now — the tile row below is a
+          sibling outside this padded wrapper so it can run edge-to-edge
+          (see the "left right se space na do" note below). */}
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
 
         {/* Editorial head — matches .collections-editorial-head */}
@@ -134,50 +201,80 @@ export default function LandingCategories({ data }) {
               {t('categories.headingLine1')}<br />{t('categories.headingLine2')}
             </h2>
           </div>
-          <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
-            {t('categories.subtitle')}
-          </p>
-        </div>
-
-        {/* Horizontal scrollable tiles — 6 visible at a time, no gap, same card design as .collection-tile */}
-        <div className="overflow-x-auto hide-scrollbar">
-          <div className="flex border-t border-l border-[#d8d8d4]">
-            {loadingState === 'shimmer'
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <ShimmerCard key={index} />
-                ))
-              : loadingState === 'spinner'
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <LoadingCard key={index} />
-                ))
-              : categories.map((category, index) => (
-                  <div
-                    key={category.id}
-                    onClick={() => router.push(`/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`)}
-                    className={`group relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px] overflow-hidden text-black cursor-pointer transition-colors duration-[250ms] hover:bg-black hover:border-black`}
-                  >
-                    <div className="relative w-full min-h-[72px] flex items-center justify-center">
-                      <span className="absolute top-0 left-0 text-[9px] tracking-[0.16em] uppercase text-[#757571] transition-colors duration-[250ms] group-hover:text-white/60">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      {/* Icon only — no background box. Forced black by default,
-                          inverted to white on hover, same as .collection-icon in the html. */}
-                      <img
-                        src={`${MEDIA_URL}${category.media}`}
-                        alt={category.name}
-                        className="w-[52px] h-[52px] object-contain brightness-0 transition-all duration-[250ms] group-hover:invert"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-center w-full text-center">
-                      <span className="max-w-[160px] text-[15px] font-medium leading-[1.2] text-inherit group-hover:text-white transition-colors duration-[250ms]">
-                        {isFrench && category.french_name ? category.french_name : category.name}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+          {/* Subtitle + left/right scroll arrows — same placement/design as
+              LandingCards.jsx's PopularProducts default heading row. */}
+          <div className="flex items-end justify-between gap-4">
+            <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+              {t('categories.subtitle')}
+            </p>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={() => scroll('prev')}
+                disabled={!canScrollLeft}
+                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollLeft
+                    ? 'bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5" />
+              </button>
+              <button
+                onClick={() => scroll('next')}
+                disabled={!canScrollRight}
+                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
+                  canScrollRight
+                    ? 'bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200'
+                    : 'bg-white border border-gray-300 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5" />
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Horizontal scrollable tiles — 6 visible at a time, no gap, same card
+          design as .collection-tile. Full-bleed: no left/right padding of
+          its own (unlike the heading above), so the tiles run edge-to-edge
+          instead of sitting inset from the screen like the rest of the
+          section. */}
+      <div ref={scrollContainerRef} className="flex overflow-x-auto hide-scrollbar border-t border-l border-[#d8d8d4]">
+        {loadingState === 'shimmer'
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <ShimmerCard key={index} />
+            ))
+          : loadingState === 'spinner'
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <LoadingCard key={index} />
+            ))
+          : categories.map((category, index) => (
+              <div
+                key={category.id}
+                onClick={() => router.push(`/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`)}
+                className={`group relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px] overflow-hidden text-black cursor-pointer transition-colors duration-[250ms] hover:bg-black hover:border-black`}
+              >
+                <div className="relative w-full min-h-[72px] flex items-center justify-center">
+                  <span className="absolute top-0 left-0 text-[9px] tracking-[0.16em] uppercase text-[#757571] transition-colors duration-[250ms] group-hover:text-white/60">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  {/* Icon only — no background box. Forced black by default,
+                      inverted to white on hover, same as .collection-icon in the html. */}
+                  <img
+                    src={`${MEDIA_URL}${category.media}`}
+                    alt={category.name}
+                    className="w-[52px] h-[52px] object-contain brightness-0 transition-all duration-[250ms] group-hover:invert"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+                <div className="flex items-center justify-center w-full text-center">
+                  <span className="max-w-[160px] text-[15px] font-medium leading-[1.2] text-inherit group-hover:text-white transition-colors duration-[250ms]">
+                    {isFrench && category.french_name ? category.french_name : category.name}
+                  </span>
+                </div>
+              </div>
+            ))}
       </div>
     </section>
   );

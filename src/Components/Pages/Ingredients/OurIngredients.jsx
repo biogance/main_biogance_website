@@ -12,6 +12,7 @@ import IngredientsIndex from './IngredientsIndex';
 import IngredientsRail from './IngredientsRail';
 import IngredientsDetail from './IngredientsDetail';
 import { BASE_URL } from '../../API/API';
+import { slugify } from '../../../utils/slugify';
 
 // Ported design-for-design from https://kase-ho-connect.lovable.app/ (hero,
 // "chosen with purpose" editorial + stats, search/A-Z ingredient index,
@@ -27,7 +28,17 @@ import { BASE_URL } from '../../API/API';
 // `keyword` body param for search. The detail panel is a separate GET
 // {BASE_URL}/ingredient/detail/{id} call, fired whenever `selectedId`
 // changes.
-export default function OurIngredients() {
+//
+// `initialSlug` (from src/app/ingredient/[slug]/page.jsx) — a direct/
+// shared link to one specific ingredient. That route's generateMetadata
+// already gives the shared link a proper title/description/image server
+// side; this just makes the client-rendered page open with that same
+// ingredient selected instead of defaulting to the first result, so the
+// page you land on actually matches the link you followed. Nothing else
+// about this page's layout changes for that route — same single scrolling
+// page, same Rail/Detail placement, same everything, per plain /ingredients
+// (initialSlug undefined there).
+export default function OurIngredients({ initialSlug } = {}) {
   const { i18n } = useTranslation();
   const isFrench = i18n.language?.startsWith('fr');
   const searchTimerRef = useRef(null);
@@ -51,6 +62,10 @@ export default function OurIngredients() {
   // re-invoking it with the exact same keyword, same defensive pattern as
   // BreedLibrary.jsx's lastFetchKeyRef.
   const lastFetchedKeywordRef = useRef(null);
+  // Only the very first successful load should honor initialSlug (picking
+  // the shared-link ingredient instead of the top result) — a later search
+  // resetting to its own top result is the existing, correct behavior.
+  const initialSlugAppliedRef = useRef(false);
 
   const fetchIngredients = useCallback(async (keyword) => {
     const trimmedKeyword = keyword.trim();
@@ -81,9 +96,22 @@ export default function OurIngredients() {
       const items = res.data.data ?? [];
       setIngredients(items);
       setTotal(items.length);
+
       // Reset selection to the top result so the detail section reflects
-      // the new search instead of holding on to a stale/absent id.
-      setSelectedId(items[0]?.id ?? null);
+      // the new search instead of holding on to a stale/absent id — unless
+      // this is the very first load and initialSlug matches one of the
+      // items, in which case that's the one the shared link pointed at.
+      let nextSelectedId = items[0]?.id ?? null;
+      if (!initialSlugAppliedRef.current) {
+        initialSlugAppliedRef.current = true;
+        if (initialSlug) {
+          const match = items.find(
+            (ing) => slugify(ing.name) === initialSlug || slugify(ing.french_name) === initialSlug,
+          );
+          if (match) nextSelectedId = match.id;
+        }
+      }
+      setSelectedId(nextSelectedId);
     } catch {
       if (token === fetchTokenRef.current) toast.error(i18n.t('genericErrorRetry', { ns: 'ingredients' }));
     } finally {
@@ -94,8 +122,9 @@ export default function OurIngredients() {
     }
     // `i18n` is a stable singleton reference (never changes identity), so
     // including it here doesn't give fetchIngredients a new identity on
-    // language switch — unlike `t`, which would.
-  }, [i18n]);
+    // language switch — unlike `t`, which would. `initialSlug` is a plain
+    // prop that never changes after mount for a given page load.
+  }, [i18n, initialSlug]);
 
   // Initial load.
   useEffect(() => {
@@ -164,11 +193,10 @@ export default function OurIngredients() {
     });
   };
 
-  
   const [detailIngredient, setDetailIngredient] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const detailTokenRef = useRef(0);
-  
+
   const lastFetchedDetailIdRef = useRef(null);
 
   useEffect(() => {
@@ -198,8 +226,25 @@ export default function OurIngredients() {
       .finally(() => {
         if (token === detailTokenRef.current) setDetailLoading(false);
       });
-    
   }, [selectedId, i18n]);
+
+  // Keeps the address bar on /ingredient/{slug} for whichever ingredient is
+  // currently showing in the detail section — a plain URL swap via
+  // history.replaceState (not a router navigation, so it never remounts
+  // this page or touches scroll position), same pattern BreedArticle.jsx
+  // uses to keep its own slug in sync. This is what makes the "Change
+  // ingredient" rail and grid picks (still fully in-page, same design as
+  // before) end up shareable/SEO'd: whichever ingredient's detail is on
+  // screen has its own real URL, without the page itself ever navigating
+  // away from this single scrolling layout.
+  useEffect(() => {
+    if (!detailIngredient || typeof window === 'undefined') return;
+    const slug = slugify((isFrench && detailIngredient.french_name) || detailIngredient.name);
+    if (!slug) return;
+    const newPath = `/ingredient/${slug}`;
+    if (window.location.pathname === newPath) return;
+    window.history.replaceState(window.history.state, '', newPath);
+  }, [detailIngredient, isFrench]);
 
   return (
     <>

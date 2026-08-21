@@ -78,7 +78,7 @@ function DetailContent({ ingredient, isFrench }) {
   const tags = (ingredient.tags || []).map((tg) => tg.name).filter(Boolean);
 
   return (
-    <section id="ingredient-detail" className="scroll-mt-[126px] lg:scroll-mt-[166px] py-[clamp(86px,9vw,145px)]">
+    <section id="ingredient-detail" className="scroll-mt-[126px] lg:scroll-mt-[166px] py-10">
       {/* No max-w-[1840px]/mx-auto — same zoom/viewport-width fix as
           IngredientsHero.jsx. */}
       <div className="px-4 min-[641px]:px-[clamp(22px,2.5vw,48px)] grid grid-cols-1 min-[1001px]:grid-cols-[1.05fr_.95fr] items-start gap-[clamp(40px,5vw,90px)]">
