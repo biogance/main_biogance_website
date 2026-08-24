@@ -39,7 +39,8 @@ export default function Footer() {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (newsletterStatus === "loading" || newsletterStatus === "success") return;
+    if (newsletterStatus === "loading" || newsletterStatus === "success")
+      return;
 
     const trimmed = newsletterEmail.trim();
     if (!trimmed) {
@@ -54,10 +55,14 @@ export default function Footer() {
     setNewsletterError("");
     setNewsletterStatus("loading");
     try {
-      const res = await axios.post(`${BASE_URL}/app/subscribers`, { email: trimmed });
+      const res = await axios.post(`${BASE_URL}/app/subscribers`, {
+        email: trimmed,
+      });
       if (res.data.status === false) {
         setNewsletterStatus("idle");
-        toast.error(res.data.action || "Something went wrong. Please try again.");
+        toast.error(
+          res.data.action || "Something went wrong. Please try again.",
+        );
       } else {
         setNewsletterStatus("success");
       }
@@ -67,32 +72,12 @@ export default function Footer() {
     }
   };
 
-  // Both the ranges and the category/family links below need to hand a
-  // filter selection to FilterProducts.jsx without it showing up in the URL
-  // — sessionStorage carries it instead of a ?range_name=/?family_name=
-  // query string, read by FilterProducts.jsx then cleared, so the address
-  // bar just says /shop. router.push("/shop") only remounts FilterProducts
-  // (and re-reads sessionStorage) when navigating there from a different
-  // page — clicking a Footer link while already on /shop is a same-route
-  // push that reuses the mounted component, so this also fires an event
-  // FilterProducts.jsx listens for to pick up the fresh value directly.
   const goToShop = (deepLink) => {
     sessionStorage.setItem("shopDeepLink", JSON.stringify(deepLink));
     window.dispatchEvent(new Event("shopDeepLinkReady"));
     router.push("/shop");
   };
 
-  // Home API's `ranges` (see MainVideo.jsx's /web/home call) replaces the
-  // hardcoded productRanges.items translation. That API only ever runs on
-  // the home page though — a session that never visits "/" (deep link
-  // straight to /shop, a product page, a refresh on any other route, etc.)
-  // left apiRanges null forever, so Footer silently fell back to the
-  // static <a href="#"> placeholder list below, whose links go nowhere —
-  // clicking one just appended "#" to the URL instead of navigating.
-  // splashData's `ranges` (the same field, fetched by PageLoader.jsx's
-  // callSplashApi() on literally every page load) covers that gap, so
-  // merge it in too — same dedup-by-name merge FilterProducts.jsx's
-  // allRanges already does for these two sources.
   const [apiRanges, setApiRanges] = useState(null);
   useEffect(() => {
     const readRanges = () => {
@@ -117,12 +102,6 @@ export default function Footer() {
     };
   }, []);
 
-  // Middle "Product Categories" columns — same splashData.categories tree
-  // OurProducts.jsx's mega-menu uses (category -> sub_categories "universe"
-  // -> sub_categories "family"), read the same way (localStorage +
-  // 'splashDataReady'). Unlike OurProducts.jsx this doesn't show a
-  // universe-by-universe breakdown — per category it just flattens every
-  // universe's families into one plain list.
   const [apiCategories, setApiCategories] = useState(null);
   useEffect(() => {
     const readCategories = () => {
@@ -138,11 +117,6 @@ export default function Footer() {
     return () => window.removeEventListener("splashDataReady", readCategories);
   }, []);
 
-  // Left-column blurb — splashData.footer (same localStorage cache every
-  // other Footer.jsx block above reads, no separate API hit) replaces the
-  // hardcoded company.description translation whenever the admin panel has
-  // actually filled it in; it stays on the hardcoded copy when that field
-  // comes back null/empty ("" in the /web/splash payload today).
   const [apiFooterDescription, setApiFooterDescription] = useState(null);
   useEffect(() => {
     const readFooterDescription = () => {
@@ -155,14 +129,18 @@ export default function Footer() {
     };
     readFooterDescription();
     window.addEventListener("splashDataReady", readFooterDescription);
-    return () => window.removeEventListener("splashDataReady", readFooterDescription);
+    return () =>
+      window.removeEventListener("splashDataReady", readFooterDescription);
   }, []);
 
-  const getName = (item) => (isFrench && item?.french_name ? item.french_name : item?.name || "");
+  const getName = (item) =>
+    isFrench && item?.french_name ? item.french_name : item?.name || "";
   const getFamilies = (category) =>
     (category.sub_categories || [])
       .filter((s) => s.type === "universe")
-      .flatMap((universe) => (universe.sub_categories || []).filter((s) => s.type === "family"));
+      .flatMap((universe) =>
+        (universe.sub_categories || []).filter((s) => s.type === "family"),
+      );
 
   // Get arrays from translation
   const dogsItems = t("categories.dogs.items", { returnObjects: true });
@@ -191,7 +169,6 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <img src="/logo2.svg" alt="Biogance Logo" />
             </div>
-
 
             {apiFooterDescription ? (
               <p
@@ -340,7 +317,11 @@ export default function Footer() {
                   <label className="text-xs sm:text-sm text-white block mb-2">
                     {t("newsletter.emailLabel")}
                   </label>
-                  <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2" noValidate>
+                  <form
+                    onSubmit={handleSubscribe}
+                    className="flex flex-col sm:flex-row gap-2"
+                    noValidate
+                  >
                     <input
                       type="email"
                       value={newsletterEmail}
@@ -348,7 +329,10 @@ export default function Footer() {
                         setNewsletterEmail(e.target.value);
                         if (newsletterError) setNewsletterError("");
                       }}
-                      disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+                      disabled={
+                        newsletterStatus === "loading" ||
+                        newsletterStatus === "success"
+                      }
                       placeholder={t("newsletter.emailPlaceholder")}
                       className={`flex-1 min-w-0 bg-[#393939] border ${
                         newsletterError ? "border-red-500" : "border-[#393939]"
@@ -356,14 +340,18 @@ export default function Footer() {
                     />
                     <button
                       type="submit"
-                      disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+                      disabled={
+                        newsletterStatus === "loading" ||
+                        newsletterStatus === "success"
+                      }
                       className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal hover:bg-black transition whitespace-nowrap inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-80"
                     >
                       {newsletterStatus === "loading" ? (
                         "Subscribing..."
                       ) : newsletterStatus === "success" ? (
                         <>
-                          You&apos;re in <FiCheck className="w-4 h-4 text-white" />
+                          You&apos;re in{" "}
+                          <FiCheck className="w-4 h-4 text-white" />
                         </>
                       ) : (
                         t("newsletter.subscribeButton")
@@ -371,7 +359,9 @@ export default function Footer() {
                     </button>
                   </form>
                   {newsletterError && (
-                    <p className="text-red-500 text-xs mt-2">{newsletterError}</p>
+                    <p className="text-red-500 text-xs mt-2">
+                      {newsletterError}
+                    </p>
                   )}
                 </div>
               </div>
@@ -379,43 +369,35 @@ export default function Footer() {
 
             {/* App Download — neither store listing exists yet, so these are
                 buttons that toast "coming soon" rather than links to # */}
-           <div className="flex flex-row items-start gap-0">
-  <button
-    type="button"
-    onClick={handleAppComingSoon}
-    aria-label={t("mobileApp.googlePlay")}
-    className="block cursor-pointer"
-  >
-    <img
-      src="/FPlay.png"
-      alt="Google Play"
-      className="block w-[140px] h-[81px] object-fill -mt-1"
-    />
-  </button>
+            <div className="flex flex-row items-start gap-0">
+              <button
+                type="button"
+                onClick={handleAppComingSoon}
+                aria-label={t("mobileApp.googlePlay")}
+                className="block cursor-pointer"
+              >
+                <img
+                  src="/FPlay.png"
+                  alt="Google Play"
+                  className="block w-[140px] h-[81px] object-fill -mt-1"
+                />
+              </button>
 
-  <button
-    type="button"
-    onClick={handleAppComingSoon}
-    aria-label={t("mobileApp.appStore")}
-    className="block cursor-pointer"
-  >
-    <img
-      src="/FApple.png"
-      alt="App Store"
-      className="block w-[140px] h-[85px] object-fill"
-    />
-  </button>
-</div>
+              <button
+                type="button"
+                onClick={handleAppComingSoon}
+                aria-label={t("mobileApp.appStore")}
+                className="block cursor-pointer"
+              >
+                <img
+                  src="/FApple.png"
+                  alt="App Store"
+                  className="block w-[140px] h-[85px] object-fill"
+                />
+              </button>
+            </div>
           </div>
 
-          {/* Middle Section - Product Categories — px-8 (not px-6 below the
-              sm breakpoint) matches the Left/Right columns' p-8 horizontal
-              padding exactly, so on small screens (where all three columns
-              stack full-width) this column's content lines up with theirs
-              instead of sitting 8px further left. pb-12 mirrors the mt-8
-              + pt-4 (= 48px) gap the content already gets above it, so the
-              category lists get the same breathing room below them instead
-              of sitting flush against the column's bottom edge. */}
           <div className="lg:col-span-6 bg-[#1c1c1c] px-8 pb-12">
             {apiCategories && apiCategories.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
@@ -430,16 +412,15 @@ export default function Footer() {
                           key={fam.id}
                           className="hover:translate-x-2 cursor-pointer transition-all duration-300"
                         >
-                          {/* Same category_id + family_name selection
-                              OurProducts.jsx's goToFamily() sends (as a query
-                              string there), just carried via shopDeepLink
-                              instead so the URL stays a plain /shop. fam.name
-                              (canonical, not the localized getName()) is what
-                              FilterProducts.jsx's familyOptions actually
-                              matches against, regardless of site language. */}
                           <button
                             type="button"
-                            onClick={() => goToShop({ type: "family", category_id: category.id, family_name: fam.name })}
+                            onClick={() =>
+                              goToShop({
+                                type: "family",
+                                category_id: category.id,
+                                family_name: fam.name,
+                              })
+                            }
                             className="hover:text-white transition cursor-pointer text-left"
                           >
                             {getName(fam)}
@@ -598,10 +579,14 @@ export default function Footer() {
                             against — see its shopDeepLink handling. */}
                         <button
                           type="button"
-                          onClick={() => goToShop({ type: "range", range_name: range.name })}
+                          onClick={() =>
+                            goToShop({ type: "range", range_name: range.name })
+                          }
                           className="hover:text-white transition cursor-pointer text-left"
                         >
-                          {isFrench && range.french_name ? range.french_name : range.name}
+                          {isFrench && range.french_name
+                            ? range.french_name
+                            : range.name}
                         </button>
                       </li>
                     ))
@@ -715,8 +700,6 @@ export default function Footer() {
               </ul>
             </div>
 
-
-
             {/* News */}
             <div>
               <h3 className="font-semibold text-white mb-4 text-md ">
@@ -728,7 +711,10 @@ export default function Footer() {
                     key={index}
                     className="hover:translate-x-2 cursor-pointer transition-all duration-300"
                   >
-                    <Link href="/advices" className="hover:text-white transition ">
+                    <Link
+                      href="/advices"
+                      className="hover:text-white transition "
+                    >
                       {item}
                     </Link>
                   </li>
@@ -783,10 +769,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Contact Us Modal — ContactUs.jsx now owns its own backdrop + open/
-          close animation (same as Login.jsx), so it needs to stay mounted
-          through the close animation instead of being conditionally
-          rendered here. */}
       <ContactUs isOpen={showModal} onClose={() => setShowModal(false)} />
     </footer>
   );

@@ -134,13 +134,13 @@ const Dropdown = ({ label, options, selected, onSelect }) => {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-10 bg-black/50 "
+            className="fixed inset-0 z-60 bg-black/50 "
             onClick={() => setIsOpen(false)}
           />
           
           {/* Dropdown Menu */}
           <div className="
-            absolute right-0 top-full mt-2 z-20
+            absolute right-0 top-full mt-2 z-70
             min-w-[180px] max-h-[280px] overflow-auto
             bg-white  shadow-2xl border border-gray-200
             py-2 text-sm font-medium
@@ -321,7 +321,8 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    
+    <div className="bg-gray-100">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
@@ -333,10 +334,7 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
         }
       `}} />
 
-      {/* mt-2 on mobile, not mt-8 — that was stacking on top of Sidebar.jsx's
-          own bottom padding on the mobile tab row, leaving a big empty gap
-          before this card started. md:mt-8 keeps desktop unchanged, same
-          pattern as Dashboard.jsx's mt-2 md:mt-10 fix. */}
+    
       <div className="p-4 md:p-8 mt-2 md:mt-8 max-w-10xl mx-auto">
         <div className="bg-white  shadow-sm p-6 md:p-8">
           {/* Header */}
@@ -390,7 +388,7 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
                 <OrderItemShimmer key={index} />
               ))
             ) : orders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-500">No orders found.</div>
+              <div className="flex flex-col items-center justify-center min-h-[30vh] text-gray-500">No orders found.</div>
             ) : (
               orders.map((order) => (
                 <div

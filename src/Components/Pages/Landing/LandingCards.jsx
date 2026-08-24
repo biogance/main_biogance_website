@@ -29,7 +29,7 @@ const formatPrice = (val, lang) => {
 // separate title/price block below it, so the skeleton doesn't jump in
 // size once the real card swaps in. Same w-1/2 sm:w-1/3 md:w-1/4 wrapper
 // as the real cards handles the small/large screen sizing.
-const LoadingCard = ({ showBorder = false }) => (
+export const LoadingCard = ({ showBorder = false }) => (
   <div className="w-full h-full flex flex-col">
     <div
       className={`bg-[#efefee] ${showBorder ? "border border-gray-300" : ""} relative flex flex-col aspect-[7/10] overflow-hidden`}

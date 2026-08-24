@@ -252,7 +252,12 @@ export default function Support({ onOpenChat }) {
         }
       `}} />
 
-      <div className="min-h-screen bg-gray-100">
+      {/* No min-h-screen — MyAccount.jsx's wrapper already provides a full
+          viewport (navbar clearance included); stacking another one here
+          forced this tab an extra viewport tall even on short/empty
+          content, causing a page scrollbar on the empty state at any
+          screen size or zoom level. */}
+      <div className="bg-gray-100">
         {/* mt-2 on mobile, not mt-9 — that was stacking on top of
             Sidebar.jsx's own bottom padding on the mobile tab row, leaving
             a big empty gap before this card started. md:mt-9 keeps desktop

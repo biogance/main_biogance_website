@@ -21,9 +21,7 @@ function Rating({ n = 0 }) {
   );
 }
 
-// Shimmer for the whole detail view — every block matches the real
-// section's classes 1:1 (same min-h/grid/gap/padding) so nothing reflows
-// once the fetch resolves and the real content swaps in.
+
 function BreedArticleShimmer() {
   return (
     <main className="bg-white">
@@ -55,11 +53,7 @@ function BreedArticleShimmer() {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        {/* flex + overflow-x-auto below 761px — same single "one horizontal
-            row" shape the min-[761px]:grid-cols-3/min-[1181px]:grid-cols-6
-            layout already has, just swiped instead of wrapped into stacked
-            rows on small screens. min-[761px]: switches back to the
-            untouched grid. */}
+      
         <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] flex overflow-x-auto min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:overflow-visible min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="shrink-0 w-[160px] min-[761px]:w-auto min-h-[125px] min-[761px]:min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
@@ -98,18 +92,21 @@ function BreedArticleShimmer() {
               <div className="mt-4 h-[clamp(44px,5vw,80px)] w-56 bg-[#d8d8d4] rounded animate-pulse" />
             </div>
           </div>
-          <div className="grid grid-cols-1 min-[761px]:grid-cols-3 border-l border-[#d8d8d4]">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="min-w-0 bg-white border-r border-b border-[#d8d8d4] flex flex-col">
-                <div className="aspect-[1.08/1] bg-[#efefee] animate-pulse" />
-                <div className="p-5 pb-6 min-h-[158px] flex flex-col">
-                  <div className="h-2 w-16 bg-[#e7e6e1] rounded animate-pulse" />
-                  <div className="h-6 w-3/4 bg-[#e7e6e1] rounded animate-pulse mt-3.5 mb-2" />
-                  <div className="h-3 w-1/3 bg-[#e7e6e1] rounded animate-pulse" />
-                </div>
+        </div>
+        <div className="grid grid-cols-1 min-[761px]:grid-cols-3 border-l border-[#d8d8d4]">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="min-w-0 bg-white border-r border-b border-[#d8d8d4] flex flex-col">
+              {/* aspect-[1.6/1] + p-4/mt-2.5 mirror BreedCard.jsx's
+                  compact prop (used for the real cards below) so the
+                  shimmer doesn't taller/shorter-jump once data lands. */}
+              <div className="aspect-[1.6/1] bg-[#efefee] animate-pulse" />
+              <div className="p-4 pb-5 min-h-[112px] flex flex-col">
+                <div className="h-2 w-16 bg-[#e7e6e1] rounded animate-pulse" />
+                <div className="h-5 w-3/4 bg-[#e7e6e1] rounded animate-pulse mt-2.5 mb-1.5" />
+                <div className="h-3 w-1/3 bg-[#e7e6e1] rounded animate-pulse" />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
     </main>
@@ -140,14 +137,7 @@ function apartmentText(v, t) {
   return key ? t(`apartment.short.${key}`) : t('apartment.unknown');
 }
 
-// One breed's `categories[]` entry either nests the full `category` object
-// (the main `breed` in a /breed/detail response) or is just
-// `{type, category_id}` with nothing resolved (every entry in
-// `related_breeds`) — `lookupMap` (built from splashData's breed_type/
-// breed_group/breed_energy_level/breed_hygiene_level/breed_suitable_for_apartment/
-// categories lists, same reference data BreedLibrary.jsx's dropdown options
-// already read) resolves the latter by category_id, so related breed cards
-// get real size/apartment chips instead of going blank.
+
 function resolveCategory(cats, type, lookupMap) {
   const entry = cats.find((c) => c.type === type);
   if (!entry) return null;
@@ -188,33 +178,28 @@ function mapBreed(item, isFrench, lookups = {}) {
   };
 }
 
-// Breed detail view — ported from #articleView (article-top / article-hero /
-// quickfacts / article-body / related). Fetches its own data straight from
-// POST {BASE_URL}/breed/detail with { seo_keyword: slug } — `slug` is
-// whichever seo keyword (english_seo_keyboard/french_seo_keyword) was active
-// when the link was built (BreedLibrary.jsx), forwarded as-is, same pattern
-// as ProductDetail.jsx's /product/detail. `related_breeds` comes back in
-// the same response, so no separate local scoring pass is needed. If the
-// API is missing a field (or the request fails outright), the UI keeps its
-// shape — quickfacts/description just show '—'/fallback text instead of
-// going blank.
-//
-// Navigation: "Back" and "View All" always hard-navigate to /breed-guide
-// via next/navigation's router.push — self-contained, doesn't rely on any
-// parent-supplied onClose/onOpenBreed callback, so it can't get overridden
-// or raced by whatever the parent does with history.
+
 export default function BreedArticle({ slug, onLoaded }) {
   const { t, i18n } = useTranslation('breed');
   const isFrench = i18n.language?.startsWith('fr');
   const router = useRouter();
 
+  // "Back to all breeds" / "View all breeds" / the not-found state's back
+  // button all land on /breed-guide — this flag tells that page (Breed.jsx)
+  // to scroll itself down past the hero/intro straight to BreedLibrary.jsx
+  // (id="library") once it mounts, instead of leaving the user at the very
+  // top of the page they'd have to scroll past those sections again to get
+  // back to the grid they came from.
   const goToBreedGuide = () => {
+    try {
+      sessionStorage.setItem('breedGuideScrollTo', 'library');
+    } catch {
+      /* ignore */
+    }
     router.push('/breed-guide');
   };
 
-  // Opens another breed's detail page directly by URL instead of going
-  // through a parent callback — adjust the path below if your breed detail
-  // route isn't `/breed-guide/[slug]`.
+  
   const goToBreed = (b) => {
     router.push(`/breed-guide/${b.slug}`);
   };
@@ -227,9 +212,7 @@ export default function BreedArticle({ slug, onLoaded }) {
   const [imgFailed, setImgFailed] = useState(false);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
-  // Same splashData every other Breed component reads (BreedLibrary.jsx) —
-  // only used here to resolve related_breeds' bare {category_id} entries
-  // (see resolveCategory/mapBreed above).
+  
   const [splashData, setSplashData] = useState(null);
   useEffect(() => {
     const readSplashData = () => {
@@ -283,14 +266,7 @@ export default function BreedArticle({ slug, onLoaded }) {
   const breed = raw?.breed ? mapBreed(raw.breed, isFrench, lookups) : null;
   const related = (raw?.related_breeds || []).map((item) => mapBreed(item, isFrench, lookups));
 
-  // Keeps the address bar's slug in the active language once the breed has
-  // loaded — a plain URL swap via history.replaceState, not a router
-  // navigation, so it doesn't re-trigger the fetch effect above (which is
-  // keyed only on the original `slug` prop, itself sourced from
-  // BreedArticleView's useParams()) or flash the shimmer. `breed.slug` is
-  // already the current language's sanitized seo keyword (see mapBreed
-  // above), so there's nothing left to re-derive here. Same pattern as
-  // ExpertAdvicesDetail.jsx's blog detail page.
+ 
   useEffect(() => {
     if (!breed?.slug || typeof window === 'undefined') return;
     const newPath = `/breed-guide/${encodeURIComponent(breed.slug)}`;
@@ -298,13 +274,7 @@ export default function BreedArticle({ slug, onLoaded }) {
     window.history.replaceState(window.history.state, '', newPath);
   }, [breed?.slug]);
 
-  // Re-reports the (now language-aware) breed to onLoaded whenever its slug
-  // changes too, not just on a real id change — otherwise BreedDrawer.jsx's
-  // `current` prop keeps holding the previous language's slug after a
-  // switch, and its active-row match (current.slug === b.slug) silently
-  // stops matching. Kept as its own effect, separate from the one below,
-  // so a language switch doesn't also re-trigger that effect's scroll-to-top
-  // / "liked" re-check — those are scoped to an actual breed change.
+ 
   useEffect(() => {
     if (!breed) return;
     onLoaded?.(breed);
@@ -381,18 +351,9 @@ export default function BreedArticle({ slug, onLoaded }) {
 
   return (
     <main className="bg-white">
-      {/* No max-w-[1840px]/mx-auto anywhere in this page (or its shimmer
-          above) — same zoom/viewport-width fix as BreedHero.jsx/
-          BreedIntro.jsx/BreedLibrary.jsx: that cap only centers past 1840px,
-          leaving equal margins on both sides instead of staying flush
-          left/right once the viewport (zooming out effectively widens it)
-          crosses that width. */}
+     
       <div className="border-b border-[#d8d8d4] py-6 bg-[#f6f6f4] mt-26 ">
-        {/* flex-wrap + gap-y-3 — "← Back to all breeds" plus the Like/Share
-            buttons don't reliably fit on one line on narrow phones (no
-            desktop impact: they already fit there, so wrap never triggers).
-            Without this they either overlapped or squeezed together instead
-            of dropping the button group to its own line. */}
+       
         <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex flex-wrap justify-between items-center gap-x-5 gap-y-3">
           <button type="button" onClick={goToBreedGuide} className="border-0 bg-transparent p-0 cursor-pointer uppercase text-[10px] tracking-[.15em] hover:opacity-55">
             {t('article.back')}
@@ -444,19 +405,10 @@ export default function BreedArticle({ slug, onLoaded }) {
       </section>
 
       <section className="bg-[#f6f6f4] border-b border-[#d8d8d4]">
-        {/* flex + overflow-x-auto below 761px — keeps this one horizontal
-            row (same shape as the min-[761px]:grid-cols-3/
-            min-[1181px]:grid-cols-6 layout already is) instead of wrapping
-            into stacked 2-column rows on small screens; swipe instead of
-            wrap. min-[761px]: switches back to the untouched grid. */}
+      
         <div className="min-[761px]:px-[clamp(24px,2.4vw,46px)] flex overflow-x-auto min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:overflow-visible min-[1181px]:grid-cols-6 border-l border-[#d8d8d4]">
           {facts.map((f) => (
-            // shrink-0 w-[160px] keeps each fact a fixed, swipeable width
-            // while this row scrolls below 761px; min-[761px]:w-auto lets
-            // the grid size it from tablet up, unchanged. min-h-[125px] (vs
-            // the tablet/desktop 155px) avoids the big empty gap
-            // justify-between used to leave between the label and the
-            // value at this narrower card width.
+           
             <div key={f.label} className="shrink-0 w-[160px] min-[761px]:w-auto min-h-[125px] min-[761px]:min-h-[155px] p-[22px_18px] border-r border-[#d8d8d4] flex flex-col justify-between">
               <small className="text-[8px] tracking-[.15em] uppercase text-[#858580]">{f.label}</small>
               <div>
@@ -492,12 +444,9 @@ export default function BreedArticle({ slug, onLoaded }) {
 
       {related.length > 0 && (
         <section className="bg-[#f6f6f4] py-[clamp(78px,8vw,120px)]">
+          
           <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-            {/* flex-wrap — the clamp(44px,…) heading alone can run close to
-                (or past) a narrow phone's width, leaving no room for "View
-                all breeds →" beside it; wrapping drops the button to its
-                own line there instead of overlapping/clipping it. No
-                desktop effect: the row already fits on one line there. */}
+           
             <div className="flex flex-wrap justify-between items-end gap-x-5 gap-y-3 mb-9">
               <div>
                 <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
@@ -509,11 +458,12 @@ export default function BreedArticle({ slug, onLoaded }) {
                 {t('article.viewAll')}
               </button>
             </div>
-            <div className="grid grid-cols-1 min-[761px]:grid-cols-3 border-l border-[#d8d8d4]">
-              {related.map((b) => (
-                <BreedCard key={`${b.species}-${b.slug}`} breed={b} onClick={() => goToBreed(b)} />
-              ))}
-            </div>
+          </div>
+         
+          <div className="grid grid-cols-1 min-[761px]:grid-cols-3 border-l border-[#d8d8d4]">
+            {related.map((b) => (
+              <BreedCard key={`${b.species}-${b.slug}`} breed={b} onClick={() => goToBreed(b)} compact />
+            ))}
           </div>
         </section>
       )}

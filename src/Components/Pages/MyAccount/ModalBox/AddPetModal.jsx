@@ -589,7 +589,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     <>
       {/* Main Add Pet Modal */}
       {!isSuccessModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={handleBackdropClick}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-60" onClick={handleBackdropClick}>
           <div
             ref={modalCardRef}
             onClick={(e) => e.stopPropagation()}
