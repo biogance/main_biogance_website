@@ -2058,16 +2058,16 @@ export default function FilterProducts() {
       )}
 
       {!isSearching && !isSearchPending && featuredBlog && (
-        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-20">
+        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-14">
           <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
             <div className="lg:sticky lg:top-[200px] lg:self-start">
-              <h2 className="mb-6 font-serif text-4xl text-stone-900 sm:text-5xl">
+              <h2 className="mb-4 font-serif text-4xl text-stone-900 sm:text-5xl">
                 {isFrench && featuredBlog.french_name
                   ? featuredBlog.french_name
                   : featuredBlog.name}
               </h2>
               {featuredBlog.images?.[0]?.media && (
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="w-full overflow-hidden">
                   <img
                     src={`${MEDIA_URL}${featuredBlog.images[0].media}`}
                     alt={
@@ -2315,10 +2315,11 @@ function FilterRail({
                   }}
                 >
                   <span
-                    className="absolute text-[10px] text-white tracking-normal normal-case"
+                    className="absolute text-[13px] text-white tracking-normal normal-case"
                     style={{
                       top: "50%",
                       left: "50%",
+                      marginLeft: "-0.6px",
                       transform: "translate(-50%, -50%)",
                       letterSpacing: "normal",
                       lineHeight: "1",
@@ -2457,10 +2458,11 @@ function AllFiltersModal({
                 }}
               >
                 <span
-                  className="absolute text-[10px] text-white tracking-normal normal-case"
+                  className="absolute text-[13px] text-white tracking-normal normal-case"
                   style={{
                     top: "50%",
                     left: "50%",
+                    marginLeft: "-0.6px",
                     transform: "translate(-50%, -50%)",
                     letterSpacing: "normal",
                     lineHeight: "1",
@@ -2669,14 +2671,14 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
       {displayLabel}
       {active && (
         <span
-          className="relative shrink-0 border border-white border-opacity-15 rounded-full bg-stone-900 box-border"
+          className="relative shrink-0  border-opacity-15 rounded-full bg-stone-900 box-border"
           style={{
             height: "20px",
             width: count >= 100 ? "34px" : count >= 10 ? "26px" : "20px",
           }}
         >
           <span
-            className="absolute text-[10px] text-white tracking-normal normal-case"
+            className="absolute text-[12px] font-medium text-stone-100 tracking-normal normal-case"
             style={{
               top: "50%",
               left: "50%",

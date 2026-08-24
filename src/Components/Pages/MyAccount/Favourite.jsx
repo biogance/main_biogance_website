@@ -11,46 +11,13 @@ import {
   MdOutlineKeyboardDoubleArrowRight,
 } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
-import { LandingCards } from "../Landing/LandingCards";
+
+import { LandingCards, LoadingCard } from "../Landing/LandingCards";
 import { BASE_URL } from "../../API/API";
 
 const MEDIA_BASE = "https://d18f57oyxifcsh.cloudfront.net/";
 
-const LoadingCard = () => (
-  <div className="w-full">
-    <div
-      className=" border border-gray-200 p-2 sm:p-3 relative mb-3 aspect-[3/4]"
-      style={{
-        backgroundColor: "#f9fafb",
-        background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200% 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    >
-      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 w-12 sm:w-14 h-5 sm:h-6  bg-gray-300 animate-pulse" />
-      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-7 sm:w-8 h-7 sm:h-8 r bg-gray-300 animate-pulse" />
-      <div className="flex items-center justify-center h-full">
-        <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full  animate-spin" />
-      </div>
-      <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 flex justify-center gap-1">
-        {[1, 2, 3].map((idx) => (
-          <div key={idx} className="w-1 h-1 sm:w-1.5 sm:h-1.5  bg-gray-300" />
-        ))}
-      </div>
-    </div>
-    <div className="space-y-2 px-1">
-      <div className="h-3 sm:h-4 bg-gray-200  animate-pulse" />
-      <div className="h-3 sm:h-4 bg-gray-200 w-3/4 animate-pulse" />
-      <div className="flex items-center justify-between gap-2 mt-2 sm:mt-3">
-        <div className="h-5 sm:h-6 w-14 sm:w-16 bg-gray-200  animate-pulse" />
-        <div className="h-8 sm:h-10 w-20 sm:w-24 bg-gray-200  animate-pulse" />
-      </div>
-    </div>
-  </div>
-);
 
-// Maps a raw /web/favorites product into the exact shape LandingCards.jsx expects
-// (same mapping LandingCards.jsx itself uses for popular/best-seller products)
 const mapFavoriteProduct = (item) => ({
   id: item.id,
   name: item.name,
@@ -84,11 +51,9 @@ const mapFavoriteProduct = (item) => ({
 function FavouritesGrid({ isLoading, products }) {
   return (
     <div className="w-full">
+    
       <style>{`
-        @keyframes shimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
+        @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
@@ -200,7 +165,8 @@ export default function Favourite() {
   };
 
   return (
-    <div className="min-h-screen ">
+   
+    <div>
       <div className="max-w-10xl -mt-1 md:mt-9 mx-auto px-4 sm:px-6 py-8">
       {/* Wishlist Section */}
         <div className="bg-white  p-6 md:p-8 mb-10">
@@ -245,7 +211,7 @@ export default function Favourite() {
               )}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="flex flex-col items-center justify-center min-h-[30vh] text-center">
               <img src="/favacc.svg" alt="Empty wishlist" className="w-64 md:w-80 h-64 md:h-80 object-contain mb-8" />
               <h3 className="text-2xl font-semibold text-gray-900 mb-3">{t('favourite.empty.title')}</h3>
               <p className="text-gray-500 max-w-md mb-8 leading-relaxed">

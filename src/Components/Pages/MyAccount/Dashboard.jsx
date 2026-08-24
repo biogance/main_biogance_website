@@ -241,7 +241,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    // No min-h-screen here — MyAccount.jsx's wrapper already reserves a
+    // full viewport (with the navbar's 104px clearance baked in). Stacking
+    // another min-h-screen on top of that forced this tab to be at least a
+    // full extra viewport tall no matter how little content it had, causing
+    // a page scrollbar on short/empty content at any screen size or zoom
+    // level.
+    <div className="bg-gray-100">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
@@ -346,7 +352,7 @@ export default function Dashboard() {
             </div>
           ) : (
             /* Empty State */
-            <div className="flex flex-col items-center justify-center min-h-[20vh]">
+            <div className="flex flex-col items-center justify-center min-h-[30vh]">
               <div className="w-48 md:w-64 h-48 md:h-64 mb-4 md:mb-6 flex items-center justify-center">
                <img src="empty.svg" alt="" />
               </div>

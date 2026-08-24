@@ -221,7 +221,7 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
         }
       `}</style>
 
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-50" onClick={handleBackdropClick}>
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60" onClick={handleBackdropClick}>
         <div
           ref={modalCardRef}
           onClick={(e) => e.stopPropagation()}
