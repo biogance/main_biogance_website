@@ -107,18 +107,27 @@ function SearchIcon() {
   );
 }
 
+// A categories[] entry used to always embed its full category as a nested
+// `.category` object; the API now sometimes sends just `.category_id`
+// instead, so this falls back to looking that id up in a splashData-derived
+// map (same `resolveCategory` pattern BreedArticle.jsx already uses for
+// /breed/detail — this is the same fix applied to /breed/list).
+function resolveCategoryEntry(cats, type, lookupMap) {
+  const entry = cats.find((c) => c.type === type);
+  if (!entry) return null;
+  return entry.category || lookupMap?.get(entry.category_id) || null;
+}
+
 // Turns one raw /breed/list item into the shape BreedCard.jsx expects.
-// `size`/`apartment` come straight off each categories[] entry's own nested
-// `category` object (the API embeds the full category, not just its id):
 // `size` is shown as the real category name/french_name as-is, and
 // `apartment` stays the raw 'Oui'/'Non' via french_name so BreedCard.jsx's
 // apartment chip keeps working regardless of language. `description`/`tags`
 // come straight off the item — BreedCard.jsx shows description under the
 // name and normalizes tags there (this API gives an array of {name}).
-function mapListItem(item, speciesWord, isFrench) {
+function mapListItem(item, speciesWord, isFrench, lookups = {}) {
   const cats = item.categories || [];
-  const typeEntry = cats.find((c) => c.type === 'type')?.category;
-  const apartmentEntry = cats.find((c) => c.type === 'suitable-for-apartment')?.category;
+  const typeEntry = resolveCategoryEntry(cats, 'type', lookups.type);
+  const apartmentEntry = resolveCategoryEntry(cats, 'suitable-for-apartment', lookups.apartment);
   const keyword = sanitizeSeoKeyword(
     (isFrench && (item.french_seo_keyword || item.english_seo_keyboard)) ||
       item.english_seo_keyboard ||
@@ -164,6 +173,17 @@ export default function BreedLibrary({ onOpenBreed }) {
     return () => window.removeEventListener('splashDataReady', readSplashData);
   }, []);
   const apiCategories = splashData?.categories;
+
+  // Resolves a categories[] entry's `.category_id` back to its full
+  // name/french_name when /breed/list doesn't embed it directly — same
+  // splashData-derived lookup BreedArticle.jsx builds for /breed/detail.
+  const lookups = useMemo(() => {
+    const toMap = (list) => new Map((list || []).map((c) => [c.id, c]));
+    return {
+      type: toMap(splashData?.breed_type),
+      apartment: toMap(splashData?.breed_suitable_for_apartment),
+    };
+  }, [splashData]);
 
   // Each tab carries the real category id splashData gives it — that id is
   // exactly what gets sent as `collection_ids` below (same
@@ -317,12 +337,19 @@ export default function BreedLibrary({ onOpenBreed }) {
           return;
         }
 
+        // The paginated list used to sit directly on res.data.data; it's now
+        // nested one level deeper under a `breeds` key (sitting alongside
+        // the new `header_breeds` — see BreedHero.jsx), so items/total/
+        // current_page/last_page were all silently reading undefined and
+        // the grid rendered empty. `?? d` keeps the old flat shape working
+        // too, in case some environments still send it.
         const d = res.data.data;
-        const items = d?.data ?? [];
+        const pageData = d?.breeds ?? d;
+        const items = pageData?.data ?? [];
         setRawBreeds((prev) => (append ? [...prev, ...items] : items));
         setRawSpeciesWord(params.speciesWord);
-        setTotal(d?.total ?? items.length);
-        setHasMore((d?.current_page ?? pageNum) < (d?.last_page ?? pageNum));
+        setTotal(pageData?.total ?? items.length);
+        setHasMore((pageData?.current_page ?? pageNum) < (pageData?.last_page ?? pageNum));
       } catch {
         if (token === fetchTokenRef.current) toast.error(i18n.t('library.genericErrorRetry', { ns: 'breed' }));
       } finally {
@@ -344,8 +371,8 @@ export default function BreedLibrary({ onOpenBreed }) {
   // — changing the language re-runs this memo, not fetchBreeds, so the
   // library never re-hits the API just because the language switched.
   const breeds = useMemo(
-    () => rawBreeds.map((item) => mapListItem(item, rawSpeciesWord, isFrench)),
-    [rawBreeds, rawSpeciesWord, isFrench],
+    () => rawBreeds.map((item) => mapListItem(item, rawSpeciesWord, isFrench, lookups)),
+    [rawBreeds, rawSpeciesWord, isFrench, lookups],
   );
 
   // Fetches page 1 whenever the species/filters/search settle — waits for a

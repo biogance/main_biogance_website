@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export function LandingProductFinder({ data }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
-  // Three-tier cascading finder — same "pet → care area → concern" flow as
+  const router = useRouter();
+  // Three-tier cascading finder — same "pet → speciality → need" flow as
   // HOMEPAGE V2.html's perfectMatchData finder, but built from the real
-  // category tree (sub_categories with type "universe"/"family") instead of
-  // hardcoded demo data.
+  // category tree instead of hardcoded demo data. The tree is 3 levels:
+  // category (type "collection") -> speciality (type "perfect-specificity",
+  // sitting in the category's own sub_categories) -> need (type
+  // "perfect-need", sitting in the speciality's own sub_categories). This
+  // used to filter for "universe"/"family" — those types belong to
+  // OurProducts.jsx's separate shop-filter tree, not this one, so they
+  // never matched anything here and the 2nd/3rd tiers stayed empty.
   const [selectedPet, setSelectedPet] = useState('');
   const [selectedCare, setSelectedCare] = useState('');
   const [selectedConcern, setSelectedConcern] = useState('');
   const [categories, setCategories] = useState([]);
+
+  // Same french_name fallback OurProducts.jsx uses for its own category /
+  // universe (speciality) / family (need) names — this file already applied
+  // it to the top-level pet buttons but not to the speciality/need tiers
+  // below them, so those stayed English-only even in French mode.
+  const getName = (item) => {
+    if (!item) return '';
+    return isFrench ? (item.french_name || item.name || '') : (item.name || '');
+  };
 
   // Top-level pet categories (with their full sub_categories tree) come from
   // the splash API response, cached in localStorage as "splashData" (see
@@ -36,34 +52,34 @@ export function LandingProductFinder({ data }) {
   }, []);
 
   const selectedPetObj = categories.find((cat) => cat.id === selectedPet);
-  const careOptions = selectedPetObj?.sub_categories?.filter((s) => s.type === 'universe') || [];
+  const careOptions = selectedPetObj?.sub_categories?.filter((s) => s.type === 'perfect-specificity') || [];
   const selectedCareObj = careOptions.find((c) => c.id === selectedCare);
-  const concernOptions = selectedCareObj?.sub_categories?.filter((s) => s.type === 'family') || [];
+  const concernOptions = selectedCareObj?.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
 
   // Selecting a pet re-picks the first care option (and its first concern),
   // same cascading behaviour as html's selectPet().
   const handleSelectPet = (cat) => {
     setSelectedPet(cat.id);
-    const care = cat.sub_categories?.filter((s) => s.type === 'universe') || [];
+    const care = cat.sub_categories?.filter((s) => s.type === 'perfect-specificity') || [];
     const firstCare = care[0] || null;
     setSelectedCare(firstCare?.id ?? '');
-    const concerns = firstCare?.sub_categories?.filter((s) => s.type === 'family') || [];
+    const concerns = firstCare?.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
     setSelectedConcern(concerns[0]?.id ?? '');
   };
 
   const handleSelectCare = (careObj) => {
     setSelectedCare(careObj.id);
-    const concerns = careObj.sub_categories?.filter((s) => s.type === 'family') || [];
+    const concerns = careObj.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
     setSelectedConcern(concerns[0]?.id ?? '');
   };
 
   // Background images array
   const backgroundImages = [
     'https://images.unsplash.com/photo-1764821800130-3b09a6f08cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    'https://images.unsplash.com/photo-1560807707-8cc77767d783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+    'https://images.pexels.com/photos/31192222/pexels-photo-31192222.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
     'https://images.unsplash.com/photo-1517849845537-4d257902454a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    'https://images.unsplash.com/photo-1560807707-8cc77767d783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+    'https://images.pexels.com/photos/1041099/pexels-photo-1041099.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
   ];
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -94,16 +110,9 @@ export function LandingProductFinder({ data }) {
 
   return (
     <>
-      {/* Section header — same design as .finder-head in HOMEPAGE V2.html
-          (eyebrow + big two-line uppercase title on the left, copy on the
-          right). The slideshow/card below is unchanged. */}
+     
       <section id="finder" className="w-full bg-white pt-[clamp(82px,9vw,138px)] scroll-mt-24">
-        {/* No max-w-[1840px]/mx-auto — that cap only centers once the
-            viewport passes 1840px, which made the header sit flush left
-            up to that width then visibly slide inward on wider monitors
-            as the centered cap opened up. Dropping the cap keeps it
-            pinned to the same left inset at every viewport width — same
-            fix as MainVideo.jsx's hero wrap. */}
+        
         <div className="w-full grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-[34px] min-[721px]:mb-[46px]">
           <div>
             <div className="flex items-center gap-3 text-black">
@@ -167,7 +176,7 @@ export function LandingProductFinder({ data }) {
                     : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
                 }`}
               >
-                {isFrench && cat.french_name ? cat.french_name : cat.name}
+                {getName(cat)}
               </button>
             ))}
           </div>
@@ -189,7 +198,7 @@ export function LandingProductFinder({ data }) {
                         : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
                     }`}
                   >
-                    {care.name}
+                    {getName(care)}
                   </button>
                 ))}
               </div>
@@ -213,16 +222,28 @@ export function LandingProductFinder({ data }) {
                         : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
                     }`}
                   >
-                    {concern.name}
+                    {getName(concern)}
                   </button>
                 ))}
               </div>
             </>
           )}
 
-          {/* View Products Button (.finder-result) */}
+         
           <div className="mt-[22px] pt-[18px] border-t border-white/25">
-            <button className="w-full min-h-[48px] cursor-pointer bg-white text-[#171717] border border-white hover:bg-transparent hover:text-white hover:border-white/70 uppercase text-[9px] tracking-[0.15em] font-bold transition-colors duration-200">
+            <button
+              disabled={!selectedPetObj}
+              onClick={() => {
+                if (!selectedPetObj) return;
+                sessionStorage.setItem(
+                  'shopDeepLink',
+                  JSON.stringify({ type: 'family', category_id: selectedPetObj.id }),
+                );
+                window.dispatchEvent(new Event('shopDeepLinkReady'));
+                router.push('/shop');
+              }}
+              className="w-full min-h-[48px] cursor-pointer bg-white text-[#171717] border border-white hover:bg-transparent hover:text-white hover:border-white/70 uppercase text-[9px] tracking-[0.15em] font-bold transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#171717]"
+            >
               {t('productFinder.viewProducts')}
             </button>
           </div>

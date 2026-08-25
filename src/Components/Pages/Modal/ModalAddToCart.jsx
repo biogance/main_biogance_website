@@ -960,7 +960,12 @@ export default function ModalAddToCart({ isOpen, onClose, product = {}, autoClos
   const renderLoggedVoucherContent = () => {
     const hasVouchers = voucherPills.length > 0;
     const hasPoints = voucherPoints !== null && voucherPoints > 0;
-    const canCreateMoreVoucher = voucherPills.length >= 10 && hasPoints;
+    // Just points having is enough to offer "create more voucher" — it used
+    // to also require 10+ existing vouchers, which meant a user with, say,
+    // 3 vouchers and leftover points had no way to redeem them (too few
+    // vouchers to unlock the button, but the empty-list "Redeem" prompt
+    // only shows when there are zero vouchers at all).
+    const canCreateMoreVoucher = hasPoints;
 
     return (
       <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>

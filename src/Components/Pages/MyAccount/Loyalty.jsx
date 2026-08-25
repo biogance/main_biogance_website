@@ -159,9 +159,10 @@ export default function Loyalty() {
     };
 
     const getStatusKey = (status) => {
-      if (status === 2) return 'loyalty.status.expired';
-      if (status === 1) return 'loyalty.status.used';
-      return 'loyalty.status.active';
+      if (status === 0) return 'loyalty.status.disabled';
+      if (status === 2) return 'loyalty.status.used';
+      if (status === 3) return 'loyalty.status.expired';
+      return 'loyalty.status.active'; // status === 1
     };
 
     const fetchVouchers = () => {
@@ -203,6 +204,8 @@ export default function Loyalty() {
         return 'bg-[#DFB400]';
       } else if (statusKey.includes('expired')) {
         return 'bg-[#D00416]';
+      } else if (statusKey.includes('disabled')) {
+        return 'bg-gray-400';
       }
       return 'bg-gray-500';
     };
@@ -350,8 +353,13 @@ export default function Loyalty() {
                     <h3 className="text-xl text-black font-semibold mb-6">{t('loyalty.vouchersHistory')}</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {vouchers.map((voucher, index) => (
-                        <div key={index} className="bg-gray-100 cursor-pointer  p-4 hover:shadow-sm transition-shadow">
+                      {vouchers.map((voucher, index) => {
+                        const isDisabled = voucher.statusKey === 'loyalty.status.disabled';
+                        return (
+                        <div
+                          key={index}
+                          className={`bg-gray-100 p-4 transition-shadow ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:shadow-sm"}`}
+                        >
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-lg text-gray-900">{voucher.code}</span>
@@ -381,7 +389,8 @@ export default function Loyalty() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </>
