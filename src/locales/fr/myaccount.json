@@ -326,6 +326,7 @@
       "expiryDate": "Date d'expiration :"
     },
     "status": {
+      "disabled": "Désactivé",
       "active": "Actif",
       "used": "Utilisé",
       "expired": "Expiré"

@@ -1,17 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { BASE_URL, MEDIA_URL } from '../../API/API';
+import { sanitizeSeoKeyword } from '../../../utils/seoKeyword';
+import { startTopLoader } from '../TopLoader';
 
-const HERO_DOG = 'https://static.vecteezy.com/system/resources/thumbnails/047/493/732/small/cute-dog-posing-png.png';
-const HERO_CAT = 'https://www.dropbox.com/scl/fi/caforeo3mhadf0cdxhleq/Abyssin.png?rlkey=vx7mb8dati42xp52r2yyxzyef&raw=1';
+// Same Dogs/Cats substring-match convention BreedLibrary.jsx's
+// resolveSpeciesKey uses, so this asks /breed/list for the same category
+// ids that page's species tabs use.
+const resolveSpeciesKey = (cat) => {
+  const name = (cat?.name || '').toLowerCase();
+  if (name.includes('dog')) return 'dogs';
+  if (name.includes('cat')) return 'cats';
+  return null;
+};
 
-// Same black spinner-while-loading pattern as BreedCard.jsx — these two URLs
-// are hardcoded for now, but once they come from an API instead they can
-// arrive late just like breed card images do, so this needs the same
-// loading state.
+// Same black spinner-while-loading pattern as BreedCard.jsx.
 function HeroImage({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
+  // A new src (once the real header breed's image arrives) needs its own
+  // loading spin again — reset whenever it changes.
+  useEffect(() => setLoaded(false), [src]);
 
   return (
     <>
@@ -33,7 +45,100 @@ function HeroImage({ src, alt }) {
 }
 
 export default function BreedHero() {
-  const { t } = useTranslation('breed');
+  const { t, i18n } = useTranslation('breed');
+  const isFrench = i18n.language?.startsWith('fr');
+  const router = useRouter();
+
+  const [splashData, setSplashData] = useState(null);
+  useEffect(() => {
+    const readSplashData = () => {
+      try {
+        const cached = JSON.parse(localStorage.getItem('splashData') || 'null');
+        if (cached) setSplashData(cached);
+      } catch {
+        /* ignore */
+      }
+    };
+    readSplashData();
+    window.addEventListener('splashDataReady', readSplashData);
+    return () => window.removeEventListener('splashDataReady', readSplashData);
+  }, []);
+
+  const dogsId = useMemo(
+    () => splashData?.categories?.find((c) => resolveSpeciesKey(c) === 'dogs')?.id ?? null,
+    [splashData],
+  );
+  const catsId = useMemo(
+    () => splashData?.categories?.find((c) => resolveSpeciesKey(c) === 'cats')?.id ?? null,
+    [splashData],
+  );
+
+  // Featured breeds — POST {BASE_URL}/breed/list scoped to a species
+  // (collection_ids) returns a `header_breeds` array: every breed admin
+  // flagged is_header:true for that collection, which can be more than one
+  // (e.g. two different cat breeds both flagged) — not "one per species".
+  // So both calls' full arrays get combined into one flat list, deduped by
+  // id in case the same breed is ever returned twice, and every entry in
+  // it gets its own panel — however many that turns out to be.
+  const [headerBreeds, setHeaderBreeds] = useState([]);
+  // Starts true so the "Pets" side shows a loader immediately instead of a
+  // blank gap while dogsId/catsId are still resolving from splashData and
+  // the /breed/list calls are in flight.
+  const [headerLoading, setHeaderLoading] = useState(true);
+
+  useEffect(() => {
+    if (!dogsId || !catsId) return;
+    let cancelled = false;
+    setHeaderLoading(true);
+    Promise.all([
+      axios.post(`${BASE_URL}/breed/list`, { page: 1, per_page: 1, collection_ids: dogsId }),
+      axios.post(`${BASE_URL}/breed/list`, { page: 1, per_page: 1, collection_ids: catsId }),
+    ])
+      .then(([dogRes, catRes]) => {
+        if (cancelled) return;
+        const combined = [
+          ...(dogRes.data?.data?.header_breeds || []),
+          ...(catRes.data?.data?.header_breeds || []),
+        ];
+        const deduped = [...new Map(combined.map((b) => [b.id, b])).values()];
+        setHeaderBreeds(deduped);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setHeaderLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dogsId, catsId]);
+
+  // Clicking a hero side goes straight to that specific breed's article —
+  // same seo_keyword pattern BreedLibrary.jsx's mapListItem/openBreed use.
+  const openBreed = (headerBreed) => {
+    const keyword = sanitizeSeoKeyword(
+      (isFrench && (headerBreed?.french_seo_keyword || headerBreed?.english_seo_keyboard)) ||
+        headerBreed?.english_seo_keyboard ||
+        headerBreed?.french_seo_keyword ||
+        '',
+    );
+    if (!keyword) return;
+    startTopLoader();
+    router.push(`/breed-guide/${keyword}`);
+  };
+
+  // One panel per header breed, whatever that count actually is — 1 fills
+  // the whole "Pets" area, 2 split it evenly, 3+ just keep splitting
+  // evenly too (gridTemplateColumns is set from this same length below,
+  // not a hardcoded 2-column class, since Tailwind can't generate a
+  // grid-cols-N class for an N it doesn't see literally in the source).
+  // The two background shades alternate by position so neighbours never
+  // look identical, regardless of which species each breed is.
+  const heroEntries = headerBreeds.map((breed, i) => ({
+    key: breed.id,
+    breed,
+    bg: i % 2 === 0 ? 'bg-[#efefee]' : 'bg-[#deddd8]',
+    name: (isFrench && breed.french_name) || breed.name,
+  }));
 
   return (
     <section className="relative w-full bg-[#f6f6f4] border-b border-[#d8d8d4] min-h-screen min-[1181px]:h-screen overflow-hidden grid grid-rows-[auto_auto] min-[1181px]:grid-rows-1 min-[1181px]:grid-cols-[1.05fr_.95fr]">
@@ -53,19 +158,35 @@ export default function BreedHero() {
       </div>
 
       {/* Pets */}
-      <div className="grid grid-cols-2 h-[260px] min-[481px]:h-[340px] min-[721px]:h-[420px] min-[1181px]:h-full min-[1181px]:min-h-0 overflow-hidden bg-[#efefee]">
-        <div className="relative overflow-hidden border-l border-[#d8d8d4] bg-[#efefee] flex items-center justify-center">
-          <HeroImage src={HERO_DOG} alt={t('hero.dogAlt')} />
-          <span className="absolute bottom-[14px] left-[14px] min-[761px]:bottom-[22px] min-[761px]:left-[22px] text-[8px] min-[761px]:text-[9px] tracking-[.15em] uppercase">
-            {t('hero.dogLabel')}
-          </span>
-        </div>
-        <div className="relative overflow-hidden border-l border-[#d8d8d4] bg-[#deddd8] flex items-center justify-center">
-          <HeroImage src={HERO_CAT} alt={t('hero.catAlt')} />
-          <span className="absolute bottom-[14px] left-[14px] min-[761px]:bottom-[22px] min-[761px]:left-[22px] text-[8px] min-[761px]:text-[9px] tracking-[.15em] uppercase">
-            {t('hero.catLabel')}
-          </span>
-        </div>
+      <div
+        className="relative grid h-[260px] min-[481px]:h-[340px] min-[721px]:h-[420px] min-[1181px]:h-full min-[1181px]:min-h-0 overflow-hidden bg-[#efefee]"
+        style={{ gridTemplateColumns: `repeat(${headerLoading ? 2 : heroEntries.length || 1}, minmax(0, 1fr))` }}
+      >
+        {headerLoading ? (
+          // Guesses the common 2-breed layout (this section's default shape)
+          // while the real count is still unknown — same
+          // bg-[#efefee]/animate-pulse shimmer convention as
+          // BreedLibrary.jsx's BreedCardShimmer, just two side-by-side
+          // panels instead of a spinner.
+          <>
+            <div className="border-0 border-l border-[#d8d8d4] bg-[#efefee] animate-pulse" />
+            <div className="border-0 border-l border-[#d8d8d4] bg-[#deddd8] animate-pulse" />
+          </>
+        ) : (
+          heroEntries.map((entry) => (
+            <button
+              key={entry.key}
+              type="button"
+              onClick={() => openBreed(entry.breed)}
+              className={`relative overflow-hidden border-0 border-l border-[#d8d8d4] ${entry.bg} flex items-center justify-center p-0 cursor-pointer`}
+            >
+              <HeroImage src={`${MEDIA_URL}${entry.breed.media}`} alt={entry.name} />
+              <span className="absolute bottom-[14px] left-[14px] min-[761px]:bottom-[22px] min-[761px]:left-[22px] text-[8px] min-[761px]:text-[9px] tracking-[.15em] uppercase">
+                {entry.name}
+              </span>
+            </button>
+          ))
+        )}
       </div>
     </section>
   );

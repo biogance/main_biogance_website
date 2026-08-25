@@ -158,10 +158,14 @@ export default function BreedDrawer({ current, onSelect }) {
       if (token !== fetchTokenRef.current) return; // superseded by a newer request
       if (!res.data?.status) return;
 
+      // Same fix as BreedLibrary.jsx's fetchBreeds — the paginated list is
+      // now nested under `breeds` (alongside the new `header_breeds`)
+      // instead of sitting directly on res.data.data.
       const d = res.data.data;
-      const newItems = d?.data ?? [];
+      const pageData = d?.breeds ?? d;
+      const newItems = pageData?.data ?? [];
       setRawItems((prev) => (append ? [...prev, ...newItems] : newItems));
-      setHasMore((d?.current_page ?? pageNum) < (d?.last_page ?? pageNum));
+      setHasMore((pageData?.current_page ?? pageNum) < (pageData?.last_page ?? pageNum));
     } catch {
       /* keeps whatever was already showing rather than blanking the drawer */
     } finally {

@@ -181,19 +181,42 @@ export default function Footer() {
               </p>
             )}
 
-            {/* Contact Info */}
+            {/* Contact Info — each one is now clickable: address opens
+                Google Maps, email opens a Gmail compose tab, phone opens
+                the device's dialer (tel: — on desktop this just no-ops or
+                prompts a calling app, but on mobile it drops straight into
+                the dial pad with the number already entered). */}
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <FiMapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                <span className="text-gray-300">{t("company.address")}</span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t("company.address"))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  {t("company.address")}
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <FiMail className="w-4 h-4 flex-shrink-0" />
-                <span className="text-gray-300">{t("company.email")}</span>
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(t("company.email"))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  {t("company.email")}
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <FiPhone className="w-4 h-4 flex-shrink-0" />
-                <span className="text-gray-300">{t("company.phone")}</span>
+                <a
+                  href={`tel:${t("company.phone").replace(/\s+/g, "")}`}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  {t("company.phone")}
+                </a>
               </div>
             </div>
 
