@@ -62,13 +62,7 @@ export default function Loyalty() {
         <Navbar bgWhite={true} />
       </div>
 
-      {/* Hero Section — matches the reference image: eyebrow label, a two-line
-                heading, description stacked naturally below it, and a soft left-side
-                fade over the photo so the text stays readable. */}
-      {/* h-[520px] on small screens, not the original 420px — needed to fit
-          the extra top clearance below (pt-[110px] instead of py-8's 32px)
-          without pushing the description out past the box's own
-          overflow-hidden bottom edge. md/lg unchanged. */}
+      
       <div className="relative h-[520px] sm:h-[520px] md:h-[460px] lg:h-[600px] w-[100%] mx-auto overflow-hidden ">
         <div className="absolute inset-0 ">
           <Image
@@ -81,16 +75,9 @@ export default function Loyalty() {
         {/* Fade so the photo stays visible on the right while the text on the left stays readable */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/75 via-white to-transparent md:from-white md:via-white/10 md:to-transparent" />
 
-        {/* pt-[110px] on small screens instead of the plain py-8 (32px) this
-            used everywhere — the fixed Navbar (40px announcement + 64px nav
-            = 104px) sits over this box, and the eyebrow span's own -mt-10
-            pulls it up another 40px on top of that, so 32px of clearance
-            left the eyebrow/heading rendering underneath the navbar on the
-            short mobile hero. md:pt-8/lg:pt-8 restore the original value
-            unchanged (the taller md/lg heroes already had enough room via
-            justify-center for this not to be an issue there). */}
+        
         <div className="relative h-full flex flex-col justify-center text-black px-5 sm:px-6 md:px-8 lg:px-12 pt-[110px] sm:pt-[110px] md:pt-8 lg:pt-8 pb-8">
-          <span className="text-xs tracking-[0.2em] text-black/50 mb-10 -mt-10">
+          <span className="text-xs tracking-[0.2em] text-black/50 mb-10">
             {t("eyebrow")}
           </span>
           <h1 className="font-normal text-black mb-6 tracking-[-0.01em] text-3xl sm:text-4xl md:text-5xl lg:text-[52px] leading-[1.15] max-w-full sm:max-w-[85%] md:max-w-[60%] lg:max-w-[560px]">
@@ -154,10 +141,7 @@ export default function Loyalty() {
         </div>
       </div>
 
-      {/* Even More Ways to Collect Section — matches the reference design exactly:
-                white background, small eyebrow label, large two-line heading with the
-                description positioned to its right at the baseline, four bordered cards,
-                then a separate light-gray terms strip below. */}
+      
       <div className="bg-white py-14 sm:py-16 md:py-20 px-5 sm:px-6 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
           <p className="text-xs text-stone-300 uppercase tracking-[0.15em] mb-6">

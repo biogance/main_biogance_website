@@ -1500,11 +1500,25 @@ function CartScrollArea({ children, maxHeight }) {
     if (!el) return;
     updateThumb();
     el.addEventListener("scroll", updateThumb);
+    
     const ro = new ResizeObserver(updateThumb);
     ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    let rafId = null;
+    let settleTimer = null;
+    const onWindowResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateThumb);
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(updateThumb, 200);
+    };
+    window.addEventListener("resize", onWindowResize);
     return () => {
       el.removeEventListener("scroll", updateThumb);
       ro.disconnect();
+      window.removeEventListener("resize", onWindowResize);
+      cancelAnimationFrame(rafId);
+      clearTimeout(settleTimer);
     };
   }, [children]);
 
@@ -1535,7 +1549,8 @@ function CartScrollArea({ children, maxHeight }) {
         style={{
           flex: 1,
           maxHeight,
-          overflowY: needsScroll ? "scroll" : "visible",
+        
+          overflowY: "auto",
           paddingRight: needsScroll ? "10px" : "0",
         }}
       >
@@ -1734,6 +1749,52 @@ function OrderSummary({
   const { t } = useTranslation("checkout");
   const router = useRouter();
   const [currentShipping, setCurrentShipping] = useState(0);
+
+ 
+  const cartSectionRef = useRef(null);
+  const [cartListMaxHeight, setCartListMaxHeight] = useState(330);
+  useEffect(() => {
+    const computeMaxHeight = () => {
+      const el = cartSectionRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      const available = window.innerHeight - top - 24; // 24px breathing room
+      setCartListMaxHeight(Math.max(120, Math.min(330, available)));
+    };
+    
+    let rafId = null;
+    let settleTimer = null;
+    const onResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(computeMaxHeight);
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(computeMaxHeight, 200);
+    };
+    computeMaxHeight();
+    window.addEventListener("resize", onResize);
+
+    const ro = new ResizeObserver(onResize);
+    ro.observe(document.documentElement);
+
+    let scrollTicking = false;
+    const onScroll = () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        computeMaxHeight();
+        scrollTicking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+      cancelAnimationFrame(rafId);
+      clearTimeout(settleTimer);
+    };
+  }, [items]);
 
   useEffect(() => {
     const interval = setInterval(
@@ -3419,12 +3480,13 @@ function OrderSummary({
         </div>
       </div>
 
-      {/* ── Cart items — moved to bottom. 3 cards visible, 4th+ on scroll ── */}
+    
       <div
+        ref={cartSectionRef}
         className="checkout-right-cart-items-section"
         style={{ paddingTop: "8px" }}
       >
-        <CartScrollArea maxHeight="330px">
+        <CartScrollArea maxHeight={`${cartListMaxHeight}px`}>
           {items.map((item, idx) => (
             <CartItemRow
               key={idx}
@@ -3496,14 +3558,7 @@ function Checkout({ cartItems = [] }) {
   const lang = i18n.language;
   const paymentSectionRef = useRef(null);
 
-  // Express Payment bar — a "conveyor belt" handoff with a second copy
-  // pinned over the top of the right sidebar: as this one scrolls up behind
-  // the sticky header (top:80px) on the left, the pinned copy reveals by
-  // the exact same amount from below on the right. expressScrollProgress
-  // (0 = fully visible on the left / nothing shown on the right, 1 = fully
-  // hidden on the left / fully shown on the right) is read straight off the
-  // left copy's actual on-screen position on every scroll frame — not a
-  // timed animation, so it can never drift out of sync with the scrollbar.
+  
   const expressWrapperRef = useRef(null);
   const sidebarRef = useRef(null);
   const [expressBarBox, setExpressBarBox] = useState({
@@ -3555,18 +3610,32 @@ function Checkout({ cartItems = [] }) {
       });
     };
 
+    
+    let rafId = null;
+    let settleTimer = null;
+    const onResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(measure);
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(measure, 200);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", measure);
+    window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(onResize);
+    ro.observe(document.documentElement);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", measure);
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
+      cancelAnimationFrame(rafId);
+      clearTimeout(settleTimer);
     };
   }, []);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ✅ CHANGE 2: isRemoving state for cart API calls
+  //  CHANGE 2: isRemoving state for cart API calls
   const [isRemoving, setIsRemoving] = useState(false);
 
   // States for Address Change
@@ -3635,10 +3704,7 @@ function Checkout({ cartItems = [] }) {
     }
   };
 
-  // Field-level validation errors (email/name/country/full address/postcode/
-  // city/card number) shown as a red border on the offending FieldBox, plus
-  // refs to each field's wrapper so we can scroll the first invalid one into
-  // view when the user clicks "Order".
+  
   const [fieldErrors, setFieldErrors] = useState({});
   const emailFieldRef = useRef(null);
   const nameFieldRef = useRef(null);
@@ -3671,13 +3737,7 @@ function Checkout({ cartItems = [] }) {
   const [phoneError, setPhoneError] = useState(null);
   const [deliveryCountryIso2, setDeliveryCountryIso2] = useState("");
 
-  // Fields the user has personally typed/changed since this page mounted.
-  // PageLoader's callSplashApi() re-fetches "splashData" on every click
-  // anywhere in the app and re-fires "splashDataReady" — without this guard,
-  // prefillFromSplash() would run again on that event and stomp whatever the
-  // user had already typed back to the stale splash values. A field, once
-  // marked here, is never auto-filled from splash again for the rest of this
-  // page's life (markEdited/isEdited helpers below).
+ 
   const editedFieldsRef = useRef(new Set());
   const markEdited = (field) => editedFieldsRef.current.add(field);
   const isEdited = (field) => editedFieldsRef.current.has(field);
@@ -3809,13 +3869,6 @@ function Checkout({ cartItems = [] }) {
     };
   }, []);
 
-  // PageLoader's /web/splash call is async — on a genuinely first-ever visit
-  // (nothing cached in localStorage yet), it can still be in flight when this
-  // component mounts, so the one-time prefillFromSplash() call above finds
-  // nothing. Without this, the fields only ever populate by the accident of
-  // a later reload finding the *previous* attempt's data already cached —
-  // which is exactly the "works after 2-3 hard refreshes" symptom. Re-running
-  // once PageLoader actually finishes fetching closes that gap.
   useEffect(() => {
     window.addEventListener("splashDataReady", prefillFromSplash);
     return () => {
@@ -3823,27 +3876,7 @@ function Checkout({ cartItems = [] }) {
     };
   }, []);
 
-  // If splash has no usable country on it (a genuine first-time guest, or an
-  // account/guest record that exists but has no phone/address yet), every
-  // "countryIso2 || 'fr'" fallback sprinkled through this file would
-  // otherwise silently default the phone field to France. Detect the
-  // visitor's real country from their IP instead (same /api/visitor-locale
-  // route ModalPickLocation.jsx already uses for pickup points) and use that as
-  // the default dial-code country. This never marks countryIso2 as
-  // user-edited, so a real account's data (via prefillFromSplash, if splash
-  // finishes loading afterwards) still takes priority over this guess.
-  //
-  // On a genuinely first-ever visit, PageLoader's /web/splash call is still
-  // in flight when this mounts, so localStorage has no splashData yet — this
-  // ran fine either way. The actual "works after refresh, not on first load"
-  // bug was that this only ever ran ONCE, on mount: if that one attempt
-  // failed (a slow/rate-limited geoip lookup, a hiccup on the first cold
-  // request) nothing ever retried it, so the field was stuck on the "fr"
-  // fallback for the rest of the page's life — until a refresh gave it a
-  // fresh mount and a fresh attempt. Re-running this alongside
-  // prefillFromSplash on "splashDataReady" (guarded so it stops once a
-  // country is actually resolved) closes that gap the same way it was
-  // already closed for email/phone/address above.
+  
   const countryDetectedRef = useRef(false);
   const detectCountryFromIp = useCallback(async () => {
     if (countryDetectedRef.current || isEdited("countryIso2")) return;

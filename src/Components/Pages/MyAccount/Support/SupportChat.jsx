@@ -1,22 +1,22 @@
-"use client"
-import React, { useState, useEffect, useRef } from 'react';
-import { IoSend } from 'react-icons/io5';
-import { FiPlus, FiX } from 'react-icons/fi';
-import { BsClock, BsCheck2 } from 'react-icons/bs';
-import { FaArrowLeft } from 'react-icons/fa';
-import { useTranslation } from 'react-i18next';
-import { BASE_URL, MEDIA_URL } from '../../../API/API';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { IoSend } from "react-icons/io5";
+import { FiPlus, FiX } from "react-icons/fi";
+import { BsClock, BsCheck2 } from "react-icons/bs";
+import { FaArrowLeft } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
+import { BASE_URL, MEDIA_URL } from "../../../API/API";
 
 export default function SupportChat({ ticket, onClose }) {
   const { t } = useTranslation("myaccount");
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
   const [messages, setMessages] = useState([]);
-  const [userAvatar, setUserAvatar] = useState('');
+  const [userAvatar, setUserAvatar] = useState("");
   const [loadedImages, setLoadedImages] = useState({});
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosingTicket, setIsClosingTicket] = useState(false);
@@ -49,13 +49,14 @@ export default function SupportChat({ ticket, onClose }) {
     const el = textareaRef.current;
     if (!el) return;
     const baseHeight = minHeightRef.current || el.offsetHeight;
-    const singleLineHeight = LINE_HEIGHT + TEXTAREA_VERTICAL_PADDING + TEXTAREA_BORDER;
+    const singleLineHeight =
+      LINE_HEIGHT + TEXTAREA_VERTICAL_PADDING + TEXTAREA_BORDER;
     const maxExtra = LINE_HEIGHT * (MAX_VISIBLE_LINES - 1);
-    el.style.height = 'auto';
+    el.style.height = "auto";
     const extra = Math.max(0, el.scrollHeight - singleLineHeight);
     const next = baseHeight + Math.min(extra, maxExtra);
     el.style.height = `${next}px`;
-    el.style.overflowY = extra > maxExtra ? 'auto' : 'hidden';
+    el.style.overflowY = extra > maxExtra ? "auto" : "hidden";
   };
 
   useEffect(() => {
@@ -66,8 +67,8 @@ export default function SupportChat({ ticket, onClose }) {
       }
     };
     measureMinHeight();
-    window.addEventListener('resize', measureMinHeight);
-    return () => window.removeEventListener('resize', measureMinHeight);
+    window.addEventListener("resize", measureMinHeight);
+    return () => window.removeEventListener("resize", measureMinHeight);
     // `loading` is required here — the attach button (and the textarea)
     // only exist in the DOM once the ticket data has loaded and the
     // `!loading && (...)` block below actually renders them. `selectedImage`
@@ -86,36 +87,46 @@ export default function SupportChat({ ticket, onClose }) {
 
   const getToken = () => {
     try {
-      const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
-      return splashData?.user?.token || localStorage.getItem('token') || '';
+      const splashData = JSON.parse(localStorage.getItem("splashData") || "{}");
+      return splashData?.user?.token || localStorage.getItem("token") || "";
     } catch {
-      return '';
+      return "";
     }
   };
 
   const formatMessageTime = (time) => {
-    if (!time) return '';
-    return new Date(Number(time) * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    if (!time) return "";
+    return new Date(Number(time) * 1000).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   useEffect(() => {
     const loadUserAvatar = () => {
       try {
-        const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
-        setUserAvatar(splashData?.user?.profile_picture ? `${MEDIA_URL}${splashData.user.profile_picture}` : '');
+        const splashData = JSON.parse(
+          localStorage.getItem("splashData") || "{}",
+        );
+        setUserAvatar(
+          splashData?.user?.profile_picture
+            ? `${MEDIA_URL}${splashData.user.profile_picture}`
+            : "",
+        );
       } catch {
-        setUserAvatar('');
+        setUserAvatar("");
       }
     };
     loadUserAvatar();
   }, []);
 
   useEffect(() => {
-    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    const ticketId = ticket?.rawId || String(ticket?.id || "").replace("#", "");
     if (!ticketId) return;
 
     fetch(`${BASE_URL}/app/ticket/conversation/${ticketId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
+      headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then((res) => res.json())
       .then((data) => {
@@ -124,37 +135,40 @@ export default function SupportChat({ ticket, onClose }) {
         setMessages(
           (data.data?.messages || []).map((msg) => ({
             id: msg.id,
-            type: msg.from === userId ? 'customer' : 'support',
+            type: msg.from === userId ? "customer" : "support",
             text: msg.message,
             image: msg.attachment ? `${MEDIA_URL}${msg.attachment}` : null,
             time: formatMessageTime(msg.time),
             hasIcon: msg.from !== userId,
             avatar: msg.from === userId,
-          }))
+          })),
         );
       })
-      .catch((err) => console.error('Fetch conversation error:', err))
+      .catch((err) => console.error("Fetch conversation error:", err))
       .finally(() => setLoading(false));
   }, [ticket]);
 
   useEffect(() => {
     if (loading) return;
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
   }, [messages, loading]);
 
   useEffect(() => {
     if (previewImage) {
       const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
+      document.body.style.width = "100%";
 
       return () => {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
+        document.body.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
         window.scrollTo(0, scrollY);
       };
     }
@@ -162,7 +176,7 @@ export default function SupportChat({ ticket, onClose }) {
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       setSelectedImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -176,58 +190,73 @@ export default function SupportChat({ ticket, onClose }) {
     const text = message.trim();
     if (!text && !selectedImageFile) return;
 
-    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    const ticketId = ticket?.rawId || String(ticket?.id || "").replace("#", "");
     const tempId = `local-${Date.now()}`;
 
-    setMessages((prev) => [...prev, {
-      id: tempId,
-      type: 'customer',
-      text,
-      image: selectedImage,
-      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-      avatar: true,
-      status: 'sending',
-    }]);
-    setMessage('');
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        type: "customer",
+        text,
+        image: selectedImage,
+        time: new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        avatar: true,
+        status: "sending",
+      },
+    ]);
+    setMessage("");
     setSelectedImage(null);
     setSelectedImageFile(null);
 
     try {
       const formData = new FormData();
-      formData.append('ticket_id', ticketId);
-      formData.append('type', 'text');
-      formData.append('message', text);
+      formData.append("ticket_id", ticketId);
+      formData.append("type", "text");
+      formData.append("message", text);
       if (selectedImageFile) {
-        formData.append('attachment', selectedImageFile);
+        formData.append("attachment", selectedImageFile);
       }
 
       const res = await fetch(`${BASE_URL}/app/ticket/send/message`, {
-        method: 'POST',
+        method: "POST",
         headers: { Authorization: `Bearer ${getToken()}` },
         body: formData,
       });
       const data = await res.json();
 
-      setMessages((prev) => prev.map((m) => (
-        m.id === tempId
-          ? { ...m, id: data?.data?.id || tempId, status: data?.status ? 'sent' : 'failed' }
-          : m
-      )));
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId
+            ? {
+                ...m,
+                id: data?.data?.id || tempId,
+                status: data?.status ? "sent" : "failed",
+              }
+            : m,
+        ),
+      );
     } catch (err) {
-      console.error('Send message error:', err);
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'failed' } : m)));
+      console.error("Send message error:", err);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: "failed" } : m)),
+      );
     }
   };
 
   const handleCloseTicket = async () => {
-    const ticketId = ticket?.rawId || String(ticket?.id || '').replace('#', '');
+    const ticketId = ticket?.rawId || String(ticket?.id || "").replace("#", "");
     setIsClosingTicket(true);
     try {
       await fetch(`${BASE_URL}/app/ticket/close/${ticketId}`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
     } catch (err) {
-      console.error('Close ticket error:', err);
+      console.error("Close ticket error:", err);
     } finally {
       setIsClosingTicket(false);
       setShowCloseConfirm(false);
@@ -238,7 +267,7 @@ export default function SupportChat({ ticket, onClose }) {
   // Enter sends the message; Shift+Enter is left alone so the textarea's
   // own default behavior inserts a newline instead.
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -472,16 +501,26 @@ export default function SupportChat({ ticket, onClose }) {
           <div className="-mx-8 px-1 pl-5 pr-5 pb-4  border-b border-gray-300">
             <div className="max-w-10xl mx-auto flex items-center justify-between">
               <div className="flex items-start gap-4">
-                <button onClick={onClose} className="text-gray-700 cursor-pointer mt-2 hover:text-black transition-colors">
+                <button
+                  onClick={onClose}
+                  className="text-gray-700 cursor-pointer mt-2 hover:text-black transition-colors"
+                >
                   <FaArrowLeft size={20} />
                 </button>
                 <div>
-                  <h1 className="text-lg text-black font-medium">{t('support.chat.title')}</h1>
-                  <p className="text-sm text-gray-600">{t('support.ticketId')} {ticket?.id || '#3021'}</p>
+                  <h1 className="text-lg text-black font-medium">
+                    {t("support.chat.title")}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {t("support.ticketId")} {ticket?.id || "#3021"}
+                  </p>
                 </div>
               </div>
-              <button onClick={() => setShowCloseConfirm(true)} className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors" >
-                {t('support.chat.closeChat')}
+              <button
+                onClick={() => setShowCloseConfirm(true)}
+                className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors"
+              >
+                {t("support.chat.closeChat")}
               </button>
             </div>
           </div>
@@ -492,28 +531,36 @@ export default function SupportChat({ ticket, onClose }) {
               {/* Date Separator */}
               <div className="flex justify-center">
                 <span className="text-sm text-gray-500 bg-white px-4 py-1 border border-gray-200">
-                  {t('support.chat.dateSeparator')}
+                  {t("support.chat.dateSeparator")}
                 </span>
               </div>
 
               {/* Messages */}
               {messages.map((msg) => (
                 <div key={msg.id}>
-                {msg.type === 'support' ? (
+                  {msg.type === "support" ? (
                     // Support Message (Left Side)
                     <div className="flex items-end gap-2 mb-2">
                       {msg.hasIcon && (
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
-                            <img src="sup.svg" alt="Support icon" className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <img
+                              src="sup.svg"
+                              alt="Support icon"
+                              className="w-4 h-4 sm:w-5 sm:h-5"
+                            />
                           </div>
-                          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{msg.time}</span>
+                          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
+                            {msg.time}
+                          </span>
                         </div>
                       )}
                       <div className="max-w-xl">
                         <div className="text-black border border-gray-300  rounded-bl-sm px-2 py-2 inline-block">
                           {msg.image && (
-                            <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-2' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                            <div
+                              className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-gray-300 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
+                            >
                               {!loadedImages[msg.id] && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -522,7 +569,7 @@ export default function SupportChat({ ticket, onClose }) {
                               <img
                                 src={msg.image}
                                 alt="Attachment"
-                                className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? 'opacity-100' : 'opacity-0'}`}
+                                className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? "opacity-100" : "opacity-0"}`}
                                 onClick={() => setPreviewImage(msg.image)}
                                 onLoad={() => handleImageLoad(msg.id)}
                                 onError={() => handleImageLoad(msg.id)}
@@ -530,7 +577,6 @@ export default function SupportChat({ ticket, onClose }) {
                             </div>
                           )}
                           {msg.text && (
-                          
                             <p className="text-sm leading-relaxed whitespace-pre-wrap">
                               {msg.textKey ? t(msg.textKey) : msg.text}
                             </p>
@@ -538,14 +584,16 @@ export default function SupportChat({ ticket, onClose }) {
                         </div>
                       </div>
                     </div>
-                 ) : (
+                  ) : (
                     // Customer Message (Right Side)
                     <div className="flex justify-end mb-2">
                       <div className="flex items-end gap-2">
                         <div className="max-w-xl">
                           <div className="bg-white  rounded-br-sm px-2 py-2   inline-block border border-gray-300">
                             {msg.image && (
-                              <div className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? 'border-b border-gray-300 pb-2' : ''} ${!loadedImages[msg.id] ? 'min-h-[160px] w-40' : ''}`}>
+                              <div
+                                className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-gray-300 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
+                              >
                                 {!loadedImages[msg.id] && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                                     <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -554,7 +602,7 @@ export default function SupportChat({ ticket, onClose }) {
                                 <img
                                   src={msg.image}
                                   alt="Uploaded"
-                                  className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? 'opacity-100' : 'opacity-0'}`}
+                                  className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? "opacity-100" : "opacity-0"}`}
                                   onClick={() => setPreviewImage(msg.image)}
                                   onLoad={() => handleImageLoad(msg.id)}
                                   onError={() => handleImageLoad(msg.id)}
@@ -584,13 +632,15 @@ export default function SupportChat({ ticket, onClose }) {
                               )}
                             </div>
                             <div className="flex items-center gap-1">
-                              {msg.status === 'sending' && (
+                              {msg.status === "sending" && (
                                 <BsClock className="text-gray-400" size={11} />
                               )}
-                              {msg.status === 'sent' && (
+                              {msg.status === "sent" && (
                                 <BsCheck2 className="text-gray-400" size={13} />
                               )}
-                              <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{msg.time}</span>
+                              <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
+                                {msg.time}
+                              </span>
                             </div>
                           </div>
                         )}
@@ -612,7 +662,7 @@ export default function SupportChat({ ticket, onClose }) {
                 accept="image/*"
                 className="hidden"
               />
-             
+
               {selectedImage ? (
                 <div
                   ref={attachButtonRef}
@@ -645,19 +695,19 @@ export default function SupportChat({ ticket, onClose }) {
                 </button>
               )}
               <div className="flex-1 relative">
-               <textarea
+                <textarea
                   ref={textareaRef}
-                  placeholder={t('support.chat.writeMessage')}
+                  placeholder={t("support.chat.writeMessage")}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   rows={1}
                   style={{
-                    resize: 'none',
-                    overflowY: 'hidden',
-                    lineHeight: '20px',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
+                    resize: "none",
+                    overflowY: "hidden",
+                    lineHeight: "20px",
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
                   }}
                   className="w-full pl-4 py-3 pr-4 mt-1.5 text-black bg-gray-100  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all [&::-webkit-scrollbar]:hidden"
                 />
@@ -676,21 +726,21 @@ export default function SupportChat({ ticket, onClose }) {
 
       {/* Image Preview Modal */}
       {previewImage && (
-        <div 
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-60"
+        <div
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60"
           onClick={() => setPreviewImage(null)}
         >
-          <div className="relative">
+          <div className="relative max-w-[90vw] max-h-[90vh]">
             <button
               onClick={() => setPreviewImage(null)}
-              className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
+              className="absolute -top-2 -right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-2 shadow-lg"
             >
               <FiX size={24} />
             </button>
             <img
               src={previewImage}
               alt="Preview"
-              className="max-w-[500px] max-h-[500px] object-contain "
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
@@ -708,7 +758,7 @@ export default function SupportChat({ ticket, onClose }) {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
-              {t('support.chat.closeConfirm.title')}
+              {t("support.chat.closeConfirm.title")}
             </h3>
             <div className="flex gap-3">
               <button
@@ -716,14 +766,16 @@ export default function SupportChat({ ticket, onClose }) {
                 disabled={isClosingTicket}
                 className="flex-1 py-3 text-sm font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {t('support.chat.closeConfirm.cancel')}
+                {t("support.chat.closeConfirm.cancel")}
               </button>
               <button
                 onClick={handleCloseTicket}
                 disabled={isClosingTicket}
                 className="flex-1 py-3 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
               >
-                {isClosingTicket ? t('support.chat.closeConfirm.closing') : t('support.chat.closeConfirm.confirm')}
+                {isClosingTicket
+                  ? t("support.chat.closeConfirm.closing")
+                  : t("support.chat.closeConfirm.confirm")}
               </button>
             </div>
           </div>

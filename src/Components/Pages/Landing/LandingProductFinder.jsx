@@ -56,21 +56,18 @@ export function LandingProductFinder({ data }) {
   const selectedCareObj = careOptions.find((c) => c.id === selectedCare);
   const concernOptions = selectedCareObj?.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
 
-  // Selecting a pet re-picks the first care option (and its first concern),
-  // same cascading behaviour as html's selectPet().
+  // Selecting a pet just resets the two lower tiers so the user picks the
+  // speciality (and then the need) themselves, instead of the first option
+  // in each list being auto-selected for them.
   const handleSelectPet = (cat) => {
     setSelectedPet(cat.id);
-    const care = cat.sub_categories?.filter((s) => s.type === 'perfect-specificity') || [];
-    const firstCare = care[0] || null;
-    setSelectedCare(firstCare?.id ?? '');
-    const concerns = firstCare?.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
-    setSelectedConcern(concerns[0]?.id ?? '');
+    setSelectedCare('');
+    setSelectedConcern('');
   };
 
   const handleSelectCare = (careObj) => {
     setSelectedCare(careObj.id);
-    const concerns = careObj.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
-    setSelectedConcern(concerns[0]?.id ?? '');
+    setSelectedConcern('');
   };
 
   // Background images array

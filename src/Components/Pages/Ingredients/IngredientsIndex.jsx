@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiX } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
 // Shimmer tile — same size/border rhythm as the real grid button below, so
@@ -15,15 +15,7 @@ function TileShimmer() {
   );
 }
 
-// Ported from .index-section/.search-wrap/.ingredient-grid — search + full
-// ingredient grid, id="ingredient-index" for the rail/detail's
-// scrollIntoView targets. The list itself comes from OurIngredients.jsx's
-// POST {BASE_URL}/ingredient/list call (search included, via `keyword`) —
-// OurIngredients.jsx walks every page of that response itself, so
-// `ingredients` here is always the complete matching set, no "load more".
-// `onSelect` also owns scrolling the page to the detail section (see
-// OurIngredients.jsx's handleSelect) so it lands consistently below the
-// stuck rail whether the pick came from here or from IngredientsRail.jsx.
+
 export default function IngredientsIndex({
   query,
   onQueryChange,
@@ -60,18 +52,24 @@ export default function IngredientsIndex({
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               placeholder={t('index.searchPlaceholder')}
-              className="w-full border-0 bg-transparent outline-none py-[17px] text-[15px]"
+              className="w-full border-0 bg-transparent outline-none py-[17px] text-[15px] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-cancel-button]:hidden"
             />
-            <span className="text-[11px] tracking-[.14em] uppercase text-[#6f6e68] shrink-0">{t('index.search')}</span>
+            {query ? (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                aria-label={t('index.search')}
+                className="shrink-0 cursor-pointer p-1 text-[#6f6e68]"
+              >
+                <FiX className="w-4 h-4" />
+              </button>
+            ) : (
+              <span className="text-[11px] tracking-[.14em] uppercase text-[#6f6e68] shrink-0">{t('index.search')}</span>
+            )}
           </div>
         </div>
 
-        {/* grid-cols-2 (not 1) below 641px — on a small screen with a lot of
-            ingredients, one full-width row per item meant a very long
-            scroll just to get past this list. 2 columns halves that.
-            min-[641px] already was 2 (now redundant, dropped) and
-            min-[1001px]:grid-cols-4 is untouched, so nothing changes on
-            larger screens. */}
+       
         <div className="grid grid-cols-2 min-[1001px]:grid-cols-4 border-t border-l border-[#d9d8d1]">
           {showShimmer ? (
             Array.from({ length: 36 }).map((_, i) => <TileShimmer key={i} />)

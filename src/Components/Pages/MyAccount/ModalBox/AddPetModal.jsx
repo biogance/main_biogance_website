@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { BASE_URL, MEDIA_URL } from '../../../API/API';
 
 // ── Single Select Custom Dropdown ───────────────────────────────────────────
-const CustomDropdown = ({ label, options, value, onChange, placeholder = "", insideModal = false }) => {
+const CustomDropdown = ({ label, options, value, onChange, placeholder = "", insideModal = false, error = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -28,10 +28,10 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "", ins
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between px-4 py-3
-          bg-gray-50 border border-gray-200  text-left cursor-pointer
+          bg-gray-50 border text-left cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-gray-300
           transition-all duration-200
-          ${isOpen ? 'border-gray-400 shadow-sm' : 'hover:border-gray-300'}
+          ${error ? 'border-red-500' : isOpen ? 'border-gray-400 shadow-sm' : 'border-gray-200 hover:border-gray-300'}
         `}
       >
         <span className={!selectedOption ? "text-gray-400" : "text-black"}>
@@ -156,7 +156,7 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
 };
 
 // ── Age Picker with Day Selection ───────────────────────────────────────────
-const AgePicker = ({ value, onChange }) => {
+const AgePicker = ({ value, onChange, error = false }) => {
   const { t } = useTranslation("myaccount");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -270,7 +270,9 @@ const AgePicker = ({ value, onChange }) => {
           placeholder={t('addPet.selectBirthdate')}
           value={value ? t('addPet.yearsOld', { years: calculateAge(value) }) : ''}
           onClick={() => setIsOpen(true)}
-          className="w-full px-4 text-black py-3 pr-10 bg-gray-50 border border-gray-200  cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+          className={`w-full px-4 text-black py-3 pr-10 bg-gray-50 border cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400 ${
+            error ? 'border-red-500' : 'border-gray-200'
+          }`}
         />
         <IoCalendarOutline className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
       </div>
@@ -399,6 +401,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   };
 
   const [formData, setFormData] = useState(emptyForm);
+  const [errors, setErrors] = useState({});
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -430,6 +433,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     } else if (isOpen && !petToEdit) {
       setFormData(emptyForm);
     }
+    setErrors({});
   }, [isOpen, petToEdit]);
 
   useEffect(() => {
@@ -457,7 +461,23 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     } catch { return ''; }
   };
 
+  // Required-field check — mirrors the fields the API actually needs
+  // (special needs stays optional, per its "(Optional)" label). Run before
+  // the request fires so a missing field never even reaches the API.
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = t('addPet.errors.nameRequired');
+    if (!formData.category) newErrors.category = t('addPet.errors.categoryRequired');
+    if (!formData.breed) newErrors.breed = t('addPet.errors.breedRequired');
+    if (!formData.age) newErrors.age = t('addPet.errors.ageRequired');
+    if (!formData.gender) newErrors.gender = t('addPet.errors.genderRequired');
+    if (!formData.weight) newErrors.weight = t('addPet.errors.weightRequired');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
     setIsSubmitting(true);
     try {
       const body = new FormData();
@@ -499,6 +519,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => (prev[field] ? { ...prev, [field]: '' } : prev));
   };
 
   const handleImageUpload = (e) => {
@@ -581,6 +602,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
       image: null,
       imageFile: null
     });
+    setErrors({});
     onSuccess?.();
     onClose();
   };
@@ -675,46 +697,69 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
                         placeholder={t('addPet.petNamePlaceholder')}
                         value={formData.name}
                         onChange={(e) => handleChange('name', e.target.value)}
-                        className="w-full px-4 py-3 text-black bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                        className={`w-full px-4 py-3 text-black bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400 ${
+                          errors.name ? 'border-red-500' : 'border-gray-200'
+                        }`}
                       />
+                      {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
                     </div>
 
-                    <CustomDropdown
-                      label={t('addPet.category')}
-                      placeholder={t('addPet.selectCategory')}
-                      options={categoryOptions}
-                      value={formData.category}
-                      onChange={(val) => handleChange('category', val)}
-                    />
+                    <div>
+                      <CustomDropdown
+                        label={t('addPet.category')}
+                        placeholder={t('addPet.selectCategory')}
+                        options={categoryOptions}
+                        value={formData.category}
+                        onChange={(val) => handleChange('category', val)}
+                        error={!!errors.category}
+                      />
+                      {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
+                    </div>
 
-                    <CustomDropdown
-                      label={t('addPet.breed')}
-                      placeholder={t('addPet.selectBreed')}
-                      options={breedOptions}
-                      value={formData.breed}
-                      onChange={(val) => handleChange('breed', val)}
-                    />
+                    <div>
+                      <CustomDropdown
+                        label={t('addPet.breed')}
+                        placeholder={t('addPet.selectBreed')}
+                        options={breedOptions}
+                        value={formData.breed}
+                        onChange={(val) => handleChange('breed', val)}
+                        error={!!errors.breed}
+                      />
+                      {errors.breed && <p className="mt-1 text-xs text-red-500">{errors.breed}</p>}
+                    </div>
 
-                    <AgePicker
-                      value={formData.age}
-                      onChange={(val) => handleChange('age', val)}
-                    />
+                    <div>
+                      <AgePicker
+                        value={formData.age}
+                        onChange={(val) => handleChange('age', val)}
+                        error={!!errors.age}
+                      />
+                      {errors.age && <p className="mt-1 text-xs text-red-500">{errors.age}</p>}
+                    </div>
 
-                    <CustomDropdown
-                      label={t('addPet.gender')}
-                      placeholder={t('addPet.selectGender')}
-                      options={genderOptions}
-                      value={formData.gender}
-                      onChange={(val) => handleChange('gender', val)}
-                    />
+                    <div>
+                      <CustomDropdown
+                        label={t('addPet.gender')}
+                        placeholder={t('addPet.selectGender')}
+                        options={genderOptions}
+                        value={formData.gender}
+                        onChange={(val) => handleChange('gender', val)}
+                        error={!!errors.gender}
+                      />
+                      {errors.gender && <p className="mt-1 text-xs text-red-500">{errors.gender}</p>}
+                    </div>
 
-                    <CustomDropdown
-                      label={t('addPet.weight')}
-                      placeholder={t('addPet.selectWeight')}
-                      options={weightOptions}
-                      value={formData.weight}
-                      onChange={(val) => handleChange('weight', val)}
-                    />
+                    <div>
+                      <CustomDropdown
+                        label={t('addPet.weight')}
+                        placeholder={t('addPet.selectWeight')}
+                        options={weightOptions}
+                        value={formData.weight}
+                        onChange={(val) => handleChange('weight', val)}
+                        error={!!errors.weight}
+                      />
+                      {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight}</p>}
+                    </div>
 
                     <div className="md:col-span-2">
                       <MultiSelectDropdown
@@ -783,7 +828,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
 
       {/* Success Modal */}
       {isSuccessModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-70">
           <div className="bg-white shadow-2xl w-full max-w-xl p-8">
             <div className="flex justify-center mb-6">
               <img src="successpet.svg" alt="" />
@@ -802,7 +847,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
 
             <button
               onClick={handleCloseAll}
-              className="w-full px-6 py-3 bg-black text-white font-medium hover:bg-gray-800 transition-colors"
+              className="w-full px-6 py-3 bg-black cursor-pointer text-white font-medium hover:bg-gray-800 transition-colors"
             >
               {t('addPet.success.okay')}
             </button>
