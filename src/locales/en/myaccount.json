@@ -82,6 +82,14 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "addPetButton": "Add Pet",
+    "errors": {
+      "nameRequired": "Please enter pet name.",
+      "categoryRequired": "Please choose category.",
+      "breedRequired": "Please choose breed.",
+      "ageRequired": "Please select age.",
+      "genderRequired": "Please choose gender.",
+      "weightRequired": "Please choose weight."
+    },
     "months": {
       "january": "January",
       "february": "February",

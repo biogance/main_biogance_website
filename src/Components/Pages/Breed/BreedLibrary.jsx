@@ -107,6 +107,16 @@ function SearchIcon() {
   );
 }
 
+// Clear ("x") glyph shown in place of the "SEARCH" label once the search
+// box has text in it — same stroke convention as SearchIcon above.
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-none stroke-current stroke-[1.8]">
+      <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // A categories[] entry used to always embed its full category as a nested
 // `.category` object; the API now sometimes sends just `.category_id`
 // instead, so this falls back to looking that id up in a splashData-derived
@@ -435,6 +445,16 @@ export default function BreedLibrary({ onOpenBreed }) {
     searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 1000);
   };
 
+  // Clears the search box itself — the small "x" that replaces the
+  // "SEARCH" label once there's text, so results settle back to the
+  // unfiltered list right away instead of waiting out the debounce.
+  function handleClearSearch() {
+    clearTimeout(searchTimerRef.current);
+    setSearchInput('');
+    setDebouncedSearch('');
+    setIsSearchPending(false);
+  }
+
   function switchSpecies(next) {
     setSpecies(next);
     setSearchInput('');
@@ -471,11 +491,7 @@ export default function BreedLibrary({ onOpenBreed }) {
 
   return (
     <section className="bg-[#f6f6f4] border-b border-[#d8d8d4] pt-[clamp(76px,8vw,118px)]" id="library">
-      {/* No max-w-[1840px]/mx-auto on this section's rows — same zoom/
-          viewport-width fix as BreedHero.jsx/IngredientsHero.jsx's siblings:
-          that cap only centers past 1840px, leaving equal margins on both
-          sides instead of staying flush left/right once the viewport
-          (zooming out effectively widens it) crosses that width. */}
+     
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1181px]:grid-cols-[.82fr_1.18fr] gap-[clamp(34px,4vw,64px)] items-end mb-[42px]">
         <div>
           <span className="flex items-center gap-3 text-[10px] tracking-[.22em] uppercase before:content-[''] before:w-[34px] before:h-px before:bg-current">
@@ -493,22 +509,27 @@ export default function BreedLibrary({ onOpenBreed }) {
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={t('library.searchPlaceholder')}
-            className="w-full border-0 bg-transparent outline-none py-4 text-[15px]"
+            className="w-full border-0 bg-transparent outline-none py-4 text-[15px] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-cancel-button]:hidden"
           />
-          <span className="text-[9px] tracking-[.15em] uppercase shrink-0">{t('library.search')}</span>
+          {searchInput ? (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              aria-label={t('library.search')}
+              className="shrink-0 cursor-pointer p-1"
+            >
+              <CloseIcon />
+            </button>
+          ) : (
+            <span className="text-[9px] tracking-[.15em] uppercase shrink-0">{t('library.search')}</span>
+          )}
         </div>
       </div>
 
       
       <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-b border-[#d8d8d4]">
         <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
-          {/* min-w-0 — a flex item's default min-width is its content's
-              natural width, which overrides overflow-x-auto and makes the
-              *whole row* (and so the page) scroll horizontally instead of
-              just this tab strip once there are enough species tabs (or
-              long enough labels) to not fit. min-w-0 lets it actually
-              shrink so its own overflow-x-auto takes over, scoped to just
-              these tabs, on small/medium screens. */}
+          
           <div className="flex overflow-x-auto min-w-0">
             {speciesTabs.map((tab) => (
               <button

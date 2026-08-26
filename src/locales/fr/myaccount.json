@@ -81,6 +81,14 @@
     "cancel": "Annuler",
     "apply": "Appliquer",
     "addPetButton": "Ajouter un animal",
+    "errors": {
+      "nameRequired": "Veuillez saisir le nom de l'animal.",
+      "categoryRequired": "Veuillez choisir une catégorie.",
+      "breedRequired": "Veuillez choisir une race.",
+      "ageRequired": "Veuillez sélectionner l'âge.",
+      "genderRequired": "Veuillez choisir le genre.",
+      "weightRequired": "Veuillez choisir le poids."
+    },
     "months": {
       "january": "Janvier",
       "february": "Février",

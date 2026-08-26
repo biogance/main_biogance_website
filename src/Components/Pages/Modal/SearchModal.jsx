@@ -268,7 +268,7 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-6 cursor-pointer right-6 text-gray-500 hover:text-gray-800 transition-colors z-10"
+          className="absolute top-3 right-5 lg:top-6 lg:right-6 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors z-10"
         >
           <IoClose className="w-7 h-7" />
         </button>
