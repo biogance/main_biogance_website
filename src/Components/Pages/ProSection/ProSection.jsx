@@ -112,21 +112,12 @@ export default function ProSection() {
   const footerVisualMedia = useSplashMedia("pro_footer");
   const pdfData = useSplashMedia("pro_pdf");
   const catalogueFilename = "biogance-professional-catalogue.pdf";
-  // Routed through the same-origin /api/download-file proxy rather than a
-  // direct link to MEDIA_URL (CloudFront): a cross-origin <a download>
-  // is silently ignored by browsers, so it just opens the PDF in a new tab
-  // instead of downloading it. The proxy fetches it server-side and replies
-  // with Content-Disposition: attachment, so the plain <a download> below
-  // works natively. The static /public fallback is already same-origin, so
-  // it's used directly without going through the proxy.
+  
   const catalogueUrl = pdfData?.media
     ? `/api/download-file?${new URLSearchParams({ path: pdfData.media, filename: catalogueFilename }).toString()}`
     : "/biogance-professional-catalogue.pdf";
 
-  // "Choose your route" / "Download catalogue" are plain #hash anchors —
-  // without this they jump instantly. Scoped to this page's lifetime
-  // (reverted on unmount) rather than touching global CSS, since no other
-  // page in the app uses in-page anchor links like this.
+  
   useEffect(() => {
     const prev = document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "smooth";
@@ -137,12 +128,7 @@ export default function ProSection() {
 
   return (
     <>
-      {/* Rendered outside .pro-landing on purpose: that wrapper sets its own
-          font-family/color via CSS custom properties below, and since Navbar
-          is a real child component (not styled-jsx-scoped content), those
-          properties would otherwise inherit straight into Navbar's own text
-          through normal CSS inheritance, overriding its intended site-wide
-          styling. */}
+    
       <Navbar bgWhite={true} />
 
       <div className="pro-landing">
@@ -527,22 +513,13 @@ export default function ProSection() {
           </main>
         </div>
 
-        <Footer />
-
         <style jsx>{`
           @keyframes pro-media-spin {
             to {
               transform: rotate(360deg);
             }
           }
-          /* SplashMedia is its own component function, so its <img>/<video>
-           never receive this file's styled-jsx scope attribute — :global()
-           is required here or these rules silently never match anything.
-           On small/mobile screens the hero-visual/editorial-visual boxes
-           go tall and narrow (single-column stack), so object-fit:cover
-           was cropping hard into just the center of the photo — contain
-           keeps the whole image visible there instead, at the cost of
-           some letterboxing (the existing gradient shows through the gaps). */
+          
           :global(.pro-splash-media) {
             object-fit: cover;
           }
@@ -1381,10 +1358,7 @@ export default function ProSection() {
             border-color: var(--ink);
           }
 
-          /* Small/medium screens (small MacBook Air/Pro widths, tablets,
-           phones) — gentler heading sizes than the desktop clamp()s above,
-           which are tuned for wide screens and were left untouched there.
-           Kept as its own pass so it doesn't touch anything above 1440px. */
+         
           @media (max-width: 1440px) {
             .hero h1 {
               font-size: clamp(34px, 4vw, 58px);
@@ -1415,11 +1389,7 @@ export default function ProSection() {
               border-bottom: 1px solid var(--line);
             }
             .hero-visual {
-              /* Was 520px — shorter than the hero-card's actual content
-               height (~578px measured on a 390px-wide phone: kicker-row +
-               title + the 2x2 seal-grid), so overflow:hidden was clipping
-               the card's top (the heading text) off. Tall enough now to
-               clear card height + its bottom offset with room to spare. */
+            
               min-height: 680px;
             }
             .signature-grid {
@@ -1541,6 +1511,8 @@ export default function ProSection() {
           }
         `}</style>
       </div>
+
+      <Footer />
     </>
   );
 }

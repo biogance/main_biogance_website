@@ -9,6 +9,7 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
+import { lockBodyScroll, unlockBodyScroll } from "../Onboarding/ScrollLock";
 
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -1162,8 +1163,27 @@ export default function Ambasseder() {
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
-    document.body.style.overflow = "";
   };
+
+  // Was a raw `document.body.style.overflow = "hidden"` set where the modal
+  // opens below and unset only here — fine as long as the user actually
+  // clicks the modal's own close button, but if they instead navigate away
+  // first (a Navbar link, browser back), this component unmounts with the
+  // modal still "open" and nothing ever resets it: `overflow: hidden` stays
+  // stuck on document.body forever, since Next.js keeps the same <body>
+  // across client-side route changes. That's exactly what made
+  // ContactUs.jsx's modal (opened later from Footer.jsx, on some unrelated
+  // page) render distorted — its own lockBodyScroll()/unlockBodyScroll()
+  // call assumes a clean starting point. Using that same shared,
+  // ref-counted lock here — tied to showSuccessModal via an effect instead
+  // of set/cleared by hand in two separate event handlers — guarantees the
+  // cleanup runs on unmount too.
+  useEffect(() => {
+    if (showSuccessModal) {
+      lockBodyScroll();
+      return () => unlockBodyScroll();
+    }
+  }, [showSuccessModal]);
 
   const [phoneIso2, setPhoneIso2] = useState("fr");
   const phoneCountryEditedRef = useRef(false);
@@ -1487,7 +1507,6 @@ export default function Ambasseder() {
       }
 
       setShowSuccessModal(true);
-      document.body.style.overflow = "hidden";
       setValues({});
       setChecks({
         has_instagram: false,
@@ -2081,8 +2100,6 @@ export default function Ambasseder() {
           </section>
         </main>
       </div>
-
-      <Footer />
 
       <style jsx>{`
         .ambassador-landing {
@@ -2800,6 +2817,7 @@ export default function Ambasseder() {
           grid-template-columns: 20px minmax(0, 1fr);
           gap: 10px;
           align-items: start;
+          cursor: pointer;
           padding: 13px 0;
           border-bottom: 1px solid var(--line-soft);
         }
@@ -2809,6 +2827,7 @@ export default function Ambasseder() {
           min-height: auto;
           margin-top: 2px;
           accent-color: var(--ink);
+            cursor: pointer;
         }
         .checkbox-row :global(label) {
           font-size: 13px;
@@ -2816,6 +2835,7 @@ export default function Ambasseder() {
           color: var(--charcoal);
           letter-spacing: 0;
           text-transform: none;
+            cursor: pointer;
         }
 
         .platform-intro {
@@ -2879,9 +2899,7 @@ export default function Ambasseder() {
           background: var(--white);
         }
 
-        /* .dynamic-note styles the "note" field type — no program in the
-           mockup's own data actually uses a note field, but the CSS (and
-           the renderField() branch it belongs to) is ported 1:1 regardless. */
+       
         .dynamic-note {
           grid-column: 1 / -1;
           padding: 18px 20px;
@@ -2895,6 +2913,7 @@ export default function Ambasseder() {
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
+          font-size: 11px;
           align-items: center;
           padding-top: 24px;
           border-top: 1px solid var(--line-soft);
@@ -3202,6 +3221,9 @@ export default function Ambasseder() {
         }
       `}</style>
       </div>
+
+     
+      <Footer />
     </>
   );
 }

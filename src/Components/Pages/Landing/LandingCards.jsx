@@ -1228,7 +1228,7 @@ export default function PopularProducts({
                     <button
                       onClick={() => scroll("prev")}
                       disabled={!canScrollLeft}
-                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 lg:w-10 lg:h-10  flex items-center justify-center transition-colors ${
                         canScrollLeft
                           ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
                           : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
@@ -1239,7 +1239,7 @@ export default function PopularProducts({
                     <button
                       onClick={() => scroll("next")}
                       disabled={!canScrollRight}
-                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 lg:w-10 lg:h-10  flex items-center justify-center transition-colors ${
                         canScrollRight
                           ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
                           : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"

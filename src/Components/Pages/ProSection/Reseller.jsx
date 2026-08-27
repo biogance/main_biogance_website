@@ -9,6 +9,7 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getPhoneValidationErrorCode } from "../../../utils/phoneValidation";
+import { lockBodyScroll, unlockBodyScroll } from "../Onboarding/ScrollLock";
 
 // Ported 1:1 from the "contact distributeurs & revendeurs" reseller mockup —
 // same fonts/colors/layout, scoped to this component via styled-jsx so it
@@ -297,10 +298,7 @@ export default function Reseller() {
     };
   }, []);
 
-  // Default the phone dial-code to the visitor's own country on first load,
-  // same /api/visitor-locale geoip lookup CheckOut.jsx uses — falls back to
-  // the "fr" default above if it fails. Never overrides a country the user
-  // already picked themselves (phoneCountryEditedRef).
+ 
   const phoneCountryEditedRef = useRef(false);
   useEffect(() => {
     let cancelled = false;
@@ -317,9 +315,6 @@ export default function Reseller() {
       return;
     }
 
-    // Firefox ETP / uBlock can block fetch() to same-origin API routes with
-    // geo-related path segments — XHR goes through a different pipeline and
-    // isn't caught by the same filter lists (same fallback as CheckOut.jsx).
     const fetchLocaleViaXhr = () =>
       new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -410,23 +405,25 @@ export default function Reseller() {
     (overallComplete.filter(Boolean).length / overallComplete.length) * 100
   );
 
-  // Single source of truth for both the tabs and the accordions: clicking
-  // either one toggles the same `openIndex`, so only one panel is ever open.
-  // Just toggles in place — no auto-scroll, so switching tabs doesn't yank
-  // the page away from wherever the user was looking.
+  
   const handleStepClick = (index) => () => {
     setOpenIndex((prev) => (prev === index ? null : index));
   };
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  
+  useEffect(() => {
+    if (showSuccessModal) {
+      lockBodyScroll();
+      return () => unlockBodyScroll();
+    }
+  }, [showSuccessModal]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Custom validation instead of native `required` — the 5 fields below
-    // no longer carry the `required` attribute (see their JSX), so this is
-    // the only thing gating submission for them, and it drives the red
-    // border/message UI instead of the browser's own validation popup.
+    
     const newErrors = {};
     if (!fields.company.trim()) newErrors.company = t("errors.company");
     if (!fields.businessType.trim()) newErrors.businessType = t("errors.businessType");
@@ -450,9 +447,7 @@ export default function Reseller() {
       return;
     }
 
-    // country_code: dial code alone ("+33"). phone: the raw number alone.
-    // phone_number: the two combined — same three pieces ResellerPro.jsx
-    // sends, just under swapped phone/phone_number names.
+    
     const dialCode = getDialCodeByIso2(phoneIso2);
     const interestValue = INTEREST_VALUES.filter((value) => interests[value])
       .map((value) => t(`interests.${value}`))
@@ -493,7 +488,6 @@ export default function Reseller() {
       }
 
       setShowSuccessModal(true);
-      document.body.style.overflow = "hidden";
       setFields({
         company: "",
         businessType: "",
@@ -518,17 +512,11 @@ export default function Reseller() {
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
-    document.body.style.overflow = "";
   };
 
   return (
     <>
-      {/* Rendered outside .reseller-landing on purpose: that wrapper sets its
-          own font-family/color via CSS custom properties below, and since
-          Navbar is a real child component (not styled-jsx-scoped content),
-          those properties would otherwise inherit straight into Navbar's
-          own text through normal CSS inheritance, overriding its intended
-          site-wide styling. */}
+     
       <Navbar bgWhite={true} />
 
       {showSuccessModal && (
@@ -1055,8 +1043,6 @@ export default function Reseller() {
           </section>
         </main>
       </div>
-
-      <Footer />
 
       <style jsx>{`
         .reseller-landing {
@@ -1874,12 +1860,14 @@ export default function Reseller() {
           border: 1px solid var(--line);
           background: var(--soft);
           color: #535353;
+          cursor: pointer;
           font-size: 12px;
           line-height: 1.6;
         }
         .consent-box :global(input) {
           margin-top: 2px;
           accent-color: var(--ink);
+           cursor: pointer;
         }
 
         .form-actions {
@@ -2335,6 +2323,9 @@ export default function Reseller() {
         }
       `}</style>
       </div>
+
+      
+      <Footer />
     </>
   );
 }
