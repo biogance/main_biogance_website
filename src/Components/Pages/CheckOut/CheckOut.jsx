@@ -238,6 +238,24 @@ const setVoucherState = (state) =>
   localStorage.setItem(VOUCHER_KEY, JSON.stringify(state));
 const removeVoucherState = () => localStorage.removeItem(VOUCHER_KEY);
 
+// Promo code — same cross-page persistence as the voucher above. Unlike
+// the voucher, `appliedPromo` used to be plain useState(null) here *and*
+// in ModalAddToCart.jsx with nothing tying the two together, so a promo
+// code applied in the cart modal was simply gone once the user reached
+// this page: a fresh `useState(null)` with no memory of it. Same
+// localStorage-backed read/write pair, same key contract as ModalAddToCart.jsx.
+const PROMO_KEY = "cartPromoState";
+const getPromoState = () => {
+  try {
+    return JSON.parse(localStorage.getItem(PROMO_KEY) || "null");
+  } catch {
+    return null;
+  }
+};
+const setPromoState = (state) =>
+  localStorage.setItem(PROMO_KEY, JSON.stringify(state));
+const removePromoState = () => localStorage.removeItem(PROMO_KEY);
+
 /* ────────────────────────────────────────────────────────────────────────
    CHANGE 1: CustomDropdown — same windowed design as ModalAddToCart.jsx
    ──────────────────────────────────────────────────────────────────────── */
@@ -1857,13 +1875,15 @@ function OrderSummary({
   });
   const [createMoreHovered, setCreateMoreHovered] = useState(false);
 
-  // Promo code — exact same states as ModalAddToCart
+  // Promo code — exact same states as ModalAddToCart, except appliedPromo
+  // now reads whatever ModalAddToCart.jsx last saved (see PROMO_KEY above)
+  // instead of always starting blank on this page.
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoInput, setPromoInput] = useState("");
   const [promoHovered, setPromoHovered] = useState(false);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState(null);
-  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [appliedPromo, setAppliedPromo] = useState(() => getPromoState());
 
   // Delivery method
   const [deliveryMethod, setDeliveryMethod] = useState("home");
@@ -1949,16 +1969,23 @@ function OrderSummary({
     }
   }, []);
 
-  // Reset voucher state if cart becomes empty
+  
+  const hadItemsRef = useRef(false);
   useEffect(() => {
-    if (items.length === 0) {
-      removeVoucherState();
-      setLoggedVoucherApplied(false);
-      setAppliedVoucherOff(0);
-      setSelectedPill(null);
-      setLoggedVoucherInput("");
-      setVoucherPoints(null);
+    if (items.length > 0) {
+      hadItemsRef.current = true;
+      return;
     }
+    if (!hadItemsRef.current) return;
+    removeVoucherState();
+    setLoggedVoucherApplied(false);
+    setAppliedVoucherOff(0);
+    setSelectedPill(null);
+    setLoggedVoucherInput("");
+    setVoucherPoints(null);
+    removePromoState();
+    setAppliedPromo(null);
+    hadItemsRef.current = false;
   }, [items.length]);
 
   // Fetch voucher list — same as ModalAddToCart
@@ -2125,7 +2152,9 @@ function OrderSummary({
         setPromoLoading(false);
         return;
       }
-      setAppliedPromo({ code, off: data.data?.off || 0 });
+      const applied = { code, off: data.data?.off || 0 };
+      setAppliedPromo(applied);
+      setPromoState(applied);
       setPromoInput("");
     } catch {
       setPromoError(t("errorSomethingWentWrong"));
@@ -2135,6 +2164,7 @@ function OrderSummary({
 
   const handleRemovePromo = () => {
     setAppliedPromo(null);
+    removePromoState();
     setPromoError(null);
     setPromoInput("");
     fetchVouchers();
@@ -3214,6 +3244,7 @@ function OrderSummary({
                     fontSize: "11px",
                     fontWeight: 600,
                     color: "#111",
+                    backgroundColor:"#fff",
                     fontFamily: FONT,
                   }}
                 >
