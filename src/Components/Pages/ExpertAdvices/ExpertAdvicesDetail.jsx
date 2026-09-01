@@ -10,7 +10,7 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import ModalAddToCart from "../Modal/ModalAddToCart";
 import ShareModal from "../Modal/ShareModal";
-import { LuPackage, LuShare2, LuUser, LuUserRoundPen } from "react-icons/lu";
+import { LuPackage, LuShare2, LuHeart, LuUser, LuUserRoundPen } from "react-icons/lu";
 import { FiChevronLeft, FiChevronRight, FiShare2 } from "react-icons/fi";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
@@ -19,8 +19,7 @@ import { mergeCartItem } from "../../../utils/cartStorage";
 import { sanitizeSeoKeyword, fetchBlogDetail } from "../../../utils/seoKeyword";
 import { startTopLoader } from "../TopLoader";
 import { FaRegHourglassHalf, FaRegCircleUser } from "react-icons/fa6";
-import { FaArrowLeft, FaRegUserCircle } from "react-icons/fa";
-import { MdOutlineUpdate, MdUpdate } from "react-icons/md";
+import { FaArrowLeft, FaRegUserCircle, FaHeart } from "react-icons/fa";
 import { IoHourglassOutline } from "react-icons/io5";
 import { SlUser } from "react-icons/sl";
 import { PiShareFat, PiShareFatBold, PiUser, PiUserLight } from "react-icons/pi";
@@ -315,6 +314,36 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!blog?.id) return;
+    setSaved(!!blog.favorites_exists);
+  }, [blog?.id]);
+
+  const handleSave = async (e) => {
+    e.stopPropagation();
+    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+    const token = loginData?.data?.token;
+    if (!token) { toast.error(t("loginToSave", "Please log in to save articles.")); return; }
+    if (saving) return;
+    setSaving(true);
+    const next = !saved;
+    setSaved(next);
+    try {
+      await axios.post(
+        `${BASE_URL}/user/blog/favorite`,
+        { blog_id: blog.id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    } catch {
+      setSaved(!next);
+      toast.error(t("somethingWentWrong"));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // This component stays mounted across /advices/[keyword] navigations (only
   // seoKeyword changes), so both a related-card click and a browser back/
@@ -664,14 +693,28 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 <span className="hidden sm:inline">{t("backTo", { label: backInfo.label })}</span>
                 <span className="sm:hidden">{t("backTo", { label: backInfo.shortLabel })}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setShareOpen(true)}
-                className="sm:hidden flex text-sm items-center gap-1.5 text-gray-900 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0"
-              >
-            <LuShare2 size={16} />
-                {t("share")}
-              </button>
+              <div className="sm:hidden flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(true)}
+                  className="flex text-sm items-center gap-1.5 text-gray-900 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0"
+                >
+                  <LuShare2 size={16} />
+                  {t("share")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex text-sm items-center gap-1.5 text-gray-900 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0 disabled:opacity-50"
+                  aria-label={saved ? t("unsave", "Unsave article") : t("save", "Save article")}
+                >
+                  {saved
+                    ? <FaHeart size={14} className="text-gray-900" />
+                    : <LuHeart size={15} />}
+                  {saved ? t("saved", "Saved") : t("save", "Save")}
+                </button>
+              </div>
             </div>
           {getBlogTopicTagsFull(blog, isFr).length > 0 && (
               <div className="flex flex-wrap gap-2 mb-5">
@@ -706,17 +749,6 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 <IoHourglassOutline size={16} className="text-gray-700 mb-0.4" />
                 {t("minRead", { time: blog?.reading_time || "0" })}
               </span>
-              {blog?.updated_at && (
-                <span className="flex items-center gap-1">
-                  <MdUpdate size={18} className="text-gray-700" />
-                  {t("updatedOn", {
-                    date: new Date(blog.updated_at).toLocaleDateString(
-                      isFr ? "fr-FR" : "en-GB",
-                      { day: "numeric", month: "long", year: "numeric" },
-                    ),
-                  })}
-                </span>
-              )}
               <button
                 type="button"
                 onClick={() => setShareOpen(true)}
@@ -724,6 +756,18 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               >
                 <LuShare2 size={16} />
                 {t("share")}
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="hidden sm:flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-none p-0 disabled:opacity-50"
+                aria-label={saved ? t("unsave", "Unsave article") : t("save", "Save article")}
+              >
+                {saved
+                  ? <FaHeart size={15} className="text-gray-900" />
+                  : <LuHeart size={16} />}
+                {saved ? t("saved", "Saved") : t("save", "Save")}
               </button>
             </div>
           </div>

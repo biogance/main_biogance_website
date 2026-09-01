@@ -35,10 +35,10 @@ export default function BreedFilterSelect({ label, value, options, onChange }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-2 border-0 border-b border-[#9b9b96] bg-transparent py-[9px] px-2 text-left text-[14px] cursor-pointer"
+        className="w-full flex items-center justify-between gap-2 border-0 border-b border-[#9b9b96] bg-transparent py-2 px-0 text-left text-[11px] tracking-[.08em] uppercase cursor-pointer"
       >
         <span>{active.label}</span>
-        <span className={`text-[10px] shrink-0 transition-transform duration-200 ${open ? '-rotate-180' : ''}`}>▾</span>
+        <span className={`text-[8px] shrink-0 transition-transform duration-200 ${open ? '-rotate-180' : ''}`}>▾</span>
       </button>
 
       <ul
@@ -58,7 +58,7 @@ export default function BreedFilterSelect({ label, value, options, onChange }) {
                 onChange(o.value);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-[10px] text-[13px] cursor-pointer transition-colors duration-150 hover:bg-black hover:text-white ${
+              className={`w-full text-left px-3 py-[10px] text-[11px] tracking-[.06em] uppercase cursor-pointer transition-colors duration-150 hover:bg-black hover:text-white ${
                 o.value === value ? 'bg-black text-white' : 'bg-white text-black'
               }`}
             >

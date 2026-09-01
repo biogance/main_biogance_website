@@ -305,6 +305,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
               <div style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
                 {universes.map((universe) => {
                   const families = (universe.sub_categories || []).filter(s => s.type === 'family');
+                  if (families.length === 0) return null;
                   return (
                     <div key={universe.id}>
                       <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '0.5px solid #dadada' }}>
@@ -409,6 +410,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-8">
               {universes.map((universe) => {
                 const families = (universe.sub_categories || []).filter(s => s.type === 'family');
+                if (families.length === 0) return null;
                 return (
                   <div key={universe.id} className="flex flex-col min-w-0">
                     <h3 className="text-[11px] font-bold text-black uppercase tracking-widest mb-3 pb-2" style={{ borderBottom: '0.5px solid #dddddd' }}>

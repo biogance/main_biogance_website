@@ -199,7 +199,9 @@ export default function BreedLibrary({ onOpenBreed }) {
   // exactly what gets sent as `collection_ids` below (same
   // categories-list-provides-the-id convention ExpertAdvices.jsx's
   // collection_id and Footer.jsx's category filtering already use).
-  const speciesTabs = useMemo(() => {
+  const [tabCounts, setTabCounts] = useState({});
+
+  const allSpeciesTabs = useMemo(() => {
     if (apiCategories?.length) {
       return apiCategories.map((cat) => ({
         key: resolveSpeciesKey(cat),
@@ -207,14 +209,39 @@ export default function BreedLibrary({ onOpenBreed }) {
         label: (isFrench && cat.french_name ? cat.french_name : cat.name) || '',
       }));
     }
-    // Falls back to the static Dogs/Cats pair (no real id yet) until the API
-    // categories load.
     return SPECIES_KEYS.map((key) => ({
       key,
       id: null,
       label: key === 'dogs' ? t('library.dogsFallback') : t('library.catsFallback'),
     }));
   }, [apiCategories, isFrench, t]);
+
+  // Fetch breed count for each tab once we have real ids — hide tabs with 0 breeds
+  useEffect(() => {
+    const tabs = allSpeciesTabs.filter((tab) => tab.id);
+    if (!tabs.length) return;
+    const alreadyChecked = tabs.every((tab) => tabCounts[tab.key] !== undefined);
+    if (alreadyChecked) return;
+    tabs.forEach(async (tab) => {
+      try {
+        const res = await axios.post(`${BASE_URL}/breed/list`, { page: 1, per_page: 1, collection_ids: tab.id });
+        const d = res.data?.data;
+        const pageData = d?.breeds ?? d;
+        const total = pageData?.total ?? (pageData?.data?.length ?? 0);
+        setTabCounts((prev) => ({ ...prev, [tab.key]: total }));
+      } catch {
+        setTabCounts((prev) => ({ ...prev, [tab.key]: -1 })); // -1 = unknown, show anyway
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allSpeciesTabs]);
+
+  const speciesTabs = useMemo(() => {
+    // While counts are still loading, show all tabs (avoids flash of empty nav)
+    const countsReady = allSpeciesTabs.filter((t) => t.id).every((t) => tabCounts[t.key] !== undefined);
+    if (!countsReady) return allSpeciesTabs;
+    return allSpeciesTabs.filter((tab) => !tab.id || (tabCounts[tab.key] ?? 1) !== 0);
+  }, [allSpeciesTabs, tabCounts]);
 
   // Size dropdown — dog-only entries from breed_type. Value is the entry's
   // real id, sent straight through as `type_categories`. Kept in whatever
@@ -588,19 +615,19 @@ export default function BreedLibrary({ onOpenBreed }) {
           >
             <div className={panelSettled ? 'overflow-visible' : 'overflow-hidden'}>
               <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[761px]:grid-cols-2 min-[1051px]:grid-cols-4 border-b border-[#d8d8d4]">
-                <div className="p-5 border-l border-[#d8d8d4] min-[761px]:border-r">
+                <div className="p-5 border-l border-r border-[#d8d8d4]">
                   <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.sizeLabel')}</span>
                   <BreedFilterSelect label={t('library.sizeLabel')} value={size} options={sizeOptions} onChange={setSize} />
                 </div>
-                <div className="p-5 border-l border-[#d8d8d4] min-[1051px]:border-r">
+                <div className="p-5 border-r border-[#d8d8d4]">
                   <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.groomingLabel')}</span>
                   <BreedFilterSelect label={t('library.groomingLabel')} value={grooming} options={groomingOptions} onChange={setGrooming} />
                 </div>
-                <div className="p-5 border-l border-[#d8d8d4] min-[761px]:border-r">
+                <div className="p-5 border-r border-[#d8d8d4]">
                   <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.energyLabel')}</span>
                   <BreedFilterSelect label={t('library.energyLabel')} value={energy} options={energyOptions} onChange={setEnergy} />
                 </div>
-                <div className="p-5 border-l border-r border-[#d8d8d4]">
+                <div className="p-5 border-r border-[#d8d8d4]">
                   <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.apartmentLabel')}</span>
                   <BreedFilterSelect label={t('library.apartmentLabel')} value={apartment} options={apartmentOptions} onChange={setApartment} />
                 </div>
