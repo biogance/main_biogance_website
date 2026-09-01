@@ -375,31 +375,23 @@ export default function ProductDetail() {
     return () => observer.disconnect();
   }, [apiProduct]);
 
-  // ─── Scroll handler — navbar transparency ──────────────────────────────────
+  // ─── Scroll handler — navbar transparency + bg-white ──────────────────────
   useEffect(() => {
     const check = () => {
       if (!titleRef.current) {
         setIsTransparent(window.scrollY < 10);
+        setNavBgWhite(false);
         return;
       }
       const rect = titleRef.current.getBoundingClientRect();
-      setIsTransparent(rect.top > 80);
+      const touching = rect.top <= 104;
+      setIsTransparent(!touching);
+      setNavBgWhite(touching);
     };
     check();
     window.addEventListener("scroll", check, { passive: true });
     return () => window.removeEventListener("scroll", check);
   });
-
-  // ─── First section bottom touch → navbar bg white ────────────────────────────
-  useEffect(() => {
-    if (!firstSectionRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setNavBgWhite(!entry.isIntersecting),
-      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
-    );
-    observer.observe(firstSectionRef.current);
-    return () => observer.disconnect();
-  }, [apiProduct]);
 
   // ─── When any modal opens → force navbar non-transparent ────────────────────
   useEffect(() => {
@@ -685,7 +677,7 @@ export default function ProductDetail() {
         </div>
 
         {/* ── RIGHT: Product Info ── */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-6 pb-6 lg:pt-27 lg:pb-12 bg-white">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 lg:px-14 pt-[104px] pb-6 lg:pt-32 lg:pb-12 bg-white">
           {!isLoaded ? (
             <>
               <ShimmerLoader className="h-8 w-19/20 mb-4" />

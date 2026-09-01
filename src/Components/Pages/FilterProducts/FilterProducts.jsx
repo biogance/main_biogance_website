@@ -1518,6 +1518,9 @@ export default function FilterProducts() {
       <FilterRail
         railRef={filterRailRef}
         categoriesList={categoriesList}
+        activeChips={activeChips}
+        clearAll={clearAll}
+        translateName={translateName}
         state={{
           animals,
           universe,
@@ -1599,48 +1602,8 @@ export default function FilterProducts() {
                 </p>
               </div>
 
-              {/* Right: active filter chips + search + sort — where the description used to sit */}
+              {/* Right: search + sort */}
               <div className="col-span-12 flex flex-col justify-center gap-3 lg:col-span-4">
-                {activeChips.length > 0 && (
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    {activeChips.map((c, i) => (
-                      <span
-                        key={i}
-                        className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-black hover:text-white"
-                      >
-                        {c.swatch ? (
-                          <span
-                            className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                            style={{
-                              background: c.swatch,
-                              ...(c.swatch.includes("gradient")
-                                ? {}
-                                : { backgroundColor: c.swatch }),
-                            }}
-                            aria-label={c.label}
-                          />
-                        ) : (
-                          translateName(c.label)
-                        )}
-                        <button
-                          onClick={c.clear}
-                          className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-200 hover:text-black cursor-pointer"
-                          aria-label={t("removeFilter", "Remove {{label}}", {
-                            label: translateName(c.label),
-                          })}
-                        >
-                          <LuX className="h-2.5 w-2.5" />
-                        </button>
-                      </span>
-                    ))}
-                    <button
-                      onClick={clearAll}
-                      className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
-                    >
-                      {t("resetAll", "Reset all")}
-                    </button>
-                  </div>
-                )}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                   <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
                     <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
@@ -2103,6 +2066,9 @@ export default function FilterProducts() {
 function FilterRail({
   railRef,
   categoriesList,
+  activeChips,
+  clearAll: clearAllChips,
+  translateName: translateNameProp,
   state,
   setters,
   options,
@@ -2118,9 +2084,9 @@ function FilterRail({
     SIZES_LIST,
     COLORS_LIST,
     COLOR_SWATCHES_MAP,
-    translateName,
     isFrench,
   } = dynamicLists;
+  const translateName = translateNameProp || dynamicLists.translateName;
   const [openKey, setOpenKey] = useState(null);
   const [allOpen, setAllOpen] = useState(false);
   const ref = useRef(null);
@@ -2352,6 +2318,44 @@ function FilterRail({
           </div>
         </div>
       </div>
+
+      {/* Active filter chips — shown directly below the filter bar */}
+      {activeChips && activeChips.length > 0 && (
+        <div className="mx-auto flex max-w-10xl flex-wrap items-center gap-2 px-8 py-2 border-t border-stone-900/10">
+          {activeChips.map((c, i) => (
+            <span
+              key={i}
+              className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-black hover:text-white"
+            >
+              {c.swatch ? (
+                <span
+                  className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                  style={{
+                    background: c.swatch,
+                    ...(c.swatch.includes("gradient") ? {} : { backgroundColor: c.swatch }),
+                  }}
+                  aria-label={c.label}
+                />
+              ) : (
+                translateName(c.label)
+              )}
+              <button
+                onClick={c.clear}
+                className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-200 hover:text-black cursor-pointer"
+                aria-label={t("removeFilter", "Remove {{label}}", { label: translateName(c.label) })}
+              >
+                <LuX className="h-2.5 w-2.5" />
+              </button>
+            </span>
+          ))}
+          <button
+            onClick={clearAllChips}
+            className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
+          >
+            {t("resetAll", "Reset all")}
+          </button>
+        </div>
+      )}
 
       {/* Dynamic expanding filter panel container */}
       <FilterPanel
