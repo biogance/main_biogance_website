@@ -19,7 +19,7 @@ import { mergeCartItem } from "../../../utils/cartStorage";
 import { sanitizeSeoKeyword, fetchBlogDetail } from "../../../utils/seoKeyword";
 import { startTopLoader } from "../TopLoader";
 import { FaRegHourglassHalf, FaRegCircleUser } from "react-icons/fa6";
-import { FaArrowLeft, FaRegUserCircle, FaHeart } from "react-icons/fa";
+import { FaArrowLeft, FaRegUserCircle, FaHeart, FaRegBookmark, FaBookmark } from "react-icons/fa";
 import { IoHourglassOutline } from "react-icons/io5";
 import { SlUser } from "react-icons/sl";
 import { PiShareFat, PiShareFatBold, PiUser, PiUserLight } from "react-icons/pi";
@@ -324,22 +324,24 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
 
   const handleSave = async (e) => {
     e.stopPropagation();
-    const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-    const token = loginData?.data?.token;
-    if (!token) { toast.error(t("loginToSave", "Please log in to save articles.")); return; }
     if (saving) return;
     setSaving(true);
-    const next = !saved;
-    setSaved(next);
     try {
-      await axios.post(
-        `${BASE_URL}/user/blog/favorite`,
-        { blog_id: blog.id },
-        { headers: { Authorization: `Bearer ${token}` } },
+      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
+      const token = loginData?.data?.token;
+      const res = await axios.post(
+        `${BASE_URL}/user/add/favorite/blog/${blog.id}`,
+        token ? {} : { device_id: getDeviceId() },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
-    } catch {
-      setSaved(!next);
-      toast.error(t("somethingWentWrong"));
+      if (res.data?.status === false) {
+        toast.error(res.data?.action || res.data?.action_message || t("somethingWentWrong"));
+      } else {
+        setSaved((v) => !v);
+      }
+    } catch (err) {
+      const d = err.response?.data;
+      toast.error(d?.action || d?.action_message || t("somethingWentWrong"));
     } finally {
       setSaving(false);
     }
@@ -710,8 +712,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                   aria-label={saved ? t("unsave", "Unsave article") : t("save", "Save article")}
                 >
                   {saved
-                    ? <FaHeart size={14} className="text-gray-900" />
-                    : <LuHeart size={15} />}
+                    ? <FaBookmark size={14} className="text-gray-900" />
+                    : <FaRegBookmark size={15} />}
                   {saved ? t("saved", "Saved") : t("save", "Save")}
                 </button>
               </div>
@@ -765,8 +767,8 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                 aria-label={saved ? t("unsave", "Unsave article") : t("save", "Save article")}
               >
                 {saved
-                  ? <FaHeart size={15} className="text-gray-900" />
-                  : <LuHeart size={16} />}
+                  ? <FaBookmark size={15} className="text-gray-900" />
+                  : <FaRegBookmark size={16} />}
                 {saved ? t("saved", "Saved") : t("save", "Save")}
               </button>
             </div>
