@@ -13,7 +13,11 @@ import {
 import { RxCross2 } from "react-icons/rx";
 
 import { LandingCards, LoadingCard } from "../Landing/LandingCards";
-import { BASE_URL } from "../../API/API";
+import { BASE_URL, MEDIA_URL } from "../../API/API";
+import { useRouter } from "next/navigation";
+import { HiOutlineArrowUpRight } from "react-icons/hi2";
+import { FiClock } from "react-icons/fi";
+import { startTopLoader } from "../TopLoader";
 
 const MEDIA_BASE = "https://d18f57oyxifcsh.cloudfront.net/";
 
@@ -68,6 +72,139 @@ function FavouritesGrid({ isLoading, products }) {
                 <LandingCards product={product} index={index} showNav={true} />
               </div>
             ))}
+      </div>
+    </div>
+  );
+}
+
+const HARDCODED_BLOGS = [
+  {
+    id: 1,
+    name: "How to Groom Your Dog at Home",
+    french_name: "Comment toiletter votre chien à la maison",
+    company_name: "Biogance",
+    reading_time: "5",
+    english_seo_keyboard: "how-to-groom-your-dog-at-home",
+    french_seo_keyword: "comment-toiletter-votre-chien",
+    categories: [{ type: "topic", category: { name: "Grooming", french_name: "Toilettage" } }],
+    images: [{ media: null }],
+  },
+  {
+    id: 2,
+    name: "Best Nutrition Tips for Cats",
+    french_name: "Meilleurs conseils nutritionnels pour les chats",
+    company_name: "Biogance",
+    reading_time: "4",
+    english_seo_keyboard: "best-nutrition-tips-for-cats",
+    french_seo_keyword: "conseils-nutrition-chats",
+    categories: [{ type: "topic", category: { name: "Nutrition", french_name: "Nutrition" } }],
+    images: [{ media: null }],
+  },
+  {
+    id: 3,
+    name: "Understanding Your Pet's Skin Health",
+    french_name: "Comprendre la santé cutanée de votre animal",
+    company_name: "Biogance",
+    reading_time: "6",
+    english_seo_keyboard: "understanding-pet-skin-health",
+    french_seo_keyword: "sante-cutanee-animal",
+    categories: [{ type: "topic", category: { name: "Health", french_name: "Santé" } }],
+    images: [{ media: null }],
+  },
+];
+
+function getBlogField(item, field, isFr) {
+  if (!item) return "";
+  const frField = `french_${field}`;
+  return isFr && item[frField] ? item[frField] : (item[field] ?? "");
+}
+
+function getCategoryName(item, isFr) {
+  const topicEntry = item?.categories?.find((c) => c?.type === "topic");
+  const cat = topicEntry?.category;
+  if (!cat) return "";
+  return isFr && cat.french_name ? cat.french_name : (cat.name ?? "");
+}
+
+function getBlogImage(item) {
+  return item?.images?.[0]?.media ?? item?.image ?? null;
+}
+
+// ─── Saved Blogs Section ──────────────────────────────────
+function SavedBlogs({ isFr }) {
+  const router = useRouter();
+  const blogs = HARDCODED_BLOGS;
+
+  const navigateTo = (blog) => {
+    const keyword = isFr
+      ? blog.french_seo_keyword || blog.english_seo_keyboard
+      : blog.english_seo_keyboard || blog.french_seo_keyword;
+    startTopLoader();
+    router.push(`/advices/${encodeURIComponent(keyword)}`);
+  };
+
+  return (
+    <div className="bg-white p-6 md:p-8 mt-6">
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-2xl font-semibold text-gray-900">Saved Articles</h2>
+        <p className="text-gray-600 mt-1.5">Expert advice you've bookmarked</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+        {blogs.map((blog) => {
+          const imgSrc = getBlogImage(blog) ? `${MEDIA_URL}${getBlogImage(blog)}` : "/cat.png";
+          const href = `/advices/${encodeURIComponent(isFr ? blog.french_seo_keyword || blog.english_seo_keyboard : blog.english_seo_keyboard || blog.french_seo_keyword)}`;
+          return (
+            <a
+              key={blog.id}
+              href={href}
+              onClick={(e) => { if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); navigateTo(blog); }}
+              className="cursor-pointer group"
+            >
+              {/* Mobile: same horizontal card as ArticleRow */}
+              <div className="md:hidden border border-gray-200 overflow-hidden flex flex-col">
+                <div className="relative w-full h-60 bg-gray-200 overflow-hidden">
+                  <img
+                    src={imgSrc}
+                    className="w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700"
+                  />
+                </div>
+                <div className="px-4 py-3 flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase text-gray-900 leading-normal line-clamp-2 flex-1 group-hover:underline underline-offset-2">
+                    {getBlogField(blog, "name", isFr)}
+                  </p>
+                  <HiOutlineArrowUpRight className="shrink-0 text-gray-700 w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Desktop: same as ExpertAdvices All Articles card */}
+              <div className="hidden md:block">
+                <div className="relative w-full aspect-[5/6] overflow-hidden mb-3 bg-gray-200">
+                  <img
+                    src={imgSrc}
+                    className="w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700"
+                  />
+                  <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
+                  </div>
+                </div>
+                <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
+                  {getCategoryName(blog, isFr) || "⸻"}
+                </p>
+                <h3 className="text-sm font-bold uppercase text-gray-900 leading-snug mb-2 line-clamp-2 min-h-[2.5rem] group-hover:underline underline-offset-2">
+                  {getBlogField(blog, "name", isFr)}
+                </h3>
+                <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  <span>{blog.company_name || "Biogance"}</span>
+                  <span className="flex items-center gap-1">
+                    <FiClock className="w-3 h-3" />
+                    {blog.reading_time || "0"} min
+                  </span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
       </div>
     </div>
   );
@@ -223,6 +360,8 @@ export default function Favourite() {
             </div>
           )}
         </div>
+
+        <SavedBlogs isFr={false} />
 
         {/* Recommended Section — hidden for now */}
         {false && (
