@@ -1690,12 +1690,12 @@ export default function Reseller() {
         }
         .field label {
           display: flex;
-          justify-content: space-between;
+         
           gap: 10px;
           margin-bottom: 8px;
           flex-wrap: wrap;
           font-size: 10px;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.02em;
           text-transform: uppercase;
           color: var(--ink);
         }
@@ -1832,13 +1832,7 @@ export default function Reseller() {
           border-bottom: 0;
         }
         .checkbox-card :global(input) {
-          /* The checkbox <input> is a descendant of .field, so the generic
-             ".field input" rule further down (border/background/min-height:
-             48px/padding, meant for text fields) also matches it — its
-             min-height:48px overrides this 14px height, stretching the box
-             into a tall thin rectangle instead of a square checkbox.
-             Reset every one of those leaked properties back to a plain
-             native checkbox here. */
+        
           width: 14px;
           height: 14px;
           min-height: 0;
@@ -1849,6 +1843,7 @@ export default function Reseller() {
           background: none;
           accent-color: var(--ink);
           flex: 0 0 auto;
+           cursor: pointer;
         }
 
         .consent-box {

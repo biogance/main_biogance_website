@@ -2878,7 +2878,7 @@ export default function Ambasseder() {
         }
         .platform-head :global(label) {
           font-size: 12px;
-          line-height: 1.35;
+          line-height: 1.7;
           text-transform: uppercase;
           letter-spacing: 0.14em;
           color: var(--ink);

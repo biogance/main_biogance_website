@@ -308,6 +308,13 @@
     "addToCart": "Ajouter au panier"
   },
 
+  "savedBlogs": {
+    "title": "Articles enregistrés",
+    "subtitle": "Conseils d'experts que vous avez enregistrés",
+    "minSuffix": "min",
+    "companyFallback": "Biogance"
+  },
+
   "loyalty": {
     "title": "Fidélité et Récompenses",
     "subtitle": "Gérez vos points et échangez des récompenses",
