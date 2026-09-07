@@ -5258,9 +5258,6 @@ function Checkout({ cartItems = [] }) {
           .checkout-right-order-btn {
             display: none !important;
           }
-          .checkout-right-cart-items-section {
-            display: none !important;
-          }
           .express-pay-btn-img {
             // width: auto !important;
             // height: auto !important;

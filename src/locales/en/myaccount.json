@@ -309,6 +309,13 @@
     "addToCart": "Add to Cart"
   },
 
+  "savedBlogs": {
+    "title": "Saved Articles",
+    "subtitle": "Expert advice you've bookmarked",
+    "minSuffix": "min",
+    "companyFallback": "Biogance"
+  },
+
   "loyalty": {
     "title": "Loyalty & Rewards",
     "subtitle": "Manage your points and redeem rewards",

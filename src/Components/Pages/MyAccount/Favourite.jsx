@@ -21,6 +21,40 @@ import { startTopLoader } from "../TopLoader";
 
 const MEDIA_BASE = "https://d18f57oyxifcsh.cloudfront.net/";
 
+// ─── Screen-based per_page (same approach as ExpertAdvices.jsx: per_page is
+// derived from how many grid columns are currently visible, not hardcoded) ──
+const ROWS_PER_PAGE = 2;
+const BUNDLE_MOBILE_PER_PAGE = 8;
+const BLOG_MOBILE_PER_PAGE = 6;
+
+// Matches the Tailwind breakpoints used by each grid's className below.
+const BUNDLE_BREAKPOINTS = [
+  { min: 0, cols: 1 },
+  { min: 640, cols: 2 }, // sm
+  { min: 768, cols: 3 }, // md
+  { min: 1024, cols: 4 }, // lg
+];
+const BLOG_BREAKPOINTS = [
+  { min: 0, cols: 1 },
+  { min: 640, cols: 2 }, // sm
+  { min: 768, cols: 3 }, // md
+];
+
+function useGridColumns(breakpoints) {
+  const [columns, setColumns] = useState(null);
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth;
+      let cols = breakpoints[0].cols;
+      for (const bp of breakpoints) if (w >= bp.min) cols = bp.cols;
+      setColumns(cols);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [breakpoints]);
+  return columns;
+}
 
 const mapFavoriteProduct = (item) => ({
   id: item.id,
@@ -77,41 +111,39 @@ function FavouritesGrid({ isLoading, products }) {
   );
 }
 
-const HARDCODED_BLOGS = [
-  {
-    id: 1,
-    name: "How to Groom Your Dog at Home",
-    french_name: "Comment toiletter votre chien à la maison",
-    company_name: "Biogance",
-    reading_time: "5",
-    english_seo_keyboard: "how-to-groom-your-dog-at-home",
-    french_seo_keyword: "comment-toiletter-votre-chien",
-    categories: [{ type: "topic", category: { name: "Grooming", french_name: "Toilettage" } }],
-    images: [{ media: null }],
-  },
-  {
-    id: 2,
-    name: "Best Nutrition Tips for Cats",
-    french_name: "Meilleurs conseils nutritionnels pour les chats",
-    company_name: "Biogance",
-    reading_time: "4",
-    english_seo_keyboard: "best-nutrition-tips-for-cats",
-    french_seo_keyword: "conseils-nutrition-chats",
-    categories: [{ type: "topic", category: { name: "Nutrition", french_name: "Nutrition" } }],
-    images: [{ media: null }],
-  },
-  {
-    id: 3,
-    name: "Understanding Your Pet's Skin Health",
-    french_name: "Comprendre la santé cutanée de votre animal",
-    company_name: "Biogance",
-    reading_time: "6",
-    english_seo_keyboard: "understanding-pet-skin-health",
-    french_seo_keyword: "sante-cutanee-animal",
-    categories: [{ type: "topic", category: { name: "Health", french_name: "Santé" } }],
-    images: [{ media: null }],
-  },
-];
+// ─── Pagination bar — shared by the bundles grid and the blogs grid ───────
+function PaginationBar({ page, lastPage, onGoTo }) {
+  if (!lastPage || lastPage <= 1) return null;
+  const atFirst = page <= 1;
+  const atLast = page >= lastPage;
+  const btnClass = (disabled) =>
+    `w-9 h-9 flex items-center justify-center border border-gray-200 transition-colors ${
+      disabled
+        ? "text-gray-300 cursor-not-allowed"
+        : "text-gray-600 hover:bg-gray-100 cursor-pointer"
+    }`;
+  return (
+    <div className="flex items-center justify-center gap-2 mt-10">
+      <button className={btnClass(atFirst)} disabled={atFirst} onClick={() => onGoTo(1)}>
+        <MdOutlineKeyboardDoubleArrowLeft size={22} />
+      </button>
+      <button className={btnClass(atFirst)} disabled={atFirst} onClick={() => onGoTo(page - 1)}>
+        <MdOutlineKeyboardArrowLeft size={22} />
+      </button>
+
+      <button className="w-9 h-9 flex items-center justify-center border border-gray-200 bg-gray-900 text-white font-medium">
+        {page}
+      </button>
+
+      <button className={btnClass(atLast)} disabled={atLast} onClick={() => onGoTo(page + 1)}>
+        <MdOutlineKeyboardArrowRight size={22} />
+      </button>
+      <button className={btnClass(atLast)} disabled={atLast} onClick={() => onGoTo(lastPage)}>
+        <MdOutlineKeyboardDoubleArrowRight size={22} />
+      </button>
+    </div>
+  );
+}
 
 function getBlogField(item, field, isFr) {
   if (!item) return "";
@@ -131,9 +163,11 @@ function getBlogImage(item) {
 }
 
 // ─── Saved Blogs Section ──────────────────────────────────
-function SavedBlogs({ isFr }) {
+function SavedBlogs({ isFr, blogs, isLoading, page, lastPage, onGoTo }) {
   const router = useRouter();
-  const blogs = HARDCODED_BLOGS;
+  const { t } = useTranslation('myaccount');
+
+  if (!isLoading && blogs.length === 0) return null;
 
   const navigateTo = (blog) => {
     const keyword = isFr
@@ -146,12 +180,22 @@ function SavedBlogs({ isFr }) {
   return (
     <div className="bg-white p-6 md:p-8 mt-6">
       <div className="mb-6 md:mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900">Saved Articles</h2>
-        <p className="text-gray-600 mt-1.5">Expert advice you've bookmarked</p>
+        <h2 className="text-2xl font-semibold text-gray-900">{t('savedBlogs.title')}</h2>
+        <p className="text-gray-600 mt-1.5">{t('savedBlogs.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-        {blogs.map((blog) => {
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse border border-gray-200">
+                <div className="w-full h-60 md:aspect-[5/6] md:h-auto bg-gray-200" />
+                <div className="px-4 py-3 md:px-0 md:pt-3">
+                  <div className="h-2.5 w-1/3 bg-gray-200 mb-2" />
+                  <div className="h-3 w-4/5 bg-gray-200" />
+                </div>
+              </div>
+            ))
+          : blogs.map((blog) => {
           const imgSrc = getBlogImage(blog) ? `${MEDIA_URL}${getBlogImage(blog)}` : "/cat.png";
           const href = `/advices/${encodeURIComponent(isFr ? blog.french_seo_keyword || blog.english_seo_keyboard : blog.english_seo_keyboard || blog.french_seo_keyword)}`;
           return (
@@ -195,10 +239,10 @@ function SavedBlogs({ isFr }) {
                   {getBlogField(blog, "name", isFr)}
                 </h3>
                 <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>{blog.company_name || "Biogance"}</span>
+                  <span>{blog.company_name || t('savedBlogs.companyFallback')}</span>
                   <span className="flex items-center gap-1">
                     <FiClock className="w-3 h-3" />
-                    {blog.reading_time || "0"} min
+                    {blog.reading_time || "0"} {t('savedBlogs.minSuffix')}
                   </span>
                 </div>
               </div>
@@ -206,15 +250,16 @@ function SavedBlogs({ isFr }) {
           );
         })}
       </div>
+
+      <PaginationBar page={page} lastPage={lastPage} onGoTo={onGoTo} />
     </div>
   );
 }
 
 // ─── Main Page ───────────────────────────────────────────
 export default function Favourite() {
-  const { t } = useTranslation('myaccount');
-  const [isLoading, setIsLoading] = useState(true);
-  const [favourites, setFavourites] = useState([]);
+  const { t, i18n } = useTranslation('myaccount');
+  const isFr = i18n.language?.startsWith('fr');
 
   const getToken = () => {
     try {
@@ -225,13 +270,30 @@ export default function Favourite() {
     }
   };
 
-  const fetchFavourites = async () => {
+ 
+  const getFavorites = (type, page, perPage) =>
+    fetch(
+      `${BASE_URL}/web/favorites/${type}?page=${page}&per_page=${perPage}`,
+      { headers: { Authorization: `Bearer ${getToken()}` } },
+    ).then((res) => res.json());
+
+  // ─── Bundles (wishlist products) ───────────────────────
+  const [isLoading, setIsLoading] = useState(true);
+  const [favourites, setFavourites] = useState([]);
+  const [bundlesPage, setBundlesPage] = useState(1);
+  const [bundlesLastPage, setBundlesLastPage] = useState(1);
+
+  const bundleColumns = useGridColumns(BUNDLE_BREAKPOINTS);
+  const bundlesPerPage = bundleColumns
+    ? bundleColumns === 1
+      ? BUNDLE_MOBILE_PER_PAGE
+      : bundleColumns * ROWS_PER_PAGE
+    : 0;
+
+  const fetchBundles = async (page, perPage) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/web/favorites`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
-      const data = await res.json();
+      const data = await getFavorites('bundle', page, perPage);
       if (data?.status === false) {
         toast.error(data?.action || 'Something went wrong.');
         setFavourites([]);
@@ -239,20 +301,77 @@ export default function Favourite() {
         const raw = data.data;
         const list = Array.isArray(raw) ? raw : (raw?.data || []);
         setFavourites(list.map(mapFavoriteProduct));
+        setBundlesPage(raw?.current_page || page);
+        setBundlesLastPage(raw?.last_page || 1);
       } else {
         setFavourites([]);
       }
     } catch (err) {
-      console.error('Fetch favorites error:', err);
+      console.error('Fetch favorite bundles error:', err);
       setFavourites([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Fetches page 1 once the responsive column count (and so per_page)
+  // resolves, and again whenever it changes on resize.
   useEffect(() => {
-    fetchFavourites();
-  }, []);
+    if (!bundlesPerPage) return;
+    fetchBundles(1, bundlesPerPage);
+  }, [bundlesPerPage]);
+
+  const goToBundlesPage = (page) => {
+    if (page < 1 || page > bundlesLastPage || !bundlesPerPage) return;
+    fetchBundles(page, bundlesPerPage);
+  };
+
+  // ─── Saved blogs ────────────────────────────────────────
+  const [blogsLoading, setBlogsLoading] = useState(true);
+  const [blogs, setBlogs] = useState([]);
+  const [blogsPage, setBlogsPage] = useState(1);
+  const [blogsLastPage, setBlogsLastPage] = useState(1);
+
+  const blogColumns = useGridColumns(BLOG_BREAKPOINTS);
+  const blogsPerPage = blogColumns
+    ? blogColumns === 1
+      ? BLOG_MOBILE_PER_PAGE
+      : blogColumns * ROWS_PER_PAGE
+    : 0;
+
+  const fetchBlogs = async (page, perPage) => {
+    setBlogsLoading(true);
+    try {
+      const data = await getFavorites('blog', page, perPage);
+      if (data?.status === false) {
+        toast.error(data?.action || 'Something went wrong.');
+        setBlogs([]);
+      } else if (data?.status) {
+        const raw = data.data;
+        const list = Array.isArray(raw) ? raw : (raw?.data || []);
+        setBlogs(list);
+        setBlogsPage(raw?.current_page || page);
+        setBlogsLastPage(raw?.last_page || 1);
+      } else {
+        setBlogs([]);
+      }
+    } catch (err) {
+      console.error('Fetch saved blogs error:', err);
+      setBlogs([]);
+    } finally {
+      setBlogsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!blogsPerPage) return;
+    fetchBlogs(1, blogsPerPage);
+  }, [blogsPerPage]);
+
+  const goToBlogsPage = (page) => {
+    if (page < 1 || page > blogsLastPage || !blogsPerPage) return;
+    fetchBlogs(page, blogsPerPage);
+  };
 
   const hasFavourites = isLoading || favourites.length > 0;
 
@@ -326,25 +445,11 @@ export default function Favourite() {
               <FavouritesGrid isLoading={isLoading} products={favourites} />
 
               {!isLoading && favourites.length > 0 && (
-                <div className="flex items-center justify-center gap-2 mt-10">
-                  <button className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors">
-                    <MdOutlineKeyboardDoubleArrowLeft size={22} />
-                  </button>
-                  <button className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors">
-                    <MdOutlineKeyboardArrowLeft size={22} />
-                  </button>
-
-                  <button className="w-9 h-9 flex items-center justify-center border border-gray-200 bg-gray-900 text-white  font-medium">
-                    1
-                  </button>
-
-                  <button className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors">
-                    <MdOutlineKeyboardArrowRight size={22} />
-                  </button>
-                  <button className="w-9 h-9 flex items-center justify-center border border-gray-200  text-gray-600 hover:bg-gray-100 transition-colors">
-                    <MdOutlineKeyboardDoubleArrowRight size={22} />
-                  </button>
-                </div>
+                <PaginationBar
+                  page={bundlesPage}
+                  lastPage={bundlesLastPage}
+                  onGoTo={goToBundlesPage}
+                />
               )}
             </>
           ) : (
@@ -361,7 +466,14 @@ export default function Favourite() {
           )}
         </div>
 
-        <SavedBlogs isFr={false} />
+        <SavedBlogs
+          isFr={isFr}
+          blogs={blogs}
+          isLoading={blogsLoading}
+          page={blogsPage}
+          lastPage={blogsLastPage}
+          onGoTo={goToBlogsPage}
+        />
 
         {/* Recommended Section — hidden for now */}
         {false && (

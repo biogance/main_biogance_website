@@ -59,7 +59,7 @@ export default function BreedFilterSelect({ label, value, options, onChange }) {
                 setOpen(false);
               }}
               className={`w-full text-left px-3 py-[10px] text-[11px] tracking-[.06em] uppercase cursor-pointer transition-colors duration-150 hover:bg-black hover:text-white ${
-                o.value === value ? 'bg-black text-white' : 'bg-white text-black'
+                o.value === value ? 'bg-black text-white' : 'bg-[#f7f7f4] text-black'
               }`}
             >
               {o.label}

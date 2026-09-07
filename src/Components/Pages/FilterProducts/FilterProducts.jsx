@@ -2023,7 +2023,7 @@ export default function FilterProducts() {
       {!isSearching && !isSearchPending && featuredBlog && (
         <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-14">
           <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
-            <div className="lg:sticky lg:top-[200px] lg:self-start">
+            <div className="lg:sticky lg:top-[230px] lg:self-start">
               <h2 className="mb-4 font-serif text-4xl text-stone-900 sm:text-5xl">
                 {isFrench && featuredBlog.french_name
                   ? featuredBlog.french_name
