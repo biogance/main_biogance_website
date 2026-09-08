@@ -113,9 +113,11 @@ function FavouritesGrid({ isLoading, products }) {
 
 // ─── Pagination bar — shared by the bundles grid and the blogs grid ───────
 function PaginationBar({ page, lastPage, onGoTo }) {
-  if (!lastPage || lastPage <= 1) return null;
+  // Always shown once there's data — even a single page — same as the
+  // original static design. Arrows just disable themselves at the edges.
+  const safeLastPage = lastPage || 1;
   const atFirst = page <= 1;
-  const atLast = page >= lastPage;
+  const atLast = page >= safeLastPage;
   const btnClass = (disabled) =>
     `w-9 h-9 flex items-center justify-center border border-gray-200 transition-colors ${
       disabled
@@ -138,7 +140,7 @@ function PaginationBar({ page, lastPage, onGoTo }) {
       <button className={btnClass(atLast)} disabled={atLast} onClick={() => onGoTo(page + 1)}>
         <MdOutlineKeyboardArrowRight size={22} />
       </button>
-      <button className={btnClass(atLast)} disabled={atLast} onClick={() => onGoTo(lastPage)}>
+      <button className={btnClass(atLast)} disabled={atLast} onClick={() => onGoTo(safeLastPage)}>
         <MdOutlineKeyboardDoubleArrowRight size={22} />
       </button>
     </div>
@@ -251,7 +253,9 @@ function SavedBlogs({ isFr, blogs, isLoading, page, lastPage, onGoTo }) {
         })}
       </div>
 
-      <PaginationBar page={page} lastPage={lastPage} onGoTo={onGoTo} />
+      {!isLoading && blogs.length > 0 && (
+        <PaginationBar page={page} lastPage={lastPage} onGoTo={onGoTo} />
+      )}
     </div>
   );
 }
