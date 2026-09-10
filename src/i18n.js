@@ -8,7 +8,6 @@ import homeEN from "../src/locales/en/home.json";
 import footerEN from "../src/locales/en/footer.json";
 import ourproductEN from "../src/locales/en/ourproduct.json";
 import proEN from "../src/locales/en/pro.json";
-import whoweEN from "../src/locales/en/whowe.json";
 import searchmodalEN from "../src/locales/en/searchmodal.json";
 import commitmentEN from "../src/locales/en/commitment.json";
 import certificatesEN from "../src/locales/en/certificates.json";
@@ -42,7 +41,6 @@ import homeFR from "../src/locales/fr/home.json";
 import footerFR from "../src/locales/fr/footer.json";
 import ourproductFR from "../src/locales/fr/ourproduct.json";
 import proFR from "../src/locales/fr/pro.json";
-import whoweFR from "../src/locales/fr/whowe.json";
 import searchmodalFR from "../src/locales/fr/searchmodal.json";
 import commitmentFR from "../src/locales/fr/commitment.json";
 import certificatesFR from "../src/locales/fr/certificates.json";
@@ -80,7 +78,6 @@ i18n
                 footer: footerEN,
                 ourproduct: ourproductEN,
                 pro: proEN,
-                whowe: whoweEN,
                 searchmodal: searchmodalEN,
                 commitment: commitmentEN,
                 certificates: certificatesEN,
@@ -113,7 +110,6 @@ i18n
                 footer: footerFR,
                 ourproduct: ourproductFR,
                 pro: proFR,
-                whowe: whoweFR,
                 searchmodal: searchmodalFR,
                 commitment: commitmentFR,
                 certificates: certificatesFR,
@@ -141,7 +137,7 @@ i18n
             },
         },
         fallbackLng: "en",
-        ns: ["common, navbar , home , footer, ourproduct, pro, whowe, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout, prosection, reseller, ambassador, laboratory, breed"],
+        ns: ["common, navbar , home , footer, ourproduct, pro, searchmodal, commitment, certificates , ingredients, ourloyalty , onboarding , sidebar , myaccount , productdetail , aboutproduct , expertadvice , productreviews , stickyaddtocart, filter, modaladdtocart, checkout, prosection, reseller, ambassador, laboratory, breed"],
         defaultNS: "common",
         interpolation: {
             escapeValue: false,
