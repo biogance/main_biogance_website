@@ -14,6 +14,7 @@ import {
 import { PiTwitterLogo } from "react-icons/pi";
 import { BsTiktok } from "react-icons/bs";
 import ContactUs from "./Onboarding/ContactUs";
+import AppLaunchModal from "./AppLaunchModal";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../API/API";
@@ -25,10 +26,10 @@ export default function Footer() {
   const router = useRouter();
 
   // Google Play / App Store badges — neither app is published yet, so both
-  // just surface that instead of linking out to a dead/placeholder store page.
-  const handleAppComingSoon = () => {
-    toast.success(t("mobileApp.comingSoon"));
-  };
+  // open the launch countdown modal instead of linking out to a
+  // dead/placeholder store page.
+  const [showAppModal, setShowAppModal] = useState(false);
+  const handleAppComingSoon = () => setShowAppModal(true);
 
   // Newsletter subscribe — POST {BASE_URL}/app/subscribers { email }.
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -390,8 +391,8 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* App Download — neither store listing exists yet, so these are
-                buttons that toast "coming soon" rather than links to # */}
+            {/* App Download — neither store listing exists yet, so these
+                open the launch countdown modal rather than linking to # */}
             <div className="flex flex-row items-start gap-0">
               <button
                 type="button"
@@ -793,6 +794,10 @@ export default function Footer() {
       </div>
 
       <ContactUs isOpen={showModal} onClose={() => setShowModal(false)} />
+      <AppLaunchModal
+        isOpen={showAppModal}
+        onClose={() => setShowAppModal(false)}
+      />
     </footer>
   );
 }

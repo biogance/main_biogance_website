@@ -7,8 +7,20 @@ import SearchBar from './SearchBar';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
 import { getDeviceId } from '../../../utils/deviceId';
+import { mergeCartItem } from '../../../utils/cartStorage';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import ModalAddToCart from './ModalAddToCart';
+
+const toCleanAmount = (val) => {
+  if (typeof val === 'number') return val;
+  return parseFloat(String(val ?? '0').replace(',', '.')) || 0;
+};
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith('fr') ? 'fr-FR' : 'en-US';
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
 
 const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png' }) => {
   return (
@@ -146,12 +158,48 @@ const SearchTags = ({ items, label, onSelect }) => (
   </div>
 );
 
-const ProductItem = ({ product, onNavigate }) => {
-  const { i18n } = useTranslation('searchmodal');
+const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
+  const { t, i18n } = useTranslation('searchmodal');
   const firstImage = product.products?.[0]?.images?.[0];
   const imageUrl = firstImage ? `${MEDIA_URL}${firstImage.media}` : null;
   const displayName = i18n.language === 'fr' ? product.french_name || product.name : product.name;
   const slug = i18n.language === 'fr' ? product.french_seo_keyword : (product.english_seo_keyword || product.english_seo_keyboard);
+  const variant = product.products?.[0];
+  const price = toCleanAmount(variant?.price ?? product.price);
+  const [adding, setAdding] = useState(false);
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (adding) return;
+    setAdding(true);
+    try {
+      const loginData = localStorage.getItem('LoginData');
+      const token = loginData ? JSON.parse(loginData)?.data?.token : null;
+      const res = await fetch(`${BASE_URL}/user/cart/create`, {
+        method: 'POST',
+        headers: token
+          ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          : { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          token
+            ? { product_id: variant?.id ?? product.id, quantity: 1 }
+            : { device_id: getDeviceId(), product_id: variant?.id ?? product.id, quantity: 1 },
+        ),
+      });
+      const data = await res.json();
+      if (data.status === false) {
+        toast.error(data.action || 'Could not add to cart.');
+      } else {
+        mergeCartItem(data.data);
+        onAddedToCart();
+      }
+    } catch {
+      toast.error('Something went wrong.');
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div
@@ -170,12 +218,32 @@ const ProductItem = ({ product, onNavigate }) => {
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         <h4 className="text-sm font-normal text-gray-800 mb-2">{displayName}</h4>
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-1.5 text-sm text-gray-900">
+            <span className="font-semibold">{formatPrice(price, i18n.language)} €</span>
+            {variant?.size_name && (
+              <span className="text-xs text-gray-500">· {variant.size_name}</span>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={adding}
+            className="shrink-0 border border-gray-900 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-900 cursor-pointer transition-colors hover:bg-gray-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {adding ? (
+              <Spinner style={{ width: 12, height: 12 }} />
+            ) : (
+              t('addToCart', { defaultValue: 'Add to Cart' })
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-const ProductList = ({ title, products, isLoading, onNavigate }) => (
+const ProductList = ({ title, products, isLoading, onNavigate, onAddedToCart }) => (
   <div>
     <h3 className="text-lg font-semibold mb-6 text-gray-900">{title}</h3>
     <div className="space-y-5">
@@ -185,7 +253,12 @@ const ProductList = ({ title, products, isLoading, onNavigate }) => (
         ))
       ) : (
         products.map((product) => (
-          <ProductItem key={product.id} product={product} onNavigate={onNavigate} />
+          <ProductItem
+            key={product.id}
+            product={product}
+            onNavigate={onNavigate}
+            onAddedToCart={onAddedToCart}
+          />
         ))
       )}
     </div>
@@ -200,6 +273,7 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [searchTags, setSearchTags] = useState([]);
   const [searchTagsLabel, setSearchTagsLabel] = useState('');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleNavigate = (slug) => {
     onClose();
@@ -294,16 +368,24 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
               products={popularProducts}
               isLoading={isLoading}
               onNavigate={handleNavigate}
+              onAddedToCart={() => setIsCartOpen(true)}
             />
             <ProductList
               title={t('bestSelling')}
               products={bestSellingProducts}
               isLoading={isLoading}
               onNavigate={handleNavigate}
+              onAddedToCart={() => setIsCartOpen(true)}
             />
           </div>
         </div>
       </div>
+
+      <ModalAddToCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        autoCloseOnLeave
+      />
     </div>
   );
 };

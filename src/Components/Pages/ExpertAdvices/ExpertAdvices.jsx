@@ -18,7 +18,8 @@ import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import { GoArrowUpRight, GoFlame, GoClock } from "react-icons/go";
 import { FaRegStar, FaRegUserCircle } from "react-icons/fa";
 import { FaRegHourglassHalf, FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineUpdate, MdUpdate } from "react-icons/md";
+import { TbLeaf, TbLeaf2 } from "react-icons/tb";
+
 import { CiHeart } from "react-icons/ci";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
@@ -1121,15 +1122,10 @@ function ExpertAdvices() {
                  <IoHourglassOutline size={16} className="text-gray-700 mb-0.4" />
                   {tr("minRead", { time: heroArticle.blog.reading_time || "0" })}
                 </span>
-                {heroArticle.blog.updated_at && (
+                {getCategoryName(heroArticle.blog, isFr) && (
                   <span className="flex items-center gap-1">
-                    <MdUpdate size={18} className="text-gray-700" />
-                    {tr("updatedOn", {
-                      date: new Date(heroArticle.blog.updated_at).toLocaleDateString(
-                        isFr ? "fr-FR" : "en-GB",
-                        { day: "numeric", month: "long", year: "numeric" },
-                      ),
-                    })}
+                    <TbLeaf2 size={16} className="text-gray-700" />
+                    {getCategoryName(heroArticle.blog, isFr)}
                   </span>
                 )}
               </div>

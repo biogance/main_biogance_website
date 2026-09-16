@@ -9,6 +9,7 @@ import { getDeviceId } from "../../../utils/deviceId";
 import { BiLoaderAlt } from "react-icons/bi";
 import { TbLoader3 } from "react-icons/tb";
 import { useRouter } from "next/navigation";
+import { startTopLoader } from "../TopLoader";
 
 const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
   const { t, i18n } = useTranslation("searchmodal");
@@ -70,14 +71,21 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
 
     setShowSuggestions(false);
     setIsSearching(true);
+    startTopLoader();
 
     const params = new URLSearchParams({
       source: "search",
       q: searchKeyword.trim(),
     });
 
-    router.push(`/shop?${params.toString()}`);
-    onSearchComplete?.();
+    // Brief delay so the search button's own spinner is actually visible
+    // (and the top loader bar has started) before the route change closes
+    // this modal — otherwise both happened in the same tick and the
+    // spinner never got a chance to show.
+    setTimeout(() => {
+      router.push(`/shop?${params.toString()}`);
+      onSearchComplete?.();
+    }, 300);
 
     const loginData = localStorage.getItem("LoginData");
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
