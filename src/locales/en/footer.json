@@ -20,7 +20,14 @@
     "title": "Download App on Mobile",
     "googlePlay": "Download on Google Play",
     "appStore": "Download on the App Store",
-    "comingSoon": "Your Experience, Now on Mobile. Coming soon to the Google Play & App Store."
+    "badge": "Launching Soon",
+    "modalTitle": "Something exciting is coming",
+    "modalDescription": "The Biogance app is launching soon. Get ready for a whole new way to care for your companions.",
+    "footerNote": "We'll let you know the moment we launch.",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
   },
   "categories": {
     "dogs": {

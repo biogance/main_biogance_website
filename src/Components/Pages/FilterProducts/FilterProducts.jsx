@@ -636,13 +636,17 @@ export default function FilterProducts() {
   const [ranges, setRanges] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [colors, setColors] = useState([]);
-  const [price, setPrice] = useState(250);
+  const [price, setPrice] = useState(500);
+  const [minPrice, setMinPrice] = useState(0);
   const [sort, setSort] = useState("Featured");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const [isSearchPending, setIsSearchPending] = useState(false);
   const queryDebounceRef = useRef(null);
+  // Mobile-only: the shop description sits inside a collapsed accordion
+  // instead of always showing (desktop keeps it always visible).
+  const [mobileDescOpen, setMobileDescOpen] = useState(false);
 
   useEffect(() => {
     const val = q || "";
@@ -1039,6 +1043,7 @@ export default function FilterProducts() {
       ranges,
       forWhich,
       price,
+      minPrice,
       sort,
       sizes,
       colors,
@@ -1055,6 +1060,7 @@ export default function FilterProducts() {
     ranges,
     forWhich,
     price,
+    minPrice,
     sort,
     sizes,
     colors,
@@ -1140,6 +1146,7 @@ export default function FilterProducts() {
       ...(breedIds ? { breed_id: breedIds } : {}),
       ...(sizes.length > 0 ? { size_name: sizes.join(",") } : {}),
       ...(colors.length > 0 ? { color_name: colors.join(",") } : {}),
+      min_price: minPrice,
       max_price: price,
       sort: sortParam,
       page: targetPage,
@@ -1449,6 +1456,8 @@ export default function FilterProducts() {
     setRanges([]);
     setSizes([]);
     setColors([]);
+    setPrice(500);
+    setMinPrice(0);
   };
 
   return (
@@ -1533,6 +1542,7 @@ export default function FilterProducts() {
           sizes,
           colors,
           price,
+          minPrice,
         }}
         setters={{
           setAnimals,
@@ -1546,6 +1556,7 @@ export default function FilterProducts() {
           setSizes,
           setColors,
           setPrice,
+          setMinPrice,
         }}
         options={{
           familyOptions,
@@ -1593,13 +1604,45 @@ export default function FilterProducts() {
                   <span className="font-sans text-lg sm:text-xl lg:text-2xl font-normal text-stone-400">
                     ({totalCount})
                   </span>
+                  {/* Mobile-only: toggles the collapsed description below */}
+                  <button
+                    type="button"
+                    onClick={() => setMobileDescOpen((v) => !v)}
+                    aria-label={t("toggleDescription", "Toggle description")}
+                    className="ml-auto self-center cursor-pointer lg:hidden"
+                  >
+                    <LuChevronDown
+                      className={`h-5 w-5 text-stone-500 transition-transform duration-300 ${
+                        mobileDescOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
                 </h4>
-                <p className="mt-2  max-w-[50vw] text-sm md:text-lg sm:text-xs text-stone-700 rich-text c-desc">
+                <p className="mt-2 hidden max-w-[50vw] text-sm md:text-lg sm:text-xs text-stone-700 rich-text c-desc lg:block">
                   {t(
                     "products.shopDescription",
                     "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
                   )}
                 </p>
+
+                {/* Mobile-only: same description, collapsed into an
+                    accordion instead of always showing */}
+                <div
+                  className={`grid transition-all duration-300 ease-out lg:hidden ${
+                    mobileDescOpen
+                      ? "grid-rows-[1fr] opacity-100 mt-2"
+                      : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="text-sm text-stone-700 rich-text c-desc">
+                      {t(
+                        "products.shopDescription",
+                        "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Right: search + sort */}
@@ -2089,11 +2132,27 @@ function FilterRail({
   const translateName = translateNameProp || dynamicLists.translateName;
   const [openKey, setOpenKey] = useState(null);
   const [allOpen, setAllOpen] = useState(false);
+  // Price is its own floating popover (anchored under the Price button)
+  // rather than a group inside the shared accordion strip.
+  const [priceOpen, setPriceOpen] = useState(false);
   const ref = useRef(null);
+  const mobilePriceBtnRef = useRef(null);
+  const desktopPriceBtnRef = useRef(null);
+  const pricePanelRef = useRef(null);
+  // Only one of the two buttons is ever actually visible (the other is
+  // display:none via the md breakpoint), so pick whichever has layout.
+  const getPriceAnchorEl = () =>
+    (mobilePriceBtnRef.current?.offsetParent && mobilePriceBtnRef.current) ||
+    (desktopPriceBtnRef.current?.offsetParent && desktopPriceBtnRef.current) ||
+    null;
 
   useEffect(() => {
     const onClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpenKey(null);
+      if (pricePanelRef.current?.contains(e.target)) return;
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpenKey(null);
+        setPriceOpen(false);
+      }
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
@@ -2199,6 +2258,8 @@ function FilterRail({
     setters.setRanges([]);
     setters.setSizes([]);
     setters.setColors([]);
+    setters.setPrice(500);
+    setters.setMinPrice(0);
   };
 
   return (
@@ -2245,15 +2306,23 @@ function FilterRail({
             </span>
           )}
         </button>
-        <button
-          onClick={() => setOpenKey(openKey === "price" ? null : "price")}
-          className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${openKey === "price" ? "bg-stone-100 text-stone-900" : ""}`}
-        >
-          €{state.price}
-          <LuChevronDown
-            className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
-          />
-        </button>
+        <div className="relative shrink-0">
+          <button
+            ref={mobilePriceBtnRef}
+            onClick={() => {
+              setOpenKey(null);
+              setPriceOpen((v) => !v);
+            }}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${priceOpen ? "bg-stone-100 text-stone-900" : ""}`}
+          >
+            {state.minPrice > 0
+              ? `€${state.minPrice} - €${state.price}`
+              : `€${state.price}`}
+            <LuChevronDown
+              className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Desktop / tablet: existing horizontal tab rail */}
@@ -2301,23 +2370,45 @@ function FilterRail({
                 key={g.key}
                 group={g}
                 open={openKey === g.key}
-                onOpen={() => setOpenKey(openKey === g.key ? null : g.key)}
+                onOpen={() => {
+                  setPriceOpen(false);
+                  setOpenKey(openKey === g.key ? null : g.key);
+                }}
                 translateName={translateName}
                 isFrench={isFrench}
               />
             ))}
             <button
-              onClick={() => setOpenKey(openKey === "price" ? null : "price")}
-              className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${openKey === "price" ? "bg-white text-stone-900" : ""}`}
+              ref={desktopPriceBtnRef}
+              onClick={() => {
+                setOpenKey(null);
+                setPriceOpen((v) => !v);
+              }}
+              className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${priceOpen ? "bg-white text-stone-900" : ""}`}
             >
-              {t("price", "Price")} · €{state.price}
+              {t("price", "Price")} ·{" "}
+              {state.minPrice > 0
+                ? `€${state.minPrice} - €${state.price}`
+                : `€${state.price}`}
               <LuChevronDown
-                className={`h-3 w-3 transition ${openKey === "price" ? "rotate-180" : ""}`}
+                className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
               />
             </button>
           </div>
         </div>
       </div>
+
+      <PricePopover
+        open={priceOpen}
+        getAnchorEl={getPriceAnchorEl}
+        panelRef={pricePanelRef}
+        minPrice={state.minPrice}
+        price={state.price}
+        setMinPrice={setters.setMinPrice}
+        setPrice={setters.setPrice}
+        onClose={() => setPriceOpen(false)}
+        align="right"
+      />
 
       {/* Active filter chips — shown directly below the filter bar */}
       {activeChips && activeChips.length > 0 && (
@@ -2381,6 +2472,8 @@ function FilterRail({
           groups={groups}
           price={state.price}
           setPrice={setters.setPrice}
+          minPrice={state.minPrice}
+          setMinPrice={setters.setMinPrice}
           totalActive={totalActive}
           onClearAll={clearAll}
           onClose={() => setAllOpen(false)}
@@ -2393,10 +2486,229 @@ function FilterRail({
   );
 }
 
+const PRICE_FLOOR = 0;
+const PRICE_CEILING = 500;
+
+// Dual-thumb price slider — two overlapping range inputs whose track is
+// pointer-events-none so only each thumb (styled via the pseudo-element
+// arbitrary variants below) is actually clickable. `onChangeMin`/`onChangeMax`
+// only touch local/draft values — callers decide when a draft is actually
+// committed (e.g. on Apply), so dragging never fires a product refetch.
+function PriceRangeControl({
+  minValue,
+  maxValue,
+  onChangeMin,
+  onChangeMax,
+  onReset,
+  onApply,
+  applyLabel,
+  showActions = true,
+}) {
+  const { t } = useTranslation("filter");
+  const percentMin =
+    ((minValue - PRICE_FLOOR) / (PRICE_CEILING - PRICE_FLOOR)) * 100;
+  const percentMax =
+    ((maxValue - PRICE_FLOOR) / (PRICE_CEILING - PRICE_FLOOR)) * 100;
+
+  const thumbClasses =
+    "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-stone-900 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-stone-900 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:appearance-none";
+
+  return (
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-stone-500">
+            {t("from", "From")}
+          </label>
+          <input
+            type="number"
+            min={PRICE_FLOOR}
+            max={maxValue}
+            value={minValue}
+            onChange={(e) =>
+              onChangeMin(Math.min(Number(e.target.value) || 0, maxValue))
+            }
+            className="w-full border border-stone-900/15 bg-white px-3 py-2.5 font-serif text-sm text-stone-900 transition-colors focus:border-stone-900 focus:outline-none"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-stone-500">
+            {t("to", "To")}
+          </label>
+          <input
+            type="number"
+            min={minValue}
+            max={PRICE_CEILING}
+            value={maxValue}
+            onChange={(e) =>
+              onChangeMax(Math.max(Number(e.target.value) || 0, minValue))
+            }
+            className="w-full border border-stone-900/15 bg-white px-3 py-2.5 font-serif text-sm text-stone-900 transition-colors focus:border-stone-900 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="relative mt-6 h-4">
+        <div className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 bg-stone-900/15" />
+        <div
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-stone-900"
+          style={{ left: `${percentMin}%`, right: `${100 - percentMax}%` }}
+        />
+        <input
+          type="range"
+          min={PRICE_FLOOR}
+          max={PRICE_CEILING}
+          value={minValue}
+          onChange={(e) =>
+            onChangeMin(Math.min(Number(e.target.value), maxValue))
+          }
+          className={`pointer-events-none absolute inset-0 w-full h-4 appearance-none bg-transparent ${thumbClasses}`}
+        />
+        <input
+          type="range"
+          min={PRICE_FLOOR}
+          max={PRICE_CEILING}
+          value={maxValue}
+          onChange={(e) =>
+            onChangeMax(Math.max(Number(e.target.value), minValue))
+          }
+          className={`pointer-events-none absolute inset-0 w-full h-4 appearance-none bg-transparent ${thumbClasses}`}
+        />
+      </div>
+
+      <div className="mt-2 flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
+        <span>€{PRICE_FLOOR}</span>
+        <span>€{PRICE_CEILING}</span>
+      </div>
+
+      {showActions && (
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onReset}
+            className="border border-stone-900/20 px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 transition-colors hover:border-stone-900 hover:bg-stone-100 cursor-pointer"
+          >
+            {t("reset", "Reset")}
+          </button>
+          <button
+            type="button"
+            onClick={onApply}
+            className="flex-1 bg-stone-900 px-5 py-2.5 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
+          >
+            {applyLabel || t("apply", "Apply")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Floating card anchored under the Price trigger button. Portaled to
+// document.body (instead of position:absolute inside the tab rail) so the
+// rail's overflow-x-auto scroller never clips it — position is computed
+// from getAnchorEl()'s bounding box instead. Draft state is re-seeded from
+// the committed price every time it opens, and only Done commits it (which
+// is what actually triggers the product refetch).
+function PricePopover({
+  open,
+  getAnchorEl,
+  panelRef,
+  minPrice,
+  price,
+  setMinPrice,
+  setPrice,
+  onClose,
+  align = "right",
+}) {
+  const { t } = useTranslation("filter");
+  const [draftMin, setDraftMin] = useState(minPrice);
+  const [draftMax, setDraftMax] = useState(price);
+  const [coords, setCoords] = useState(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftMin(minPrice);
+      setDraftMax(price);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      const anchor = getAnchorEl?.();
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + 10,
+        left: rect.left,
+        right: window.innerWidth - rect.right,
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, getAnchorEl]);
+
+  if (!open || !coords || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      ref={panelRef}
+      className="fixed z-[200] w-[320px] max-w-[calc(100vw-2rem)] border border-stone-900/10 bg-white p-6 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)]"
+      style={{
+        top: coords.top,
+        ...(align === "right" ? { right: coords.right } : { left: coords.left }),
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="text-xs uppercase tracking-[0.2em] text-stone-500">
+          {t("price", "Price")}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="text-stone-900 hover:text-stone-600 cursor-pointer"
+        >
+          <LuX className="h-4 w-4" />
+        </button>
+      </div>
+
+      <PriceRangeControl
+        minValue={draftMin}
+        maxValue={draftMax}
+        onChangeMin={setDraftMin}
+        onChangeMax={setDraftMax}
+        onReset={() => {
+          setDraftMin(0);
+          setDraftMax(PRICE_CEILING);
+          setMinPrice(0);
+          setPrice(PRICE_CEILING);
+        }}
+        onApply={() => {
+          setMinPrice(draftMin);
+          setPrice(draftMax);
+          onClose();
+        }}
+        applyLabel={t("done", "Done")}
+      />
+    </div>,
+    document.body,
+  );
+}
+
 function AllFiltersModal({
   groups,
   price,
   setPrice,
+  minPrice,
+  setMinPrice,
   totalActive,
   onClearAll,
   onClose,
@@ -2406,12 +2718,29 @@ function AllFiltersModal({
 }) {
   const { t } = useTranslation("filter");
   const [isClosing, setIsClosing] = useState(false);
+  // Draft price so dragging the slider inside this drawer doesn't refetch
+  // products — only "Show results" commits it (the modal remounts fresh
+  // each time it opens, so a plain useState is enough to seed the draft).
+  const [draftPrice, setDraftPrice] = useState(price);
+  const [draftMinPrice, setDraftMinPrice] = useState(minPrice);
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
     }, 400);
+  };
+
+  const handleShowResults = () => {
+    setPrice(draftPrice);
+    setMinPrice(draftMinPrice);
+    handleClose();
+  };
+
+  const handleClearAll = () => {
+    onClearAll();
+    setDraftPrice(500);
+    setDraftMinPrice(0);
   };
 
   useEffect(() => {
@@ -2503,33 +2832,30 @@ function AllFiltersModal({
           <section className="border-t text-stone-900 border-stone-900/10 py-5">
             <div className="mb-3 flex items-baseline justify-between">
               <h3 className="font-serif text-lg">{t("price", "Price")}</h3>
-              <span className="font-serif text-xl">€{price}</span>
+              <span className="font-serif text-xl">
+                €{draftMinPrice} – €{draftPrice}
+              </span>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={500}
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              className="h-1 w-full accent-stone-900 cursor-pointer"
+            <PriceRangeControl
+              minValue={draftMinPrice}
+              maxValue={draftPrice}
+              onChangeMin={setDraftMinPrice}
+              onChangeMax={setDraftPrice}
+              showActions={false}
             />
-            <div className="mt-2 flex justify-between  text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              <span>€0</span>
-              <span>€500</span>
-            </div>
           </section>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 border-t border-stone-900/10 bg-white px-7 py-4">
           <button
-            onClick={onClearAll}
+            onClick={handleClearAll}
             className="text-xs uppercase tracking-[0.2em] text-stone-500 underline underline-offset-4 hover:text-stone-900 cursor-pointer"
           >
             {t("resetAll", "Reset all")}
           </button>
           <button
-            onClick={handleClose}
+            onClick={handleShowResults}
             className=" bg-stone-900 px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
           >
             {t("showResults", "Show results")}
@@ -2713,7 +3039,6 @@ function FilterPanel({
   onClose,
   dynamicLists,
 }) {
-  const { t } = useTranslation("filter");
   const {
     RANGES_LIST,
     SIZES_LIST,
@@ -2747,7 +3072,6 @@ function FilterPanel({
 
   if (!renderedKey) return null;
 
-  const isPrice = renderedKey === "price";
   const groups = [
     {
       key: "animal",
@@ -2835,40 +3159,7 @@ function FilterPanel({
       }`}
     >
       <div className="mx-auto max-w-10xl px-8">
-        {isPrice ? (
-          <div className="flex flex-col gap-4 py-1 md:flex-row md:items-center md:gap-6">
-            {/* Label + value */}
-            <div className="flex items-baseline gap-3 shrink-0">
-              <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-                {t("price", "Price")}
-              </span>
-              <span className="font-serif text-2xl">€{state.price}</span>
-              <span className="text-xs text-stone-500">{t("max", "max")}</span>
-            </div>
-            {/* Slider + range labels */}
-            <div className="flex flex-1 flex-col gap-1.5">
-              <input
-                type="range"
-                min={0}
-                max={500}
-                value={state.price}
-                onChange={(e) => setters.setPrice(Number(e.target.value))}
-                className="h-1 w-full accent-stone-900 cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
-                <span>€0</span>
-                <span>€500</span>
-              </div>
-            </div>
-            {/* Done button */}
-            <button
-              onClick={onClose}
-              className="self-start rounded-full border border-stone-900 px-4 py-2 text-[10px] uppercase tracking-[0.25em] cursor-pointer bg-white hover:bg-stone-900 hover:text-white transition md:self-auto"
-            >
-              {t("done", "Done")}
-            </button>
-          </div>
-        ) : group ? (
+        {group ? (
           <FilterSheetContent
             group={group}
             onClose={onClose}
