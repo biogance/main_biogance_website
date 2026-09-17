@@ -73,9 +73,11 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
     setIsSearching(true);
     startTopLoader();
 
+    const category = selectedCategoryRef.current;
     const params = new URLSearchParams({
       source: "search",
       q: searchKeyword.trim(),
+      ...(category ? { category_id: String(category.id) } : {}),
     });
 
     // Brief delay so the search button's own spinner is actually visible
@@ -89,7 +91,6 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
 
     const loginData = localStorage.getItem("LoginData");
     const token = loginData ? JSON.parse(loginData)?.data?.token : null;
-    const category = selectedCategoryRef.current;
 
     const body = {
       keyword: searchKeyword,
@@ -204,16 +205,14 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
     </div>
   );
 
-  const SearchButton = ({ className }) => (
+  const searchButton = (className) => (
     <button
       onClick={() => handleSearch()}
       disabled={isSearching}
       className={`bg-black text-white cursor-pointer flex items-center justify-center disabled:cursor-not-allowed transition-colors hover:bg-gray-800 ${className}`}
     >
       {isSearching ? (
-       
         <TbLoader3 className="animate-spin w-5 h-5 text-white" />
-
       ) : (
         <IoSearch className="w-5 h-5" />
       )}
@@ -264,7 +263,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
               </div>
             )}
           </div>
-          <SearchButton className=" px-8 py-3.5" />
+          {searchButton(" px-8 py-3.5")}
         </div>
 
         {/* Mobile Layout */}
@@ -284,7 +283,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
               />
               {suggestionsList}
             </div>
-            <SearchButton className=" px-6 py-3" />
+            {searchButton(" px-6 py-3")}
           </div>
 
           <div className="relative w-full" ref={mobileDropdownRef}>
