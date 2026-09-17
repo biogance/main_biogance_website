@@ -11,7 +11,7 @@ import {
   SlSocialLinkedin,
   SlSocialYoutube,
 } from "react-icons/sl";
-import { PiTwitterLogo } from "react-icons/pi";
+import { PiXLogo } from "react-icons/pi";
 import { BsTiktok } from "react-icons/bs";
 import ContactUs from "./Onboarding/ContactUs";
 import AppLaunchModal from "./AppLaunchModal";
@@ -271,10 +271,10 @@ export default function Footer() {
                     href="https://x.com/BIOGANCE"
                     target="_blank"
                     rel="noreferrer"
-                    aria-label="Twitter"
+                    aria-label="X"
                     className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
                   >
-                    <PiTwitterLogo className="w-4 h-4  text-[#E3E3E3]" />
+                    <PiXLogo className="w-4 h-4  text-[#E3E3E3]" />
                   </a>
                   <a
                     href="https://www.tiktok.com/@bioganceofficiel"

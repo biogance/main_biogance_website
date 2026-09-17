@@ -554,8 +554,8 @@ export default function BreedLibrary({ onOpenBreed }) {
       </div>
 
       
-      <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-b border-[#d8d8d4]">
-        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5">
+      <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-[#d8d8d4]">
+        <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5 border-b border-[#d8d8d4]">
           
           <div className="flex overflow-x-auto min-w-0">
             {speciesTabs.map((tab) => (
@@ -614,22 +614,32 @@ export default function BreedLibrary({ onOpenBreed }) {
             }}
           >
             <div className={panelSettled ? 'overflow-visible' : 'overflow-hidden'}>
-              <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[761px]:grid-cols-2 min-[1051px]:grid-cols-4 border-b border-[#d8d8d4]">
-                <div className="p-5 border-l border-r border-[#d8d8d4]">
-                  <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.sizeLabel')}</span>
-                  <BreedFilterSelect label={t('library.sizeLabel')} value={size} options={sizeOptions} onChange={setSize} />
-                </div>
-                <div className="p-5 border-r border-[#d8d8d4]">
-                  <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.groomingLabel')}</span>
-                  <BreedFilterSelect label={t('library.groomingLabel')} value={grooming} options={groomingOptions} onChange={setGrooming} />
-                </div>
-                <div className="p-5 border-r border-[#d8d8d4]">
-                  <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.energyLabel')}</span>
-                  <BreedFilterSelect label={t('library.energyLabel')} value={energy} options={energyOptions} onChange={setEnergy} />
-                </div>
-                <div className="p-5 border-r border-[#d8d8d4]">
-                  <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.apartmentLabel')}</span>
-                  <BreedFilterSelect label={t('library.apartmentLabel')} value={apartment} options={apartmentOptions} onChange={setApartment} />
+              <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-6 pb-6">
+                {/* gap-px + bg trick: the container's bg paints the 1px seams, so
+                    every divider (vertical or horizontal, at any column count
+                    this grid wraps to) is drawn exactly once — no doubled or
+                    missing lines like the old per-cell border-l/border-r/border-b
+                    combo produced once the grid wrapped to 2 or 1 columns. The
+                    shadow plus the pt-6/pb-6 gap above reads as a detached card,
+                    so its border never visually fuses with the species-tabs
+                    divider sitting right above it. */}
+                <div className="grid grid-cols-1 min-[761px]:grid-cols-2 min-[1051px]:grid-cols-4 gap-px bg-[#d8d8d4] border border-[#d8d8d4] shadow-[0_4px_16px_rgba(0,0,0,.06)]">
+                  <div className="p-5 bg-[#f6f6f4]">
+                    <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.sizeLabel')}</span>
+                    <BreedFilterSelect label={t('library.sizeLabel')} value={size} options={sizeOptions} onChange={setSize} />
+                  </div>
+                  <div className="p-5 bg-[#f6f6f4]">
+                    <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.groomingLabel')}</span>
+                    <BreedFilterSelect label={t('library.groomingLabel')} value={grooming} options={groomingOptions} onChange={setGrooming} />
+                  </div>
+                  <div className="p-5 bg-[#f6f6f4]">
+                    <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.energyLabel')}</span>
+                    <BreedFilterSelect label={t('library.energyLabel')} value={energy} options={energyOptions} onChange={setEnergy} />
+                  </div>
+                  <div className="p-5 bg-[#f6f6f4]">
+                    <span className="block text-[9px] tracking-[.15em] uppercase mb-[11px] text-[#777]">{t('library.apartmentLabel')}</span>
+                    <BreedFilterSelect label={t('library.apartmentLabel')} value={apartment} options={apartmentOptions} onChange={setApartment} />
+                  </div>
                 </div>
               </div>
             </div>

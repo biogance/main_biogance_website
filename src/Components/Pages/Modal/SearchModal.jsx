@@ -70,52 +70,39 @@ const Spinner = styled.div`
   animation: ${spin} 0.8s linear infinite;
 `;
 
-// Loading Product Item Component
+// IMAGE_SIZE must match the real ProductItem image box exactly.
+// Tailwind's w-22/h-22 = 5.5rem = 88px.
+const IMG_SIZE = 88;
+
+// Loading Product Item — mirrors ProductItem DOM 1-to-1:
+// same -mx-2 px-2 py-3, same image size, same text rows, same button size.
 const LoadingProductItem = () => (
-  <div className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3  transition-colors">
-    {/* Image area with spinner */}
-    <div className="w-22 h-22 bg-gray-100  flex items-center justify-center flex-shrink-0 overflow-hidden">
-      <Spinner />
-    </div>
-    
+  <div className="flex gap-4 items-start -mx-2 px-2 py-3">
+    <ShimmerBase style={{ width: IMG_SIZE, height: IMG_SIZE, flexShrink: 0 }} />
     <div className="flex-1 min-w-0 flex flex-col justify-center">
-      {/* Product name shimmer */}
-      <ShimmerBase 
-        style={{ 
-          width: '100%',
-          height: '14px',
-          marginBottom: '8px',
-          borderRadius: '4px'
-        }} 
-      />
-      
-      {/* Size badge shimmer */}
-      <ShimmerBase 
-        style={{ 
-          width: '60px',
-          height: '24px',
-          borderRadius: '9999px',
-          marginBottom: '8px'
-        }} 
-      />
-      
-      {/* Price shimmer */}
-      <div className="flex items-center gap-2">
-        <ShimmerBase 
-          style={{ 
-            width: '50px',
-            height: '14px',
-            borderRadius: '4px'
-          }} 
-        />
-        <ShimmerBase 
-          style={{ 
-            width: '60px',
-            height: '16px',
-            borderRadius: '4px'
-          }} 
-        />
+      {/* name — matches <h4 className="text-sm … mb-2"> line-height ~20px */}
+      <ShimmerBase style={{ width: '80%', height: 14, borderRadius: 3, marginBottom: 8 }} />
+      {/* price + button row — matches the justify-between flex row */}
+      <div className="flex items-center justify-between gap-3">
+        <ShimmerBase style={{ width: 64, height: 14, borderRadius: 3 }} />
+        {/* button: width:90 height:30 — exact match to real button style */}
+        <ShimmerBase style={{ width: 90, height: 30, borderRadius: 0, flexShrink: 0 }} />
       </div>
+    </div>
+  </div>
+);
+
+// Loading Search Tags — mirrors SearchTags DOM 1-to-1:
+// same mb-8, same h3 text-sm font-medium mb-4, same px-4 py-2 buttons.
+const LoadingSearchTags = () => (
+  <div className="mb-8 max-w-4xl mx-auto">
+    {/* label — matches <h3 className="text-sm font-medium text-gray-800 mb-4"> */}
+    <ShimmerBase style={{ width: 140, height: 14, borderRadius: 3, marginBottom: 16 }} />
+    <div className="flex flex-wrap gap-2">
+      {[72, 72, 72, 72, 72, 72, 72, 72, 72, 72].map((w, i) => (
+        // px-4 py-2 on text-sm = ~36px tall, variable width
+        <ShimmerBase key={i} style={{ width: w, height: 36, borderRadius: 0 }} />
+      ))}
     </div>
   </div>
 );
@@ -167,6 +154,16 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
   const variant = product.products?.[0];
   const price = toCleanAmount(variant?.price ?? product.price);
   const [adding, setAdding] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setImageLoaded(false);
+    if (!imageUrl) { setImageLoaded(true); return; }
+    const img = new window.Image();
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageLoaded(true);
+    img.src = imageUrl;
+  }, [imageUrl]);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -204,8 +201,20 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
   return (
     <div
       onClick={() => onNavigate(slug || product.id)}
-      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3  transition-colors cursor-pointer">
-      <div className="w-22 h-22 bg-gray-100  flex items-center justify-center flex-shrink-0 overflow-hidden">
+      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 transition-colors cursor-pointer">
+      <div className="bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative" style={{ width: IMG_SIZE, height: IMG_SIZE }}>
+        {!imageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#f3f3f3', zIndex: 1 }}>
+            <div style={{
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              border: '3px solid #aaa',
+              borderTopColor: 'transparent',
+              animation: 'lcSpin 0.75s linear infinite',
+            }} />
+          </div>
+        )}
         {imageUrl ? (
           <ImageWithFallback
             src={imageUrl}
@@ -213,7 +222,7 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-100 " />
+          <div className="w-full h-full bg-gray-100" />
         )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -229,12 +238,16 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
             type="button"
             onClick={handleAddToCart}
             disabled={adding}
-            className="shrink-0 border border-gray-900 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-900 cursor-pointer transition-colors hover:bg-gray-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="shrink-0 relative  border border-gray-900 text-[11px] font-medium uppercase tracking-wider text-gray-900 cursor-pointer transition-colors hover:bg-gray-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            style={{ width: 95, height: 30 }}
           >
-            {adding ? (
-              <Spinner style={{ width: 12, height: 12 }} />
-            ) : (
-              t('addToCart', { defaultValue: 'Add to Cart' })
+            <span style={{ visibility: adding ? 'hidden' : 'visible' }}>
+              {t('addToCart', { defaultValue: 'Add to Cart' })}
+            </span>
+            {adding && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <Spinner style={{ width: 12, height: 12 }} />
+              </span>
             )}
           </button>
         </div>
@@ -245,7 +258,10 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
 
 const ProductList = ({ title, products, isLoading, onNavigate, onAddedToCart }) => (
   <div>
-    <h3 className="text-lg font-semibold mb-6 text-gray-900">{title}</h3>
+    {/* Title always rendered so shimmer and real layout occupy identical vertical space */}
+    <h3 className="text-lg font-semibold mb-6 text-gray-900">
+      {isLoading ? <ShimmerBase style={{ width: 120, height: 18, borderRadius: 3, display: 'inline-block' }} /> : title}
+    </h3>
     <div className="space-y-5">
       {isLoading ? (
         Array.from({ length: 3 }).map((_, index) => (
@@ -336,13 +352,17 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
           }
+          @keyframes lcSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
         `}
       </style>
       <div className="w-full h-full overflow-y-auto relative hide-scrollbar">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-5 lg:top-6 lg:right-6 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors z-10"
+           className="absolute top-2 right-4 p-1.5 text-black hover:text-gray-600 hover:bg-gray-100 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
         >
           <IoClose className="w-7 h-7" />
         </button>
@@ -357,7 +377,9 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
           />
 
           {/* Recent or Trending Searches */}
-          {searchTags.length > 0 && (
+          {isLoading ? (
+            <LoadingSearchTags />
+          ) : searchTags.length > 0 && (
             <SearchTags items={searchTags} label={searchTagsLabel} onSelect={handleTagSearch} />
           )}
 

@@ -2380,6 +2380,10 @@ function FilterRail({
             ))}
             <button
               ref={desktopPriceBtnRef}
+              onMouseEnter={() => {
+                setOpenKey(null);
+                setPriceOpen(true);
+              }}
               onClick={() => {
                 setOpenKey(null);
                 setPriceOpen((v) => !v);
