@@ -335,13 +335,13 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data?.status === false) {
-        toast.error(res.data?.action || res.data?.action_message || t("somethingWentWrong"));
+        toast.error(res.data?.action_message || res.data?.action || t("somethingWentWrong"));
       } else {
         setSaved((v) => !v);
       }
     } catch (err) {
       const d = err.response?.data;
-      toast.error(d?.action || d?.action_message || t("somethingWentWrong"));
+      toast.error(d?.action_message || d?.action || t("somethingWentWrong"));
     } finally {
       setSaving(false);
     }
@@ -447,7 +447,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
       token ? { headers: { Authorization: `Bearer ${token}` } } : {},
     );
     if (res.data.status === false) {
-      throw new Error(res.data.action || t("couldNotAddToCart"));
+      throw new Error(res.data.action_message || res.data.action || t("couldNotAddToCart"));
     }
     mergeCartItem(res.data.data);
   };

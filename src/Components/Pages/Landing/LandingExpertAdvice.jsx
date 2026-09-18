@@ -107,7 +107,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
         const msg =
           res.data.errors?.length > 0
             ? res.data.errors[0].message
-            : res.data.action;
+            : res.data.action_message || res.data.action;
         toast.error(msg);
       } else {
         setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));

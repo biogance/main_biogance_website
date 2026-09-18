@@ -151,7 +151,7 @@ export default function ProductDetail() {
         const msg =
           res.data.errors?.length > 0
             ? res.data.errors[0].message
-            : res.data.action;
+            : (res.data.action_message || res.data.action);
         toast.error(msg);
       } else {
         setIsWishlisted((prev) => !prev);
@@ -175,7 +175,7 @@ export default function ProductDetail() {
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data.status === false) {
-        toast.error(res.data.action || "Could not add to cart.");
+        toast.error(res.data.action_message || res.data.action || "Could not add to cart.");
       } else {
         mergeCartItem(res.data.data);
         setIsCartOpen(true);

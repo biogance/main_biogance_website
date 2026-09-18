@@ -176,7 +176,7 @@ export default function Settings() {
         setPasswords({ current: '', new: '', confirm: '' });
         toast.success(decodeHtml(data?.action) || 'Password updated successfully');
       } else {
-        const errMsg = decodeHtml(data?.action) || decodeHtml(data?.message) || 'Failed to update password';
+        const errMsg = decodeHtml(data?.action_message) || decodeHtml(data?.action) || decodeHtml(data?.message) || 'Failed to update password';
         toast.error(errMsg);
         setErrors(prev => ({ ...prev, current: errMsg }));
       }

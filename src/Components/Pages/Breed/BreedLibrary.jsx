@@ -370,7 +370,7 @@ export default function BreedLibrary({ onOpenBreed }) {
           // fetchBreeds a new identity on every language switch, which is
           // exactly the refetch-on-language-switch bug the `breeds` memo
           // above exists to avoid.
-          toast.error(res.data.action || i18n.t('library.genericError', { ns: 'breed' }));
+          toast.error(res.data.action_message || res.data.action || i18n.t('library.genericError', { ns: 'breed' }));
           return;
         }
 

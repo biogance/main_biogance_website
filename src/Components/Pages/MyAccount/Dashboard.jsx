@@ -187,7 +187,7 @@ export default function Dashboard() {
           });
           const data = await res.json();
           if (data?.status === false) {
-            toast.error(data?.action || 'Something went wrong.');
+            toast.error(data?.action_message || data?.action || 'Something went wrong.');
           } else if (data?.status) {
             setLoyaltyPoints(data.data?.loyalty_points ?? 0);
             setTotalOrders(data.data?.total_orders ?? 0);
@@ -241,12 +241,7 @@ export default function Dashboard() {
   };
 
   return (
-    // No min-h-screen here — MyAccount.jsx's wrapper already reserves a
-    // full viewport (with the navbar's 104px clearance baked in). Stacking
-    // another min-h-screen on top of that forced this tab to be at least a
-    // full extra viewport tall no matter how little content it had, causing
-    // a page scrollbar on short/empty content at any screen size or zoom
-    // level.
+    
     <div className="bg-gray-100">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
@@ -260,10 +255,7 @@ export default function Dashboard() {
       `}} />
 
       <div className="p-4 md:p-8 max-w-10xl mx-auto">
-        {/* Welcome Message — mt-2 on mobile, not mt-6: stacked on top of
-            Sidebar.jsx's own trailing space under the mobile tab row, that
-            combination was the large empty gap between the tabs and this
-            heading on small screens. md:mt-10 keeps desktop unchanged. */}
+       
         <h1 className="text-xl md:text-2xl mb-6 md:mb-8 mt-2 md:mt-10 font-semibold text-gray-900">
           {t('dashboard.welcome', { name: userName })}
         </h1>

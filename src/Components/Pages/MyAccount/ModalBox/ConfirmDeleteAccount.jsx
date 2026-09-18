@@ -43,7 +43,7 @@ export default function ConfirmDeletionModal({ onClose }) {
                 localStorage.removeItem('LoginData');
                 setIsDeleted(true);
             } else {
-                setError(data?.action || data?.message || 'Failed to delete account');
+                setError(data?.action_message || data?.action || data?.message || 'Failed to delete account');
             }
         } catch {
             setError('Something went wrong. Please try again.');

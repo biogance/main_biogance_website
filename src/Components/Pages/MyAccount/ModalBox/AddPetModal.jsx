@@ -499,7 +499,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
       });
       const data = await res.json();
       if (data?.status === false) {
-        toast.error(data?.action || 'Something went wrong.');
+        toast.error(data?.action_message || data?.action || 'Something went wrong.');
       } else if (res.ok || data?.status) {
         if (isEditMode) {
           onSuccess?.();

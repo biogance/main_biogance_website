@@ -4,10 +4,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import BreedCard from './BreedCard';
 import ShareModal from '../Modal/ShareModal';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
 import { sanitizeSeoKeyword } from '../../../utils/seoKeyword';
+import { getDeviceId } from '../../../utils/deviceId';
 
 function Rating({ n = 0 }) {
   return (
@@ -175,6 +177,7 @@ function mapBreed(item, isFrench, lookups = {}) {
     energy: energyEntry ? starCount((isFrench && energyEntry.french_name) || energyEntry.name) : 0,
     grooming: groomingEntry ? starCount((isFrench && groomingEntry.french_name) || groomingEntry.name) : 0,
     apartment: apartmentEntry ? apartmentEntry.french_name : '',
+    favoritesExists: !!item.favorites_exists,
   };
 }
 
@@ -208,6 +211,7 @@ export default function BreedArticle({ slug, onLoaded }) {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [likeSaving, setLikeSaving] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -286,27 +290,37 @@ export default function BreedArticle({ slug, onLoaded }) {
     onLoaded?.(breed);
     setImgFailed(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    try {
-      const likedList = JSON.parse(localStorage.getItem('bioganceBreedLikes') || '[]');
-      setLiked(likedList.includes(`${breed.species}:${breed.slug}`));
-    } catch {
-      /* ignore */
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breed?.id]);
 
-  function toggleLike() {
-    if (!breed) return;
-    const key = `${breed.species}:${breed.slug}`;
-    let likedList = [];
+ 
+  useEffect(() => {
+    if (!breed?.id) return;
+    setLiked(!!breed.favoritesExists);
+  }, [breed?.id, breed?.favoritesExists]);
+
+  async function toggleLike() {
+    if (!breed || likeSaving) return;
+    setLikeSaving(true);
     try {
-      likedList = JSON.parse(localStorage.getItem('bioganceBreedLikes') || '[]');
-    } catch {
-      /* ignore */
+      const loginData = JSON.parse(localStorage.getItem('LoginData') || 'null');
+      const token = loginData?.data?.token;
+      const res = await axios.post(
+        `${BASE_URL}/user/add/favorite/breed/${breed.id}`,
+        token ? {} : { device_id: getDeviceId() },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+      );
+      if (res.data?.status === false) {
+        toast.error(res.data?.action_message || res.data?.action || t('library.genericError'));
+      } else {
+        setLiked((v) => !v);
+      }
+    } catch (err) {
+      const d = err.response?.data;
+      toast.error(d?.action_message || d?.action || t('library.genericError'));
+    } finally {
+      setLikeSaving(false);
     }
-    likedList = likedList.includes(key) ? likedList.filter((x) => x !== key) : [...likedList, key];
-    localStorage.setItem('bioganceBreedLikes', JSON.stringify(likedList));
-    setLiked(likedList.includes(key));
   }
 
   if (loading) {
@@ -362,7 +376,8 @@ export default function BreedArticle({ slug, onLoaded }) {
             <button
               type="button"
               onClick={toggleLike}
-              className={`min-h-[42px] cursor-pointer border border-[#171717] px-4 inline-flex items-center gap-2 uppercase text-[9px] tracking-[.13em] ${
+              disabled={likeSaving}
+              className={`min-h-[42px] cursor-pointer border border-[#171717] px-4 inline-flex items-center gap-2 uppercase text-[9px] tracking-[.13em] disabled:opacity-50 ${
                 liked ? 'bg-black text-white' : 'bg-transparent hover:bg-black hover:text-white'
               }`}
             >

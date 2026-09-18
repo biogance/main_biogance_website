@@ -210,7 +210,7 @@ export default function HeroSection() {
       .post(`${BASE_URL}/web/home`, payload)
       .then((res) => {
         if (res.data.status === false) {
-          toast.error(res.data.action);
+          toast.error(res.data.action_message || res.data.action);
         } else {
           // setApiData must run no matter what — this is what actually
           // paints the UI. It used to run AFTER localStorage.setItem below,

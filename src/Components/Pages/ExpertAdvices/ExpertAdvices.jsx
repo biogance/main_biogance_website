@@ -864,7 +864,7 @@ function ExpertAdvices() {
         });
 
         if (!res.data.status) {
-          toast.error(res.data.action || "Something went wrong.");
+          toast.error(res.data.action_message || res.data.action || "Something went wrong.");
           return;
         }
 
@@ -966,13 +966,7 @@ function ExpertAdvices() {
     hasMore,
   ]);
 
-  // Snapshot scroll position on every click's capture phase — which runs
-  // before React's (bubble-phase) onClick, i.e. before router.push. Deliberately
-  // NOT a passive "scroll" listener: router.push resets window.scrollY to 0
-  // synchronously as part of starting the navigation, still within the same
-  // click, and that reset itself fires a "scroll" event — so a scroll listener
-  // sharing this ref would just get overwritten back to 0 by that event right
-  // after the correct value was captured, before the component ever unmounts.
+  
   const lastScrollYRef = useRef(0);
   useEffect(() => {
     const captureScroll = () => {
@@ -983,11 +977,7 @@ function ExpertAdvices() {
     return () => document.removeEventListener("click", captureScroll, true);
   }, []);
 
-  // Capture that last-known scroll position at the moment we navigate away
-  // (article click, See All, etc.) so returning via back button lands where
-  // the user left off instead of resetting to the top —
-  // window.history.scrollRestoration is forced to "manual" (see
-  // ExpertAdvicesDetail.jsx) so the browser won't do this on its own.
+  
   useEffect(() => {
     return () => {
       if (expertAdvicesStateCache) {
@@ -996,9 +986,7 @@ function ExpertAdvices() {
     };
   }, []);
 
-  // Restore that position only once columns (and therefore the real grid
-  // layout/page height) have resolved, so the target offset lines up with
-  // what's actually rendered instead of the pre-layout fallback height.
+  
   const scrollRestoredRef = useRef(false);
   useEffect(() => {
     if (scrollRestoredRef.current || !columns || cachedState?.scrollY == null) return;
@@ -1008,9 +996,7 @@ function ExpertAdvices() {
     });
   }, [columns, cachedState]);
 
-  // Jab user category/topic choose kare ya search kare aur woh page pe neeche
-  // scrolled ho, to filters ke "stuck" (navbar ke sath chipke) position tak
-  // upar scroll ho jaye — taake naya data (pehli row samet) nazar aa jaye.
+  
   const isFirstSearchRender = useRef(true);
   const scrollToFilters = useCallback(() => {
     const filters = filtersRef.current;
@@ -1159,14 +1145,7 @@ function ExpertAdvices() {
                 <HiOutlineArrowUpRight className="w-3.5 h-3.5" />
               </a>
             </div>
-            {/* items-stretch on the parent flex row (line 1105) stretches
-                this column to match the text column's height by default,
-                so a fixed-height box (h-420px) just sat at the TOP of that
-                taller row, leaving a gap below it instead of the image
-                reaching the row's bottom edge at every screen size.
-                self-end overrides the stretch for this one item and pins
-                it to the bottom of the row instead — object-contain and
-                the fixed height stay as they were. */}
+           
             <div className="hidden lg:block relative lg:w-1/2 self-end h-[420px]">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="w-9 h-9 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
@@ -1251,14 +1230,7 @@ function ExpertAdvices() {
 
               return (
                 <>
-                  {/* md:min-h-[40px] on both rows — matches the search box's
-                      rendered height (h-9 + border) so whichever row it
-                      slides into never changes that row's height. Without
-                      this, the row losing/gaining the search box shrank or
-                      grew by ~11px, which visibly pushed the OTHER row's
-                      tags up/down instead of leaving them in place. Fixing
-                      the height here also centers the (shorter) tabs-only
-                      row's content evenly top/bottom via items-center. */}
+                  
                   <div className="flex flex-col md:flex-row md:items-center gap-4 md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow

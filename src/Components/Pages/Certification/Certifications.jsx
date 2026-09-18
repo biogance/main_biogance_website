@@ -51,7 +51,7 @@ export default function Certifications() {
           const msg =
             data.errors?.length > 0
               ? data.errors[0].message
-              : data.action || data.title || 'Something went wrong.';
+              : data.action_message || data.action || data.title || 'Something went wrong.';
           toast.error(msg);
         } else if (Array.isArray(data.data) && data.data.length > 0) {
           const formatted = data.data.map((item) => ({

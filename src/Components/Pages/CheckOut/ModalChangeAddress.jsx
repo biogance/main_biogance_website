@@ -114,7 +114,7 @@ export default function ModalChangeAddress({
         setDeleteAddressId(null);
         fetchAddresses();
       } else {
-        toast.error(res.data.action || t("errorFailedToDeleteAddress"));
+        toast.error(res.data.action_message || res.data.action || t("errorFailedToDeleteAddress"));
       }
     } catch (err) {
       console.error(err);
@@ -171,7 +171,7 @@ export default function ModalChangeAddress({
       });
 
       if (res.data.status === false) {
-        toast.error(res.data.action || t("errorFailedToSaveAddress"));
+        toast.error(res.data.action_message || res.data.action || t("errorFailedToSaveAddress"));
       } else {
         onSelect(selectedAddress);
         onClose();

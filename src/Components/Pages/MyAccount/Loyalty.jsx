@@ -173,7 +173,7 @@ export default function Loyalty() {
         .then(res => res.json())
         .then(data => {
           if (data?.status === false) {
-            toast.error(data?.action || 'Something went wrong.');
+            toast.error(data?.action_message || data?.action || 'Something went wrong.');
           } else if (data?.status) {
             setUserBalance(data.data.loyalty_points);
             setVouchers(

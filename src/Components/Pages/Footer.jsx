@@ -62,7 +62,7 @@ export default function Footer() {
       if (res.data.status === false) {
         setNewsletterStatus("idle");
         toast.error(
-          res.data.action || "Something went wrong. Please try again.",
+          res.data.action_message || res.data.action || "Something went wrong. Please try again.",
         );
       } else {
         setNewsletterStatus("success");

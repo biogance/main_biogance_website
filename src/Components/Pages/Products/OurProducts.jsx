@@ -115,7 +115,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data.status === false) {
-        toast.error(res.data.action || 'Could not add to cart.');
+        toast.error(res.data.action_message || res.data.action || 'Could not add to cart.');
       } else {
         mergeCartItem(res.data.data);
         onCartOpen?.(featuredProduct);

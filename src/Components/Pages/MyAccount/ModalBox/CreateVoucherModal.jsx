@@ -44,8 +44,8 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
             });
             const data = await res.json();
             if (data?.status === false) {
-                setRedeemError(data?.action || data.message || "Something went wrong.");
-                toast.error(data?.action || data.message || "Something went wrong.");
+                setRedeemError(data?.action_message || data?.action || data.message || "Something went wrong.");
+                toast.error(data?.action_message || data?.action || data.message || "Something went wrong.");
                 setRedeemLoading(false);
                 return;
             }
