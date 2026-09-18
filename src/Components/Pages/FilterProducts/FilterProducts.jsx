@@ -1211,6 +1211,18 @@ export default function FilterProducts() {
           setRecentViews(mapProducts(res.data.data?.recent_view ?? []));
           setFeaturedBlog(res.data.data?.blog ?? null);
         } else {
+          // A page-1 search/filter fetch that comes back status:false (some
+          // backends use this for "no products matched" instead of
+          // status:true + an empty array) left hasSearched stuck at the
+          // false the filters-changed reset above set it to, so the "No
+          // results found" empty state below never rendered — the page just
+          // stayed blank apart from the toast. Only do this for page 1: a
+          // failed "load more" (targetPage > 1) shouldn't wipe out results
+          // already on screen.
+          if (targetPage === 1) {
+            setSearchedProducts([]);
+            setHasSearched(true);
+          }
           toast.error(
             res.data.action_message ||
               res.data.action ||
@@ -2380,10 +2392,6 @@ function FilterRail({
             ))}
             <button
               ref={desktopPriceBtnRef}
-              onMouseEnter={() => {
-                setOpenKey(null);
-                setPriceOpen(true);
-              }}
               onClick={() => {
                 setOpenKey(null);
                 setPriceOpen((v) => !v);

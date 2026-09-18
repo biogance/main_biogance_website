@@ -621,7 +621,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
         });
 
         if (!res.data.status) {
-          toast.error(res.data.action || "Something went wrong.");
+          toast.error(res.data.action_message || res.data.action || "Something went wrong.");
           return;
         }
 
@@ -918,11 +918,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
 
               return (
                 <>
-                  {/* md:min-h-[40px] on both rows — matches the search box's
-                      rendered height so whichever row it slides into never
-                      changes that row's height, which would otherwise push
-                      the other row's tags up/down. See ExpertAdvices.jsx for
-                      the measured before/after. */}
+                  
                   <div className="flex flex-col md:flex-row md:items-center gap-4  md:min-h-[40px]">
                     <div className="md:flex-1 md:min-w-0">
                       <ScrollableTabsRow
@@ -1047,9 +1043,7 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                   key={a.id}
                   href={getItemHref(a)}
                   onClick={(e) => {
-                    // Ctrl/Cmd/Shift+click (and native middle-click) must fall
-                    // through to the browser's own "open in new tab/window"
-                    // behavior — only a plain left click runs the SPA navigation.
+                   
                     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
                     e.preventDefault();
                     navigateToDetail(a);

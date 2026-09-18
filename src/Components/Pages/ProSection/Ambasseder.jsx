@@ -1501,7 +1501,7 @@ export default function Ambasseder() {
         const msg =
           data.errors?.length > 0
             ? data.errors[0].message
-            : data.action || data.title || t("errors.genericSubmit");
+            : data.action_message || data.action || data.title || t("errors.genericSubmit");
         toast.error(msg);
         return;
       }

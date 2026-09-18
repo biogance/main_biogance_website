@@ -84,7 +84,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation, i
         const params = await resolveServicePointParams(initialCountry, initialPostalCode);
         let data = await fetchServicePoints(params);
         if (data.status === false) {
-          toast.error(data.action || "Something went wrong.");
+          toast.error(data.action_message || data.action || "Something went wrong.");
           setLocations([]);
           return;
         }
@@ -100,7 +100,7 @@ export default function ModalPickLocation({ isOpen, onClose, onSelectLocation, i
             postalCode: FALLBACK_POSTAL_CODE,
           });
           if (data.status === false) {
-            toast.error(data.action || "Something went wrong.");
+            toast.error(data.action_message || data.action || "Something went wrong.");
             setLocations([]);
             return;
           }

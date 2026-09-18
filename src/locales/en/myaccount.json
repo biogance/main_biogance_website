@@ -4,6 +4,7 @@
     "myAccount": "My Account",
     "home": "Home"
   },
+
   "orderDetails": {
     "title": "Order Details",
     "quantity": "Quantity",
@@ -295,8 +296,15 @@
   },
 
   "favourite": {
-    "title": "My Wishlist",
-    "subtitle": "Products you've saved for later",
+    "title": "My Favourites",
+    "subtitle": "Products and articles you've saved for later",
+    "itemsCount_one": "{{count}} item",
+    "itemsCount_other": "{{count}} items",
+    "tabs": {
+      "products": "Products",
+      "blogs": "Articles",
+      "breeds": "Breeds"
+    },
     "empty": {
       "title": "Your Wishlist is Empty",
       "description": "Save your favorite products here to easily find them later.",
@@ -310,10 +318,25 @@
   },
 
   "savedBlogs": {
-    "title": "Saved Articles",
+    "title": "Articles",
     "subtitle": "Expert advice you've bookmarked",
+    "itemsCount_one": "{{count}} article",
+    "itemsCount_other": "{{count}} articles",
     "minSuffix": "min",
-    "companyFallback": "Biogance"
+    "companyFallback": "Biogance",
+    "empty": {
+      "title": "No saved articles yet",
+      "description": "Bookmark expert advice articles as you read them to find them here anytime.",
+      "browseArticles": "Browse Articles"
+    }
+  },
+
+  "savedBreeds": {
+    "empty": {
+      "title": "No saved breeds yet",
+      "description": "Bookmark breed profiles as you browse the guide to find them here anytime.",
+      "browseBreeds": "Browse Breeds"
+    }
   },
 
   "loyalty": {

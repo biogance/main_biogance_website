@@ -230,14 +230,14 @@ const data = await res.json().catch(() => null);
 
 
 if (data && data.status === false) {
-  toast.error(data.action || 'Something went wrong.');
+  toast.error(data.action_message || data.action || 'Something went wrong.');
   setOrders([]);
   setPagination({ current_page: 1, last_page: 1 });
   return;
 }
 
 if (!res.ok) {
-  toast.error(data?.action || 'Something went wrong.');
+  toast.error(data?.action_message || data?.action || 'Something went wrong.');
   setOrders([]);
   setPagination({ current_page: 1, last_page: 1 });
   return;
@@ -249,7 +249,7 @@ setOrders(Array.isArray(list) ? list : []);
 setPagination({ current_page: pagination?.current_page ?? 1, last_page: pagination?.last_page ?? 1 });
     } catch (e) {
     
-      toast.error(e?.action || 'Something went wrong. Please try again.');
+      toast.error(e?.action_message || e?.action || 'Something went wrong. Please try again.');
       setOrders([]);
     } finally {
       setLoadingState('loaded');

@@ -43,7 +43,7 @@ export default function WishlistPage() {
         const payload = { type: 'favorites', ...getAuthBody() };
         const res = await axios.post(`${BASE_URL}/product/list`, payload, { headers: getAuthHeaders() });
         if (res.data.status === false) {
-          const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
+          const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : (res.data.action_message || res.data.action);
           toast.error(msg);
           setWishlistItems([]);
         } else {
@@ -63,7 +63,7 @@ export default function WishlistPage() {
       const payload = { ...getAuthBody() };
       const res = await axios.post(`${BASE_URL}/blog/list/favorites`, payload, { headers: getAuthHeaders() });
       if (res.data.status === false) {
-        const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : res.data.action;
+        const msg = res.data.errors?.length > 0 ? res.data.errors[0].message : (res.data.action_message || res.data.action);
         toast.error(msg);
         setAdviceItems([]);
       } else {

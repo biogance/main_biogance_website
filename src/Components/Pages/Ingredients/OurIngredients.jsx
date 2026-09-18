@@ -89,7 +89,7 @@ export default function OurIngredients({ initialSlug } = {}) {
         // fetchIngredients a new identity on every language switch, same
         // refetch-on-language-switch pitfall BreedLibrary.jsx's fetchBreeds
         // avoids the same way.
-        toast.error(res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
+        toast.error(res.data.action_message || res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
         return;
       }
 
@@ -215,7 +215,7 @@ export default function OurIngredients({ initialSlug } = {}) {
       .then((res) => {
         if (token !== detailTokenRef.current) return; // a newer selection already started
         if (!res.data.status) {
-          toast.error(res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
+          toast.error(res.data.action_message || res.data.action || i18n.t('genericError', { ns: 'ingredients' }));
           return;
         }
         setDetailIngredient(res.data.data);

@@ -37,12 +37,12 @@ export default function DeleteAddressModal({ isOpen, onClose, onDeleted, address
     try {
       const res = await axios.get(`${BASE_URL}/user/address/delete/${addressId}`, { headers, params: body });
       if (res.data.status === false) {
-        toast.error(res.data.action || "Something went wrong");
+        toast.error(res.data.action_message || res.data.action || "Something went wrong");
       } else {
         onDeleted();
       }
     } catch (err) {
-      toast.error(err.response?.data?.action || "Something went wrong");
+      toast.error(err.response?.data?.action_message || err.response?.data?.action || "Something went wrong");
     } finally {
       setIsDeleting(false);
     }

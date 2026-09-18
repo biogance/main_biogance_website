@@ -262,7 +262,7 @@ export default function ContactUs({ isOpen, onClose }) {
         message: formData.message.trim(),
       });
       if (res.data.status === false) {
-        toast.error(res.data.action || 'Something went wrong. Please try again.');
+        toast.error(res.data.action_message || res.data.action || 'Something went wrong. Please try again.');
       } else {
         toast.success('Your message has been sent.');
         setFormData({ fullName: '', email: '', phoneNumber: '', message: '' });

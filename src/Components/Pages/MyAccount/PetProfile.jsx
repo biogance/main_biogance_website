@@ -265,7 +265,7 @@ export default function PetProfile() {
       });
       const data = await res.json();
       if (data?.status === false) {
-        toast.error(data?.action || 'Something went wrong.');
+        toast.error(data?.action_message || data?.action || 'Something went wrong.');
         setPets([]);
       } else {
         setPets(data?.data || data?.pets || []);

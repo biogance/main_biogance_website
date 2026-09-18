@@ -30,7 +30,7 @@ export default function DeletePetModal({
       });
       const data = await res.json();
       if (data?.status === false) {
-        toast.error(data?.action || 'Something went wrong.');
+        toast.error(data?.action_message || data?.action || 'Something went wrong.');
       } else {
         onSuccess?.();
       }

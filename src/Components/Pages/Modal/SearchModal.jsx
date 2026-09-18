@@ -186,7 +186,7 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
       });
       const data = await res.json();
       if (data.status === false) {
-        toast.error(data.action || 'Could not add to cart.');
+        toast.error(data.action_message || data.action || 'Could not add to cart.');
       } else {
         mergeCartItem(data.data);
         onAddedToCart();

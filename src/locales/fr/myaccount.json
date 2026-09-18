@@ -3,6 +3,7 @@
     "myAccount": "Mon Compte",
     "home": "Maison"
   },
+
   "orderDetails": {
     "title": "Détails de la commande",
     "quantity": "Quantité",
@@ -294,8 +295,15 @@
   },
 
   "favourite": {
-    "title": "Ma liste de souhaits",
-    "subtitle": "Produits que vous avez sauvegardés pour plus tard",
+    "title": "Mes favoris",
+    "subtitle": "Produits et articles que vous avez sauvegardés pour plus tard",
+    "itemsCount_one": "{{count}} article",
+    "itemsCount_other": "{{count}} articles",
+    "tabs": {
+      "products": "Produits",
+      "blogs": "Articles",
+      "breeds": "Races"
+    },
     "empty": {
       "title": "Votre liste de souhaits est vide",
       "description": "Sauvegardez vos produits préférés ici pour les retrouver facilement plus tard.",
@@ -309,10 +317,25 @@
   },
 
   "savedBlogs": {
-    "title": "Articles enregistrés",
+    "title": "Articles",
     "subtitle": "Conseils d'experts que vous avez enregistrés",
+    "itemsCount_one": "{{count}} article",
+    "itemsCount_other": "{{count}} articles",
     "minSuffix": "min",
-    "companyFallback": "Biogance"
+    "companyFallback": "Biogance",
+    "empty": {
+      "title": "Aucun article enregistré",
+      "description": "Enregistrez les articles de conseils d'experts en les lisant pour les retrouver ici à tout moment.",
+      "browseArticles": "Parcourir les articles"
+    }
+  },
+
+  "savedBreeds": {
+    "empty": {
+      "title": "Aucune race enregistrée",
+      "description": "Enregistrez les profils de races en parcourant le guide pour les retrouver ici à tout moment.",
+      "browseBreeds": "Parcourir les races"
+    }
   },
 
   "loyalty": {

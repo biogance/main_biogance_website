@@ -23,8 +23,8 @@ const formatPrice = (val, lang) => {
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
-  if (data.action) return data.action;
   if (data.action_message) return data.action_message;
+  if (data.action) return data.action;
   return null;
 };
 
