@@ -2,70 +2,48 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { GoArrowUpRight } from "react-icons/go";
 import { MEDIA_URL } from "../../API/API";
+import LandingSectionHead from "./LandingSectionHead";
 
-// A row shows 6 cards at a time on desktop, no gap between them (same as
-// the html's border-collapsed grid) — width is 1/6th of the scroll
-// container there. On small screens 6-across made every tile ~60px wide
-// (icon + label unreadable), so narrower viewports show fewer cards per
-// screen — the rest stay reachable via the existing horizontal scroll.
-// Whole-number fractions only (2, 3, 4, 5, 6) so each screen shows
-// complete tiles with no partial next-card peeking in at the edge.
-const CARD_WIDTH =
-  "w-[calc(100%/2)] min-[481px]:w-[calc(100%/3)] min-[721px]:w-[calc(100%/4)] min-[901px]:w-[calc(100%/5)] min-[1101px]:w-[calc(100%/6)]";
+// Compact & sleek architectural panel widths (Fits exact whole columns, no side gaps, no half cut-off cards)
+const PANEL_WIDTH =
+  "w-[calc(100%/2)] min-[540px]:w-[calc(100%/3)] min-[780px]:w-[calc(100%/4)] min-[1020px]:w-[calc(100%/5)] min-[1280px]:w-[calc(100%/6)] flex-shrink-0";
 
-// Shimmer tile — mirrors the real card box (same size, border, gaps as HOMEPAGE V2.html's .collection-tile)
+const PANEL_TILE =
+  "relative bg-[#fbfaf7] border-r border-b border-[#d6d4cc] min-h-[250px] min-[721px]:min-h-[300px] flex-shrink-0 rounded-none overflow-hidden";
+
+// Shimmer card for compact architectural panel
 const ShimmerCard = () => (
-  <div
-    className={`relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px]`}
-  >
-    <div
-      className="w-[52px] h-[52px]"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
-    <div
-      className="w-[70%] h-[14px] rounded"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
+  <div className={`${PANEL_TILE} ${PANEL_WIDTH} p-5 min-[721px]:p-6 flex flex-col justify-between bg-[#fbfaf7]`}>
+    <div className="flex items-start justify-between">
+      <div className="h-4 w-10 bg-black/10 animate-pulse rounded-none" />
+      <div className="h-7 w-7 bg-black/10 animate-pulse rounded-none" />
+    </div>
+    <div className="w-18 h-18 min-[721px]:w-22 min-[721px]:h-22 mx-auto bg-black/10 animate-pulse rounded-none" />
+    <div>
+      <div className="h-4 w-[75%] bg-black/10 animate-pulse rounded-none mb-2" />
+      <div className="h-2.5 w-[45%] bg-black/5 rounded-none" />
+    </div>
   </div>
 );
 
-// Loading tile with spinner
+// Loading card for compact architectural panel
 const LoadingCard = () => (
-  <div
-    className={`relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px]`}
-  >
-    <div className="w-[52px] h-[52px] flex items-center justify-center">
-      <div
-        style={{
-          border: "2px solid #f3f3f3",
-          borderTop: "2px solid #000000",
-          borderRadius: "50%",
-          width: "24px",
-          height: "24px",
-          animation: "spin 0.8s linear infinite",
-        }}
-      />
+  <div className={`${PANEL_TILE} ${PANEL_WIDTH} p-5 min-[721px]:p-6 flex flex-col justify-between bg-[#fbfaf7]`}>
+    <div className="flex items-start justify-between">
+      <div className="h-4 w-10 bg-black/10 rounded-none" />
+      <div className="h-7 w-7 bg-black/10 rounded-none" />
     </div>
-    <div
-      className="w-[70%] h-[14px] rounded"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
+    <div className="h-20 flex items-center justify-center">
+      <span className="relative block w-16 h-px bg-black/20 overflow-hidden rounded-none">
+        <span
+          className="absolute inset-y-0 left-0 w-1/3 bg-black"
+          style={{ animation: "lcatSlide 1.1s ease-in-out infinite" }}
+        />
+      </span>
+    </div>
+    <div className="h-4 w-[75%] bg-black/10 animate-pulse rounded-none" />
   </div>
 );
 
@@ -90,11 +68,6 @@ export default function LandingCategories({ data }) {
     };
   }, [categories.length]);
 
-  // Left/right scroll-by-page arrows — same pattern as LandingCards.jsx's
-  // PopularProducts default heading row (scrollContainerRef + a page-based
-  // scroll() using currentCardIndexRef so repeated clicks don't fight a
-  // stale closure, plus canScrollLeft/canScrollRight to enable/disable and
-  // style the buttons).
   const scrollContainerRef = useRef(null);
   const currentCardIndexRef = useRef(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -103,8 +76,7 @@ export default function LandingCategories({ data }) {
   const checkScrollPosition = () => {
     if (currentCardIndexRef.current > 0) return;
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
     }
@@ -154,31 +126,21 @@ export default function LandingCategories({ data }) {
     setCanScrollRight(newIndex < maxIndex);
   };
 
+  const arrowClass = (enabled) =>
+    `h-8 sm:h-9 px-3 min-w-[36px] sm:min-w-[42px] flex items-center justify-center border rounded-none transition-all duration-300 ${
+      enabled
+        ? "border-black/30 text-black cursor-pointer hover:bg-black hover:text-white shadow-sm active:scale-95"
+        : "border-black/15 text-black/25 cursor-not-allowed"
+    }`;
+
   return (
-    // "Explore our collections" section — same editorial/monochrome design as
-    // HOMEPAGE V2.html's .collections section, kept as a horizontal scroller
-    // (6 cards visible at a time, same width/height as the html tiles),
-    // with card data coming from the API.
-    <section className="bg-[#f6f6f4] py-[clamp(82px,9vw,138px)]">
+    <section className="bg-[#f5f4f0] py-[clamp(60px,7vw,110px)] text-[#0c0c0c] relative">
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @keyframes shimmer {
-          0% {
-            background-position: -200px 0;
-          }
-          100% {
-            background-position: calc(200px + 100%) 0;
-          }
-        }
-
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
+        @keyframes lcatSlide {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(300%); }
         }
 
         .hide-scrollbar {
@@ -192,60 +154,41 @@ export default function LandingCategories({ data }) {
         }}
       />
 
-    
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-        {/* Editorial head — matches .collections-editorial-head */}
-        <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end mb-[34px] min-[721px]:mb-[52px]">
-          <div>
-            <div className="flex items-center gap-3 text-black">
-              <span className="w-[34px] h-px bg-current"></span>
-              <span className="text-[10px] tracking-[0.22em] uppercase">
-                {t("categories.eyebrow")}
-              </span>
-            </div>
-            <h2 className="mt-[18px] mb-0 text-[clamp(34px,11vw,50px)] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black">
-              {t("categories.headingLine1")}
-              <br />
-              {t("categories.headingLine2")}
-            </h2>
+      {/* Header Container */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-6 min-[721px]:mb-10">
+        <LandingSectionHead
+          tone="light"
+          index="01"
+          eyebrow={t("categories.eyebrow")}
+          line1={t("categories.headingLine1")}
+          line2={t("categories.headingLine2")}
+          subtitle={t("categories.subtitle")}
+        >
+          <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
+            <button
+              onClick={() => scroll("prev")}
+              disabled={!canScrollLeft}
+              aria-label="Previous"
+              className={arrowClass(canScrollLeft)}
+            >
+              <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+            <button
+              onClick={() => scroll("next")}
+              disabled={!canScrollRight}
+              aria-label="Next"
+              className={arrowClass(canScrollRight)}
+            >
+              <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
           </div>
-          {/* Subtitle + left/right scroll arrows — same placement/design as
-              LandingCards.jsx's PopularProducts default heading row. */}
-          <div className="flex items-end justify-between gap-4">
-            <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
-              {t("categories.subtitle")}
-            </p>
-            <div className="flex gap-2 flex-shrink-0">
-              <button
-                onClick={() => scroll("prev")}
-                disabled={!canScrollLeft}
-                className={`w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5" />
-              </button>
-              <button
-                onClick={() => scroll("next")}
-                disabled={!canScrollRight}
-                className={`w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        </LandingSectionHead>
       </div>
 
+      {/* Sleeker Architectural Panel Showcase (Reduced Height & Width, Edge-to-Edge) */}
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto hide-scrollbar border-t border-l border-[#d8d8d4]"
+        className="w-full flex overflow-x-auto hide-scrollbar border-t border-l border-[#d6d4cc]"
       >
         {loadingState === "shimmer"
           ? Array.from({ length: 6 }).map((_, index) => (
@@ -263,29 +206,68 @@ export default function LandingCategories({ data }) {
                       `/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`,
                     )
                   }
-                  className={`group relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px] overflow-hidden text-black cursor-pointer transition-colors duration-[250ms] hover:bg-black hover:border-black`}
+                  className={`group ${PANEL_TILE} ${PANEL_WIDTH} p-5 min-[721px]:p-6 flex flex-col justify-between cursor-pointer rounded-none transition-all duration-500 bg-[#fbfaf7] hover:bg-white hover:z-10`}
                 >
-                  <div className="relative w-full min-h-[72px] flex items-center justify-center">
-                    <span className="absolute top-0 left-0 text-[9px] tracking-[0.16em] uppercase text-[#757571] transition-colors duration-[250ms] group-hover:text-white/60">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    {/* Icon only — no background box. Forced black by default,
-                      inverted to white on hover, same as .collection-icon in the html. */}
+                  {/* Background Watermark Category Image */}
+                  <div className="absolute right-0 bottom-0 w-36 h-36 opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-500 pointer-events-none transform translate-x-6 translate-y-6 group-hover:translate-x-2 group-hover:translate-y-2">
                     <img
                       src={`${MEDIA_URL}${category.media}`}
-                      alt={category.name}
-                      className="w-[52px] h-[52px] object-contain brightness-0 transition-all duration-[250ms] group-hover:invert"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
+                      alt=""
+                      className="w-full h-full object-contain brightness-0"
                     />
                   </div>
-                  <div className="flex items-center justify-center w-full text-center">
-                    <span className="max-w-[160px] text-[15px] font-medium leading-[1.2] text-inherit group-hover:text-white transition-colors duration-[250ms]">
-                      {isFrench && category.french_name
-                        ? category.french_name
-                        : category.name}
-                    </span>
+
+                  {/* Top Bar — Oversized Monospace Index Badge + Action Arrow */}
+                  <div className="flex items-start justify-between w-full relative z-10">
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] min-[721px]:text-[11px] font-mono font-bold tracking-[0.2em] text-[#0c0c0c] uppercase">
+                        [{String(index + 1).padStart(2, "0")}]
+                      </span>
+                      <span className="mt-0.5 text-[8px] min-[721px]:text-[9px] font-mono tracking-[0.18em] text-[#888] uppercase">
+                        COLLECTION
+                      </span>
+                    </div>
+
+                    <div className="w-7 h-7 min-[721px]:w-8 min-[721px]:h-8 flex items-center justify-center border border-[#d6d4cc] bg-white text-[#0c0c0c] rounded-none transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-black group-hover:scale-105 shadow-sm">
+                      <GoArrowUpRight className="w-3.5 h-3.5 min-[721px]:w-4 min-[721px]:h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Center Stage — Compact Inset Stage Frame */}
+                  <div className="my-3 min-[721px]:my-4 relative z-10 flex items-center justify-center">
+                    <div className="w-18 h-18 min-[721px]:w-22 min-[721px]:h-22 flex items-center justify-center bg-white border border-[#e2e0d5] rounded-none shadow-[0_2px_10px_rgba(0,0,0,0.03)] transition-all duration-500 group-hover:scale-105 group-hover:border-black group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]">
+                      <img
+                        src={`${MEDIA_URL}${category.media}`}
+                        alt={category.name}
+                        className="w-10 h-10 min-[721px]:w-12 min-[721px]:h-12 object-contain brightness-0 opacity-85 transition-all duration-500 group-hover:opacity-100 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bottom Bar — High-Fashion Title + Interactive CTA */}
+                  <div className="relative z-10 w-full pt-3 border-t border-[#e8e6df]">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[13px] min-[481px]:text-[14px] min-[721px]:text-[16px] font-bold leading-[1.2] tracking-[0.02em] text-[#0c0c0c] uppercase transition-colors duration-300 group-hover:text-black">
+                        {isFrench && category.french_name
+                          ? category.french_name
+                          : category.name}
+                      </h3>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[9px] font-bold tracking-[0.2em] text-[#777] uppercase group-hover:text-black transition-colors duration-300">
+                        {t("hero.discover") || "DISCOVER"}
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-black transform group-hover:translate-x-1 transition-transform duration-300">
+                        →
+                      </span>
+                    </div>
+
+                    {/* Sliding Bottom Black Bar */}
+                    <span className="absolute -bottom-5 min-[721px]:-bottom-6 left-0 h-[3px] w-0 bg-black transition-all duration-500 group-hover:w-full" />
                   </div>
                 </div>
               ))}

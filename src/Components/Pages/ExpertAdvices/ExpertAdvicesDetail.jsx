@@ -792,7 +792,9 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
               }
               alt=""
               onLoad={(e) => {
-                e.currentTarget.previousSibling?.remove();
+                if (e.currentTarget.previousSibling) {
+                  e.currentTarget.previousSibling.style.display = "none";
+                }
                 e.currentTarget.parentElement.classList.remove("bg-gray-200");
                 e.currentTarget.classList.remove("opacity-0");
               }}
@@ -894,7 +896,11 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
                             </div>
                             <img
                               src={`${MEDIA_URL}${productImg}`}
-                              onLoad={(e) => e.currentTarget.previousSibling?.remove()}
+                              onLoad={(e) => {
+                                if (e.currentTarget.previousSibling) {
+                                  e.currentTarget.previousSibling.style.display = "none";
+                                }
+                              }}
                               className="relative z-10 w-full h-full object-cover"
                             />
                           </>

@@ -424,7 +424,9 @@ function ArticleRow({ label, type, icon: Icon, items, isFr, activeSpecies, activ
                       : "/cat.png"
                   }
                     onLoad={(e) => {
-                        e.currentTarget.previousSibling?.remove();
+                        if (e.currentTarget.previousSibling) {
+                          e.currentTarget.previousSibling.style.display = "none";
+                        }
                         e.currentTarget.classList.remove("opacity-0");
                       }}
                       className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
@@ -1169,7 +1171,9 @@ function ExpertAdvices() {
                       e.currentTarget.parentElement.classList.remove(
                         "bg-gray-200",
                       );
-                      e.currentTarget.previousSibling?.remove();
+                      if (e.currentTarget.previousSibling) {
+                        e.currentTarget.previousSibling.style.display = "none";
+                      }
                     }}
                     className="relative z-10 w-full h-full object-contain"
                   />
@@ -1457,7 +1461,9 @@ function ExpertAdvices() {
                           <img
                             src={imgSrc}
                             onLoad={(e) => {
-                              e.currentTarget.previousSibling?.remove();
+                              if (e.currentTarget.previousSibling) {
+                                e.currentTarget.previousSibling.style.display = "none";
+                              }
                               e.currentTarget.classList.remove("opacity-0");
                             }}
                             className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-[transform,opacity] duration-700 opacity-0"
@@ -1484,7 +1490,9 @@ function ExpertAdvices() {
                           <img
                             src={imgSrc}
                             onLoad={(e) => {
-                              e.currentTarget.previousSibling?.remove();
+                              if (e.currentTarget.previousSibling) {
+                                e.currentTarget.previousSibling.style.display = "none";
+                              }
                               e.currentTarget.classList.remove("opacity-0");
                             }}
                             className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 cursor-pointer opacity-0"

@@ -3,17 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { IoChevronForward } from "react-icons/io5";
 import { FiClock } from "react-icons/fi";
 import { MEDIA_URL, BASE_URL } from "@/Components/API/API";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { getDeviceId } from "../../../utils/deviceId";
 import { startTopLoader } from "../TopLoader";
-import { BsArrowUpRight } from "react-icons/bs";
-import { HiArrowTrendingUp, HiOutlineArrowUpRight } from "react-icons/hi2";
 import { GoArrowUpRight } from "react-icons/go";
+import LandingSectionHead from "./LandingSectionHead";
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1572296374832-8737db0d011b?q=80&w=800&auto=format&fit=crop",
@@ -23,41 +17,42 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop",
 ];
 
-// article.reading_time sometimes comes back from the API already carrying
-// its own unit text (e.g. "5 min") instead of a bare number — appending the
-// translated minShort suffix ("{{time}} min") on top of that would show
-// "5 min min". Only append it when the raw API value doesn't already say
-// "min" itself; otherwise show it exactly as the API sent it.
 function formatReadingTime(value, t) {
   const raw = String(value ?? "").trim();
   if (raw && /min/i.test(raw)) return raw;
   return t("minShort", { time: raw || "0" });
 }
 
-// Reads the categories entry whose type is "topic" (mirrors getCategoryName
-// in ExpertAdvices.jsx) and returns that topic's localized name. Falls back
-// to "⸻" when the blog has no topic category set, same as ExpertAdvices.jsx.
 function getCategoryName(article, isFrench) {
   const topicEntry = article?.categories?.find((c) => c?.type === "topic");
   const cat = topicEntry?.category;
-  if (!cat) return "⸻";
-  return isFrench && cat.french_name ? cat.french_name : (cat.name ?? "⸻");
+  if (!cat) return "JOURNAL";
+  return isFrench && cat.french_name ? cat.french_name : (cat.name ?? "JOURNAL");
 }
 
-// Shimmer for one card — `featured` gets the tall image used by the left,
-// full-height slot; the other 4 (right-side 2x2 grid) get the shorter one.
-const ShimmerCard = ({ featured = false }) => (
-  <div
-    className={`bg-white border border-[#d8d8d4] overflow-hidden flex flex-col ${featured ? "h-full" : ""}`}
-  >
-    <div
-      className={`${featured ? "h-[300px] md:h-[480px]" : "h-[160px] md:h-[220px]"} bg-gray-200 animate-pulse`}
-    />
-    <div className="p-4 md:p-[22px] flex flex-col gap-3">
-      <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
-      <div className="h-5 bg-gray-200 rounded animate-pulse" />
-      <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+function getArticleTitle(article, isFrench) {
+  if (!article) return "";
+  if (isFrench) {
+    return article.french_name || article.french_title || article.name || article.title || "";
+  }
+  return article.name || article.title || article.french_name || article.french_title || "";
+}
+
+const ShimmerFeatured = () => (
+  <div className="relative min-h-[460px] lg:min-h-[540px] bg-[#e4e2db] animate-pulse rounded-none">
+    <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col gap-4">
+      <div className="h-4 w-36 bg-black/10 rounded-none" />
+      <div className="h-8 w-4/5 bg-black/10 rounded-none" />
+      <div className="h-8 w-3/5 bg-black/10 rounded-none" />
     </div>
+  </div>
+);
+
+const ShimmerCard = () => (
+  <div className="flex flex-col justify-between bg-white border border-[#d6d4cc] rounded-none animate-pulse min-h-[250px] p-4">
+    <div className="h-32 w-full bg-black/10 rounded-none mb-3" />
+    <div className="h-3 w-20 bg-black/10 rounded-none mb-2" />
+    <div className="h-5 w-full bg-black/10 rounded-none mb-2" />
   </div>
 );
 
@@ -70,54 +65,9 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
   const apiAdvice = data?.expert_advice || [];
   const isLoading = !data;
 
-  // Bento layout only ever shows 5 articles: one large "featured" card on the
-  // left, and the next 4 as a 2x2 grid on the right — same card design as
-  // .article/.article-image/.article-copy in HOMEPAGE V2.html, just a custom
-  // 1 + 4 arrangement instead of html's plain 3-card row.
   const shownAdvice = apiAdvice.slice(0, 5);
-  const featuredArticle = shownAdvice[0];
-  const gridArticles = shownAdvice.slice(1, 5);
-
-  const [favorites, setFavorites] = useState(() =>
-    Object.fromEntries(
-      (data?.expert_advice || []).map((a) => [
-        a.id,
-        a.favorites_exists ?? false,
-      ]),
-    ),
-  );
-  const [loadingFav, setLoadingFav] = useState({});
-
-  const toggleFavorite = async (id) => {
-    if (loadingFav[id]) return;
-    setLoadingFav((prev) => ({ ...prev, [id]: true }));
-    try {
-      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const payload = {};
-      if (loginData?.data?.token) {
-        payload.token = loginData.data.token;
-      } else {
-        payload.device_id = getDeviceId();
-      }
-      const res = await axios.post(
-        `${BASE_URL}/user/add/favorite/blog/${id}`,
-        payload,
-      );
-      if (res.data.status === false) {
-        const msg =
-          res.data.errors?.length > 0
-            ? res.data.errors[0].message
-            : res.data.action_message || res.data.action;
-        toast.error(msg);
-      } else {
-        setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
-      }
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoadingFav((prev) => ({ ...prev, [id]: false }));
-    }
-  };
+  const mainFeatured = shownAdvice[0];
+  const sideArticles = shownAdvice.slice(1, 5);
 
   const navigateToDetail = (article) => {
     const keyword = isFrench
@@ -127,183 +77,186 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
     router.push(`/advices/${encodeURIComponent(keyword)}`);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    try {
-      const d = new Date(dateStr);
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-      return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Renders one article card — `featured` makes the image taller and the
-  // headline bigger, matching .article.featured in HOMEPAGE V2.html.
-  const renderCard = (article, index, featured) => {
+  const resolveImage = (article, index) => {
     const apiImagePath = article.images?.[0]?.media;
-    const imageUrl = apiImagePath
+    return apiImagePath
       ? `${MEDIA_URL}${apiImagePath}`
       : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-    const displayName =
-      isFrench && article.french_name ? article.french_name : article.name;
-    const categoryLabel = getCategoryName(article, isFrench);
+  };
 
-    // Card design mirrors the "All Articles" desktop cards in ExpertAdvices.jsx:
-    // grayscale→color image on hover, a hover-revealed arrow box top-right,
-    // an uppercase topic-category eyebrow (⸻ when the blog has none), an
-    // uppercase bold title with its own arrow icon, and a company/reading-
-    // time meta row — just scaled up for the larger featured slot.
+  const renderImage = (article, index, className) => {
+    const displayName = getArticleTitle(article, isFrench);
     return (
-      <article
-        key={article.id}
-        onClick={() => navigateToDetail(article)}
-        className={`bg-white border border-[#d8d8d4] overflow-hidden cursor-pointer group flex flex-col ${featured ? "h-full" : ""}`}
-      >
-        <div
-          className={`relative overflow-hidden bg-gray-200 flex-shrink-0 ${featured ? "h-[300px] md:h-[480px]" : "h-[160px] md:h-[220px]"}`}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-          </div>
-          <img
-            src={imageUrl}
-            alt={displayName}
-            onLoad={(e) => {
-              e.currentTarget.previousSibling?.remove();
-              e.currentTarget.classList.remove("opacity-0");
-            }}
-            onError={(e) => {
-              e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-            }}
-            className="relative z-10 w-full h-full object-cover grayscale group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
-          />
-          {/* <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <HiOutlineArrowUpRight className="w-4 h-4 text-gray-900" />
-          </div> */}
-          {/* <button
-            onClick={(e) => { e.stopPropagation(); toggleFavorite(article.id); }}
-            className="absolute top-3 left-3 w-8 h-8 md:w-9 md:h-9 cursor-pointer bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            {isFav
-              ? <FaHeart className="w-4 h-4 text-black" />
-              : <FaRegHeart className="w-4 h-4 text-gray-700" />
-            }
-          </button> */}
-        </div>
-
-        <div
-          className={`flex flex-col flex-grow ${featured ? "p-5 md:p-[22px]" : "p-4 md:p-[18px]"}`}
-        >
-          <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
-            {categoryLabel}
-          </p>
-
-          <div
-            className={`flex items-start justify-between gap-2 ${featured ? "mb-3" : "mb-2"}`}
-          >
-            <h3
-              className={`font-bold uppercase text-gray-900 leading-snug line-clamp-2 flex-1 group-hover:underline underline-offset-2 ${
-                featured
-                  ? "text-xl md:text-3xl min-h-[3.5rem] md:min-h-[4.5rem]"
-                  : "text-sm md:text-base min-h-[2.5rem]"
-              }`}
-            >
-              {displayName}
-            </h3>
-            <HiOutlineArrowUpRight
-              className={`shrink-0 text-gray-700 ${featured ? "w-5 h-5 mt-1" : "w-4 h-4 mt-0.5 -mr-0.5"}`}
+      <>
+        <div className="absolute inset-0 flex items-center justify-center bg-[#e4e2db]">
+          <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
+            <span
+              className="absolute inset-y-0 left-0 w-1/3 bg-black"
+              style={{ animation: "leaSlide 1.1s ease-in-out infinite" }}
             />
-          </div>
-
-          <div className="mt-auto pt-2 flex items-center justify-between text-[11px] text-gray-400">
-            <span>{article.company_name || "Biogance"}</span>
-            <span className="flex items-center gap-1">
-              <FiClock className="w-3 h-3" />
-              {formatReadingTime(article.reading_time, trAdvice)}
-            </span>
-          </div>
+          </span>
         </div>
-      </article>
+        <img
+          src={resolveImage(article, index)}
+          alt={displayName || "Article Image"}
+          onLoad={(e) => {
+            if (e.currentTarget.previousSibling) {
+              e.currentTarget.previousSibling.style.display = "none";
+            }
+            e.currentTarget.classList.remove("opacity-0");
+          }}
+          onError={(e) => {
+            e.target.src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+          }}
+          className={`relative z-10 w-full h-full object-cover grayscale contrast-[1.05] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 opacity-0 ${className || ""}`}
+        />
+      </>
     );
   };
 
   return (
-    <section className="bg-[#f6f6f4] mt-40 border-t border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
+    <section className="bg-[#f5f4f0] border-t border-[#d6d4cc] py-[clamp(50px,6vw,90px)] text-[#0c0c0c] relative">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `@keyframes leaSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`,
+        }}
+      />
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
         {!hideHeader && (
-          <div className="mb-[34px] min-[721px]:mb-[52px]">
-            <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[28px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
-              <div>
-                <div className="flex items-center gap-3 text-black">
-                  <span className="w-[34px] h-px bg-current"></span>
-                  <span className="text-[10px] tracking-[0.22em] uppercase">
-                    {t("expertAdvice.sectionEyebrow")}
-                  </span>
-                </div>
-                <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-medium text-black">
-                  {t("expertAdvice.sectionHeadingLine1")}
-                  <br />
-                  {t("expertAdvice.sectionHeadingLine2")}
-                </h2>
-              </div>
-              <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
-                {t("expertAdvice.sectionSubtitle")}
-              </p>
-            </div>
-
-            {/* Below the whole header row, right-aligned under the right column */}
-            <div className="flex justify-end mt-4 md:mt-5 -mb-6">
+          <div className="mb-6 min-[721px]:mb-10">
+            <LandingSectionHead
+              tone="light"
+              index="04"
+              eyebrow={t("expertAdvice.sectionEyebrow")}
+              line1={t("expertAdvice.sectionHeadingLine1")}
+              line2={t("expertAdvice.sectionHeadingLine2")}
+              subtitle={t("expertAdvice.sectionSubtitle")}
+            >
+              {/* Compact "SEE ALL" button */}
               <button
                 type="button"
                 onClick={() => {
                   startTopLoader();
                   router.push("/advices");
                 }}
-                className="group inline-flex items-center gap-1 cursor-pointer text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.1em] md:tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity"
+                className="group inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
               >
-                <span className="relative">
-                  {t("expertAdvice.seeAll")}
-                  <span className="absolute left-0 bottom-[-3px] h-[1px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
-                </span>
-
-                <GoArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4.5 md:h-4.5" />
+                {t("expertAdvice.seeAll")}
+                <GoArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
-            </div>
+            </LandingSectionHead>
           </div>
         )}
 
-        {/* Bento layout: 1 big card (left) + 2x2 grid of 4 cards (right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 items-stretch">
+        {/* High-Fashion Editorial Grid (Left Featured Poster + Right 2x2 Clean Cards) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-7 items-stretch">
           {isLoading ? (
             <>
-              <ShimmerCard featured />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <ShimmerCard key={i} />
-                ))}
+              <div className="lg:col-span-5">
+                <ShimmerFeatured />
+              </div>
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ShimmerCard />
+                <ShimmerCard />
+                <ShimmerCard />
+                <ShimmerCard />
               </div>
             </>
           ) : (
             <>
-              {featuredArticle && renderCard(featuredArticle, 0, true)}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {gridArticles.map((article, i) =>
-                  renderCard(article, i + 1, false),
-                )}
+              {/* Left Column: Featured Cover Story (Card #1) */}
+              {mainFeatured && (
+                <div className="lg:col-span-5 flex flex-col">
+                  <article
+                    key={mainFeatured.id}
+                    onClick={() => navigateToDetail(mainFeatured)}
+                    className="group relative min-h-[420px] sm:min-h-[480px] lg:min-h-full flex-1 flex flex-col justify-between overflow-hidden cursor-pointer bg-[#0c0c0c] border border-black rounded-none shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] transition-all duration-500 hover:shadow-2xl p-3"
+                  >
+                    <div className="absolute inset-0">{renderImage(mainFeatured, 0)}</div>
+                    <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/95 via-black/40 to-black/10 pointer-events-none" />
+
+                    {/* Top Header Badges (No Numbers, Tag Higher) */}
+                    <div className="relative z-30 flex items-center justify-between gap-2 w-full">
+                      <span className="bg-white text-black text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.18em] uppercase px-2.5 py-1 rounded-none shadow-sm">
+                        {getCategoryName(mainFeatured, isFrench)}
+                      </span>
+
+                      <span className="bg-black/60 backdrop-blur-md text-white/90 text-[9px] font-mono tracking-[0.14em] uppercase px-2.5 py-1 rounded-none border border-white/10 flex items-center gap-1.5">
+                        <FiClock className="w-3 h-3 text-white/70" />
+                        {formatReadingTime(mainFeatured.reading_time, trAdvice)}
+                      </span>
+                    </div>
+
+                    {/* Bottom Content Area (Pushed Down, Reduced Padding) */}
+                    <div className="relative z-30 text-white flex flex-col justify-end mt-auto pt-6">
+                      <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.2em] uppercase text-white/70 mb-1.5 font-semibold">
+                        {mainFeatured.company_name || "BIOGANCE JOURNAL"}
+                      </span>
+                      <h3 className="text-[20px] sm:text-[clamp(22px,2.4vw,34px)] leading-[1.12] tracking-[-0.02em] uppercase font-extrabold mb-4 drop-shadow-md group-hover:text-white/90 transition-colors">
+                        {getArticleTitle(mainFeatured, isFrench)}
+                      </h3>
+                      
+                      <div className="pt-3 border-t border-white/20 flex items-center justify-between">
+                        <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.18em] uppercase font-bold text-white/90 group-hover:underline">
+                          {mainFeatured.company_name || "BIOGANCE"}
+                        </span>
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border border-white rounded-none transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-white">
+                          <GoArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              )}
+
+              {/* Right Column: 2x2 Grid of Luxury Editorial Photo Posters (#2, #3, #4, #5) */}
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 items-stretch">
+                {sideArticles.map((article, i) => {
+                  const displayName = getArticleTitle(article, isFrench);
+                  const itemIndex = i + 2;
+                  return (
+                    <article
+                      key={article.id}
+                      onClick={() => navigateToDetail(article)}
+                      className="group relative bg-[#0c0c0c] border border-black flex flex-col justify-between min-h-[250px] sm:min-h-[270px] rounded-none cursor-pointer transition-all duration-500 hover:shadow-2xl overflow-hidden p-2"
+                    >
+                      <div className="absolute inset-0">{renderImage(article, itemIndex)}</div>
+                      <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/95 via-black/45 to-black/10 pointer-events-none" />
+
+                      {/* Top Badges (No Numbers, Tag Higher) */}
+                      <div className="relative z-30 flex items-center justify-between gap-2 w-full">
+                        <span className="bg-white text-black px-2.5 py-1 text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.14em] uppercase rounded-none border border-black/10 shadow-sm">
+                          {getCategoryName(article, isFrench)}
+                        </span>
+
+                        <span className="bg-black/60 backdrop-blur-md text-white/80 text-[8px] sm:text-[9px] font-mono tracking-[0.12em] uppercase px-2 py-0.5 rounded-none border border-white/10 flex items-center gap-1">
+                          <FiClock className="w-2.5 h-2.5 text-white/60" />
+                          {formatReadingTime(article.reading_time, trAdvice)}
+                        </span>
+                      </div>
+
+                      {/* Bottom Content Area (Pushed Down, Reduced Padding) */}
+                      <div className="relative z-30 text-white flex flex-col justify-end mt-auto pt-4">
+                        <span className="text-[8px] sm:text-[9px] font-mono text-white/70 uppercase tracking-[0.14em] mb-1 font-medium">
+                          {article.company_name || "BIOGANCE JOURNAL"}
+                        </span>
+
+                        <h3 className="text-[13px] sm:text-[14px] font-extrabold uppercase leading-[1.25] tracking-[0.01em] text-white line-clamp-2 transition-colors duration-300 drop-shadow-md mb-2.5">
+                          {displayName}
+                        </h3>
+
+                        <div className="pt-2.5 border-t border-white/20 flex items-center justify-between">
+                          <span className="text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.16em] text-white/90 uppercase group-hover:underline">
+                            {article.company_name || "BIOGANCE"}
+                          </span>
+                          <div className="w-6 h-6 flex items-center justify-center bg-white text-black border border-white rounded-none transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-white">
+                            <GoArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </>
           )}

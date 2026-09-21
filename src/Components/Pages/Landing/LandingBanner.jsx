@@ -37,19 +37,21 @@ const LandingBanner = ({ data }) => {
   const gridStyle = { gridTemplateColumns: `repeat(${colCount}, 1fr)` };
 
   return (
-    <div className="w-full overflow-hidden">
-      <div className="grid gap-0 h-48 md:h-64 lg:h-80" style={gridStyle}>
+    // Gallery strip — images separated by 1px ink gaps, grayscale until
+    // hovered, index number pinned to each frame's corner.
+    <div className="w-full overflow-hidden bg-[#0c0c0c]">
+      <div className="grid gap-px h-48 md:h-64 lg:h-[26rem]" style={gridStyle}>
         {isLoading
           ? Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="relative overflow-hidden bg-gray-200 animate-pulse" />
+              <div key={index} className="relative overflow-hidden bg-[#1c1c1b] animate-pulse" />
             ))
           : imageList.map((src, index) => (
-          <div key={index} className="relative overflow-hidden">
+          <div key={index} className="group relative overflow-hidden bg-[#1c1c1b]">
             <Image
               src={src}
               alt={`Blog ${index + 1}`}
               fill
-              className="object-cover cursor-pointer hover:scale-110 transition-transform duration-700"
+              className="object-cover cursor-pointer grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
               onClick={() => {
                 const img = new window.Image();
                 img.onload = () => {
@@ -68,28 +70,35 @@ const LandingBanner = ({ data }) => {
               priority={index < 3}
               loading={index >= 3 ? 'lazy' : 'eager'}
             />
+            <span className="pointer-events-none absolute top-3 left-3 z-10 text-[10px] tracking-[0.22em] tabular-nums text-white mix-blend-difference">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <span className="pointer-events-none absolute bottom-3 right-3 z-10 w-8 h-8 border border-white/70 text-white grid place-items-center text-lg leading-none opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+              +
+            </span>
           </div>
         ))}
       </div>
 
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-[#0c0c0c]/90 flex items-center justify-center z-50"
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()} style={{ width: imgSize.width, height: imgSize.height }}>
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-1"
+              aria-label="Close"
+              className="absolute -top-11 right-0 z-10 cursor-pointer w-9 h-9 grid place-items-center border border-white/60 text-white hover:bg-white hover:text-black transition-colors duration-200"
             >
-              <FiX size={20} />
+              <FiX size={18} />
             </button>
             <img
               src={selectedImage}
               alt="Preview"
               width={imgSize.width}
               height={imgSize.height}
-              className="w-full h-full object-contain "
+              className="w-full h-full object-contain"
             />
           </div>
         </div>

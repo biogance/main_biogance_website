@@ -26,6 +26,14 @@ const heroSlides = [
   },
 ];
 
+// Premium modern UI typeface for the hero copy + buttons
+const HERO_FONT = "'Outfit', 'Sora', system-ui, -apple-system, sans-serif";
+
+// Monochrome (white → silver → white) brushed-metal gradient for the primary
+// CTA — stays inside the site's black/white theme.
+const CTA_GRADIENT =
+  "linear-gradient(115deg, #ffffff 0%, #ececea 32%, #c4c4c0 62%, #ffffff 100%)";
+
 // Global cache variable to store the video blob URL so it plays instantly on SPA page navigation
 let globalVideoBlobUrl = null;
 
@@ -292,8 +300,14 @@ export default function HeroSection() {
       <main className="relative bg-white">
         <div
           ref={videoSectionRef}
-          className="relative w-full bg-[#f3f3f3] h-screen min-h-screen flex items-center justify-center overflow-hidden"
+          className="relative w-full bg-[#0c0c0c] h-[calc(100vh+64px)] min-h-[704px] sm:h-[calc(100vh+92px)] sm:min-h-[732px] lg:h-[calc(100vh+122px)] lg:min-h-[762px] flex overflow-hidden"
         >
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap"
+            precedence="default"
+          />
+
           {/* Background Image or Video */}
           {isCurrentVideo ? (
             <video
@@ -327,137 +341,134 @@ export default function HeroSection() {
             ></div>
           )}
 
-          {/* Dark Overlay — same gradient used behind the hero text in HOMEPAGE V2.html so white text/buttons stay legible over the video */}
+          {/* Overlay — darker on the left where the text sits so white type
+              stays legible at every screen size. */}
           <div
             className="absolute inset-0 z-[1] pointer-events-none"
             style={{
               background:
-                "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.18) 35%, rgba(0,0,0,.08) 60%, rgba(0,0,0,.05) 100%), linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.22))",
+                "linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.3) 45%, rgba(0,0,0,.08) 80%), linear-gradient(0deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 30%)",
             }}
           ></div>
 
-          {/* Content Container */}
-          <div className="relative z-10 w-full h-full flex items-center">
-           
-            <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-center md:text-left mx-auto md:mx-0">
-                {/* Tagline */}
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
-                  <span className="w-[34px] h-px bg-white/90"></span>
-                  <p className="text-[10px] font-normal tracking-[0.22em] uppercase text-white/90">
-                    {heroContent.tagline}
-                  </p>
-                </div>
+          {/* Content — pinned to the left, always vertically centered at every
+              screen size. The top/bottom padding reserves room for the navbar
+              and the bottom rail so the block sits in the true visual middle. */}
+          <div
+            style={{ fontFamily: HERO_FONT }}
+            className="relative z-10 w-full self-start h-screen min-h-[640px] flex items-center justify-start px-5 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-[104px] pb-[84px] min-[721px]:pt-[120px] min-[721px]:pb-[96px]"
+          >
+            <div className="w-full max-w-[760px] flex flex-col items-start text-left">
+              <div className="flex items-center justify-start gap-3 sm:gap-4 mb-4 md:mb-6 text-white/90">
+                <span className="hidden sm:inline text-[10px] font-semibold tracking-[0.24em]">
+                  BIOGANCE
+                </span>
+                <span className="hidden sm:block w-10 h-px bg-white/60"></span>
+                <p className="text-[9px] sm:text-[10px] font-medium tracking-[0.22em] sm:tracking-[0.28em] uppercase">
+                  {heroContent.tagline}
+                </p>
+              </div>
 
-                <h1
-                  className={`${isFrench ? "text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]" : "text-[clamp(60px,8vw,60px)] lg:text-[clamp(58px,5.5vw,72px)] xl:text-[clamp(60px,5vw,76px)] 2xl:text-[clamp(60px,8vw,80px)]"} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}
+              <h1
+                className={`${isFrench ? "text-[clamp(26px,7.4vw,34px)] sm:text-[clamp(34px,5.6vw,50px)] md:text-[clamp(40px,4.8vw,62px)]" : "text-[clamp(30px,9vw,40px)] sm:text-[clamp(40px,6.6vw,58px)] md:text-[clamp(46px,5.6vw,74px)]"} uppercase leading-[1.02] tracking-[-0.035em] font-light mb-4 md:mb-6 text-white break-words`}
+              >
+                {heroContent.heading}
+              </h1>
+
+              <p className="text-[13px] sm:text-[14px] md:text-[15px] max-w-[520px] leading-[1.75] font-normal text-white/80 mb-7 md:mb-9">
+                {heroContent.description}
+              </p>
+
+              {/* CTA Buttons — silver-white gradient primary + frosted-glass ghost,
+                  both sharp, stacked full-width on phones, side by side from sm up */}
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch justify-start gap-2.5 sm:gap-3">
+                <button
+                  onClick={() => router.push("/shop")}
+                  style={{ backgroundImage: CTA_GRADIENT, backgroundSize: "220% 100%" }}
+                  className="group min-h-[48px] sm:min-h-[54px] px-6 sm:px-8 border border-white/40 text-[#0c0c0c] inline-flex items-center justify-center gap-4 whitespace-nowrap uppercase text-[10px] sm:text-[11px] tracking-[0.16em] font-bold cursor-pointer shadow-[0_14px_34px_-14px_rgba(255,255,255,0.55)] transition-[background-position,transform,box-shadow] duration-500 [background-position:0%_50%] hover:[background-position:100%_50%] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-12px_rgba(255,255,255,0.8)]"
                 >
-                  {heroContent.heading}
-                </h1>
-
-                {/* Description */}
-                <p className="text-[16px] mb-[28px] max-w-[520px] mx-auto md:mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
-                  {heroContent.description}
-                </p>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-center md:justify-start">
-                  <button
-                    onClick={() => router.push("/shop")}
-                    className="min-h-[48px] px-[26px] border border-white bg-[#171717] text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717]"
-                  >
-                    {t("hero.shopNow")}
-                  </button>
-                  <button
-                    onClick={scrollToFinder}
-                    className="min-h-[48px] px-[26px] border border-white/70 bg-transparent text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717] hover:border-white"
-                  >
-                    {t("hero.discover")}
-                  </button>
-                </div>
-
-                {/* Meta line — matches html's .hero-meta below the CTA buttons */}
-                <p className="mt-5 md:mt-8 text-[9px] tracking-[0.16em] uppercase text-[rgba(255,255,255,.92)]">
-                  {heroContent.meta}
-                </p>
+                  {t("hero.shopNow")}
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                </button>
+                <button
+                  onClick={scrollToFinder}
+                  className="min-h-[48px] sm:min-h-[54px] px-6 sm:px-8 border border-white/45 bg-white/10 backdrop-blur-md text-white inline-flex items-center justify-center whitespace-nowrap uppercase text-[10px] sm:text-[11px] tracking-[0.16em] font-bold cursor-pointer transition-all duration-300 hover:bg-white/95 hover:text-[#0c0c0c] hover:border-white hover:-translate-y-0.5"
+                >
+                  {t("hero.discover")}
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Navigation Controls */}
-          {hasMultipleSlides && (
-            <>
-              {/* Desktop Navigation */}
-              {/* <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <button 
-                    onClick={goToPrevious}
-                    aria-label="Previous slide" 
-                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                  >
-                    <MdKeyboardArrowLeft size={24} className="lg:w-[30px] lg:h-[30px]" />
-                  </button>
-                  <button 
-                    onClick={goToNext}
-                    aria-label="Next slide" 
-                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                  >
-                    <MdKeyboardArrowRight size={24} className="lg:w-[30px] lg:h-[30px]" />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {slides.map((_, index) => (
-                    <div
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={`cursor-pointer rounded-full transition-all duration-300 ${
-                        index === currentSlide
-                          ? 'w-8 lg:w-10 h-2 bg-white'
-                          : 'w-2 h-2 bg-white/50 hover:bg-white/70'
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-              </div> */}
-
-              {/* Mobile Navigation */}
-              {/* <div className="md:hidden absolute bottom-6 right-6 z-20">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={goToPrevious}
-                      aria-label="Previous slide" 
-                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                    >
-                      <MdKeyboardArrowLeft size={24} />
-                    </button>
-                    <button 
-                      onClick={goToNext}
-                      aria-label="Next slide" 
-                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                    >
-                      <MdKeyboardArrowRight size={24} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {slides.map((_, index) => (
-                      <div
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`cursor-pointer rounded-full transition-all duration-300 ${
-                          index === currentSlide
-                            ? 'w-8 h-2 bg-white'
-                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-              </div> */}
-            </>
-          )}
+          {/* Meta rail — pinned to the bottom edge of the first viewport: hairline, meta line left, scroll cue on the right (sm+) */}
+          <div className="absolute inset-x-0 top-0 h-screen min-h-[640px] z-10 pointer-events-none">
+          <div className="absolute inset-x-0 bottom-0 px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pointer-events-auto">
+            <div
+              style={{ fontFamily: HERO_FONT }}
+              className="relative flex items-center justify-start py-4 sm:py-5 border-t border-white/25"
+            >
+              <p className="text-[8px] sm:text-[10px] font-medium tracking-[0.16em] sm:tracking-[0.22em] uppercase text-white/85 text-left pr-10">
+                {heroContent.meta}
+              </p>
+              <span
+                aria-hidden="true"
+                className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-10 bg-white/25 overflow-hidden"
+              >
+                <span
+                  className="absolute inset-x-0 top-0 h-1/2 bg-white"
+                  style={{ animation: "heroScrollCue 1.8s ease-in-out infinite" }}
+                />
+              </span>
+            </div>
+          </div>
+          </div>
+          {/* Wave edge — sits below the fold (the hero is one viewport + the wave's height tall), so it only comes into view as the user scrolls. Two slowly drifting translucent layers plus a solid
+              front wave in the next section's colour (#f5f4f0), so the hero
+              melts into the page instead of ending on a flat line. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 -bottom-px z-[15] pointer-events-none leading-[0] overflow-hidden h-[64px] sm:h-[92px] lg:h-[122px]"
+          >
+            <svg
+              className="absolute bottom-0 left-0 h-full w-[200%]"
+              viewBox="0 0 2880 120"
+              preserveAspectRatio="none"
+              style={{ animation: "heroWaveDrift 26s linear infinite" }}
+            >
+              <path
+                d="M0,58 C240,14 480,14 720,58 S1200,102 1440,58 C1680,14 1920,14 2160,58 S2640,102 2880,58 L2880,120 L0,120 Z"
+                fill="#f5f4f0"
+                fillOpacity="0.35"
+              />
+            </svg>
+            <svg
+              className="absolute bottom-0 left-0 h-full w-[200%]"
+              viewBox="0 0 2880 120"
+              preserveAspectRatio="none"
+              style={{ animation: "heroWaveDrift 17s linear infinite" }}
+            >
+              <path
+                d="M0,78 C240,110 480,110 720,78 S1200,46 1440,78 C1680,110 1920,110 2160,78 S2640,46 2880,78 L2880,120 L0,120 Z"
+                fill="#f5f4f0"
+                fillOpacity="0.6"
+              />
+            </svg>
+            <svg
+              className="absolute bottom-0 left-0 h-full w-full"
+              viewBox="0 0 1440 120"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M0,84 C260,34 520,34 780,74 S1240,112 1440,66 L1440,120 L0,120 Z"
+                fill="#f5f4f0"
+              />
+            </svg>
+          </div>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `@keyframes heroScrollCue { 0% { transform: translateY(-100%); } 100% { transform: translateY(200%); } } @keyframes heroWaveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`,
+            }}
+          />
         </div>
       </main>
 

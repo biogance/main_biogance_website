@@ -1061,7 +1061,9 @@ function ExpertAdvicesSeeAll({ type: typeProp }) {
                           : "/cat.png"
                       }
                       onLoad={(e) => {
-                        e.currentTarget.previousSibling?.remove();
+                        if (e.currentTarget.previousSibling) {
+                          e.currentTarget.previousSibling.style.display = "none";
+                        }
                         e.currentTarget.classList.remove("opacity-0");
                       }}
                       className="relative z-10 w-full h-full grayscale object-cover group-hover:scale-105 group-hover:grayscale-0 transition-transform duration-700 opacity-0"
