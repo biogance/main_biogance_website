@@ -4306,19 +4306,8 @@ function Checkout({ cartItems = [] }) {
         );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
-      const deliveryCountryName = (() => {
-        const c = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === finalDeliveryCountryIso2,
-        );
-        return c ? parseCountry(c).name : finalDeliveryCountryIso2;
-      })();
-      const billingCountryName = (() => {
-        const iso = useDifferentBilling
-          ? billingCountryIso2
-          : finalDeliveryCountryIso2;
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
-        return c ? parseCountry(c).name : iso;
-      })();
+      const deliveryCountryName = finalDeliveryCountryIso2.toLowerCase();
+      const billingCountryName = (useDifferentBilling ? billingCountryIso2 : finalDeliveryCountryIso2).toLowerCase();
       const cartIds = items.map((i) => i.id).join(",");
       const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
       const paymentId = `${ppData.orderID}-${ppData.payerID}`;
@@ -4544,19 +4533,8 @@ function Checkout({ cartItems = [] }) {
         );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
-      const deliveryCountryName = (() => {
-        const c = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === deliveryCountryIso2,
-        );
-        return c ? parseCountry(c).name : deliveryCountryIso2;
-      })();
-      const billingCountryName = (() => {
-        const iso = useDifferentBilling
-          ? billingCountryIso2
-          : deliveryCountryIso2;
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
-        return c ? parseCountry(c).name : iso;
-      })();
+      const deliveryCountryName = deliveryCountryIso2.toLowerCase();
+      const billingCountryName = (useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2).toLowerCase();
       const cartIds = items.map((i) => i.id).join(",");
       const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
 
@@ -4853,19 +4831,8 @@ function Checkout({ cartItems = [] }) {
         );
         return c ? `+${parseCountry(c).dialCode}` : "";
       })();
-      const deliveryCountryName = (() => {
-        const c = defaultCountries.find(
-          (c) => parseCountry(c).iso2 === deliveryCountryIso2,
-        );
-        return c ? parseCountry(c).name : deliveryCountryIso2;
-      })();
-      const billingCountryName = (() => {
-        const iso = useDifferentBilling
-          ? billingCountryIso2
-          : deliveryCountryIso2;
-        const c = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
-        return c ? parseCountry(c).name : iso;
-      })();
+      const deliveryCountryName = deliveryCountryIso2.toLowerCase();
+      const billingCountryName = (useDifferentBilling ? billingCountryIso2 : deliveryCountryIso2).toLowerCase();
       const cartIds = items.map((i) => i.id).join(",");
       const isPickup = summaryState.deliveryMethod === "pickup" ? 1 : 0;
       const deliveryCostValue =
