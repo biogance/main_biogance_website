@@ -24,25 +24,26 @@ const formatPrice = (val, lang) => {
   const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
   return num.toLocaleString(locale, { minimumFractionDigits: 2 });
 };
-// Loading Card Component — mirrors the real LandingCards shape exactly
-// (paper bg, aspect-[7/10], optional hairline border, tag top-left, name +
-// price row along the bottom) so the skeleton doesn't jump in size once the
-// real card swaps in. Same w-1/2 sm:w-1/3 md:w-1/4 wrapper as the real cards
-// handles the small/large screen sizing. Sharp: the loader is a sliding
-// line, not a spinning circle.
+// Loading Card — mirrors the real card's box (soft studio bg, spotlight, tag
+// top-left, glass caption along the bottom) so the skeleton doesn't jump in
+// size once the real card swaps in. Same w-1/2 sm:w-1/3 md:w-1/4 wrapper as
+// the real cards handles the small/large screen sizing. Sharp: the loader is a
+// sliding line, not a spinning circle.
 export const LoadingCard = ({ showBorder = false }) => (
   <div className="w-full h-full flex flex-col">
     <style>{`@keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`}</style>
     <div
-      className={`bg-[#efeee9] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col aspect-[7/10] overflow-hidden`}
+      className={`bg-[#eceae4] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col aspect-[7/10] overflow-hidden`}
     >
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(255,255,255,.95),rgba(255,255,255,0)_62%)]" />
+
       {/* Top-left tag placeholder (New / Best / -20%) */}
-      <div className="absolute top-0 left-0 w-14 h-6 bg-black/10 animate-pulse z-10" />
+      <div className="absolute top-2.5 left-2.5 w-14 h-6 bg-black/10 animate-pulse z-10" />
       {/* Top-right product-label placeholder */}
       <div className="absolute top-3 right-3 w-12 h-2 bg-black/10 animate-pulse z-10" />
 
-      {/* Image area — paper tone + sliding line, like the real card's loader */}
-      <div className="flex-1 flex items-center justify-center bg-[#f4f3ef]">
+      {/* Image area — sliding line, like the real card's loader */}
+      <div className="relative flex-1 flex items-center justify-center">
         <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
           <span
             className="absolute inset-y-0 left-0 w-1/3 bg-black"
@@ -51,9 +52,12 @@ export const LoadingCard = ({ showBorder = false }) => (
         </span>
       </div>
 
-      {/* Name/price row placeholder, along the bottom like the real card */}
-      <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3.5 flex items-end justify-between gap-4">
-        <div className="h-3 w-1/2 bg-black/10 animate-pulse" />
+      {/* Caption placeholder */}
+      <div className="absolute inset-x-2 bottom-2 bg-white/70 border border-white/60 px-3.5 py-3 flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="h-3 w-3/4 bg-black/10 animate-pulse mb-2" />
+          <div className="h-2 w-1/3 bg-black/10 animate-pulse" />
+        </div>
         <div className="h-3 w-10 bg-black/10 animate-pulse" />
       </div>
     </div>
@@ -287,8 +291,10 @@ export const LandingCards = ({
 
   const badgeText =
     index === 0 ? "New" : index === 1 ? "Best" : index === 2 ? "-20%" : null;
-  const infoVisible = !(isCardHovered || promoStyle);
-  const actionVisible = isCardHovered || promoStyle;
+  const isDiscountBadge = index === 2;
+  // Caption panel is open (add-to-cart / picker revealed) on hover, or always in promoStyle.
+  const panelOpen = isCardHovered || promoStyle || isDropupOpen;
+  // Round spinner (the one deliberate exception to the zero-radius rule).
   const spinnerSquare = (size, light = true) => (
     <span
       style={{
@@ -297,13 +303,26 @@ export const LandingCards = ({
         height: size,
         border: `2px solid ${light ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.25)"}`,
         borderTopColor: light ? "#fff" : "#000",
+        borderRadius: "50%",
         animation: "lcSpin 0.75s linear infinite",
         verticalAlign: "middle",
       }}
     />
   );
-  const cartBtnBase =
-    "w-full py-2.5 px-3 text-[10px] font-semibold tracking-[0.18em] uppercase cursor-pointer border border-black flex items-center justify-center transition-colors duration-200";
+  const swatchBackground = (color) => {
+    if (!color.includes(" & ")) return color;
+    const [a, b] = color.split(" & ").map((p) => p.trim());
+    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+  };
+  // Tiny colour preview next to the name (max 4, "+n" for the rest).
+  const previewColors = hasColors ? uniqueColors.slice(0, 4) : [];
+  const extraColors = hasColors ? Math.max(0, uniqueColors.length - 4) : 0;
+
+  const cartBtnClass = `group/btn w-full min-h-[40px] px-3.5 flex items-center justify-between text-[10px] font-semibold tracking-[0.2em] uppercase cursor-pointer border border-[#0b0b0a] transition-colors duration-300 ${
+    addingToCart
+      ? "bg-[#0b0b0a] text-white"
+      : "bg-[#0b0b0a] text-white hover:bg-transparent hover:text-[#0b0b0a]"
+  }`;
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -314,7 +333,7 @@ export const LandingCards = ({
         @keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
       `}</style>
       <div
-        className={`group/card bg-[#efeee9] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
+        className={`group/card bg-[#f3f3f3] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col overflow-hidden ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
         onMouseEnter={() => {
           setIsCardHovered(true);
           handleMouseEnter();
@@ -332,11 +351,21 @@ export const LandingCards = ({
           router.push(`/product/${slug}`);
         }}
       >
-        {/* Solid black corner tag — New / Best / -20% */}
+        {/* Studio spotlight behind the product */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(255,255,255,.95),rgba(255,255,255,0)_62%)] transition-opacity duration-700 group-hover/card:opacity-100 opacity-80" />
+
+        {/* Tag — glass chip (solid ink for the discount) */}
         {badgeText && (
           <div
-            className={`absolute top-0 left-0 z-10 bg-black text-white font-semibold uppercase tracking-[0.16em] ${smallLabel ? "text-[8px] px-2 py-1" : "text-[9px] px-2.5 py-1.5"}`}
+            className={`absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 flex items-center gap-1.5 font-semibold uppercase tracking-[0.16em] ${
+              smallLabel ? "text-[8px] px-1.5 py-1" : "text-[9px] px-2 py-1.5"
+            } ${
+              isDiscountBadge
+                ? "bg-[#0b0b0a] text-white"
+                : "bg-white/75 backdrop-blur-md text-[#0b0b0a] border border-white"
+            }`}
           >
+            {!isDiscountBadge && <span className="w-1 h-1 bg-[#0b0b0a]" />}
             {badgeText}
           </div>
         )}
@@ -358,10 +387,10 @@ export const LandingCards = ({
               : safeProduct.product_label || "";
           return label ? (
             <div
-              className={`absolute top-3 right-3 text-right text-[#4f4e48] font-semibold uppercase tracking-[0.14em] z-10 ${
+              className={`absolute top-3 right-3 text-right text-[#55544e] font-medium uppercase tracking-[0.14em] z-10 ${
                 smallLabel
-                  ? "max-w-[60%] text-[8px] leading-tight"
-                  : "max-w-[55%] truncate text-[9px]"
+                  ? "max-w-[55%] text-[8px] leading-tight"
+                  : "max-w-[52%] truncate text-[9px]"
               }`}
             >
               {label}
@@ -370,9 +399,9 @@ export const LandingCards = ({
         })()}
 
         <div className="flex-1 relative overflow-hidden">
-          {/* Image loader — paper tone + centered sliding line */}
+          {/* Image loader — sliding line */}
           {isCurrentImageLoading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#f4f3ef]">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#eceae4]">
               <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
                 <span
                   className="absolute inset-y-0 left-0 w-1/3 bg-black"
@@ -404,7 +433,7 @@ export const LandingCards = ({
                     opacity: 1,
                     transition: "opacity 0.3s ease",
                   }}
-                  className="w-full h-full object-contain px-2 pt-7 pb-10 transition-transform duration-700 group-hover/card:scale-[1.04]"
+                  className="w-full h-full object-contain px-3 pt-9 pb-[76px] "
                 />
               </div>
             ))}
@@ -434,7 +463,7 @@ export const LandingCards = ({
 
           {(isHovered || forceVideo) && videoUrl && !isVideoReady && (
             <div
-              className="absolute inset-0 flex items-center justify-center bg-[#f4f3ef]"
+              className="absolute inset-0 flex items-center justify-center bg-[#eceae4]"
               style={{ zIndex: 3 }}
             >
               <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
@@ -446,157 +475,144 @@ export const LandingCards = ({
             </div>
           )}
 
-          {/* Info row + add-to-cart overlay along the bottom edge */}
+          {/* Glass caption — name, price, colour preview; the panel grows on
+              hover to reveal add-to-cart (or the size/colour picker) */}
           <div
-            className={`absolute bottom-0 left-0 right-0 ${compactButtons ? "px-2.5 pb-2.5 pt-8" : "px-3.5 pb-3.5 pt-10"} bg-gradient-to-t from-[#efeee9] via-[#efeee9]/85 to-transparent`}
+            className="absolute inset-x-1.5 bottom-1.5 sm:inset-x-2 sm:bottom-2 bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-white/70 shadow-[0_14px_30px_-18px_rgba(0,0,0,0.45)]"
             style={{ zIndex: 7 }}
           >
-            {/* Name + price — hide on hover (always hidden in promoStyle) */}
-            <div
-              className="flex items-baseline justify-between gap-3 cursor-pointer"
-              style={{
-                opacity: infoVisible ? 1 : 0,
-                transition: "opacity 0.2s ease",
-                pointerEvents: infoVisible ? "auto" : "none",
-              }}
-            >
-              <p className="min-w-0 truncate m-0 text-[11px] font-medium uppercase tracking-[0.06em] text-black">
-                {shortTitle}
-              </p>
-              <span className="shrink-0 text-[11px] tabular-nums text-[#55544e]">
-                {formatPrice(price, i18n.language)} €
-              </span>
+            <div className={compactButtons ? "px-3 pt-2.5 pb-2.5" : "px-3.5 pt-3 pb-3"}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-[12px] font-medium leading-[1.3] tracking-[-0.005em] text-[#0b0b0a]">
+                    {shortTitle}
+                  </p>
+                  {previewColors.length > 0 && (
+                    <div className="mt-1.5 flex items-center gap-1">
+                      {previewColors.map((color) => (
+                        <span
+                          key={color}
+                          title={color}
+                          className="w-2 h-2 border border-black/25"
+                          style={{ background: swatchBackground(color) }}
+                        />
+                      ))}
+                      {extraColors > 0 && (
+                        <span className="ml-0.5 text-[9px] tabular-nums text-[#6c6a62]">
+                          +{extraColors}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[#0b0b0a]">
+                  {formatPrice(price, i18n.language)} €
+                </span>
+              </div>
             </div>
 
-            {/* QuickView OR Add to Cart button — show on hover (always in promoStyle) */}
+            {/* Expanding action area */}
             <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                padding: compactButtons ? "0 10px 10px" : "0 14px 14px",
-                opacity: actionVisible ? 1 : 0,
-                transition: "opacity 0.2s ease",
-                pointerEvents: actionVisible ? "auto" : "none",
-              }}
+              className="grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]"
+              style={{ gridTemplateRows: panelOpen ? "1fr" : "0fr" }}
             >
-              {isSingleProduct ? (
-                /* Single product → Add to Cart button */
-                <button
-                  className={`${cartBtnBase} ${
-                    addingToCart || promoStyle
-                      ? "bg-black text-white"
-                      : "bg-white text-black hover:bg-black hover:text-white"
-                  }`}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (addingToCart) return;
-                    const firstProduct = safeProduct.products?.[0];
-                    if (firstProduct?.color || firstProduct?.size) {
-                      setIsCartOpen(true);
-                      return;
-                    }
-                    setAddingToCart(true);
-                    try {
-                      const loginData = JSON.parse(
-                        localStorage.getItem("LoginData") || "null",
-                      );
-                      const token = loginData?.data?.token;
-                      const res = await axios.post(
-                        `${BASE_URL}/user/cart/create`,
-                        token
-                          ? {
-                              product_id: firstProduct?.id ?? safeProduct.id,
-                              quantity: 1,
-                            }
-                          : {
-                              device_id: getDeviceId(),
-                              product_id: firstProduct?.id ?? safeProduct.id,
-                              quantity: 1,
-                            },
-                        token
-                          ? { headers: { Authorization: `Bearer ${token}` } }
-                          : {},
-                      );
-                      if (res.data.status === false) {
-                        toast.error(
-                          res.data.action_message || res.data.action || "Could not add to cart.",
-                        );
-                      } else {
-                        mergeCartItem(res.data.data);
-                        setIsCartOpen(true);
-                      }
-                    } catch {
-                      toast.error("Something went wrong.");
-                    } finally {
-                      setAddingToCart(false);
-                    }
-                  }}
-                >
-                  {addingToCart ? (
-                    spinnerSquare(14)
+              <div className="overflow-hidden">
+                <div className={compactButtons ? "px-2.5 pb-2.5" : "px-3 pb-3"}>
+                  {isSingleProduct ? (
+                    /* Single product → Add to Cart button */
+                    <button
+                      className={cartBtnClass}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (addingToCart) return;
+                        const firstProduct = safeProduct.products?.[0];
+                        if (firstProduct?.color || firstProduct?.size) {
+                          setIsCartOpen(true);
+                          return;
+                        }
+                        setAddingToCart(true);
+                        try {
+                          const loginData = JSON.parse(
+                            localStorage.getItem("LoginData") || "null",
+                          );
+                          const token = loginData?.data?.token;
+                          const res = await axios.post(
+                            `${BASE_URL}/user/cart/create`,
+                            token
+                              ? {
+                                  product_id: firstProduct?.id ?? safeProduct.id,
+                                  quantity: 1,
+                                }
+                              : {
+                                  device_id: getDeviceId(),
+                                  product_id: firstProduct?.id ?? safeProduct.id,
+                                  quantity: 1,
+                                },
+                            token
+                              ? { headers: { Authorization: `Bearer ${token}` } }
+                              : {},
+                          );
+                          if (res.data.status === false) {
+                            toast.error(
+                              res.data.action_message || res.data.action || "Could not add to cart.",
+                            );
+                          } else {
+                            mergeCartItem(res.data.data);
+                            setIsCartOpen(true);
+                          }
+                        } catch {
+                          toast.error("Something went wrong.");
+                        } finally {
+                          setAddingToCart(false);
+                        }
+                      }}
+                    >
+                      {addingToCart ? (
+                        <span className="mx-auto">{spinnerSquare(14)}</span>
+                      ) : (
+                        <>
+                          <span>{t("products.addToCart")}</span>
+                          <span className="text-[14px] leading-none font-normal">+</span>
+                        </>
+                      )}
+                    </button>
+                  ) : !isDropupOpen ? (
+                    /* Multiple products → opens the in-panel picker */
+                    <button
+                      className={cartBtnClass}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSize(null);
+                        setSelectedColor(null);
+                        setIsDropupOpen(true);
+                      }}
+                    >
+                      {addingToCart ? (
+                        <span className="mx-auto">{spinnerSquare(14)}</span>
+                      ) : (
+                        <>
+                          <span>{t("products.addToCart")}</span>
+                          <span className="text-[14px] leading-none font-normal">+</span>
+                        </>
+                      )}
+                    </button>
                   ) : (
-                    <>
-                      {t("products.addToCart")} –{" "}
-                      {formatPrice(safeProduct.price, i18n.language)} €
-                    </>
-                  )}
-                </button>
-              ) : (
-                /* Multiple products → button click pe dropup in-place expand */
-                <div style={{ position: "relative" }}>
-                  <button
-                    className={`${cartBtnBase} ${
-                      addingToCart || promoStyle
-                        ? "bg-black text-white"
-                        : "bg-white text-black hover:bg-black hover:text-white"
-                    }`}
-                    style={{ visibility: isDropupOpen ? "hidden" : "visible" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedSize(null);
-                      setSelectedColor(null);
-                      setIsDropupOpen(true);
-                    }}
-                  >
-                    {addingToCart ? (
-                      spinnerSquare(14)
-                    ) : (
-                      <>
-                        {t("products.addToCart")} –{" "}
-                        {formatPrice(safeProduct.price, i18n.language)} €
-                      </>
-                    )}
-                  </button>
-
-                  {/* Dropup — maxHeight animation for smooth open/close */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute bottom-0 left-0 right-0 bg-white overflow-hidden border-black"
-                    style={{
-                      zIndex: 9,
-                      maxHeight: isDropupOpen ? "300px" : "0px",
-                      borderTopWidth: isDropupOpen ? 1 : 0,
-                      transition:
-                        "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    }}
-                  >
-                    <div className="relative p-3">
+                    /* Size / colour picker, right inside the caption panel */
+                    <div onClick={(e) => e.stopPropagation()} className="relative pt-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsDropupOpen(false);
                         }}
                         aria-label="Close"
-                        className="absolute top-2 right-2 text-[13px] leading-none text-[#55544e] hover:text-black cursor-pointer bg-transparent border-0"
+                        className="absolute -top-0.5 right-0 text-[12px] leading-none text-[#55544e] hover:text-black cursor-pointer bg-transparent border-0"
                       >
                         ✕
                       </button>
 
                       {hasSizes && (
-                        <div className={hasColors ? "mb-3" : ""}>
-                          <p className="m-0 mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-black">
+                        <div className={hasColors ? "mb-2.5" : ""}>
+                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.size") || "Size"}
                           </p>
                           <div className="flex flex-wrap gap-1.5">
@@ -609,10 +625,10 @@ export const LandingCards = ({
                                   if (!hasColors)
                                     handleDropupSelect(size, selectedColor);
                                 }}
-                                className={`px-3 py-1.5 text-[11px] uppercase tracking-[0.08em] cursor-pointer border transition-colors duration-150 ${
+                                className={`px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] cursor-pointer border transition-colors duration-150 ${
                                   selectedSize === size
-                                    ? "bg-black text-white border-black"
-                                    : "bg-white text-black border-[#cfcdc5] hover:border-black"
+                                    ? "bg-[#0b0b0a] text-white border-[#0b0b0a]"
+                                    : "bg-white/80 text-black border-black/20 hover:border-black"
                                 }`}
                               >
                                 {size}
@@ -623,44 +639,33 @@ export const LandingCards = ({
                       )}
 
                       {hasColors && (
-                        <div className={hasSizes && hasColors ? "mb-3" : ""}>
-                          <p className="m-0 mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-black">
+                        <div className={hasSizes && hasColors ? "mb-2.5" : ""}>
+                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.color") || "Color"}
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {uniqueColors.map((color) => {
-                              const isDual = color.includes(" & ");
-                              const swatchBg = isDual
-                                ? (() => {
-                                    const [a, b] = color
-                                      .split(" & ")
-                                      .map((p) => p.trim());
-                                    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
-                                  })()
-                                : color;
-                              return (
-                                <button
-                                  key={color}
-                                  type="button"
-                                  title={color}
-                                  aria-label={color}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedColor(color);
-                                    if (!hasSizes)
-                                      handleDropupSelect(selectedSize, color);
-                                  }}
-                                  className="w-6 h-6 p-0 cursor-pointer border border-[#cfcdc5] transition-all duration-150"
-                                  style={{
-                                    background: swatchBg,
-                                    boxShadow:
-                                      selectedColor === color
-                                        ? "0 0 0 2px #fff, 0 0 0 3px #111"
-                                        : "none",
-                                  }}
-                                />
-                              );
-                            })}
+                            {uniqueColors.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                title={color}
+                                aria-label={color}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedColor(color);
+                                  if (!hasSizes)
+                                    handleDropupSelect(selectedSize, color);
+                                }}
+                                className="w-5 h-5 p-0 cursor-pointer border border-black/25 transition-all duration-150"
+                                style={{
+                                  background: swatchBackground(color),
+                                  boxShadow:
+                                    selectedColor === color
+                                      ? "0 0 0 2px #fff, 0 0 0 3px #111"
+                                      : "none",
+                                }}
+                              />
+                            ))}
                           </div>
                         </div>
                       )}
@@ -673,10 +678,10 @@ export const LandingCards = ({
                               handleDropupSelect(selectedSize, selectedColor);
                           }}
                           disabled={!selectedSize || !selectedColor}
-                          className={`w-full py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white border-0 flex items-center justify-center transition-colors duration-200 ${
+                          className={`w-full min-h-[38px] text-[10px] font-semibold uppercase tracking-[0.2em] text-white border-0 flex items-center justify-center transition-colors duration-200 ${
                             selectedSize && selectedColor
-                              ? "bg-black cursor-pointer"
-                              : "bg-[#c9c7bf] cursor-default"
+                              ? "bg-[#0b0b0a] cursor-pointer"
+                              : "bg-[#b9b7af] cursor-default"
                           }`}
                         >
                           {addingToCart
@@ -685,9 +690,9 @@ export const LandingCards = ({
                         </button>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

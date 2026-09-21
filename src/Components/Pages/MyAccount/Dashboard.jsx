@@ -242,7 +242,7 @@ export default function Dashboard() {
 
   return (
     
-    <div className="bg-gray-100">
+    <div className="bg-[#f3f3f3]">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
@@ -256,9 +256,7 @@ export default function Dashboard() {
 
       <div className="p-4 md:p-8 max-w-10xl mx-auto">
        
-        <h1 className="text-xl md:text-2xl mb-6 md:mb-8 mt-2 md:mt-10 font-semibold text-gray-900">
-          {t('dashboard.welcome', { name: userName })}
-        </h1>
+      
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">

@@ -9,5 +9,13 @@
   "settings": "Paramètres",
   "support": "Aide et assistance",
   "supportShort": "Aide",
-  "logout": "Se déconnecter"
+  "logout": "Se déconnecter",
+  "groupShop": "Achats",
+  "groupAccount": "Compte",
+  "groupHelp": "Assistance",
+  "guest": "Invité",
+  "hello": "Content de te revoir,",
+  "menu": "Menu du compte",
+  "myAccount": "Mon compte",
+  "home": "Accueil"
 }

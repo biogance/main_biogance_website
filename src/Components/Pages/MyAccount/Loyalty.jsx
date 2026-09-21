@@ -223,7 +223,7 @@ export default function Loyalty() {
            }
          `}} />
        
-         <div className="bg-gray-100">
+         <div className="bg-[#f3f3f3]">
          
           <div className="p-4 mt-2 md:mt-9 sm:p-6 md:p-8 max-w-10xl mx-auto">
             <div className="bg-white  shadow-sm p-6 md:p-8">

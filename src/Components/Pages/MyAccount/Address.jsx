@@ -251,7 +251,7 @@ export default function Address() {
           forced this tab an extra viewport tall even on short/empty
           content, causing a page scrollbar on the empty state at any
           screen size or zoom level. */}
-      <div className="bg-gray-100">
+      <div className="bg-[#f3f3f3]">
         {/* mt-2 on mobile, not mt-9 — that was stacking on top of
             Sidebar.jsx's own bottom padding on the mobile tab row, leaving
             a big empty gap before this card started. md:mt-9 keeps desktop

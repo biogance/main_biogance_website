@@ -322,7 +322,7 @@ setPagination({ current_page: pagination?.current_page ?? 1, last_page: paginati
 
   return (
     
-    <div className="bg-gray-100">
+    <div className="bg-[#f3f3f3]">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           0% {
