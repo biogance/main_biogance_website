@@ -261,13 +261,23 @@
       "title": "Votre panier est vide",
       "description": "Il semble que vous n'ayez pas encore passé de commande.\nCommencez à explorer et trouvez les produits parfaits pour votre animal !",
       "browseProducts": "Parcourir les produits"
-    }
+    },
+    "table": {
+      "order": "Commande",
+      "date": "Date",
+      "status": "Statut",
+      "total": "Total"
+    },
+    "quickAccess": "Accès rapide",
+    "summary": "Résumé",
+    "orderStatus": "Statut des commandes"
   },
   "orderHistory": {
     "title": "Historique des commandes",
     "subtitle": "Consultez et suivez tous vos achats",
     "searchPlaceholder": "Rechercher ici",
     "placedOn": "Passée le",
+    "totalOrders": "Total des commandes",
     "items": "Articles",
     "moreDetails": "Plus de détails",
     "filters": {
@@ -374,6 +384,18 @@
   "userProfile": {
     "title": "Profil utilisateur",
     "subtitle": "Mettez à jour vos informations personnelles",
+    "personalInfo": "Informations personnelles",
+    "profileDetails": "Détails du profil",
+    "requiredFields": "Champs obligatoires",
+    "changePhoto": "Changer la photo",
+    "avatarTitle": "Votre photo",
+    "avatarDescription": "Une image carrée fonctionne mieux. JPG ou PNG.",
+    "uploadNewPhoto": "Téléverser une nouvelle photo",
+    "photoHint": "JPG, PNG jusqu'à 2 Mo",
+    "photoTipMain": "La photo de profil aide les autres à vous reconnaître.",
+    "photoTipSub": "Vous pouvez la changer à tout moment.",
+    "keepUpdated": "Gardez vos informations à jour",
+    "keepUpdatedHint": "Cela nous aide à vous offrir une expérience plus personnalisée.",
     "updateImage": "Mettre à jour l'image",
     "remove": "Supprimer",
     "uploadImage": "Télécharger une image",
@@ -389,7 +411,8 @@
     "errorPhoneTooLong": "Ce numéro de téléphone est trop long pour le pays sélectionné.",
     "errorPhoneInvalid": "Ce numéro ne semble pas valide pour le pays sélectionné.",
     "cancel": "Annuler",
-    "updateProfileDetails": "Mettre à jour les détails du profil"
+    "updateProfileDetails": "Mettre à jour les détails du profil",
+    "updating": "Mise à jour..."
   },
 
   "petProfile": {
@@ -406,7 +429,9 @@
       "gender": "Genre",
       "weight": "Poids",
       "specialNeeds": "Besoins spéciaux"
-    }
+    },
+    "limitReachedTitle": "Limite atteinte",
+    "limitReachedDescription": "Seulement 3 animaux par compte."
   },
 
   "address": {
@@ -418,6 +443,8 @@
     "city": "Ville",
     "postalCode": "Code postal",
     "country": "Pays",
+    "default": "Par défaut",
+    "addressWord": "Adresse",
     "emptyTitle": "Vous n'avez ajouté aucune adresse",
     "emptyDescription": "Vous n'avez encore enregistré aucune adresse de livraison ou de facturation. Ajoutez-en une maintenant pour accélérer le paiement et gérer vos commandes plus facilement.",
     "addFirstAddress": "Ajouter votre première adresse",

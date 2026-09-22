@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FiUser, FiX } from "react-icons/fi";
+import { FiUploadCloud, FiX } from "react-icons/fi";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import {
+  HiOutlineCamera,
+  HiOutlineInformationCircle,
+  HiOutlineTrash,
+} from "react-icons/hi2";
+import { IoPersonOutline, IoMailOutline, IoCallOutline, IoArrowForward } from "react-icons/io5";
 import {
   FlagImage,
   defaultCountries,
@@ -36,6 +42,51 @@ const getIso2ByDialCode = (dialCode) => {
   );
   return country ? parseCountry(country).iso2 : "fr";
 };
+
+// A text field with a solid icon badge (same graphic weight as the KPI/info
+// badges elsewhere in the account section) instead of a faint outlined icon,
+// a filled resting state that lifts to white + a shadow on focus, and a
+// gradient underline — the whole thing reads as one designed component
+// instead of a plain bordered box.
+function TextField({ icon: Icon, error, className = "", ...inputProps }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <div
+        className={`group relative flex items-stretch transition-all duration-200 overflow-hidden ${
+          error
+            ? "bg-white border border-red-500 ring-2 ring-red-100"
+            : focused
+              ? "bg-white border border-black/25 shadow-[0_16px_32px_-20px_rgba(0,0,0,.4)]"
+              : "bg-black/[0.035] border border-transparent hover:bg-black/[0.055]"
+        } ${className}`}
+      >
+        <span className="grid place-items-center w-12 shrink-0 bg-gradient-to-br from-[#2b2a26] to-[#0b0b0a] text-white transition-transform duration-200 group-focus-within:scale-[1.04]">
+          <Icon className="w-[18px] h-[18px]" />
+        </span>
+        <input
+          {...inputProps}
+          onFocus={(e) => {
+            setFocused(true);
+            inputProps.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            inputProps.onBlur?.(e);
+          }}
+          className="flex-1 min-w-0 h-[50px] px-4 bg-transparent focus:outline-none text-[15px] font-medium text-[#0b0b0a] placeholder:text-[#8a8880] placeholder:font-normal"
+        />
+        <span
+          aria-hidden="true"
+          className={`absolute left-0 bottom-0 h-[2px] bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300 ${
+            focused ? "w-full" : "w-0"
+          }`}
+        />
+      </div>
+      {error && <p className="mt-1.5 text-[12px] text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 // Flag + dial code box, with a separate number field and a searchable country dropdown
 function PhoneFieldBox({
@@ -77,24 +128,31 @@ function PhoneFieldBox({
     <div>
       <div
         ref={wrapRef}
-        className={`relative flex items-stretch bg-gray-50 border transition-colors ${
+        className={`group relative flex items-stretch transition-all duration-200 overflow-hidden ${
           error
-            ? "border-red-500 ring-2 ring-red-200"
+            ? "bg-white border border-red-500 ring-2 ring-red-100"
             : focused
-              ? "border-gray-400 ring-2 ring-gray-400"
-              : "border-gray-200"
+              ? "bg-white border border-black/25 shadow-[0_16px_32px_-20px_rgba(0,0,0,.4)]"
+              : "bg-black/[0.035] border border-transparent hover:bg-black/[0.055]"
         }`}
       >
+        {/* Leading icon — kept inside the same field as the flag and number,
+            so this reads consistently with Full Name/Email (one designed
+            component, icon flush at its start). */}
+        <span className="grid place-items-center w-12 shrink-0 bg-gradient-to-br from-[#2b2a26] to-[#0b0b0a] text-white transition-transform duration-200 group-focus-within:scale-[1.04]">
+          <IoCallOutline className="w-[18px] h-[18px]" />
+        </span>
+
         {/* Flag + dial code */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1.5 px-3 h-[42px] border-r border-gray-200 shrink-0 cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none"
+          className="flex items-center gap-1.5 px-3 h-[50px] border-r border-black/10 shrink-0 cursor-pointer hover:bg-black/[0.04] transition-colors focus:outline-none"
         >
           <FlagImage iso2={iso2 || "fr"} size="20px" />
-          <span className="text-sm text-gray-700">{dialCode}</span>
+          <span className="text-[14px] font-medium text-[#0b0b0a]">{dialCode}</span>
           <MdOutlineKeyboardArrowDown
-            className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={`text-[#8a8880] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
             size={16}
           />
         </button>
@@ -110,25 +168,32 @@ function PhoneFieldBox({
               setFocused(false);
               onBlur?.();
             }}
-            className="w-full h-[42px] px-4 bg-transparent focus:outline-none text-gray-900 text-sm"
+            className="w-full h-[50px] px-4 bg-transparent focus:outline-none text-[#0b0b0a] text-[15px] font-medium"
           />
         </div>
 
+        <span
+          aria-hidden="true"
+          className={`absolute left-0 bottom-0 h-[2px] bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300 ${
+            focused ? "w-full" : "w-0"
+          }`}
+        />
+
         {open && (
-          <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 shadow-lg z-20">
-            <div className="p-2 border-b border-gray-100">
+          <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-black/10 shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)] z-20">
+            <div className="p-2 border-b border-black/10">
               <input
                 type="text"
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full px-3 py-2 text-[13.5px] bg-white border border-black/10 text-[#0b0b0a] focus:outline-none focus:border-black/40"
               />
             </div>
             <div className="max-h-56 overflow-y-auto">
               {filteredCountries.length === 0 ? (
-                <p className="px-3 py-4 text-sm text-gray-400 text-center">
+                <p className="px-3 py-4 text-[13px] text-[#8a8880] text-center">
                   {noResultsLabel}
                 </p>
               ) : (
@@ -141,11 +206,11 @@ function PhoneFieldBox({
                       setOpen(false);
                       setSearch("");
                     }}
-                    className={`group w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-900 hover:bg-black hover:text-white transition-colors cursor-pointer ${p.iso2 === iso2 ? "bg-gray-100" : ""}`}
+                    className={`group w-full flex items-center gap-2 px-3 py-2.5 text-[13.5px] text-left text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors cursor-pointer ${p.iso2 === iso2 ? "bg-black/[0.04]" : ""}`}
                   >
                     <FlagImage iso2={p.iso2} size="18px" />
                     <span className="flex-1 truncate">{p.name}</span>
-                    <span className="text-gray-400 group-hover:text-gray-300">
+                    <span className="text-[#8a8880] group-hover:text-white/60">
                       +{p.dialCode}
                     </span>
                   </button>
@@ -155,13 +220,14 @@ function PhoneFieldBox({
           </div>
         )}
       </div>
-      {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1.5 text-[12px] text-red-600">{error}</p>}
     </div>
   );
 }
 
 export default function UserProfile() {
   const { t } = useTranslation("myaccount");
+  const { t: tSidebar } = useTranslation("sidebar");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -345,79 +411,95 @@ export default function UserProfile() {
 
   return (
     <>
-      {/* mt-2 on mobile, not mt-9 — that was stacking on top of
-                Sidebar.jsx's own bottom padding on the mobile tab row,
-                leaving a big empty gap before this card started. md:mt-9
-                keeps desktop unchanged, same pattern as Dashboard.jsx's
-                mt-2 md:mt-10 fix. */}
-      <div className="max-w-10xl mt-2 md:mt-9 mx-auto px-4 py-4 sm:px-6 sm:py-8">
-        <div className="bg-white  p-4 sm:p-8">
+      <div className="bg-[#f3f3f3]">
+        <div className="p-4 md:p-8 max-w-10xl mx-auto">
           {/* Header */}
-          <h2 className="text-2xl text-black font-semibold mb-1">
-            {t("userProfile.title")}
-          </h2>
-          <p className="text-gray-600 text-sm mb-8">
-            {t("userProfile.subtitle")}
-          </p>
+          <div className="mb-8 md:mb-10">
+            <p className="text-[11px] font-semibold tracking-[0.16em] uppercase text-[#8a8880] mb-2">
+              {tSidebar("groupAccount")}
+            </p>
+            <h1 className="text-[28px] sm:text-[32px] font-semibold leading-tight tracking-[-0.02em] text-[#0b0b0a]">
+              {t("userProfile.title")}
+            </h1>
+            <p className="mt-2 text-[14px] text-[#8a8880] max-w-md">
+              {t("userProfile.subtitle")}
+            </p>
+          </div>
 
-          {/* Form with Upload Image */}
-          <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-            {/* Upload Image Section */}
-            <div className="flex flex-col items-center">
-              <div
-                onClick={handleImageClick}
-                className={`relative w-24 h-24 sm:w-34 sm:h-34 bg-gray-100  flex items-center justify-center overflow-hidden ${
-                  profileImage
-                    ? "cursor-pointer hover:opacity-90 transition-opacity"
-                    : ""
-                }`}
-              >
-                {profileImage ? (
-                  <>
-                    {imageLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                        <div className="w-8 h-8 border-3 border-black border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                    <img
-                      src={profileImage}
-                      alt="Profile"
-                      className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0" : "opacity-100"}`}
-                      onLoad={() => setImageLoading(false)}
-                      onError={() => setImageLoading(false)}
-                    />
-                  </>
-                ) : (
-                  <RiUserLine size={110} className="text-gray-200" />
-                )}
-              </div>
+          {/* One card: avatar banner up top, fields in a two-column grid
+              below, actions pinned to the bottom — same shape as the
+              reference, in our own sharp black/white theme. A monochrome
+              gradient (never a colour) is what "premium" means on this
+              theme — ink fading to charcoal, not blue-to-purple. */}
+          <div className="relative bg-white border border-black/10  overflow-hidden">
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a]"
+            />
 
-              {profileImage ? (
-                <div className="flex flex-col gap-2 mt-3">
-                  <button
-                    onClick={handleUploadClick}
-                    type="button"
-                    className="text-sm border cursor-pointer border-gray-300 px-4 py-2  text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    {t("userProfile.updateImage")}
-                  </button>
-                  <button
-                    onClick={handleRemoveImage}
-                    type="button"
-                    className="text-sm cursor-pointer text-red-600 font-medium hover:text-red-700 transition-colors"
-                  >
-                    {t("userProfile.remove")}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleUploadClick}
-                  type="button"
-                  className="text-sm border cursor-pointer border-gray-300 p-2  text-gray-700 mt-3 font-medium hover:bg-gray-50 transition-colors"
+            {/* Avatar banner */}
+            <div className="p-5 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5 bg-gradient-to-br from-black/[0.045] to-black/[0.01] border border-black/10 p-5 sm:p-6">
+                <div className="shrink-0 p-[3px] bg-gradient-to-br from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a]">
+                <div
+                  onClick={handleImageClick}
+                  className={`relative w-20 h-20 sm:w-24 sm:h-24 bg-white flex items-center justify-center overflow-hidden ${
+                    profileImage
+                      ? "cursor-pointer hover:opacity-90 transition-opacity"
+                      : ""
+                  }`}
                 >
-                  {t("userProfile.uploadImage")}
-                </button>
-              )}
+                  {profileImage ? (
+                    <>
+                      {imageLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/[0.03]">
+                          <div className="w-6 h-6 border-2 border-[#0b0b0a] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
+                      <img
+                        src={profileImage}
+                        alt="Profile"
+                        className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0" : "opacity-100"}`}
+                        onLoad={() => setImageLoading(false)}
+                        onError={() => setImageLoading(false)}
+                      />
+                    </>
+                  ) : (
+                    <RiUserLine size={40} className="text-black/15" />
+                  )}
+                </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-semibold text-[#0b0b0a]">
+                    {t("userProfile.avatarTitle")}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] text-[#8a8880]">
+                    {t("userProfile.avatarDescription")}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleUploadClick}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13px] font-medium cursor-pointer border border-[#0b0b0a] shadow-[0_10px_24px_-12px_rgba(0,0,0,.5)] transition-all duration-200 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,.6)] hover:-translate-y-px"
+                  >
+                   <FiUploadCloud className="w-4 h-4" />
+                    {t("userProfile.uploadNewPhoto")}
+                  </button>
+                  {profileImage && (
+                    <button
+                      onClick={handleRemoveImage}
+                      type="button"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-[#0b0b0a] text-[13px] font-medium cursor-pointer border border-black/15 hover:bg-black/[0.03] transition-colors"
+                    >
+                      <HiOutlineTrash className="w-4 h-4" />
+                      {t("userProfile.remove")}
+                    </button>
+                  )}
+                </div>
+              </div>
 
               <input
                 id="profile-upload"
@@ -428,39 +510,27 @@ export default function UserProfile() {
               />
             </div>
 
-            {/* Form Fields */}
-            <div className="flex-1 space-y-5">
+            <div className="h-px bg-black/10" />
+
+            {/* Fields — a two-column grid, same as the reference */}
+            <div className="p-5 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm text-gray-700 mb-2 font-medium">
-                  {t("userProfile.fullName")}
+                <label className="block mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880]">
+                  {t("userProfile.fullName")} <span className="text-red-500">*</span>
                 </label>
-                <input
+                <TextField
+                  icon={IoPersonOutline}
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
                   placeholder={t("userProfile.fullNamePlaceholder")}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-700 mb-2 font-medium">
-                  {t("userProfile.email")}
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder={t("userProfile.emailPlaceholder")}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-700 mb-2 font-medium">
-                  {t("userProfile.phoneNumber")}
+                <label className="block mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880]">
+                  {t("userProfile.phoneNumber")} <span className="text-red-500">*</span>
                 </label>
                 <PhoneFieldBox
                   iso2={countryIso2}
@@ -483,24 +553,50 @@ export default function UserProfile() {
                   noResultsLabel={t("userProfile.noCountryFound")}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10">
-            <button
-              onClick={handleCancel}
-              className="px-6 py-2.5 bg-white border border-gray-300 text-gray-900  font-medium hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              {t("userProfile.cancel")}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-6 py-2.5 bg-black text-white  font-medium hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-60"
-            >
-              {loading ? "Updating..." : t("userProfile.updateProfileDetails")}
-            </button>
+              <div className="sm:col-span-2">
+                <label className="block mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880]">
+                  {t("userProfile.email")} <span className="text-red-500">*</span>
+                </label>
+                <TextField
+                  icon={IoMailOutline}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder={t("userProfile.emailPlaceholder")}
+                />
+              </div>
+
+              <div className="sm:col-span-2 flex items-start gap-4 bg-black/[0.03] border-l-2 border-[#0b0b0a] px-5 py-4">
+                <span className="grid place-items-center w-8 h-8 shrink-0 bg-gradient-to-br from-[#2b2a26] to-[#0b0b0a] text-white">
+                  <HiOutlineInformationCircle className="w-[18px] h-[18px]" />
+                </span>
+                <div>
+                  <p className="text-[13.5px] font-semibold text-[#0b0b0a]">
+                    {t("userProfile.keepUpdated")}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] text-[#8a8880]">
+                    {t("userProfile.keepUpdatedHint")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px bg-black/10" />
+
+            {/* Action Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-5 sm:px-8 py-6">
+              
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full sm:w-auto sm:min-w-[230px] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13.5px] font-medium tracking-[0.02em] border border-[#0b0b0a] shadow-[0_14px_30px_-14px_rgba(0,0,0,.55)] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+              >
+                {loading ? t("userProfile.updating") : t("userProfile.updateProfileDetails")}
+                <IoArrowForward className="w-[15px] h-[15px]" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -508,20 +604,20 @@ export default function UserProfile() {
       {/* Image Preview Modal */}
       {showPreview && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-70"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-70 p-4"
           onClick={() => setShowPreview(false)}
         >
           <div className="relative">
             <button
               onClick={() => setShowPreview(false)}
-              className="absolute top-2 right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors bg-white  p-1"
+              className="absolute -top-11 right-0 grid place-items-center w-9 h-9 cursor-pointer text-white border border-white/30 hover:bg-white hover:text-[#0b0b0a] transition-colors"
             >
-              <FiX size={24} />
+              <FiX size={20} />
             </button>
             <img
               src={profileImage}
               alt="Profile Preview"
-              className="w-[500px] h-[500px] object-cover "
+              className="w-[min(500px,80vw)] h-[min(500px,80vw)] object-cover border border-white/20"
               onClick={(e) => e.stopPropagation()}
             />
           </div>

@@ -261,7 +261,16 @@
       "title": "Your Cart is Empty",
       "description": "Looks like you haven't placed any orders yet.\nStart exploring and find the perfect products for your pet!",
       "browseProducts": "Browse Products"
-    }
+    },
+    "table": {
+      "order": "Order",
+      "date": "Date",
+      "status": "Status",
+      "total": "Total"
+    },
+    "quickAccess": "Quick Access",
+    "summary": "Summary",
+    "orderStatus": "Order Status"
   },
 
   "orderHistory": {
@@ -269,6 +278,7 @@
     "subtitle": "View and track all your purchases",
     "searchPlaceholder": "Search here",
     "placedOn": "Placed on",
+    "totalOrders": "Total Orders",
     "items": "Items",
     "moreDetails": "More Details",
     "filters": {
@@ -375,6 +385,18 @@
   "userProfile": {
     "title": "User Profile",
     "subtitle": "Update your personal details",
+    "personalInfo": "Personal Information",
+    "profileDetails": "Profile Details",
+    "requiredFields": "Required fields",
+    "changePhoto": "Change Photo",
+    "avatarTitle": "Your Avatar",
+    "avatarDescription": "Square image works best. JPG or PNG.",
+    "uploadNewPhoto": "Upload New Photo",
+    "photoHint": "JPG, PNG up to 2MB",
+    "photoTipMain": "Profile photo helps others recognize you.",
+    "photoTipSub": "You can change it anytime.",
+    "keepUpdated": "Keep your information up to date",
+    "keepUpdatedHint": "This helps us provide a better and more personalized experience for you.",
     "updateImage": "Update Image",
     "remove": "Remove",
     "uploadImage": "Upload Image",
@@ -390,7 +412,8 @@
     "errorPhoneTooLong": "This phone number is too long for the selected country.",
     "errorPhoneInvalid": "This doesn't look like a valid phone number for the selected country.",
     "cancel": "Cancel",
-    "updateProfileDetails": "Update Profile Details"
+    "updateProfileDetails": "Update Profile Details",
+    "updating": "Updating..."
   },
 
   "petProfile": {
@@ -407,7 +430,9 @@
       "gender": "Gender",
       "weight": "Weight",
       "specialNeeds": "Special Needs"
-    }
+    },
+    "limitReachedTitle": "Limit reached",
+    "limitReachedDescription": "Only 3 pets per account."
   },
 
   "address": {
@@ -419,6 +444,8 @@
     "city": "City",
     "postalCode": "Postal Code",
     "country": "Country",
+    "default": "Default",
+    "addressWord": "Address",
     "emptyTitle": "You Haven't Added Any Address",
     "emptyDescription": "You haven't saved any shipping or billing addresses yet. Add one now to speed up checkout and manage your orders more easily.",
     "addFirstAddress": "Add Your First Address",

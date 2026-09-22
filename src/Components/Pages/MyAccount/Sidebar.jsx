@@ -213,15 +213,18 @@ function NavList({ activeItem, onSelect, t }) {
   );
 }
 
+// Styled to match the nav rows in NavList exactly (same height, padding,
+// icon size, hover state) so it reads as a continuation of the list rather
+// than a separate button.
 function LogoutButton({ onClick, t }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group w-full flex items-center justify-center gap-3 min-h-[48px] border border-white/30 bg-transparent text-white text-[11px] font-semibold tracking-[0.22em] uppercase cursor-pointer transition-colors duration-300 hover:bg-white hover:text-[#0b0b0a] hover:border-white"
+      className="group relative w-full h-12 px-4 flex items-center gap-3.5 bg-transparent border-0 cursor-pointer text-[14px] tracking-[0.01em] text-white/75 font-normal transition-colors duration-300 hover:text-white hover:bg-white/[0.06]"
     >
-      <BsArrowBarLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
-      <span>{t("logout")}</span>
+      <BsArrowBarLeft className="w-[17px] h-[17px] shrink-0" />
+      <span className="flex-1 min-w-0 truncate text-left">{t("logout")}</span>
     </button>
   );
 }
@@ -248,8 +251,9 @@ function Panel({ activeItem, onSelect, onLogout, t, user, className = "", childr
 
       <div className="relative flex-1 min-h-0 flex flex-col">
         {children}
-        {/* The identity card and the list scroll together (the card never gets
-            squashed on short screens); only Log out stays pinned. */}
+        {/* The identity card, the list, and Log out all scroll together — Log
+            out sits right under the last nav group (Help & support) instead
+            of being pinned to the panel's bottom edge. */}
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain ac-noscroll">
           <div className="px-7 pt-8">
             <UserCard user={user} t={t} />
@@ -257,10 +261,8 @@ function Panel({ activeItem, onSelect, onLogout, t, user, className = "", childr
           <div className="mx-7 h-px bg-white/10" />
           <div className="px-3 pt-6 pb-4">
             <NavList activeItem={activeItem} onSelect={onSelect} t={t} />
+            <LogoutButton onClick={onLogout} t={t} />
           </div>
-        </div>
-        <div className="shrink-0 px-7 pt-4 pb-7 border-t border-white/10">
-          <LogoutButton onClick={onLogout} t={t} />
         </div>
       </div>
     </div>
