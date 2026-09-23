@@ -41,17 +41,8 @@ export default function MyAccount() {
     const asideRef = useRef(null);
 
     useEffect(() => {
-        // Content sits flush against the navbar (no hero/gap), so as soon as
-        // the page scrolls the content is being pulled up under the navbar.
         const handleScroll = () => {
             setIsHeaderTouchingNav(window.scrollY > 0);
-            // The sidebar rail is glued to the navbar's bottom edge. The
-            // 40px announcement bar slides away over the first 40px of
-            // scroll, so grow the rail by the same amount — it always fills
-            // exactly the space below the header, down to the viewport bottom.
-            if (asideRef.current) {
-                asideRef.current.style.height = `calc(100vh - ${104 - Math.min(window.scrollY, 40)}px)`;
-            }
         };
         handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -134,7 +125,7 @@ export default function MyAccount() {
                 <div className="w-full flex flex-col lg:flex-row lg:items-start">
                     <aside
                         ref={asideRef}
-                        className="ac-anim hidden lg:block w-[300px] xl:w-[320px] shrink-0 sticky top-16 h-[calc(100vh-104px)] min-h-[560px]"
+                        className="ac-anim hidden lg:flex w-[300px] xl:w-[320px] shrink-0 sticky top-[104px] h-[calc(100vh-104px)]"
                         style={{ animation: "acSide .6s cubic-bezier(.2,.7,.2,1) backwards" }}
                     >
                         <Sidebar activeItem={activeContent} onItemClick={handleSetActiveContent} onDelete={() => setIsLogoutModalOpen(true)} />

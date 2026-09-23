@@ -1,10 +1,80 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { IoClose } from 'react-icons/io5';
-import { IoIosArrowDown } from 'react-icons/io';
+import { IoClose, IoChevronDown, IoCheckmark, IoTicketOutline, IoAlertCircleOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL } from '../../../API/API';
+
+const MESSAGE_LIMIT = 1000;
+
+// Fully custom category picker — a bordered trigger that opens a floating,
+// scrollable options panel below it. No native <select> anywhere, so the
+// open/closed state, selection check, and hover treatment are all ours to
+// style consistently with the rest of the account UI.
+function CategoryDropdown({ options, value, onSelect, placeholder, hasError }) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-white border text-left text-[14px] transition-colors duration-200 cursor-pointer ${
+          hasError
+            ? 'border-red-400'
+            : open
+            ? 'border-black/30'
+            : 'border-black/10 hover:border-black/25'
+        }`}
+      >
+        <span className={`truncate ${selected ? 'text-[#0b0b0a] font-medium' : 'text-[#8a8880]'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <IoChevronDown
+          className={`w-4 h-4 shrink-0 text-[#8a8880] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          />
+          <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-60 overflow-y-auto bg-white border border-black/10 shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)]">
+            {options.length === 0 ? (
+              <div className="px-4 py-3.5 text-[13px] text-[#8a8880]">—</div>
+            ) : (
+              options.map((opt) => {
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onSelect(opt.value);
+                      setOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between gap-3 text-left px-4 py-3 text-[13.5px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${
+                      isSelected ? 'bg-black/[0.04] text-[#0b0b0a] font-semibold' : 'text-[#5c5a54]'
+                    }`}
+                  >
+                    <span className="truncate">{opt.label}</span>
+                    {isSelected && <IoCheckmark className="w-4 h-4 shrink-0" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
   const { t, i18n } = useTranslation('myaccount');
@@ -17,6 +87,10 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
   const [submitError, setSubmitError] = useState('');
   const [ticketCategories, setTicketCategories] = useState([]);
   const modalCardRef = useRef(null);
+  // Same pop-in/pop-out lifecycle as LogoutModal.jsx — stays mounted for
+  // the exit animation's duration instead of unmounting the instant
+  // isOpen flips.
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleBackdropClick = () => {
     if (modalCardRef.current) {
@@ -65,7 +139,7 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   const resetForm = () => {
     setCategory('');
@@ -77,8 +151,12 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
   };
 
   const handleClose = () => {
-    resetForm();
-    onClose();
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      resetForm();
+      onClose();
+    }, 250);
   };
 
   const validate = () => {
@@ -127,64 +205,61 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1200] p-4"
+      className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-[1200] p-4 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
       onClick={handleBackdropClick}
     >
       <div
         ref={modalCardRef}
-        className="bg-white w-full max-w-[480px] shadow-xl overflow-hidden"
+        className={`bg-white w-full max-w-[520px] max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-6 pb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {t('support.createTicket.title')}
-            </h3>
-            <p className="text-sm text-gray-500 mt-1">
-              {t('support.createTicket.subtitle')}
-            </p>
-          </div>
+        {/* Dark editorial header band — mirrors the ticket-card spine treatment on Support.jsx */}
+        <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 shrink-0">
           <button
             onClick={handleClose}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer flex-shrink-0"
+            aria-label="Close"
+            className="absolute top-5 right-5 sm:top-6 sm:right-6 flex items-center justify-center w-9 h-9 border border-white/15 text-white/70 hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
           >
             <IoClose size={18} />
           </button>
+
+          <div className="w-11 h-11 flex items-center justify-center bg-white/10 border border-white/15 mb-4">
+            <IoTicketOutline className="w-5 h-5 text-white" />
+          </div>
+
+          <h3 className="text-[22px] sm:text-[24px] font-extrabold leading-[1.05] tracking-tight text-white mb-1.5 pr-12">
+            {t('support.createTicket.title')}
+          </h3>
+          <p className="text-[13.5px] text-white/50 max-w-[380px] leading-relaxed">
+            {t('support.createTicket.subtitle')}
+          </p>
         </div>
 
         {/* Form */}
-        <div className="px-6 pb-6 flex flex-col gap-4">
+        <div className="px-6 sm:px-8 pt-6 sm:pt-7 pb-7 sm:pb-8 flex flex-col gap-5 overflow-y-auto">
           {/* Category */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">
+            <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">
               {t('support.createTicket.category')}
             </label>
-            <div className="relative">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className={`w-full appearance-none px-3.5 py-3 pr-10 text-sm text-gray-900 bg-white border outline-none cursor-pointer ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">{t('support.createTicket.categoryPlaceholder')}</option>
-                {categoryOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <IoIosArrowDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-            </div>
+            <CategoryDropdown
+              options={categoryOptions}
+              value={category}
+              onSelect={setCategory}
+              placeholder={t('support.createTicket.categoryPlaceholder')}
+              hasError={!!errors.category}
+            />
             {errors.category && (
-              <span className="text-red-500 text-xs mt-1 block">{errors.category}</span>
+              <span className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
+                <IoAlertCircleOutline className="w-3.5 h-3.5 shrink-0" />
+                {errors.category}
+              </span>
             )}
           </div>
 
           {/* Order ID */}
           {/* <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">
+            <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">
               {t('support.createTicket.orderId')}
             </label>
             <input
@@ -192,51 +267,61 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               placeholder={t('support.createTicket.orderIdPlaceholder')}
-              className={`w-full px-3.5 py-3 text-sm text-gray-900 border outline-none placeholder:text-gray-400 ${
-                errors.orderId ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-4 py-3.5 text-[14px] text-[#0b0b0a] border border-black/10 outline-none placeholder:text-[#8a8880] focus:border-black/30 transition-colors duration-200"
             />
-            {errors.orderId && (
-              <span className="text-red-500 text-xs mt-1 block">{errors.orderId}</span>
-            )}
           </div> */}
 
           {/* Message */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">
-              {t('support.createTicket.message')}
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880]">
+                {t('support.createTicket.message')}
+              </label>
+              <span className="text-[11px] text-[#8a8880] tabular-nums">
+                {message.length}/{MESSAGE_LIMIT}
+              </span>
+            </div>
             <textarea
-              rows={4}
+              rows={5}
               value={message}
+              maxLength={MESSAGE_LIMIT}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('support.createTicket.messagePlaceholder')}
-              className={`w-full px-3.5 py-3 text-sm text-gray-900 border outline-none resize-none placeholder:text-gray-400 ${
-                errors.message ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3.5 text-[14px] text-[#0b0b0a] border outline-none resize-none placeholder:text-[#8a8880] transition-colors duration-200 ${
+                errors.message ? 'border-red-400' : 'border-black/10 focus:border-black/30'
               }`}
             />
             {errors.message && (
-              <span className="text-red-500 text-xs mt-1 block">{errors.message}</span>
+              <span className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
+                <IoAlertCircleOutline className="w-3.5 h-3.5 shrink-0" />
+                {errors.message}
+              </span>
             )}
           </div>
 
           {submitError && (
-            <span className="text-red-500 text-xs -mt-2">{submitError}</span>
+            <div className="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-[13px]">
+              <IoAlertCircleOutline className="w-4 h-4 shrink-0 mt-px" />
+              <span>{submitError}</span>
+            </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 mt-2">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-1">
             <button
               onClick={handleClose}
-              className="flex-1 py-3 text-sm font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+              className="flex-1 py-3.5 text-[13.5px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer"
             >
               {t('support.createTicket.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex-1 py-3 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:opacity-60 disabled:pointer-events-none disabled:translate-y-0 disabled:shadow-none"
             >
+              {isSubmitting && (
+                <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              )}
               {isSubmitting ? t('support.createTicket.submitting') : t('support.createTicket.submit')}
             </button>
           </div>

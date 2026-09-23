@@ -3,27 +3,36 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { MdClose } from 'react-icons/md';
+import {
+  IoClose,
+  IoReceiptOutline,
+  IoDownloadOutline,
+  IoArrowForward,
+  IoLocationOutline,
+  IoCheckmarkCircleOutline,
+} from 'react-icons/io5';
 import jsPDF from 'jspdf';
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../../../API/API';
 import { saveCartData } from '../../../../utils/cartStorage';
 import { CancelOrderModal } from './CancelOrderModal';
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Delivered':
-      return 'bg-green-50 text-green-700';
-    case 'Processing':
-      return 'bg-orange-50 text-orange-700';
-    case 'Awaiting Confirmation':
-      return 'bg-yellow-50 text-yellow-700';
-    case 'Scheduled for Delivery':
-    case 'Waiting for Shipment':
-      return 'bg-blue-50 text-blue-700';
-    default:
-      return 'bg-gray-50 text-gray-700';
-  }
+// Same status color language as the orders table on MyOrder.jsx, so the
+// modal reads as a continuation of that list rather than a different system.
+const STATUS_DOT = {
+  Delivered: "bg-emerald-600",
+  Processing: "bg-amber-500",
+  "Awaiting Confirmation": "bg-yellow-500",
+  "Scheduled for Delivery": "bg-sky-600",
+  "Waiting for Shipment": "bg-sky-600",
+};
+
+const STATUS_TINT = {
+  Delivered: "bg-emerald-50",
+  Processing: "bg-amber-50",
+  "Awaiting Confirmation": "bg-yellow-50",
+  "Scheduled for Delivery": "bg-sky-50",
+  "Waiting for Shipment": "bg-sky-50",
 };
 
 const formatOrderDate = (dateStr) => {
@@ -151,6 +160,10 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
   const router = useRouter();
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
+  // Same pop-in/pop-out lifecycle as LogoutModal.jsx — stays mounted for
+  // the exit animation's duration instead of unmounting the instant
+  // isOpen flips.
+  const [isClosing, setIsClosing] = useState(false);
 
   const getCartToken = () => {
     try {
@@ -233,105 +246,147 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
     }
   }, [isOpen]);
 
-  if (!isOpen || !order) return null;
+  if ((!isOpen && !isClosing) || !order) return null;
 
   const orderItems = Array.isArray(order.items) ? order.items : [];
   const totalPrice = parseFloat(order.total_amount ?? 0) || 0;
   const totalItems = orderItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
+  const isProcessing = order.status === "Processing";
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); onClose(); }, 250);
+  };
+
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-2 sm:p-4 z-50">
-      <div className="bg-white  shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-        {/* Header with Close Button */}
-        <div className="bg-white z-10 p-4 sm:p-6 flex items-center justify-between border-b border-gray-200 ">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">{t('orderDetails.title')}</h2>
+    <div className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-2 sm:p-4 z-70 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}>
+      <div className={`bg-white w-full max-w-2xl max-h-[95vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        {/* Dark editorial header band */}
+        <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-5 sm:px-8 py-5 sm:py-6 flex items-center gap-4 border-b border-white/5 overflow-hidden shrink-0">
+          <IoReceiptOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
+
+          <div className="relative w-11 h-11 flex items-center justify-center bg-white/10 border border-white/15 shrink-0">
+            <IoReceiptOutline className="w-5 h-5 text-white" />
+          </div>
+
+          <div className="relative min-w-0 pr-12">
+            <p className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-white/40 mb-0.5">
+              {t('orderDetails.title')}
+            </p>
+            <h2 className="text-[19px] sm:text-[21px] font-extrabold leading-[1.05] tracking-tight text-white truncate">
+              #{order.order_number || order.id}
+            </h2>
+            <p className="mt-0.5 text-[12.5px] text-white/50 truncate">
+              {t('orderHistory.placedOn')} {formatOrderDate(order.order_date || order.created_at)}
+            </p>
+          </div>
+
           <button
-            onClick={onClose}
-            className="p-2 cursor-pointer text-gray-600 hover:  transition-colors"
-            aria-label="Close modal"
+            onClick={handleClose}
+            aria-label="Close"
+            className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6 flex items-center justify-center w-9 h-9 border border-white/15 text-white/70 hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
           >
-            <MdClose className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+            <IoClose size={18} />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Order Info Box */}
-          <div className="border border-gray-200  p-3 sm:p-4">
-            {/* Order Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">#{order.order_number || order.id}</h3>
-                <p className="text-xs sm:text-sm text-gray-600 mb-3">{t('orderHistory.placedOn')} {formatOrderDate(order.order_date || order.created_at)}</p>
-                <span className={`inline-block px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </span>
-              </div>
-              <div className="text-left sm:text-right">
-                <div className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">${totalPrice.toFixed(2)}</div>
-                <div className="text-xs sm:text-sm text-gray-600">
-                  {totalItems} {totalItems === 1 ? t('dashboard.item') : t('dashboard.items')}
-                </div>
+        <div className="overflow-y-auto flex-1 px-5 sm:px-8 py-6 space-y-6">
+          {/* Summary strip — status on the left, total + item count on the right */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-black/10">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium text-[#0b0b0a] border border-black/10 ${STATUS_TINT[order.status] || ""}`}>
+              <span className={`w-1.5 h-1.5 shrink-0 ${STATUS_DOT[order.status] || "bg-black/30"}`} />
+              {order.status}
+            </span>
+            <div className="text-right">
+              <div className="text-[20px] sm:text-[22px] font-extrabold tracking-tight text-[#0b0b0a]">${totalPrice.toFixed(2)}</div>
+              <div className="text-[12.5px] text-[#8a8880]">
+                {totalItems} {totalItems === 1 ? t('dashboard.item') : t('dashboard.items')}
               </div>
             </div>
+          </div>
 
-            {/* Order Items */}
-            <div className="space-y-2 sm:space-y-3 mt-4 sm:mt-6">
+          {/* Order items */}
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880] mb-3">
+              Items · {orderItems.length}
+            </p>
+            <div className="border border-black/10 divide-y divide-black/[0.06]">
               {orderItems.map((item, index) => {
                 const name = isFrench ? (item.french_name || item.name) : (item.name || '');
                 const price = parseFloat(String(item.unit_price ?? item.price ?? 0).replace(',', '.')) || 0;
                 const quantity = Number(item.quantity) || 0;
                 return (
-                  <div key={item.id ?? index} className="border border-gray-200  p-3 sm:p-4 bg-white">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="font-semibold text-sm sm:text-base text-gray-900 mb-1">{name}</div>
-                        <div className="text-xs sm:text-sm text-gray-600">{t('orderDetails.quantity')}: {quantity}</div>
-                      </div>
-                      <div className="text-base sm:text-lg font-semibold text-gray-900">${price.toFixed(2)}</div>
+                  <div key={item.id ?? index} className="flex items-center gap-3.5 px-4 py-3.5">
+                    <span className="hidden xs:grid sm:grid place-items-center w-10 h-10 shrink-0 border border-black/10 text-[#0b0b0a]">
+                      <IoReceiptOutline className="w-[18px] h-[18px]" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-[14.5px] text-[#0b0b0a] truncate">{name}</div>
+                      <div className="text-[12.5px] text-[#8a8880]">{t('orderDetails.quantity')}: {quantity}</div>
                     </div>
+                    <div className="text-[15px] font-semibold text-[#0b0b0a] shrink-0">${price.toFixed(2)}</div>
                   </div>
                 );
               })}
             </div>
-
-            {/* Tracking Information Box */}
-            {(order.tracking_number || order.delivery_date) && (
-              <div className='mt-4 sm:mt-6'>
-                <h4 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-base sm:text-lg">{t('orderDetails.trackingInfo')}</h4>
-                {order.tracking_number && (
-                  <p className="text-xs sm:text-sm text-gray-900 mb-2">{t('orderDetails.trackingNumber')}: {order.tracking_number}</p>
-                )}
-                {order.delivery_date && (
-                  <p className="text-xs sm:text-sm text-green-600 font-medium">{t('orderDetails.estimatedDelivery')} {formatOrderDate(order.delivery_date)}</p>
-                )}
-              </div>
-            )}
           </div>
 
+          {/* Tracking */}
+          {(order.tracking_number || order.delivery_date) && (
+            <div className="border border-black/10 bg-black/[0.015] p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <IoLocationOutline className="w-4 h-4 text-[#0b0b0a]" />
+                <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880]">
+                  {t('orderDetails.trackingInfo')}
+                </p>
+              </div>
+              {order.tracking_number && (
+                <p className="text-[13.5px] text-[#0b0b0a] mb-1.5">{t('orderDetails.trackingNumber')}: <span className="font-medium">{order.tracking_number}</span></p>
+              )}
+              {order.delivery_date && (
+                <p className="flex items-center gap-1.5 text-[13px] font-medium text-emerald-600">
+                  <IoCheckmarkCircleOutline className="w-4 h-4 shrink-0" />
+                  {t('orderDetails.estimatedDelivery')} {formatOrderDate(order.delivery_date)}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Fixed Action Buttons */}
-        <div className="bg-white border-t border-gray-200 p-4 sm:p-6 ">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button
-              onClick={() => generateInvoice(order, isFrench)}
-              className="w-full cursor-pointer sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 text-gray-900 font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base"
-            >
-              {t('orderDetails.downloadInvoice')}
-            </button>
-            <button
-              disabled={isReordering}
-              className="w-full cursor-pointer sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base disabled:opacity-70 disabled:cursor-not-allowed"
-              onClick={order.status === "Processing" ? () => setIsCancelModalOpen(true) : handleReorder}
-            >
-              {order.status === "Processing"
-                ? t('orderDetails.cancelOrder')
-                : isReordering
-                ? t('orderDetails.reordering')
-                : t('orderDetails.reorderItem')}
-            </button>
-          </div>
+        <div className="px-5 sm:px-8 py-4 sm:py-5 border-t border-black/10 bg-white shrink-0 flex flex-col-reverse sm:flex-row gap-3">
+          <button
+            onClick={() => generateInvoice(order, isFrench)}
+            className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 text-[13.5px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer"
+          >
+            <IoDownloadOutline className="w-4 h-4" />
+            {t('orderDetails.downloadInvoice')}
+          </button>
+          <button
+            disabled={isReordering}
+            onClick={isProcessing ? () => setIsCancelModalOpen(true) : handleReorder}
+            className={`flex-1 inline-flex items-center justify-center gap-2 py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white border transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:pointer-events-none disabled:translate-y-0 disabled:shadow-none ${
+              isProcessing
+                ? 'bg-gradient-to-b from-red-500 to-red-700 border-red-700 hover:from-red-600 hover:to-red-800 hover:shadow-[0_18px_36px_-14px_rgba(220,38,38,.55)] hover:-translate-y-px'
+                : 'bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border-[#0b0b0a] hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px'
+            }`}
+          >
+            {isReordering && (
+              <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
+            {isProcessing
+              ? t('orderDetails.cancelOrder')
+              : isReordering
+              ? t('orderDetails.reordering')
+              : (
+                <>
+                  {t('orderDetails.reorderItem')}
+                  <IoArrowForward className="w-3.5 h-3.5" />
+                </>
+              )}
+          </button>
         </div>
       </div>
 

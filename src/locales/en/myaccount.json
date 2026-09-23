@@ -162,6 +162,9 @@
   },
   "deletePet": {
   "title": "Delete Pet Profile",
+  "headerBadge": "Pet Profile",
+  "cannotUndo": "This action cannot be undone",
+  "deleting": "Deleting...",
   "confirmation": "Are you sure you want to delete {{petName}}'s profile?",
   "warning": "This action cannot be undone.",
   "confirmButton": "Yes, Delete",
@@ -469,13 +472,17 @@
       "note2": "You'll need to sign in again with your new password.",
       "cancel": "Cancel",
       "updatePassword": "Update Password",
+      "updating": "Updating...",
+      "genericError": "Something went wrong. Please try again.",
       "errors": {
         "currentRequired": "Current password is required.",
         "currentIncorrect": "Current password is incorrect.",
         "newRequired": "New password is required.",
+        "newTooShort": "Password must be at least 6 characters.",
         "newMustDiffer": "New password must differ from current.",
         "passwordRequirements": "At least 8 characters, 1 number, 1 special character",
-        "confirmRequired": "Please confirm your new password."
+        "confirmRequired": "Please confirm your new password.",
+        "confirmMismatch": "New password and confirm password do not match."
       }
     },
     "emailNotifications": {
@@ -536,7 +543,8 @@
     "emptyState": {
       "title": "No Support Tickets Yet",
       "description": "You haven't created any support or refund requests yet. If you face any issue with your order, you can easily raise a ticket here and track it in real time.",
-      "createNewTicket": "Create New Ticket"
+      "createNewTicket": "Create New Ticket",
+      "illustrationAlt": "No support tickets illustration"
     },
     "noResults": {
       "title": "No ticket found",
@@ -547,6 +555,7 @@
       "closeChat": "Close Chat/Ticket",
       "writeMessage": "Write Message...",
       "dateSeparator": "Tuesday",
+      "supportTeam": "Support Team",
       "closeConfirm": {
         "title": "Are you sure you want to close this ticket?",
         "cancel": "Cancel",

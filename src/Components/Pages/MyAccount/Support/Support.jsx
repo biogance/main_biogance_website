@@ -2,125 +2,161 @@
 
 import React, { useState, useEffect } from 'react';
 import { BsChatText } from 'react-icons/bs';
-import { FiSearch, FiMessageCircle } from 'react-icons/fi';
-import { IoChevronDown } from 'react-icons/io5';
-import { LuFilter } from 'react-icons/lu';
+import { FiSearch } from 'react-icons/fi';
+import { IoChevronDown, IoArrowForward, IoCalendarOutline, IoCheckmarkCircleOutline, IoTimeOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import SupportChat from './SupportChat';
 import CreateTicketModal from './CreateTicketModal';
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../../../API/API';
 
-// Support Ticket Shimmer Component
+// One shimmer block — every skeleton on this page is built from this.
+const Bone = ({ w, h, className = "" }) => (
+  <span
+    className={`block bg-black/[0.06] ${className}`}
+    style={{ width: w, height: h, animation: "supportShimmer 1.5s ease-in-out infinite" }}
+  />
+);
+
+// Support ticket card shimmer — mirrors TicketCard's icon + status row,
+// message block, and action button.
 const SupportTicketShimmer = () => (
-  <div className="bg-white border border-gray-200 p-4">
-    {/* Header with Ticket ID and Status */}
-    <div className="flex items-center justify-between mb-3">
-      <div
-        style={{
-          width: '100px',
-          height: '20px',
-          borderRadius: '4px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200px 100%',
-          animation: 'shimmer 1.5s infinite'
-        }}
-      />
-      <div
-        style={{
-          width: '80px',
-          height: '24px',
-          borderRadius: '12px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200px 100%',
-          animation: 'shimmer 1.5s infinite'
-        }}
-      />
+  <div className="flex bg-white border border-black/10 overflow-hidden min-h-[280px]">
+    <div className="w-16 sm:w-20 shrink-0 bg-black/10" />
+    <div className="flex-1 min-w-0 flex flex-col">
+      <div className="p-6 sm:p-7 flex-1">
+        <Bone w="75%" h="30px" className="mb-2.5" />
+        <Bone w="50%" h="15px" className="mb-5" />
+        <div className="h-px bg-black/10 mb-5" />
+        <Bone w="65%" h="15px" className="mb-3.5" />
+        <Bone w="45%" h="15px" />
+      </div>
+      <Bone w="100%" h="56px" />
     </div>
-
-    {/* Order Reference */}
-    <div
-      style={{
-        width: '120px',
-        height: '14px',
-        borderRadius: '4px',
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-        backgroundSize: '200px 100%',
-        animation: 'shimmer 1.5s infinite',
-        marginBottom: '8px'
-      }}
-    />
-
-    {/* Created On */}
-    <div
-      style={{
-        width: '140px',
-        height: '14px',
-        borderRadius: '4px',
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-        backgroundSize: '200px 100%',
-        animation: 'shimmer 1.5s infinite',
-        marginBottom: '24px'
-      }}
-    />
-
-    {/* Description Box */}
-    <div className="bg-gray-100 p-3  w-full mb-3">
-      <div
-        style={{
-          width: '100px',
-          height: '16px',
-          borderRadius: '4px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200px 100%',
-          animation: 'shimmer 1.5s infinite',
-          marginBottom: '8px'
-        }}
-      />
-      <div
-        style={{
-          width: '100%',
-          height: '14px',
-          borderRadius: '4px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200px 100%',
-          animation: 'shimmer 1.5s infinite',
-          marginBottom: '4px'
-        }}
-      />
-      <div
-        style={{
-          width: '80%',
-          height: '14px',
-          borderRadius: '4px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200px 100%',
-          animation: 'shimmer 1.5s infinite'
-        }}
-      />
-    </div>
-
-    {/* Button */}
-    <div
-      style={{
-        width: '100%',
-        height: '44px',
-        borderRadius: '8px',
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-        backgroundSize: '200px 100%',
-        animation: 'shimmer 1.5s infinite'
-      }}
-    />
   </div>
 );
 
+// A filter dropdown — a plain button that opens a bordered panel below it,
+// same shape as the one on the Orders page.
+function FilterDropdown({ options, selected, onSelect }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`flex items-center justify-between gap-3 cursor-pointer px-5 py-3 bg-white border text-[13.5px] font-medium text-[#0b0b0a] transition-colors duration-200 w-full sm:w-auto ${
+          open ? "border-black/30" : "border-black/10 hover:border-black/25"
+        }`}
+      >
+        <span>{selected}</span>
+        <IoChevronDown className={`w-4 h-4 shrink-0 text-[#8a8880] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          />
+          <div className="absolute right-0 sm:left-0 top-full mt-2 z-50 min-w-[200px] bg-white border border-black/10 shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)]">
+            {options.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => {
+                  onSelect(option.key);
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 text-[13px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${
+                  selected === option.label ? "bg-black/[0.04] text-[#0b0b0a] font-semibold" : "text-[#5c5a54]"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// A support ticket — icon badge + id/status up top, a quoted message block,
+// and an "Open Support Chat" action, all in one card.
+// A bold, editorial ticket card — a full-height black spine on the left
+// carrying the status and ticket number as vertical type (a book-spine
+// label, not a small pill), a big headline for the category, a hairline,
+// then the meta rows (date, status) each with their own icon, and a
+// full-width black action bar at the bottom.
+function TicketCard({ ticket, onOpenChat, t }) {
+  const isClosed = ticket.statusKey === 'support.status.closed';
+  const StatusIcon = isClosed ? IoCheckmarkCircleOutline : IoTimeOutline;
+
+  return (
+    <div className="flex bg-white border border-black/10 overflow-hidden transition-shadow duration-300 hover:shadow-[0_30px_60px_-32px_rgba(0,0,0,.3)]">
+      {/* Spine */}
+      <div className="w-16 sm:w-20 shrink-0 bg-[#f3f3f3] flex items-center justify-center py-8">
+        <div
+          className="flex items-center gap-4 text-[#0b0b0a] font-extrabold uppercase tracking-tight leading-none whitespace-nowrap"
+          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+        >
+          <span className="text-[18px] sm:text-[18px]">{t(ticket.statusKey)}</span>
+          <span className="text-[18px] sm:text-[18px]">{t('support.ticketId')} {ticket.id}</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="p-6 sm:p-7 flex-1">
+          <h3 className="text-[20px] sm:text-[20px] font-extrabold leading-[1.05] tracking-tight text-[#0b0b0a] mb-1.5 break-words">
+            {ticket.titleKey ? t(ticket.titleKey) : ticket.title}
+          </h3>
+          {(ticket.orderRef || ticket.description) && (
+            <p className="text-[14px] text-[#8a8880] truncate">
+              {ticket.orderRef ? `${t('support.orderReference')} ${ticket.orderRef}` : (ticket.descriptionKey ? t(ticket.descriptionKey) : ticket.description)}
+            </p>
+          )}
+
+          <div className="h-px bg-black/15 my-5" />
+
+          <div className="space-y-3.5">
+            <div className="flex items-center gap-3">
+              <IoCalendarOutline className="w-5 h-5 shrink-0 text-[#0b0b0a]" />
+              <span className="text-[14.5px] text-[#5c5a54]">{ticket.createdOn}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <StatusIcon className="w-5 h-5 shrink-0 text-[#0b0b0a]" />
+              <span className="text-[14.5px] text-[#5c5a54]">{t(ticket.statusKey)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 sm:px-7 pb-6 sm:pb-7">
+         <button
+  onClick={onOpenChat}
+  className="w-full flex items-center justify-center gap-3 bg-[#0b0b0a] text-white py-3 sm:py-4 text-[15px] font-bold tracking-[0.01em] border border-transparent transition-colors duration-200 hover:bg-white hover:text-[#0b0b0a] hover:border-[#0b0b0a] cursor-pointer"
+>
+  <BsChatText size={19} />
+  {t('support.openSupportChat')}
+</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Support({ onOpenChat }) {
   const { t, i18n } = useTranslation("myaccount");
+  const { t: tSidebar } = useTranslation("sidebar");
   const isFrench = i18n.language === 'fr';
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [filterKey, setFilterKey] = useState('all');
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [loadingState, setLoadingState] = useState('shimmer');
@@ -138,9 +174,9 @@ export default function Support({ onOpenChat }) {
 
   const getStatusInfo = (status) => {
     if (Number(status) === 1) {
-      return { key: 'support.status.closed', color: 'bg-gray-200 text-gray-700' };
+      return { key: 'support.status.closed' };
     }
-    return { key: 'support.status.active', color: 'bg-green-100 text-green-700' };
+    return { key: 'support.status.active' };
   };
 
   const fetchTickets = async (filter = 'all', keyword = '') => {
@@ -182,7 +218,6 @@ export default function Support({ onOpenChat }) {
             orderRef: ticket.order_id ? `#${ticket.order_id}` : '',
             createdOn: ticket.time ? formatCreatedOn(new Date(Number(ticket.time) * 1000)) : '',
             statusKey: statusInfo.key,
-            statusColor: statusInfo.color,
             title: categoryLabel,
             description: ticket.message || '',
           };
@@ -242,14 +277,7 @@ export default function Support({ onOpenChat }) {
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes shimmer {
-          0% {
-            background-position: -200px 0;
-          }
-          100% {
-            background-position: calc(200px + 100%) 0;
-          }
-        }
+        @keyframes supportShimmer { 0%, 100% { opacity: .35; } 50% { opacity: .8; } }
       `}} />
 
       {/* No min-h-screen — MyAccount.jsx's wrapper already provides a full
@@ -262,181 +290,105 @@ export default function Support({ onOpenChat }) {
             Sidebar.jsx's own bottom padding on the mobile tab row, leaving
             a big empty gap before this card started. md:mt-9 keeps desktop
             unchanged, same pattern as Dashboard.jsx's mt-2 md:mt-10 fix. */}
-        <div className=" sm:p-6 md:p-8 mt-2 md:mt-9 max-w-10xl mx-auto">
-          <div className="bg-white  shadow-sm p-6 md:p-8">
-
+        <div className="p-4 sm:p-6 md:p-8 mt-2 md:mt-9 max-w-10xl mx-auto">
           {isChatOpen ? (
-            <SupportChat ticket={selectedTicket} onClose={handleCloseChat} />
+            <div className="bg-white border border-black/10 p-6 md:p-8">
+              <SupportChat ticket={selectedTicket} onClose={handleCloseChat} />
+            </div>
           ) : (
             <>
-              {/* Header - always visible */}
-              <div className="mb-6 md:mb-8">
-                <h2 className="text-2xl md:text-2xl font-semibold text-gray-900">
+              {/* Header */}
+              <div className="mb-8 md:mb-10">
+                <p className="text-[11px] font-semibold tracking-[0.16em] uppercase text-[#8a8880] mb-2">
+                  {tSidebar('groupHelp')}
+                </p>
+                <h1 className="text-[28px] sm:text-[32px] font-semibold leading-tight tracking-[-0.02em] text-[#0b0b0a]">
                   {t('support.title')}
-                </h2>
-                <p className="text-sm md:text-base text-gray-600 mt-1">
+                </h1>
+                <p className="mt-2 text-[14px] text-[#8a8880] max-w-md">
                   {t('support.subtitle')}
                 </p>
               </div>
 
               {showBar ? (
                 <>
-                  {/* Search + Filter Bar */}
-                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                    {/* Search */}
+                  {/* Search + Filter + Create */}
+                  <div className="flex flex-col sm:flex-row gap-3 mb-8 md:mb-10">
                     <div className="flex-1 relative">
-                      <FiSearch
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                        size={20}
-                      />
+                      <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#8a8880]" />
                       <input
                         type="text"
                         placeholder={t('support.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 text-black pr-4 py-3 bg-white border border-gray-200  focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-black/10 text-[14px] text-[#0b0b0a] placeholder:text-[#8a8880] focus:outline-none focus:border-black/30 transition-colors"
                       />
                     </div>
 
-                    {/* Filter Dropdown */}
-                    <div className="relative">
+                    <FilterDropdown options={filterOptions} selected={filterOption} onSelect={setFilterKey} />
 
-                      {showFilterDropdown && (
-                        <div 
-                          className="fixed inset-0 bg-black/50 z-60"
-                          onClick={() => setShowFilterDropdown(false)}
-                        />
-                      )}
-
-                      <button
-                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className="flex items-center cursor-pointer text-black gap-3 px-6 py-3 bg-white border border-gray-200 hover:border-gray-300 transition-colors w-full sm:w-auto justify-between relative"
-                      >
-                        <span>{filterOption}</span>
-                        <IoChevronDown size={18} className="text-gray-600" />
-                      </button>
-
-                      {showFilterDropdown && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg z-70 overflow-hidden">
-                          {filterOptions.map((option) => (
-                            <button
-                              key={option.key}
-                              onClick={() => {
-                                setFilterKey(option.key);
-                                setShowFilterDropdown(false);
-                              }}
-                              className="w-full text-left text-black cursor-pointer px-4 py-2.5 hover:bg-black hover:text-white transition-colors"
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Create New Ticket */}
                     <button
                       onClick={() => setIsCreateModalOpen(true)}
-                      className="flex items-center cursor-pointer justify-center gap-2 px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-medium w-full sm:w-auto"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13px] font-medium tracking-[0.02em] border border-[#0b0b0a]  transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer whitespace-nowrap w-full sm:w-auto"
                     >
                       {t('support.createTicket.button')}
                     </button>
                   </div>
 
-                  {/* Tickets Grid */}
+                  {/* Tickets */}
                   {!isLoading && !hasTickets ? (
-                    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <div className="bg-white border border-black/10 flex flex-col items-center justify-center min-h-[40vh] py-12 px-4 text-center">
+                      <h3 className="text-[16px] font-semibold text-[#0b0b0a] mb-2">
                         {t('support.noResults.title')}
                       </h3>
-                      <p className="text-sm text-gray-500 max-w-md">
+                      <p className="text-[13.5px] text-[#8a8880] max-w-md">
                         {t('support.noResults.description')}
                       </p>
                     </div>
                   ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {isLoading ? (
-                      Array.from({ length: 4 }).map((_, index) => (
-                        <SupportTicketShimmer key={index} />
-                      ))
-                    ) : (
-                      tickets.map((ticket) => (
-                        <div
-                          key={ticket.id}
-                          className="bg-white  border border-gray-200 p-4 hover: transition-shadow"
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-semibold text-black">{t('support.ticketId')} {ticket.id}</h3>
-                            <span
-                              className={`px-4 py-2  text-xs font-medium ${ticket.statusColor}`}
-                            >
-                              {t(ticket.statusKey)}
-                            </span>
-                          </div>
-
-                          {ticket.orderRef && (
-                            <p className="text-sm text-gray-600 mb-1">
-                              {t('support.orderReference')} {ticket.orderRef}
-                            </p>
-                          )}
-                          <p className="text-sm text-gray-600 mb-6">
-                            {t('support.createdOn')} {ticket.createdOn}
-                          </p>
-
-                            <div className='bg-gray-100 p-3  w-full mb-3 text black'>
-                          <h4 className="font-medium mb-2 text-black">
-                            {ticket.titleKey ? t(ticket.titleKey) : ticket.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
-                            {ticket.descriptionKey ? t(ticket.descriptionKey) : ticket.description}
-                          </p>
-                          </div>
-
-                          <button
-                            onClick={() => handleOpenChat(ticket)}
-                            className="w-full flex items-center cursor-pointer justify-center gap-2 text-black px-4 py-3 border border-gray-200 hover:bg-gray-100  transition-colors text-sm font-medium"
-                          >
-                            <BsChatText size={18} />
-                            {t('support.openSupportChat')}
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      {isLoading ? (
+                        Array.from({ length: 4 }).map((_, index) => (
+                          <SupportTicketShimmer key={index} />
+                        ))
+                      ) : (
+                        tickets.map((ticket) => (
+                          <TicketCard
+                            key={ticket.id}
+                            ticket={ticket}
+                            onOpenChat={() => handleOpenChat(ticket)}
+                            t={t}
+                          />
+                        ))
+                      )}
+                    </div>
                   )}
                 </>
               ) : (
                 /* ── Empty State ── */
-                <div className="flex flex-col items-center justify-center min-h-[30vh]">
-                  <div className="w-56 h-56 md:w-72 md:h-72 mb-8">
+                <div className="bg-white border border-black/10 flex flex-col items-center justify-center min-h-[40vh] py-12 px-4">
+                  <div className="w-48 h-48 md:w-64 md:h-64 mb-6 flex items-center justify-center">
                     <img
                       src="/sr.svg"
-                      alt="No support tickets illustration"
+                      alt={t('support.emptyState.illustrationAlt')}
                       className="w-full h-full object-contain"
                     />
                   </div>
 
-                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
+                  <h3 className="text-[18px] sm:text-[20px] font-semibold text-[#0b0b0a] mb-2">
                     {t('support.emptyState.title')}
                   </h3>
 
-                  <p className="text-gray-500 text-base text-center max-w-2xl mb-8 leading-relaxed">
+                  <p className="text-[13.5px] text-[#8a8880] text-center max-w-md mb-6 leading-relaxed">
                     {t('support.emptyState.description')}
                   </p>
 
                   <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="
-                      bg-gray-900 text-white
-                      px-8 py-3.5
-                      text-base font-medium
-                      hover:bg-gray-800
-                      transition-colors duration-200
-                      shadow-sm
-                      cursor-pointer
-                    "
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13.5px] font-medium tracking-[0.02em] border border-[#0b0b0a] shadow-[0_14px_30px_-14px_rgba(0,0,0,.55)] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
                   >
                     {t('support.emptyState.createNewTicket')}
+                    <IoArrowForward className="w-[15px] h-[15px]" />
                   </button>
                 </div>
               )}
@@ -444,13 +396,12 @@ export default function Support({ onOpenChat }) {
           )}
         </div>
       </div>
-    </div>
 
-    <CreateTicketModal
-      isOpen={isCreateModalOpen}
-      onClose={() => setIsCreateModalOpen(false)}
-      onCreate={handleCreateTicket}
-    />
+      <CreateTicketModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateTicket}
+      />
     </>
   );
 }

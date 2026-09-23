@@ -1,15 +1,71 @@
 "use client"
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { FaRegEdit } from "react-icons/fa";
-import { FiChevronDown, FiAlertCircle } from "react-icons/fi"
+import { IoClose, IoChevronDown, IoCheckmark, IoAlertCircleOutline, IoCopyOutline, IoTicketOutline } from "react-icons/io5";
 import toast from 'react-hot-toast';
 import { BASE_URL } from "../../../API/API";
+
+// Custom points picker — same bordered-trigger + floating-panel pattern
+// used by the other account modals, instead of a plain div-based list.
+function PointsDropdown({ options, value, onSelect, placeholder, hasError }) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-white border text-left text-[14px] transition-colors duration-200 cursor-pointer ${
+          hasError ? 'border-red-400' : open ? 'border-black/30' : 'border-black/10 hover:border-black/25'
+        }`}
+      >
+        <span className={selected ? 'text-[#0b0b0a] font-medium' : 'text-[#8a8880]'}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <IoChevronDown className={`w-4 h-4 shrink-0 text-[#8a8880] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          />
+          <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-60 overflow-y-auto bg-white border border-black/10 shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)]">
+            {options.length === 0 ? (
+              <div className="px-4 py-3.5 text-[13px] text-[#8a8880]">—</div>
+            ) : (
+              options.map((opt) => {
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => { onSelect(opt.value); setOpen(false); }}
+                    className={`w-full flex items-center justify-between gap-3 text-left px-4 py-3 text-[13.5px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${
+                      isSelected ? 'bg-black/[0.04] text-[#0b0b0a] font-semibold' : 'text-[#5c5a54]'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {isSelected && <IoCheckmark className="w-4 h-4 shrink-0" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0, onRedeemSuccess }) {
     const { t } = useTranslation("myaccount");
     const [selectedPoints, setSelectedPoints] = useState('');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [redeemedPoints, setRedeemedPoints] = useState(0);
     const [discountAmount, setDiscountAmount] = useState(0);
@@ -17,6 +73,10 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
     const [redeemLoading, setRedeemLoading] = useState(false);
     const [redeemError, setRedeemError] = useState(null);
     const modalCardRef = useRef(null);
+    // Same pop-in/pop-out lifecycle as LogoutModal.jsx — stays mounted for
+    // the exit animation's duration instead of unmounting the instant
+    // isOpen flips.
+    const [isClosing, setIsClosing] = useState(false);
 
     const minimumPoints = 10;
     const userBalance = loyaltyPoints;
@@ -61,14 +121,9 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
         setRedeemLoading(false);
     };
 
-    const handleSelectOption = (value) => {
-        setSelectedPoints(value);
-        setIsDropdownOpen(false);
-        setRedeemError(null);
-    };
-
     const copyVoucherCode = () => {
         navigator.clipboard.writeText(voucherCode);
+        toast.success('Voucher code copied!');
     };
 
     const handleBackdropClick = () => {
@@ -80,144 +135,134 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
         }
     };
 
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => { setIsClosing(false); onClose(); }, 250);
+    };
+
     const handleCloseAll = () => {
-        setIsSuccessModalOpen(false);
-        setSelectedPoints('');
-        setRedeemError(null);
-        onClose();
+        setIsClosing(true);
+        setTimeout(() => {
+            setIsClosing(false);
+            setIsSuccessModalOpen(false);
+            setSelectedPoints('');
+            setRedeemError(null);
+            onClose();
+        }, 250);
     };
 
     const hasEnoughPoints = selectedPoints && parseInt(selectedPoints) <= userBalance;
     const showError = selectedPoints && parseInt(selectedPoints) > userBalance;
 
-
      useEffect(() => {
         if (isOpen) {
-          // Save current scroll position
           const scrollY = window.scrollY;
-          
-          // Prevent scrolling
           document.body.style.overflow = 'hidden';
           document.body.style.position = 'fixed';
           document.body.style.top = `-${scrollY}px`;
           document.body.style.width = '100%';
-          
+
           return () => {
-            // Restore scrolling
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.top = '';
             document.body.style.width = '';
-            
-            // Restore scroll position
             window.scrollTo(0, scrollY);
           };
         }
       }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen && !isClosing) return null;
 
     return (
         <>
           {/* Main Redeem Modal */}
           {!isSuccessModalOpen && (
             <div
-                className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden"
+                className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-[1200] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
                 onClick={handleBackdropClick}
             >
               <div
                 ref={modalCardRef}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white  shadow-2xl w-full max-w-2xl p-8 "
+                className={`bg-white w-full max-w-[520px] shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
               >
-                <h2 className="text-xl text-black font-semibold mb-3">{t('createVoucher.title')}</h2>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700 mb-1">
-                    {t('createVoucher.description1')}
-                  </p>
-                  <p className="text-gray-700">
-                    {t('createVoucher.description2')}
+                {/* Dark editorial header band */}
+                <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 sm:px-7 pt-6 sm:pt-7 pb-5 sm:pb-6 overflow-hidden">
+                  <IoTicketOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
+
+                  <button
+                    onClick={handleClose}
+                    aria-label="Close"
+                    className="absolute top-5 right-5 sm:top-6 sm:right-6 flex items-center justify-center w-9 h-9 border border-white/15 text-white/70 hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
+                  >
+                    <IoClose size={18} />
+                  </button>
+
+                  <div className="relative w-11 h-11 flex items-center justify-center bg-white/10 border border-white/15 mb-4">
+                    <IoTicketOutline className="w-5 h-5 text-white" />
+                  </div>
+
+                  <h2 className="text-[20px] sm:text-[22px] font-extrabold leading-[1.05] tracking-tight text-white mb-1.5 pr-12">
+                    {t('createVoucher.title')}
+                  </h2>
+                  <p className="text-[13.5px] text-white/50 max-w-[380px] leading-relaxed">
+                    {t('createVoucher.description1')} {t('createVoucher.description2')}
                   </p>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                {/* Form */}
+                <div className="px-6 sm:px-7 pt-6 pb-7">
+                  <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">
                     {t('createVoucher.pointsToRedeem')}
                   </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className={`w-full px-4 py-3 border  cursor-pointer focus:outline-none text-left flex items-center justify-between ${
-                        showError 
-                          ? 'bg-red-50 border-red-300 focus:ring-2 focus:ring-red-400' 
-                          : 'bg-gray-50 border-gray-300 focus:ring-2 focus:ring-gray-400'
-                      }`}
-                    >
-                      <span className={selectedPoints ? 'text-gray-700' : 'text-gray-400'}>
-                        {selectedPoints ? t('createVoucher.pointsOption', { points: selectedPoints }) : t('createVoucher.selectPoints')}
-                      </span>
-                      <FiChevronDown className={`text-gray-600 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} size={20} />
-                    </button>
-                    
-                    {isDropdownOpen && (
-  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 shadow-lg z-10 max-h-60 overflow-y-auto">
-    {pointsOptions.map((option) => (
-      <div
-        key={option.value}
-        onClick={() => handleSelectOption(option.value)}
-        className="px-4 py-3 cursor-pointer text-gray-700 hover:bg-black hover:text-white transition-colors"
-      >
-        {option.label}
-      </div>
-    ))}
-  </div>
-)}
-                  </div>
-                  
+                  <PointsDropdown
+                    options={pointsOptions}
+                    value={selectedPoints}
+                    onSelect={(val) => { setSelectedPoints(val); setRedeemError(null); }}
+                    placeholder={t('createVoucher.selectPoints')}
+                    hasError={showError}
+                  />
+
                   {showError && (
-                    <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                      <FiAlertCircle size={16} />
-                      <span>{t('createVoucher.notEnoughPoints')}</span>
+                    <span className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
+                      <IoAlertCircleOutline className="w-3.5 h-3.5 shrink-0" />
+                      {t('createVoucher.notEnoughPoints')}
+                    </span>
+                  )}
+
+                  <div className="flex items-center justify-between gap-3 text-[12.5px] mt-4 pt-4 border-t border-black/10">
+                    <span className="text-[#8a8880]">{t('createVoucher.minimumRedeemable', { points: minimumPoints })}</span>
+                    <span className="text-[#0b0b0a]">
+                      {t('createVoucher.yourBalance')}: <span className="font-semibold">{t('createVoucher.balancePoints', { points: userBalance })}</span>
+                    </span>
+                  </div>
+
+                  {redeemError && (
+                    <div className="flex items-start gap-2 mt-4 px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-[13px]">
+                      <IoAlertCircleOutline className="w-4 h-4 shrink-0 mt-px" />
+                      <span>{redeemError}</span>
                     </div>
                   )}
-                </div>
 
-                <div className="flex justify-between items-center text-sm mb-8">
-                  <span className="text-gray-600">{t('createVoucher.minimumRedeemable', { points: minimumPoints })}</span>
-                  <span className="text-gray-900">
-                    {t('createVoucher.yourBalance')}: <span className="font-semibold">{t('createVoucher.balancePoints', { points: userBalance })}</span>
-                  </span>
-                </div>
-
-                {redeemError && (
-                  <div className="flex items-center gap-2 mb-4 text-red-600 text-sm">
-                    <FiAlertCircle size={16} />
-                    <span>{redeemError}</span>
+                  <div className="flex flex-col-reverse sm:flex-row gap-3 mt-6">
+                    <button
+                      onClick={handleClose}
+                      className="flex-1 py-3.5 text-[13.5px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer"
+                    >
+                      {t('createVoucher.cancel')}
+                    </button>
+                    <button
+                      onClick={handleRedeem}
+                      disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints || redeemLoading}
+                      className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:opacity-60 disabled:pointer-events-none disabled:translate-y-0 disabled:shadow-none"
+                    >
+                      {redeemLoading && (
+                        <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      )}
+                      {redeemLoading ? (t('createVoucher.redeeming') || 'Redeeming...') : t('createVoucher.redeem')}
+                    </button>
                   </div>
-                )}
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={onClose}
-                    className="flex-1 px-6 py-3 cursor-pointer bg-white border border-gray-300 text-gray-900  font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    {t('createVoucher.cancel')}
-                  </button>
-                  <button
-                    onClick={handleRedeem}
-                    disabled={!selectedPoints || parseInt(selectedPoints) < minimumPoints || !hasEnoughPoints || redeemLoading}
-                    className="flex-1 px-6 py-3 cursor-pointer bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {redeemLoading ? (
-                      <>
-                        <style>{`@keyframes redeemSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-                        <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "redeemSpin 0.6s linear infinite" }} />
-                        {t('createVoucher.redeeming') || 'Redeeming...'}
-                      </>
-                    ) : t('createVoucher.redeem')}
-                  </button>
                 </div>
               </div>
             </div>
@@ -225,48 +270,49 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
 
           {/* Success Modal */}
           {isSuccessModalOpen && (
-            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-[1100] overflow-hidden">
-              <div className="bg-white  shadow-2xl w-full max-w-xl p-8">
-                {/* Success Illustration */}
-                <div className="flex justify-center mb-6">
-                    <img src="success.svg" alt="" />
+            <div className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-[1200] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}>
+              <div className={`bg-white w-full max-w-xl shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+                <div className="bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-8 pt-8 pb-7 flex flex-col items-center text-center">
+                  <img src="success.svg" alt="" className="w-24 h-24 mb-5" />
+                  <h2 className="text-[22px] font-extrabold leading-[1.05] tracking-tight text-white">
+                    {t('createVoucher.success.title')}
+                  </h2>
                 </div>
-                
-                {/* Success Message */}
-                <h2 className="text-xl text-black font-semibold text-center mb-3">
-                  {t('createVoucher.success.title')}
-                </h2>
-                
-                <p className="text-center text-gray-700 mb-6">
-                  {t('createVoucher.success.description1')}{' '}
-                  <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.redeemedPoints', { points: redeemedPoints })}</span> {t('createVoucher.success.for')}{' '}
-                  <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.discount', { amount: discountAmount })}</span>.
-                  <br />
-                  {t('createVoucher.success.description2')}
-                </p>
-                
-                {/* Voucher Code */}
-                <div className="mb-8">
-                  <p className="text-center text-sm text-gray-600 mb-2">{t('createVoucher.success.voucherCode')}</p>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-lg text-black font-semibold">{voucherCode}</span>
+
+                <div className="px-8 py-7">
+                  <p className="text-center text-[14px] text-[#5c5a54] leading-relaxed mb-6">
+                    {t('createVoucher.success.description1')}{' '}
+                    <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.redeemedPoints', { points: redeemedPoints })}</span> {t('createVoucher.success.for')}{' '}
+                    <span className="text-[#DFB400] font-semibold">{t('createVoucher.success.discount', { amount: discountAmount })}</span>.
+                    <br />
+                    {t('createVoucher.success.description2')}
+                  </p>
+
+                  {/* Voucher code — call out the code the same way the pet-modal success screen calls out its reward */}
+                  <div className="flex items-center justify-between gap-3 border border-black/10 bg-black/[0.02] px-5 py-4 mb-7">
+                    <div className="min-w-0">
+                      <p className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[#8a8880] mb-1">
+                        {t('createVoucher.success.voucherCode')}
+                      </p>
+                      <p className="text-[18px] font-extrabold tracking-[0.04em] text-[#0b0b0a] truncate">{voucherCode}</p>
+                    </div>
                     <button
                       onClick={copyVoucherCode}
-                      className="p-1 hover:bg-gray-100 transition-colors"
                       title={t('createVoucher.success.copyCode')}
+                      aria-label={t('createVoucher.success.copyCode')}
+                      className="flex items-center justify-center w-10 h-10 shrink-0 border border-black/10 text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white hover:border-[#0b0b0a] transition-colors duration-200 cursor-pointer"
                     >
-                      <FaRegEdit size={18} className="text-gray-600" />
+                      <IoCopyOutline size={17} />
                     </button>
                   </div>
+
+                  <button
+                    onClick={handleCloseAll}
+                    className="w-full py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
+                  >
+                    {t('createVoucher.success.okay')}
+                  </button>
                 </div>
-                
-                {/* Okay Button */}
-                <button
-                  onClick={handleCloseAll}
-                  className="w-full px-6 py-3 cursor-pointer bg-black text-white font-medium hover:bg-gray-800 transition-colors"
-                >
-                  {t('createVoucher.success.okay')}
-                </button>
               </div>
             </div>
           )}

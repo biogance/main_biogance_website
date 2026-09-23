@@ -1,11 +1,35 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { IoSend } from "react-icons/io5";
+import { IoSend, IoArrowBack } from "react-icons/io5";
 import { FiPlus, FiX } from "react-icons/fi";
 import { BsClock, BsCheck2 } from "react-icons/bs";
-import { FaArrowLeft } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { BASE_URL, MEDIA_URL } from "../../../API/API";
+import {  IoAlertCircleOutline } from "react-icons/io5";
+
+// A glossy icon badge — same family used for every icon in the account
+// section.
+function IconBadge({ icon: Icon, src, size = "w-10 h-10", danger = false }) {
+  return (
+    <span
+      className={`relative grid place-items-center ${size} shrink-0 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.22),inset_0_-6px_10px_-6px_rgba(0,0,0,.6),0_8px_14px_-8px_rgba(0,0,0,.55)] bg-gradient-to-b ${
+        danger ? "from-red-500 to-red-700" : "from-[#403e38] to-[#0b0b0a]"
+      }`}
+    >
+      {src ? (
+        <img src={src} alt="" className="w-4 h-4 brightness-0 invert" />
+      ) : (
+        <Icon
+          className="w-4 h-4"
+          style={{ filter: "drop-shadow(-0.5px -0.5px 0 rgba(255,255,255,.55)) drop-shadow(1px 1.5px 1.5px rgba(0,0,0,.6))" }}
+        />
+      )}
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+    </span>
+  );
+}
+
+// Loading state — the original capybara loader.
 
 export default function SupportChat({ ticket, onClose }) {
   const { t } = useTranslation("myaccount");
@@ -20,6 +44,11 @@ export default function SupportChat({ ticket, onClose }) {
   const [loadedImages, setLoadedImages] = useState({});
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosingTicket, setIsClosingTicket] = useState(false);
+  // Same pop-in/pop-out lifecycle as LogoutModal.jsx — stays mounted for
+  // the exit animation's duration instead of unmounting the instant the
+  // triggering state flips.
+  const [isPreviewClosing, setIsPreviewClosing] = useState(false);
+  const [isCloseConfirmClosing, setIsCloseConfirmClosing] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   // The attach ("+") button next to the textarea — its rendered height
@@ -248,6 +277,17 @@ export default function SupportChat({ ticket, onClose }) {
     }
   };
 
+  const handleClosePreview = () => {
+    setIsPreviewClosing(true);
+    setTimeout(() => { setIsPreviewClosing(false); setPreviewImage(null); }, 250);
+  };
+
+  const handleDismissCloseConfirm = () => {
+    if (isClosingTicket) return;
+    setIsCloseConfirmClosing(true);
+    setTimeout(() => { setIsCloseConfirmClosing(false); setShowCloseConfirm(false); }, 250);
+  };
+
   const handleCloseTicket = async () => {
     const ticketId = ticket?.rawId || String(ticket?.id || "").replace("#", "");
     setIsClosingTicket(true);
@@ -468,8 +508,36 @@ export default function SupportChat({ ticket, onClose }) {
         }
       `}</style>
 
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 -mx-6 md:-mx-8 px-5 sm:px-6 md:px-8 pb-5 border-b border-black/10">
+        <div className="flex items-center gap-4 min-w-0">
+          <button
+            onClick={onClose}
+            aria-label="Back"
+            className="relative grid place-items-center w-10 h-10 shrink-0 bg-gradient-to-b from-[#403e38] to-[#0b0b0a] text-white cursor-pointer overflow-hidden transition-all duration-150 shadow-[inset_0_1px_0_rgba(255,255,255,.22),inset_0_-6px_10px_-6px_rgba(0,0,0,.6),0_8px_14px_-8px_rgba(0,0,0,.55)] hover:-translate-y-px active:translate-y-0"
+          >
+            <IoArrowBack className="w-[18px] h-[18px]" style={{ filter: "drop-shadow(-0.5px -0.5px 0 rgba(255,255,255,.55)) drop-shadow(1px 1.5px 1.5px rgba(0,0,0,.6))" }} />
+            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-[16px] font-bold text-[#0b0b0a] truncate">
+              {t("support.chat.title")}
+            </h1>
+            <p className="text-[12.5px] text-[#8a8880] truncate">
+              {t("support.ticketId")} {ticket?.id || "#3021"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowCloseConfirm(true)}
+          className="shrink-0 text-[12.5px] font-medium cursor-pointer text-[#8a8880] border border-black/15 px-4 py-2.5 hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap"
+        >
+          {t("support.chat.closeChat")}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center py-16">
           <div className="capybaraloader">
             <div className="capybara">
               <div className="capyhead">
@@ -494,114 +562,59 @@ export default function SupportChat({ ticket, onClose }) {
             </div>
           </div>
         </div>
-      )}
-      {!loading && (
+      ) : (
         <>
-          {/* Header */}
-          <div className="-mx-8 px-1 pl-5 pr-5 pb-4  border-b border-gray-300">
-            <div className="max-w-10xl mx-auto flex items-center justify-between">
-              <div className="flex items-start gap-4">
-                <button
-                  onClick={onClose}
-                  className="text-gray-700 cursor-pointer mt-2 hover:text-black transition-colors"
-                >
-                  <FaArrowLeft size={20} />
-                </button>
-                <div>
-                  <h1 className="text-lg text-black font-medium">
-                    {t("support.chat.title")}
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    {t("support.ticketId")} {ticket?.id || "#3021"}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowCloseConfirm(true)}
-                className="text-sm cursor-pointer text-gray-700 border border-gray-300 p-2 hover:text-black transition-colors"
-              >
-                {t("support.chat.closeChat")}
-              </button>
-            </div>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto py-8">
-            <div className="max-w-10xl mx-auto space-y-6">
+          {/* Chat Messages — a subtly tinted "canvas" (distinct from the
+              white header/input chrome) with consecutive messages from the
+              same sender grouped together: the avatar and timestamp only
+              appear once, on the last bubble of each run. */}
+          <div className="flex-1 overflow-y-auto py-6 bg-[#f7f7f5]">
+            <div className="w-full px-4 sm:px-6">
               {/* Date Separator */}
-              <div className="flex justify-center">
-                <span className="text-sm text-gray-500 bg-white px-4 py-1 border border-gray-200">
+              <div className="flex justify-center mb-5">
+                <span className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] bg-white px-4 py-1.5 border border-black/10">
                   {t("support.chat.dateSeparator")}
                 </span>
               </div>
 
               {/* Messages */}
-              {messages.map((msg) => (
-                <div key={msg.id}>
-                  {msg.type === "support" ? (
-                    // Support Message (Left Side)
-                    <div className="flex items-end gap-2 mb-2">
-                      {msg.hasIcon && (
-                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 flex items-center justify-center">
-                            <img
-                              src="sup.svg"
-                              alt="Support icon"
-                              className="w-4 h-4 sm:w-5 sm:h-5"
-                            />
-                          </div>
-                          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
-                            {msg.time}
-                          </span>
-                        </div>
-                      )}
-                      <div className="max-w-xl">
-                        <div className="text-black border border-gray-300  rounded-bl-sm px-2 py-2 inline-block">
-                          {msg.image && (
-                            <div
-                              className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-gray-300 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
-                            >
-                              {!loadedImages[msg.id] && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                                  <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                                </div>
-                              )}
-                              <img
-                                src={msg.image}
-                                alt="Attachment"
-                                className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? "opacity-100" : "opacity-0"}`}
-                                onClick={() => setPreviewImage(msg.image)}
-                                onLoad={() => handleImageLoad(msg.id)}
-                                onError={() => handleImageLoad(msg.id)}
-                              />
-                            </div>
+              {messages.map((msg, index) => {
+                const prev = messages[index - 1];
+                const next = messages[index + 1];
+                const isFirstInGroup = !prev || prev.type !== msg.type;
+                const isLastInGroup = !next || next.type !== msg.type;
+
+                return (
+                  <div key={msg.id} className={isFirstInGroup && index > 0 ? "mt-4" : "mt-1"}>
+                    {msg.type === "support" ? (
+                      // Support Message (Left Side)
+                      <div className="flex items-end gap-2.5">
+                        <div className="w-9 shrink-0 flex flex-col items-center gap-1">
+                          {isLastInGroup ? (
+                            <IconBadge src="sup.svg" size="w-9 h-9" />
+                          ) : (
+                            <span className="w-9 h-9" aria-hidden="true" />
                           )}
-                          {msg.text && (
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                              {msg.textKey ? t(msg.textKey) : msg.text}
+                        </div>
+                        <div className="max-w-md sm:max-w-lg min-w-0">
+                          {isFirstInGroup && (
+                            <p className="text-[10.5px] font-semibold tracking-[0.04em] text-[#8a8880] mb-1 ml-0.5">
+                              {t("support.chat.supportTeam")}
                             </p>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    // Customer Message (Right Side)
-                    <div className="flex justify-end mb-2">
-                      <div className="flex items-end gap-2">
-                        <div className="max-w-xl">
-                          <div className="bg-white  rounded-br-sm px-2 py-2   inline-block border border-gray-300">
+                          <div className="text-[#0b0b0a] bg-white border border-black/10 px-3.5 py-3 inline-block">
                             {msg.image && (
                               <div
-                                className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-gray-300 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
+                                className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-black/10 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
                               >
                                 {!loadedImages[msg.id] && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                                    <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/[0.03]">
+                                    <div className="w-6 h-6 border-2 border-[#0b0b0a] border-t-transparent rounded-full animate-spin" />
                                   </div>
                                 )}
                                 <img
                                   src={msg.image}
-                                  alt="Uploaded"
+                                  alt="Attachment"
                                   className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? "opacity-100" : "opacity-0"}`}
                                   onClick={() => setPreviewImage(msg.image)}
                                   onLoad={() => handleImageLoad(msg.id)}
@@ -610,51 +623,95 @@ export default function SupportChat({ ticket, onClose }) {
                               </div>
                             )}
                             {msg.text && (
-                              // whitespace-pre-wrap — same reason as the
-                              // support-message bubble above.
-                              <p className="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap">
+                              <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap">
                                 {msg.textKey ? t(msg.textKey) : msg.text}
                               </p>
                             )}
                           </div>
+                          {isLastInGroup && (
+                            <span className="block mt-1 ml-0.5 text-[10px] text-[#8a8880] whitespace-nowrap">
+                              {msg.time}
+                            </span>
+                          )}
                         </div>
-                        {msg.avatar && (
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="w-10 h-10 bg-gray-300  flex-shrink-0 overflow-hidden">
-                              {userAvatar ? (
-                                <img
-                                  src={userAvatar}
-                                  alt="User"
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-300" />
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {msg.status === "sending" && (
-                                <BsClock className="text-gray-400" size={11} />
-                              )}
-                              {msg.status === "sent" && (
-                                <BsCheck2 className="text-gray-400" size={13} />
-                              )}
-                              <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
-                                {msg.time}
-                              </span>
-                            </div>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    ) : (
+                      // Customer Message (Right Side) — filled dark bubble,
+                      // the standard "your own message" treatment.
+                      <div className="flex justify-end">
+                        <div className="flex items-end gap-2.5">
+                          <div className="max-w-md sm:max-w-lg min-w-0">
+                            <div className="bg-[#0b0b0a] text-white px-3.5 py-3 inline-block">
+                              {msg.image && (
+                                <div
+                                  className={`relative mb-2 max-w-xs overflow-hidden ${msg.text ? "border-b border-white/15 pb-2" : ""} ${!loadedImages[msg.id] ? "min-h-[160px] w-40" : ""}`}
+                                >
+                                  {!loadedImages[msg.id] && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+                                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                  )}
+                                  <img
+                                    src={msg.image}
+                                    alt="Uploaded"
+                                    className={`w-full cursor-pointer hover:opacity-90 transition-opacity ${loadedImages[msg.id] ? "opacity-100" : "opacity-0"}`}
+                                    onClick={() => setPreviewImage(msg.image)}
+                                    onLoad={() => handleImageLoad(msg.id)}
+                                    onError={() => handleImageLoad(msg.id)}
+                                  />
+                                </div>
+                              )}
+                              {msg.text && (
+                                // whitespace-pre-wrap — same reason as the
+                                // support-message bubble above.
+                                <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                                  {msg.textKey ? t(msg.textKey) : msg.text}
+                                </p>
+                              )}
+                            </div>
+                            {isLastInGroup && (
+                              <div className="flex items-center justify-end gap-1 mt-1 mr-0.5">
+                                {msg.status === "sending" && (
+                                  <BsClock className="text-[#8a8880]" size={11} />
+                                )}
+                                {msg.status === "sent" && (
+                                  <BsCheck2 className="text-[#8a8880]" size={13} />
+                                )}
+                                <span className="text-[10px] text-[#8a8880] whitespace-nowrap">
+                                  {msg.time}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="w-9 shrink-0">
+                            {isLastInGroup && msg.avatar && (
+                              <div className="w-9 h-9 bg-black/10 overflow-hidden">
+                                {userAvatar ? (
+                                  <img
+                                    src={userAvatar}
+                                    alt="User"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-black/10" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Message Input */}
-          <div>
-            <div className="max-w-10xl mx-auto flex items-center gap-3">
+          {/* Message Input — one continuous bar (attach / text / send)
+              instead of three separate boxes, the standard modern-chat
+              shape. */}
+          <div className="pt-4 px-4 sm:px-6 pb-1 border-t border-black/10">
+            <div className="w-full flex items-end gap-2 px-2 py-2 bg-white border border-black/10 shadow-[inset_0_1px_3px_rgba(0,0,0,.04)] focus-within:border-black/40 transition-colors">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -666,7 +723,7 @@ export default function SupportChat({ ticket, onClose }) {
               {selectedImage ? (
                 <div
                   ref={attachButtonRef}
-                  className="relative flex-shrink-0 w-[46px] h-[46px] border border-gray-300 overflow-hidden"
+                  className="relative shrink-0 w-9 h-9 border border-black/10 overflow-hidden"
                 >
                   <img
                     src={selectedImage}
@@ -680,7 +737,7 @@ export default function SupportChat({ ticket, onClose }) {
                       setSelectedImage(null);
                       setSelectedImageFile(null);
                     }}
-                    className="absolute top-0.5 right-0.5 cursor-pointer bg-white text-black rounded-full p-0.5"
+                    className="absolute top-0.5 right-0.5 cursor-pointer bg-white text-[#0b0b0a] p-0.5"
                   >
                     <FiX size={10} />
                   </button>
@@ -689,34 +746,35 @@ export default function SupportChat({ ticket, onClose }) {
                 <button
                   ref={attachButtonRef}
                   onClick={() => fileInputRef.current?.click()}
-                  className="py-2.5 px-2.5 bg-gray-100 cursor-pointer border border-gray-300  flex items-center justify-center text-gray-600 hover:text-black transition-colors"
+                  aria-label="Attach image"
+                  className="grid place-items-center w-9 h-9 shrink-0 text-[#8a8880] cursor-pointer transition-colors duration-150 hover:text-[#0b0b0a] hover:bg-black/[0.04]"
                 >
-                  <FiPlus size={24} />
+                  <FiPlus size={20} />
                 </button>
               )}
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  placeholder={t("support.chat.writeMessage")}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                  style={{
-                    resize: "none",
-                    overflowY: "hidden",
-                    lineHeight: "20px",
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                  }}
-                  className="w-full pl-4 py-3 pr-4 mt-1.5 text-black bg-gray-100  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-400 transition-all [&::-webkit-scrollbar]:hidden"
-                />
-              </div>
+              <textarea
+                ref={textareaRef}
+                placeholder={t("support.chat.writeMessage")}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                rows={1}
+                style={{
+                  resize: "none",
+                  overflowY: "hidden",
+                  lineHeight: "20px",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
+                className="flex-1 min-w-0 py-1.5 bg-transparent text-[14px] text-[#0b0b0a] placeholder:text-[#8a8880] focus:outline-none [&::-webkit-scrollbar]:hidden"
+              />
               <button
                 onClick={handleSendMessage}
-                className="py-2.5 px-2.5 flex bg-gray-100 cursor-pointer   border border-gray-300  items-center justify-center text-gray-700 hover:text-black transition-colors"
+                aria-label="Send message"
+                className="relative grid place-items-center w-9 h-9 shrink-0 bg-gradient-to-b from-[#403e38] to-[#0b0b0a] text-white cursor-pointer overflow-hidden transition-all duration-150 shadow-[inset_0_1px_0_rgba(255,255,255,.22),inset_0_-6px_10px_-6px_rgba(0,0,0,.6),0_8px_14px_-8px_rgba(0,0,0,.55)] hover:-translate-y-px active:translate-y-0"
               >
-                <IoSend size={22} />
+                <IoSend size={16} style={{ filter: "drop-shadow(-0.5px -0.5px 0 rgba(255,255,255,.55)) drop-shadow(1px 1.5px 1.5px rgba(0,0,0,.6))" }} />
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
               </button>
             </div>
           </div>
@@ -727,20 +785,20 @@ export default function SupportChat({ ticket, onClose }) {
       {/* Image Preview Modal */}
       {previewImage && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4 z-60"
-          onClick={() => setPreviewImage(null)}
+          className={`fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-60 ${isPreviewClosing ? 'backdrop-out' : 'backdrop-in'}`}
+          onClick={handleClosePreview}
         >
-          <div className="relative max-w-[90vw] max-h-[90vh]">
+          <div className={`relative max-w-[90vw] max-h-[90vh] ${isPreviewClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
             <button
-              onClick={() => setPreviewImage(null)}
-              className="absolute -top-2 -right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-2 shadow-lg"
+              onClick={handleClosePreview}
+              className="absolute -top-11 right-0 grid place-items-center w-9 h-9 cursor-pointer text-white border border-white/30 hover:bg-white hover:text-[#0b0b0a] transition-colors"
             >
-              <FiX size={24} />
+              <FiX size={20} />
             </button>
             <img
               src={previewImage}
               alt="Preview"
-              className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain border border-white/20"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
@@ -748,39 +806,59 @@ export default function SupportChat({ ticket, onClose }) {
       )}
 
       {/* Close Ticket Confirm Modal */}
-      {showCloseConfirm && (
-        <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1300] p-4"
-          onClick={() => !isClosingTicket && setShowCloseConfirm(false)}
-        >
-          <div
-            className="bg-white w-full max-w-sm p-6 text-center shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
-              {t("support.chat.closeConfirm.title")}
-            </h3>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCloseConfirm(false)}
-                disabled={isClosingTicket}
-                className="flex-1 py-3 text-sm font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {t("support.chat.closeConfirm.cancel")}
-              </button>
-              <button
-                onClick={handleCloseTicket}
-                disabled={isClosingTicket}
-                className="flex-1 py-3 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-              >
-                {isClosingTicket
-                  ? t("support.chat.closeConfirm.closing")
-                  : t("support.chat.closeConfirm.confirm")}
-              </button>
-            </div>
-          </div>
+   
+{showCloseConfirm && (
+  <div
+    className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-[1300] p-4 ${isCloseConfirmClosing ? 'backdrop-out' : 'backdrop-in'}`}
+    onClick={handleDismissCloseConfirm}
+  >
+    <div
+      className={`bg-white w-full max-w-md shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isCloseConfirmClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Dark editorial header band — same family as AddPetModal's header */}
+      <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 py-7 flex items-center gap-4 border-b border-white/5 overflow-hidden">
+        <IoAlertCircleOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
+
+        <IconBadge icon={IoAlertCircleOutline} size="w-11 h-11" danger />
+
+        <div className="relative min-w-0">
+          <h3 className="text-[17px] font-extrabold leading-tight tracking-tight text-white">
+            {t("support.chat.closeConfirm.title")}
+          </h3>
+          <p className="text-[12px] text-white/40 mt-1 leading-snug">
+            {t("support.chat.closeConfirm.subtitle", "This ticket will be marked as resolved and the conversation will be closed.")}
+          </p>
         </div>
-      )}
+      </div>
+
+      {/* Body / actions */}
+      <div className="p-6 sm:p-7">
+        <div className="flex gap-3">
+          <button
+            onClick={handleDismissCloseConfirm}
+            disabled={isClosingTicket}
+            className="flex-1 py-3 text-[13px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {t("support.chat.closeConfirm.cancel")}
+          </button>
+          <button
+            onClick={handleCloseTicket}
+            disabled={isClosingTicket}
+            className="flex-1 inline-flex items-center justify-center gap-2 py-3 text-[13px] font-medium text-white bg-gradient-to-b from-red-500 to-red-700 border border-red-700 transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(220,38,38,.5)] hover:-translate-y-px cursor-pointer disabled:opacity-75 disabled:pointer-events-none disabled:translate-y-0 disabled:shadow-none"
+          >
+            {isClosingTicket && (
+              <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
+            {isClosingTicket
+              ? t("support.chat.closeConfirm.closing")
+              : t("support.chat.closeConfirm.confirm")}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

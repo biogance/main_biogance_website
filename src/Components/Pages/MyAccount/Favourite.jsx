@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { IoChevronBack, IoChevronForward, IoArrowForward } from "react-icons/io5";
 
 import { LandingCards, LoadingCard } from "../Landing/LandingCards";
 import BreedCard from "../Breed/BreedCard";
@@ -188,7 +188,7 @@ function useInfiniteScroll(hasMore, onLoadMore) {
 function LoadMoreSentinel({ sentinelRef, loading }) {
   return (
     <div ref={sentinelRef} className="flex items-center justify-center py-10">
-      {loading && <span className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />}
+      {loading && <span className="w-6 h-6 border-2 border-black/10 border-t-[#0b0b0a] rounded-full animate-spin" />}
     </div>
   );
 }
@@ -210,20 +210,25 @@ function getBlogImage(item) {
   return item?.images?.[0]?.media ?? item?.image ?? null;
 }
 
-// ─── Empty state — shared by the Products and Saved Blogs tabs ───────────
+// ─── Empty state — shared by the Products, Saved Blogs and Saved Breeds
+// tabs. Same bordered-box shape as Support.jsx / PetProfile.jsx's empty
+// states, so every account tab reads as one system. ───────────────────
 function EmptyState({ image, alt, title, description, ctaLabel, onCta }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[30vh] text-center py-6">
-      <img src={image} alt={alt} className="w-64 md:w-80 h-64 md:h-80 object-contain mb-8" />
-      <h3 className="text-2xl font-semibold text-gray-900 mb-3">{title}</h3>
-      <p className="text-gray-500 max-w-md mb-8 leading-relaxed">{description}</p>
+    <div className="bg-white border border-black/10 flex flex-col items-center justify-center min-h-[40vh] py-12 px-4 text-center">
+      <div className="w-48 h-48 md:w-64 md:h-64 mb-6 flex items-center justify-center">
+        <img src={image} alt={alt} className="w-full h-full object-contain" />
+      </div>
+      <h3 className="text-[18px] sm:text-[20px] font-semibold text-[#0b0b0a] mb-2">{title}</h3>
+      <p className="text-[13.5px] text-[#8a8880] max-w-md mb-6 leading-relaxed">{description}</p>
       {ctaLabel && (
         <button
           type="button"
           onClick={onCta}
-          className="bg-gray-900 text-white px-8 py-3.5 font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13.5px] font-medium tracking-[0.02em] border border-[#0b0b0a] shadow-[0_14px_30px_-14px_rgba(0,0,0,.55)] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
         >
           {ctaLabel}
+          <IoArrowForward className="w-3.5 h-3.5" />
         </button>
       )}
     </div>
@@ -731,101 +736,106 @@ export default function Favourite() {
   const tabCountReady = (tab) => TAB_READY[tab];
 
   
+  // Underline tabs — sliding bottom bar (tabIndicator's left/width still
+  // measured off the button geometry, same as before) instead of a filled
+  // pill sliding inside a gray track.
   const tabBtnClass = (tab) =>
-    `relative z-10 flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-2 min-[400px]:px-3 sm:px-5 py-2 sm:py-2.5 text-xs min-[400px]:text-sm font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer ${
-      activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-900'
+    `relative pb-4 flex items-center gap-2 text-[13.5px] sm:text-[14px] font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer ${
+      activeTab === tab ? 'text-[#0b0b0a]' : 'text-[#8a8880] hover:text-[#0b0b0a]'
     }`;
   const tabPillClass = (tab) =>
-    `text-[10px] sm:text-[11px] font-semibold px-1 sm:px-1.5 py-0.5 rounded-full leading-none transition-colors duration-200 ${
-      activeTab === tab ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'
+    `inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mt-1 text-[10.5px] font-semibold leading-none transition-colors duration-200 ${
+      activeTab === tab ? 'bg-[#0b0b0a] text-white' : 'bg-black/[0.04] text-[#8a8880]'
     }`;
 
   return (
-    <div>
-      <div className="max-w-10xl -mt-1 md:mt-9 mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-white p-6 md:p-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{t('favourite.title')}</h1>
-            <p className="text-sm text-gray-500 mt-1.5">{t('favourite.subtitle')}</p>
-          </div>
-
-          <div className="relative inline-flex w-full sm:w-auto items-center gap-1 bg-gray-100 p-1 mb-6 md:mb-8">
-            <div
-              className="absolute top-1 bottom-1 bg-gray-900 shadow-[0_1px_4px_rgba(0,0,0,0.25)] transition-[left,width] duration-300 ease-out"
-              style={{ left: tabIndicator.left, width: tabIndicator.width }}
-            />
-            <button
-              ref={(el) => (tabRefs.current.products = el)}
-              type="button"
-              onClick={() => setActiveTab('products')}
-              className={tabBtnClass('products')}
-            >
-              {t('favourite.tabs.products')}
-              {tabCountReady('products') && <span className={tabPillClass('products')}>{tabCount('products')}</span>}
-            </button>
-            <button
-              ref={(el) => (tabRefs.current.blogs = el)}
-              type="button"
-              onClick={() => setActiveTab('blogs')}
-              className={tabBtnClass('blogs')}
-            >
-              {t('favourite.tabs.blogs')}
-              {tabCountReady('blogs') && <span className={tabPillClass('blogs')}>{tabCount('blogs')}</span>}
-            </button>
-            <button
-              ref={(el) => (tabRefs.current.breeds = el)}
-              type="button"
-              onClick={() => setActiveTab('breeds')}
-              className={tabBtnClass('breeds')}
-            >
-              {t('favourite.tabs.breeds')}
-              {tabCountReady('breeds') && <span className={tabPillClass('breeds')}>{tabCount('breeds')}</span>}
-            </button>
-          </div>
-
-          {activeTab === 'products' && (
-            hasFavourites ? (
-              <>
-                <FavouritesGrid isLoading={isLoading} products={favourites} />
-                {!isLoading && favourites.length > 0 && (
-                  <LoadMoreSentinel sentinelRef={bundlesSentinelRef} loading={bundlesLoadingMore} />
-                )}
-              </>
-            ) : (
-              <EmptyState
-                image="/favacc.svg"
-                alt="Empty wishlist"
-                title={t('favourite.empty.title')}
-                description={t('favourite.empty.description')}
-                ctaLabel={t('favourite.empty.browseProducts')}
-                onCta={goToShop}
-              />
-            )
-          )}
-
-          {activeTab === 'blogs' && (
-            <SavedBlogsTab
-              isFr={isFr}
-              blogs={blogs}
-              isLoading={blogsLoading}
-              loadingMore={blogsLoadingMore}
-              hasMore={blogsHasMore}
-              onLoadMore={loadMoreBlogs}
-              onBrowse={goToAdvices}
-            />
-          )}
-
-          {activeTab === 'breeds' && (
-            <SavedBreedsTab
-              breeds={breedFavorites}
-              isLoading={breedsLoading}
-              loadingMore={breedsLoadingMore}
-              hasMore={breedsHasMore}
-              onLoadMore={loadMoreBreeds}
-              onBrowse={goToBreedGuide}
-            />
-          )}
+    <div className="bg-[#f3f3f3]">
+      <div className="p-4 sm:p-6 md:p-8 mt-2 md:mt-9 max-w-10xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 md:mb-10">
+          <h1 className="text-[28px] sm:text-[32px] font-semibold leading-tight tracking-[-0.02em] text-[#0b0b0a]">
+            {t('favourite.title')}
+          </h1>
+          <p className="mt-2 text-[14px] text-[#8a8880] max-w-md">{t('favourite.subtitle')}</p>
         </div>
+
+        {/* Tabs */}
+        <div className="relative flex items-center gap-6 sm:gap-8 border-b border-black/10 mb-8 md:mb-10 overflow-x-auto">
+          <span
+            className="absolute bottom-0 h-[2px] bg-[#0b0b0a] transition-[left,width] duration-300 ease-out"
+            style={{ left: tabIndicator.left, width: tabIndicator.width }}
+          />
+          <button
+            ref={(el) => (tabRefs.current.products = el)}
+            type="button"
+            onClick={() => setActiveTab('products')}
+            className={tabBtnClass('products')}
+          >
+            {t('favourite.tabs.products')}
+            {tabCountReady('products') && <span className={tabPillClass('products')}>{tabCount('products')}</span>}
+          </button>
+          <button
+            ref={(el) => (tabRefs.current.blogs = el)}
+            type="button"
+            onClick={() => setActiveTab('blogs')}
+            className={tabBtnClass('blogs')}
+          >
+            {t('favourite.tabs.blogs')}
+            {tabCountReady('blogs') && <span className={tabPillClass('blogs')}>{tabCount('blogs')}</span>}
+          </button>
+          <button
+            ref={(el) => (tabRefs.current.breeds = el)}
+            type="button"
+            onClick={() => setActiveTab('breeds')}
+            className={tabBtnClass('breeds')}
+          >
+            {t('favourite.tabs.breeds')}
+            {tabCountReady('breeds') && <span className={tabPillClass('breeds')}>{tabCount('breeds')}</span>}
+          </button>
+        </div>
+
+        {activeTab === 'products' && (
+          hasFavourites ? (
+            <>
+              <FavouritesGrid isLoading={isLoading} products={favourites} />
+              {!isLoading && favourites.length > 0 && (
+                <LoadMoreSentinel sentinelRef={bundlesSentinelRef} loading={bundlesLoadingMore} />
+              )}
+            </>
+          ) : (
+            <EmptyState
+              image="/favacc.svg"
+              alt="Empty wishlist"
+              title={t('favourite.empty.title')}
+              description={t('favourite.empty.description')}
+              ctaLabel={t('favourite.empty.browseProducts')}
+              onCta={goToShop}
+            />
+          )
+        )}
+
+        {activeTab === 'blogs' && (
+          <SavedBlogsTab
+            isFr={isFr}
+            blogs={blogs}
+            isLoading={blogsLoading}
+            loadingMore={blogsLoadingMore}
+            hasMore={blogsHasMore}
+            onLoadMore={loadMoreBlogs}
+            onBrowse={goToAdvices}
+          />
+        )}
+
+        {activeTab === 'breeds' && (
+          <SavedBreedsTab
+            breeds={breedFavorites}
+            isLoading={breedsLoading}
+            loadingMore={breedsLoadingMore}
+            hasMore={breedsHasMore}
+            onLoadMore={loadMoreBreeds}
+            onBrowse={goToBreedGuide}
+          />
+        )}
 
         {/* Recommended Section — hidden for now */}
         {false && (
