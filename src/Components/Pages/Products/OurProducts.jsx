@@ -11,7 +11,7 @@ import { getDeviceId } from '../../../utils/deviceId';
 
 
 export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange, isMobileModal = false }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('ourproduct');
   const isFrench = i18n.language === 'fr';
   const router = useRouter();
 
@@ -115,13 +115,13 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
       );
       if (res.data.status === false) {
-        toast.error(res.data.action_message || res.data.action || 'Could not add to cart.');
+        toast.error(res.data.action_message || res.data.action || t('couldNotAdd'));
       } else {
         mergeCartItem(res.data.data);
         onCartOpen?.(featuredProduct);
       }
     } catch {
-      toast.error('Something went wrong.');
+      toast.error(t('somethingWrong'));
     } finally {
       setAddingToCart(false);
     }
@@ -176,81 +176,115 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
     };
   }, []);
 
+
+  // Shared category icon (kept identical in both layouts)
+  const CategoryIcon = ({ cat, size, active, light }) =>
+    (cat.black_media || cat.media) ? (
+      <img
+        src={getImageUrl(cat.black_media || cat.media)}
+        alt=""
+        style={{
+          width: size,
+          height: size,
+          objectFit: 'contain',
+          flexShrink: 0,
+          filter: light ? 'brightness(0) invert(1)' : 'brightness(0)',
+          opacity: active ? 1 : 0.4,
+        }}
+      />
+    ) : null;
+
+  const Arrow = ({ className = '' }) => (
+    <svg className={className} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+
+  const styles = (
+    <style>{`
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.97); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes ourProductsSpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes ourProductsRise {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes mobileProductsSlideUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to   { transform: translateY(0);   opacity: 1; }
+      }
+      .op-fam { position: relative; transition: color .15s, padding-left .2s; }
+      .op-fam .op-fam-arrow { opacity: 0; transform: translateX(-6px); transition: opacity .2s, transform .2s; }
+      .op-fam:hover { color: #0b0b0a; padding-left: 4px; }
+      .op-fam:hover .op-fam-arrow { opacity: 1; transform: translateX(0); }
+      .op-dfam { color: rgba(255,255,255,0.55); transition: color .15s, padding-left .2s; }
+      .op-dfam:hover { color: #fff; padding-left: 4px; }
+      .op-dfam:hover .op-fam-arrow { opacity: 1; transform: translateX(0); }
+      .op-dcat .op-dcat-line { transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }
+      .op-dcat-active .op-dcat-line { transform: scaleX(1); }
+      .op-dcat:hover .op-dcat-name { color: #fff !important; }
+      .op-cat-bar { transform: scaleY(0); transition: transform .25s ease; transform-origin: top; }
+      .op-cat-active .op-cat-bar { transform: scaleY(1); }
+    `}</style>
+  );
+
   // ── MOBILE MODAL ────────────────────────────────────────────────────────────
   if (isMobileModal) {
     if (!isOpen) return null;
     return (
       <>
-        {/* Backdrop */}
         <div
           onClick={onClose}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 10000,
-          }}
+          className="fixed inset-0 bg-black/50"
+          style={{ zIndex: 10000 }}
         />
-        {/* Slide-up panel — full page on small screens, so it covers the
-            whole viewport instead of leaving a gap at the top showing the
-            dark backdrop over the navbar behind it. */}
         <div
-          style={{
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: 0,
-            backgroundColor: '#fff',
-            zIndex: 10001,
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto',
-            animation: 'mobileProductsSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both',
-          }}
+          className="fixed inset-0 bg-white flex flex-col overflow-y-auto"
+          style={{ zIndex: 10001, animation: 'mobileProductsSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both' }}
         >
-          {/* Header — extra top padding for env(safe-area-inset-top) since
-              the panel now sits at top:0 (full page) and would otherwise
-              land under the iOS status bar/notch. */}
+          {/* Header band */}
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              paddingTop: 'calc(16px + env(safe-area-inset-top))',
-              borderBottom: '1px solid #dadada',
-              flexShrink: 0,
-              position: 'sticky',
-              top: 0,
-              backgroundColor: '#fff',
-              zIndex: 1,
-            }}
+            className="sticky top-0 z-[1] shrink-0 relative overflow-hidden bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-5 pb-4"
+            style={{ paddingTop: 'calc(18px + env(safe-area-inset-top))' }}
           >
-            <span style={{ fontSize: '14px', fontWeight: 700, color: '#111', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Our products
-            </span>
-            <button
-              onClick={onClose}
-              aria-label="Close menu"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+            <div
+              className="absolute inset-0 opacity-[0.07] pointer-events-none"
+              style={{
+                backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
+                backgroundSize: '14px 14px',
+                maskImage: 'linear-gradient(to bottom, #000, transparent)',
+                WebkitMaskImage: 'linear-gradient(to bottom, #000, transparent)',
+              }}
+            />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <span className="block text-[9px] font-bold uppercase tracking-[0.3em] text-white/50">Biogance</span>
+                <span className="block mt-1 text-[15px] font-bold uppercase tracking-[0.12em] text-white">{t('ourProducts')}</span>
+              </div>
+              <button
+                onClick={onClose}
+                aria-label={t('closeMenu')}
+                className="w-9 h-9 flex items-center justify-center border border-white/20 text-white cursor-pointer hover:bg-white/10 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="absolute bottom-0 left-0 h-[2px] w-16 bg-white" />
           </div>
 
           {/* Category Tabs */}
           <div
-            style={{
-              display: 'flex',
-              overflowX: 'auto',
-              borderBottom: '1px solid #eee',
-              flexShrink: 0,
-              scrollbarWidth: 'none',
-            }}
+            className="flex overflow-x-auto shrink-0 border-b border-black/10 bg-white"
+            style={{ scrollbarWidth: 'none' }}
           >
             {categories.map((cat) => {
               const isActive = activeCategory?.id === cat.id;
@@ -258,39 +292,14 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat)}
+                  className="shrink-0 flex items-center gap-2 px-4 py-3.5 text-[11px] font-semibold uppercase tracking-[0.08em] whitespace-nowrap cursor-pointer bg-transparent border-0 transition-colors"
                   style={{
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '12px 16px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    color: isActive ? '#111' : '#999',
-                    background: 'none',
-                    border: 'none',
-                    borderBottom: isActive ? '1px solid #111' : '2px solid transparent',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'color 0.2s, border-color 0.2s',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
+                    color: isActive ? '#0b0b0a' : '#8a8880',
+                    borderBottom: isActive ? '2px solid #0b0b0a' : '2px solid transparent',
+                    marginBottom: '-1px',
                   }}
                 >
-                  {(cat.black_media || cat.media) && (
-                    <img
-                      src={getImageUrl(cat.black_media || cat.media)}
-                      alt=""
-                      style={{
-                        width: '14px',
-                        height: '14px',
-                        objectFit: 'contain',
-                        flexShrink: 0,
-                        filter: 'brightness(0)',
-                        opacity: isActive ? 1 : 0.5,
-                      }}
-                    />
-                  )}
+                  <CategoryIcon cat={cat} size="14px" active={isActive} />
                   {getName(cat)}
                 </button>
               );
@@ -298,27 +307,31 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
           </div>
 
           {/* Universes & Families */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '22px 20px 32px' }}>
+          <div className="flex-1 overflow-y-auto px-5 pt-6 pb-10">
             {universes.length === 0 ? (
-              <p style={{ color: '#aaa', fontSize: '13px' }}>No products found.</p>
+              <p className="text-[13px] text-[#8a8880]">{t('noProducts')}</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
-                {universes.map((universe) => {
+              <div className="flex flex-col gap-7" key={activeCategory?.id} style={{ animation: 'ourProductsRise .3s ease both' }}>
+                {universes.filter(u => (u.sub_categories || []).some(s => s.type === 'family')).map((universe, uIdx) => {
                   const families = (universe.sub_categories || []).filter(s => s.type === 'family');
                   if (families.length === 0) return null;
                   return (
                     <div key={universe.id}>
-                      <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '0.5px solid #dadada' }}>
-                        {getName(universe)}
-                      </h3>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div className="flex items-center gap-3 mb-1 pb-3 border-b border-black/10">
+                        <span className="text-[10px] font-bold text-[#8a8880] tabular-nums">{String(uIdx + 1).padStart(2, '0')}</span>
+                        <h3 className="text-[11px] font-bold text-[#0b0b0a] uppercase tracking-[0.14em] m-0">
+                          {getName(universe)}
+                        </h3>
+                      </div>
+                      <div className="flex flex-col">
                         {families.map((fam) => (
                           <div
                             key={fam.id}
-                            style={{ fontSize: '13px', color: '#444', padding: '10px 0', cursor: 'pointer', }}
+                            className="op-fam flex items-center justify-between py-3 text-[13px] text-[#5c5a54] cursor-pointer border-b border-black/5"
                             onClick={() => goToFamily(activeCategory, fam)}
                           >
-                            {getName(fam)}
+                            <span>{getName(fam)}</span>
+                            <Arrow className="op-fam-arrow" />
                           </div>
                         ))}
                       </div>
@@ -329,12 +342,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             )}
           </div>
         </div>
-        <style>{`
-          @keyframes mobileProductsSlideUp {
-            from { transform: translateY(40px); opacity: 0; }
-            to   { transform: translateY(0);   opacity: 1; }
-          }
-        `}</style>
+        {styles}
       </>
     );
   }
@@ -345,13 +353,13 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   return (
     <div
       ref={menuRef}
-      className="bg-white shadow-lg z-[999]"
+      className="bg-white border-t border-black/10 shadow-[0_24px_48px_-20px_rgba(0,0,0,0.25)] z-[999]"
       style={{
         position: 'fixed',
         top: '104px',
         left: 0,
         right: 0,
-        minHeight: '420px',
+        minHeight: '440px',
         opacity: animateIn ? 1 : 0,
         transform: animateIn ? 'translateY(0)' : 'translateY(-10px)',
         transition: 'opacity 0.25s ease, transform 0.25s ease',
@@ -360,70 +368,79 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
       // Jab mouse dropdown se bahar (upar navbar center/right mein) jaaye toh close karo
       onMouseLeave={onClose}
     >
-      {/* Top — Category Tabs */}
-      <div className="flex items-center gap-9 px-10  overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-        {categories.map((cat) => {
-          const isActive = activeCategory?.id === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onMouseEnter={() => setActiveCategory(cat)}
-              onClick={() => setActiveCategory(cat)}
-              className="flex-shrink-0 cursor-pointer py-4 -mb-px flex items-center gap-2"
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                color: isActive ? '#111' : '#999',
-                background: 'none',
-                border: 'none',
-                borderBottom: isActive ? '2px solid #111' : '2px solid transparent',
-                transition: 'color 0.15s, border-color 0.15s',
-              }}
-            >
-              {(cat.black_media || cat.media) && (
-                <img
-                  src={getImageUrl(cat.black_media || cat.media)}
-                  alt=""
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    objectFit: 'contain',
-                    flexShrink: 0,
-                    filter: 'brightness(0)',
-                    opacity: isActive ? 1 : 0.5,
-                  }}
-                />
-              )}
-              {getName(cat)}
-            </button>
-          );
-        })}
-      </div>
+      <div className="flex min-h-[440px]">
+        {/* Intro column — heading + species chips */}
+        <div className="shrink-0 w-[290px] bg-[#f3f3f3] px-9 py-10 flex flex-col">
+          <span className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.32em] text-[#8a8880]">
+            <span className="w-5 h-px bg-[#0b0b0a]" />
+            {t('ourProducts')}
+          </span>
+          <h2
+            className="m-0 mt-5 text-[38px] leading-[1.02] italic text-[#0b0b0a]"
+            style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+          >
+            {t('shopBySpecies')}
+          </h2>
+          <p className="m-0 mt-4 text-[12px] leading-relaxed text-[#5c5a54]">
+            {t('speciesDescription')}
+          </p>
 
-      {/* Bottom — Universes/Families (left) + Featured Product (right) */}
-      <div className="flex">
-        {/* Left — Universes Grid */}
-        <div className="flex-1 overflow-y-auto px-10 py-9">
+          <div className="mt-8 flex flex-col gap-2">
+            {categories.map((cat) => {
+              const isActive = activeCategory?.id === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onMouseEnter={() => setActiveCategory(cat)}
+                  onClick={() => setActiveCategory(cat)}
+                  className="w-full flex items-center justify-start gap-2.5 min-h-[38px] py-2 px-3.5 text-left text-[11px] leading-tight font-semibold uppercase tracking-[0.06em] cursor-pointer transition-colors duration-200"
+                  style={{
+                    background: isActive ? '#0b0b0a' : 'transparent',
+                    color: isActive ? '#fff' : '#0b0b0a',
+                    border: isActive ? '1px solid #0b0b0a' : '0.5px solid rgba(0,0,0,0.10)',
+                  }}
+                >
+                  <span className="w-4 shrink-0 flex items-center justify-center"><CategoryIcon cat={cat} size="14px" active={isActive} light={isActive} /></span>
+                  <span className="flex-1 min-w-0">{getName(cat)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Universes — columns with oversized numerals */}
+        <div className="flex-1 min-w-0 overflow-y-auto px-10 py-10">
           {universes.length === 0 ? (
-            <p className="text-gray-400 text-sm">No products found.</p>
+            <p className="text-[#8a8880] text-sm">{t('noProducts')}</p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-8">
-              {universes.map((universe) => {
+            <div
+              key={activeCategory?.id}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-10"
+              style={{ animation: 'ourProductsRise .3s ease both' }}
+            >
+              {universes.filter(u => (u.sub_categories || []).some(s => s.type === 'family')).map((universe, uIdx) => {
                 const families = (universe.sub_categories || []).filter(s => s.type === 'family');
                 if (families.length === 0) return null;
                 return (
                   <div key={universe.id} className="flex flex-col min-w-0">
-                    <h3 className="text-[11px] font-bold text-black uppercase tracking-widest mb-3 pb-2" style={{ borderBottom: '0.5px solid #dddddd' }}>
-                      {getName(universe)} 
+                    <span
+                      className="block text-[46px] leading-none italic text-[#e4e2dc] select-none"
+                      style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                    >
+                      {String(uIdx + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="m-0 mt-3 mb-3 pb-3 border-b border-[#0b0b0a] text-[11px] font-bold text-[#0b0b0a] uppercase tracking-[0.16em]">
+                      {getName(universe)}
                     </h3>
                     <div className="flex flex-col">
                       {families.map((fam) => (
                         <div
                           key={fam.id}
-                          className="text-[13px] text-gray-600 hover:text-black hover:underline cursor-pointer transition-colors duration-150 py-1.5 "
+                          className="op-fam flex items-center justify-between gap-2 py-2 text-[13px] text-[#5c5a54] cursor-pointer border-b border-black/5"
                           onClick={() => goToFamily(activeCategory, fam)}
                         >
-                          {getName(fam)}
+                          <span className="truncate">{getName(fam)}</span>
+                          <Arrow className="op-fam-arrow shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -434,24 +451,15 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
           )}
         </div>
 
-        {/* Right — Product Image Carousel */}
+        {/* Featured — full-bleed image card with caption overlay */}
         {productImages.length > 0 && (
-          <div
-            className="flex-shrink-0 flex flex-col items-center justify-center gap-4 py-9 px-6 border-l border-gray-100"
-            style={{ width: '320px' }}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-widest text-black self-start">
-              Featured
-            </span>
-            <div
-              className="w-full bg-[#f3f3f3] flex items-center justify-center overflow-hidden"
-              style={{ height: '340px' }}
-            >
+          <div className="shrink-0 w-[310px] p-6 pl-0">
+            <div className="relative w-full h-full min-h-[392px] bg-[#f3f3f3] overflow-hidden">
               <img
                 key={activeImageIndex}
                 src={getImageUrl(productImages[activeImageIndex]?.media)}
-                alt={`Product image ${activeImageIndex + 1}`}
-                className="w-full h-full"
+                alt={t('productImage', { n: activeImageIndex + 1 })}
+                className="absolute inset-0 w-full h-full"
                 style={{
                   animation: 'fadeIn 0.3s ease',
                   objectFit: (activeImageIndex === 0 || activeImageIndex === productImages.length - 1) ? 'contain' : 'cover',
@@ -461,87 +469,70 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                   if (next !== activeImageIndex) setActiveImageIndex(next);
                 }}
               />
+
+              <span className="absolute top-3 left-3 bg-[#0b0b0a] text-white text-[9px] font-bold uppercase tracking-[0.3em] px-2.5 py-1.5">
+                {t('featured')}
+              </span>
+              {productImages.length > 1 && (
+                <span className="absolute top-3 right-3 text-[10px] font-semibold text-[#5c5a54] tabular-nums">
+                  {String(activeImageIndex + 1).padStart(2, '0')} / {String(productImages.length).padStart(2, '0')}
+                </span>
+              )}
+
+              {(productName || featuredProduct) && (
+                <div className="absolute left-0 right-0 bottom-0 bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] text-white px-4 pt-3 pb-4">
+                  {productImages.length > 1 && (
+                    <div className="flex gap-1 mb-3">
+                      {productImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleDotClick(idx)}
+                          aria-label={t('showImage', { n: idx + 1 })}
+                          className="h-[2px] p-0 border-0 cursor-pointer transition-all duration-300"
+                          style={{
+                            width: idx === activeImageIndex ? '22px' : '10px',
+                            backgroundColor: idx === activeImageIndex ? '#fff' : 'rgba(255,255,255,0.3)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <p className="m-0 text-[13px] font-medium leading-snug line-clamp-2">{productName}</p>
+                  {featuredProduct && (
+                    <button
+                      onMouseEnter={() => setCartHovered(true)}
+                      onMouseLeave={() => setCartHovered(false)}
+                      onClick={isSingleProduct ? handleAddToCart : (e) => { e.stopPropagation(); onQuickViewOpen?.(featuredProduct); }}
+                      className="mt-3 inline-flex items-center gap-2 p-0 bg-transparent border-0 border-b cursor-pointer text-white text-[11px] font-bold uppercase tracking-[0.12em]"
+                      style={{ borderBottom: cartHovered ? '1px solid #fff' : '1px solid rgba(255,255,255,0.35)', paddingBottom: '2px' }}
+                    >
+                      {addingToCart ? (
+                        <span style={{
+                          display: 'inline-block',
+                          width: '11px',
+                          height: '11px',
+                          borderRadius: '50%',
+                          border: '1.5px solid rgba(255,255,255,0.3)',
+                          borderTopColor: '#fff',
+                          animation: 'ourProductsSpin 0.65s linear infinite',
+                          flexShrink: 0,
+                        }} />
+                      ) : (
+                        <>
+                          {isSingleProduct ? t('addToCart') : t('quickView')}
+                          <Arrow />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-
-            {productImages.length > 1 && (
-              <div className="flex items-center gap-1.5 self-start">
-                {productImages.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleDotClick(idx)}
-                    aria-label={`Show image ${idx + 1}`}
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      border: 'none',
-                      padding: 0,
-                      cursor: 'pointer',
-                      backgroundColor: idx === activeImageIndex ? '#111' : '#ddd',
-                      transition: 'background-color 0.2s',
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {(productName || featuredProduct) && (
-              <div className="w-full text-left">
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#111', lineHeight: 1.4, margin: 0 }}>
-                  {productName}
-                </p>
-                {featuredProduct && (
-                  <button
-                    onMouseEnter={() => setCartHovered(true)}
-                    onMouseLeave={() => setCartHovered(false)}
-                    onClick={isSingleProduct ? handleAddToCart : (e) => { e.stopPropagation(); onQuickViewOpen?.(featuredProduct); }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: 0,
-                      marginTop: '8px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#111',
-                      borderBottom: cartHovered ? '1px solid #111' : '1px solid transparent',
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    {addingToCart ? (
-                      <span style={{
-                        display: 'inline-block',
-                        width: '11px',
-                        height: '11px',
-                        borderRadius: '50%',
-                        border: '1px solid #ccc',
-                        borderTopColor: '#111',
-                        animation: 'ourProductsSpin 0.65s linear infinite',
-                        flexShrink: 0,
-                      }} />
-                    ) : (isSingleProduct ? 'Add to cart' : 'Quick view')}
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.97); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-        @keyframes ourProductsSpin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+      {styles}
     </div>
   );
 }

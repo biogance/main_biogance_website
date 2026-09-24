@@ -1,25 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation, Trans } from "react-i18next";
-import { IoClose } from "react-icons/io5";
+import {
+  IoClose,
+  IoBagHandleOutline,
+  IoTrashOutline,
+  IoChevronBack,
+  IoChevronForward,
+  IoAdd,
+  IoRemove,
+  IoArrowForward,
+  IoPricetagOutline,
+  IoTicketOutline,
+  IoCubeOutline,
+  IoCheckmarkCircle,
+  IoHomeOutline,
+  IoStorefrontOutline,
+  IoAlertCircleOutline,
+  IoBagAddOutline,
+} from "react-icons/io5";
 import toast from "react-hot-toast";
 import { BASE_URL, MEDIA_URL } from "../../API/API";
 import { getDeviceId } from "../../../utils/deviceId";
 import { saveCartData, getCartData } from "../../../utils/cartStorage";
-import { RiDeleteBinLine } from "react-icons/ri";
 import CreateVoucherModal from "../MyAccount/ModalBox/CreateVoucherModal";
 import LoginModal from "../Onboarding/Login";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
-
-const toCleanAmount = (val) => {
-  if (typeof val === "number") return val;
-  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
-};
-const formatPrice = (val, lang) => {
-  const num = toCleanAmount(val);
-  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
-  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
-};
+import { FiShoppingCart } from "react-icons/fi";
 
 const getErrorMsg = (data) => {
   if (data.errors?.length > 0) return data.errors[0].message;
@@ -28,355 +34,200 @@ const getErrorMsg = (data) => {
   return null;
 };
 
-// ─── Chevron Icons ────────────────────────────────────────────────────────────
-const ChevronDown = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-const ChevronUp = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="18 15 12 9 6 15" />
-  </svg>
-);
+// ─── Small UI pieces used only by this panel ─────────────────────────────────
+const toCleanAmount = (val) => {
+  if (typeof val === "number") return val;
+  return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
+};
 
-// ─── New Quantity Dropdown ────────────────────────────────────────────────────
-function CustomDropdown({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [windowStart, setWindowStart] = useState(1);
-  const dropdownRef = useRef(null);
-  const MAX = 100;
-  const WINDOW = 10;
+const formatPrice = (val, lang) => {
+  const num = toCleanAmount(val);
+  const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
+  return num.toLocaleString(locale, { minimumFractionDigits: 2 });
+};
 
-  const selectedQty = parseInt(value) || 1;
-  const windowEnd = Math.min(windowStart + WINDOW - 1, MAX);
-  const numbers = Array.from(
-    { length: windowEnd - windowStart + 1 },
-    (_, i) => windowStart + i,
-  );
-
-  const openDropdown = () => {
-    // Center window around selected value
-    const idealStart = Math.max(1, Math.min(selectedQty - 4, MAX - WINDOW + 1));
-    setWindowStart(idealStart);
-    setIsOpen(true);
-  };
-
-  const handleSelect = (num) => {
-    onChange(String(num));
-    setIsOpen(false);
-  };
-
-  const slideDown = () => {
-    setWindowStart((prev) => Math.min(prev + WINDOW, MAX - WINDOW + 1));
-  };
-
-  const slideUp = () => {
-    setWindowStart((prev) => Math.max(1, prev - WINDOW));
-  };
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
+// ─── Small pieces ─────────────────────────────────────────────────────────────
+function Spinner({ light = false, size = 14 }) {
   return (
-    <div className="relative inline-block" ref={dropdownRef}>
+    <span
+      className={`inline-block rounded-full border-2 animate-spin ${
+        light ? "border-white/40 border-t-white" : "border-black/15 border-t-[#0b0b0a]"
+      }`}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+function ErrorNote({ children }) {
+  return (
+    <div className="flex items-start gap-2 mt-3 px-3.5 py-3 bg-red-50 border border-red-200 text-red-600 text-[12px] leading-snug">
+      <IoAlertCircleOutline className="w-4 h-4 shrink-0 mt-px" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+// A code input joined to its Apply button; a black gradient bar grows along
+// the bottom edge on focus, same treatment as the account/auth inputs.
+function CodeField({
+  value,
+  onChange,
+  onEnter,
+  placeholder,
+  disabled,
+  title,
+  hasError,
+  onApply,
+  applyDisabled,
+  loading,
+  applyLabel,
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div
+      className={`relative flex items-stretch bg-white border transition-colors duration-200 ${
+        hasError ? "border-red-400" : focused ? "border-black/40" : "border-black/10"
+      }`}
+    >
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        disabled={disabled}
+        title={title}
+        onChange={onChange}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") onEnter?.();
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={`flex-1 min-w-0 h-11 px-4 text-[13px] outline-none placeholder:text-[#8a8880] ${
+          disabled ? "bg-black/[0.02] text-[#8a8880] cursor-not-allowed" : "bg-white text-[#0b0b0a]"
+        }`}
+      />
       <button
-        onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
-        className="flex items-center gap-1 border border-gray-200 px-1.5 py-1 text-sm text-gray-800 cursor-pointer hover:border-gray-400 transition-colors min-w-10"
+        type="button"
+        onClick={onApply}
+        disabled={applyDisabled}
+        className={`min-w-[84px] px-4 inline-flex items-center justify-center text-[12px] font-bold tracking-[0.1em] uppercase transition-colors duration-200 ${
+          applyDisabled
+            ? "bg-black/[0.04] text-[#8a8880] cursor-default"
+            : "bg-[#0b0b0a] text-white hover:bg-[#25221e] cursor-pointer"
+        }`}
       >
-        <span className="font-medium">{selectedQty}</span>
-        <span
-          className={`ml-auto text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        >
-          <ChevronDown />
-        </span>
+        {loading ? <Spinner light size={13} /> : applyLabel}
       </button>
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute left-0 bottom-0 h-[2px] bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300 ${
+          focused ? "w-full" : "w-0"
+        }`}
+      />
+    </div>
+  );
+}
 
-      {isOpen && (
-        <div className="absolute top-[calc(100%+6px)] left-0 bg-white border border-gray-200 shadow-md z-50 min-w-10 overflow-hidden">
-          {/* Up arrow — only show if not at top */}
-          {windowStart > 1 && (
-            <button
-              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              onMouseEnter={slideUp}
-              onClick={slideUp}
-            >
-              <ChevronUp />
-            </button>
-          )}
-
-          <ul>
-            {numbers.map((num) => (
-              <li
-                key={num}
-                onClick={() => handleSelect(num)}
-                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
-                  num === selectedQty
-                    ? "font-medium text-black"
-                    : "text-gray-800"
-                }`}
-              >
-                {num}
-              </li>
-            ))}
-          </ul>
-
-          {/* Down arrow — only show if not at bottom */}
-          {windowEnd < MAX && (
-            <button
-              className="w-full flex items-center cursor-pointer justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              onMouseEnter={slideDown}
-              onClick={slideDown}
-            >
-              <ChevronDown />
-            </button>
-          )}
-        </div>
+// A black "applied" chip with an optional remove button.
+function CodeChip({ code, onRemove, removeTitle }) {
+  return (
+    <div className="inline-flex items-stretch bg-[#0b0b0a] text-white">
+      <span className="px-3 py-1.5 text-[12px] font-semibold tracking-[0.04em]">{code}</span>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          title={removeTitle}
+          className="flex items-center justify-center px-2.5 border-l border-white/20 text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          <IoClose size={13} />
+        </button>
       )}
     </div>
   );
 }
 
-// ─── Size Dropdown (unchanged — only for size, not qty) ───────────────────────
-function SizeDropdown({ options, value, onChange, disabled }) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
+// A selectable saved-voucher chip.
+function VoucherOption({ code, selected, onClick, onRemove }) {
   return (
     <div
-      ref={wrapRef}
-      style={{ position: "relative", display: "inline-block" }}
+      onClick={onClick}
+      className={`inline-flex items-stretch border cursor-pointer select-none transition-colors duration-150 ${
+        selected
+          ? "bg-[#0b0b0a] border-[#0b0b0a] text-white"
+          : "bg-white border-black/15 text-[#0b0b0a] hover:border-black/40"
+      }`}
     >
-      <style>{`
-        .dropdown-menu-scrollbar-hide::-webkit-scrollbar { display: none; }
-        .dropdown-menu-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-      <div
-        onClick={() => !disabled && setOpen((v) => !v)}
-        style={{
-          border: "1px solid #ddd",
-          padding: "4px 8px",
-          fontSize: "13px",
-          background: "#fff",
-          color: "#111",
-          cursor: disabled ? "default" : "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "6px",
-          minWidth: disabled ? "auto" : "42px",
-          userSelect: "none",
-          transition: "border-color 0.15s",
-          opacity: disabled ? 0.6 : 1,
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) e.currentTarget.style.borderColor = "#999";
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled) e.currentTarget.style.borderColor = "#ddd";
-        }}
-      >
-        <span>{value}</span>
-        {!disabled && (
-          <span
-            style={{
-              display: "inline-block",
-              width: 0,
-              height: 0,
-              borderLeft: "4px solid transparent",
-              borderRight: "4px solid transparent",
-              borderTop: "5px solid #555",
-              flexShrink: 0,
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.2s",
-            }}
-          />
+      <span className="px-3 py-1.5 text-[12px] font-semibold tracking-[0.04em]">{code}</span>
+      {selected && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="flex items-center justify-center px-2.5 border-l border-white/20 text-white/80 hover:text-white cursor-pointer"
+        >
+          <IoClose size={13} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Upsell product row ───────────────────────────────────────────────────────
+function UpsellCard({ item, onAdd, isAdding }) {
+  const { t, i18n } = useTranslation("modaladdtocart");
+  const lang = i18n.language;
+  if (!item) return null;
+
+  const imageUrl =
+    item.image ||
+    (item.products?.[0]?.images?.[0]?.media
+      ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
+      : null);
+
+  const price =
+    parseFloat(
+      String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", "."),
+    ) || 0;
+  const name =
+    lang === "fr" && item.french_name ? item.french_name : item.name || "";
+
+  return (
+    <div className="flex items-center gap-3 p-2.5">
+      <div className="w-[46px] h-[56px] shrink-0 bg-white overflow-hidden flex items-center justify-center">
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-9 h-12 bg-black/10" />
         )}
       </div>
-      {open && !disabled && (
-        <div
-          className="dropdown-menu-scrollbar-hide"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            left: 0,
-            background: "#fff",
-            border: "1px solid #ddd",
-            minWidth: "100%",
-            zIndex: 1100,
-            maxHeight: "calc(10 * 33px)",
-            overflowY: "auto",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          }}
+      <div className="flex-1 min-w-0">
+        <p className="mb-1.5 text-[12px] font-semibold leading-snug text-[#0b0b0a] line-clamp-2">
+          {name}
+        </p>
+        <button
+          type="button"
+          onClick={() => !isAdding && onAdd(item)}
+          disabled={isAdding}
+          className={`inline-flex items-center justify-center gap-1.5 min-w-[92px] h-7 px-2.5 border text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 ${
+            isAdding
+              ? "bg-[#0b0b0a] border-[#0b0b0a] text-white cursor-default"
+              : "bg-white border-black/15 text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white hover:border-[#0b0b0a] cursor-pointer"
+          }`}
         >
-          {options.map((opt) => (
-            <SizeDropItem
-              key={opt}
-              label={opt}
-              selected={opt === value}
-              onSelect={() => {
-                onChange(opt);
-                setOpen(false);
-              }}
-            />
-          ))}
-        </div>
-      )}
+          {isAdding ? (
+            <Spinner light size={11} />
+          ) : (
+            <>
+             <FiShoppingCart className="w-3.5 h-3.5" />
+              {`${t("add")} — ${formatPrice(price, lang)} €`}
+            </>
+          )}
+        </button>
+      </div>
     </div>
-  );
-}
-
-function SizeDropItem({ label, selected, onSelect }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onClick={onSelect}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: "8px 12px",
-        fontSize: "13px",
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-        background: hovered ? "#111" : "#fff",
-        color: hovered ? "#fff" : "#111",
-        fontWeight: selected ? 600 : 400,
-        transition: "background 0.15s, color 0.15s",
-        textAlign: "center",
-      }}
-    >
-      {label}
-    </div>
-  );
-}
-
-function AppliedPill({ code, label, onRemove }) {
-  return (
-    <div
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "0",
-        border: "1px solid #ccc",
-        overflow: "hidden",
-        background: "#fff",
-      }}
-    >
-      <span
-        style={{
-          padding: "5px 10px",
-          fontSize: "12px",
-          fontWeight: 600,
-          color: "#111",
-          letterSpacing: "0.04em",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
-      >
-        {code}
-      </span>
-      {label && (
-        <>
-          <span
-            style={{
-              display: "block",
-              width: "1px",
-              height: "26px",
-              background: "#ccc",
-            }}
-          />
-          <span
-            style={{
-              padding: "5px 10px",
-              fontSize: "12px",
-              color: "#888",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            }}
-          >
-            {label}
-          </span>
-        </>
-      )}
-      {onRemove && (
-        <>
-          <span
-            style={{
-              display: "block",
-              width: "1px",
-              height: "26px",
-              background: "#ccc",
-            }}
-          />
-          <button
-            onClick={onRemove}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "5px 8px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#555",
-            }}
-          >
-            <IoClose size={12} />
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-function ButtonSpinner({ color = "#111" }) {
-  return (
-    <>
-      <style>{`@keyframes applyBtnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-      <span
-        style={{
-          display: "inline-block",
-          width: "13px",
-          height: "13px",
-          border: `2px solid ${color === "#fff" ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.15)"}`,
-          borderTopColor: color,
-          borderRadius: "50%",
-          animation: "applyBtnSpin 0.6s linear infinite",
-        }}
-      />
-    </>
   );
 }
 
@@ -408,124 +259,6 @@ const getPromoState = () => {
 const setPromoState = (state) =>
   localStorage.setItem(PROMO_KEY, JSON.stringify(state));
 const removePromoState = () => localStorage.removeItem(PROMO_KEY);
-
-// ─── Upsell Product Card ──────────────────────────────────────────────────────
-function UpsellCard({ item, onAdd, isAdding }) {
-  const { t, i18n } = useTranslation("modaladdtocart");
-  const lang = i18n.language;
-  const [addHovered, setAddHovered] = useState(false);
-  if (!item) return null;
-
-  const imageUrl =
-    item.image ||
-    (item.products?.[0]?.images?.[0]?.media
-      ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
-      : null);
-
-  const price =
-    parseFloat(
-      String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", "."),
-    ) || 0;
-  const name =
-    lang === "fr" && item.french_name ? item.french_name : item.name || "";
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        padding: "4px 12px 4px 4px",
-        backgroundColor: "#fff",
-      }}
-    >
-      <div
-        style={{
-          width: "64px",
-          height: "72px",
-          flexShrink: 0,
-          backgroundColor: "#f3f3f3",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        ) : (
-          <div
-            style={{ width: "36px", height: "48px", backgroundColor: "#ddd" }}
-          />
-        )}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p
-          style={{
-            margin: "0 0 8px",
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "#111",
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            lineHeight: 1.4,
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        >
-          {name}
-        </p>
-        <button
-          onClick={() => !isAdding && onAdd(item)}
-          onMouseEnter={() => setAddHovered(true)}
-          onMouseLeave={() => setAddHovered(false)}
-          disabled={isAdding}
-          style={{
-            padding: "6px 8px",
-            fontSize: "11px",
-            fontWeight: 500,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            border: "1px solid #ccc",
-            background: isAdding ? "#111" : addHovered ? "#111" : "#f3f3f3",
-            color: isAdding ? "#fff" : addHovered ? "#fff" : "#111",
-            cursor: isAdding ? "default" : "pointer",
-            transition: "background 0.2s, color 0.2s",
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            minWidth: "80px",
-          }}
-        >
-          {isAdding ? (
-            <>
-              <style>{`@keyframes upsellSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-              <span
-                style={{
-                  width: 11,
-                  height: 11,
-                  border: "2px solid rgba(255,255,255,0.35)",
-                  borderTopColor: "#fff",
-                  borderRadius: "50%",
-                  display: "inline-block",
-                  animation: "upsellSpin 0.6s linear infinite",
-                }}
-              />
-            </>
-          ) : (
-            `${t("add")} — ${formatPrice(price, lang)} €`
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function ModalAddToCart({
   isOpen,
@@ -559,11 +292,9 @@ export default function ModalAddToCart({
   const [guestVoucherInput, setGuestVoucherInput] = useState("");
   const [guestVoucherError, setGuestVoucherError] = useState(null);
   const [guestVoucherLoading, setGuestVoucherLoading] = useState(false);
-  const [guestApplyHovered, setGuestApplyHovered] = useState(false);
   const [guestPendingPill, setGuestPendingPill] = useState(null);
   const [guestAppliedVoucher, setGuestAppliedVoucher] = useState(null);
   const [guestUsedCodes, setGuestUsedCodes] = useState([]);
-  const [guestLoginHovered, setGuestLoginHovered] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const [loggedVoucherInput, setLoggedVoucherInput] = useState(
@@ -571,7 +302,6 @@ export default function ModalAddToCart({
   );
   const [loggedVoucherError, setLoggedVoucherError] = useState(null);
   const [loggedVoucherLoading, setLoggedVoucherLoading] = useState(false);
-  const [loggedApplyHovered, setLoggedApplyHovered] = useState(false);
   const [loggedVoucherApplied, setLoggedVoucherApplied] = useState(
     () => getVoucherState()?.applied || false,
   );
@@ -581,19 +311,15 @@ export default function ModalAddToCart({
   const [selectedPill, setSelectedPill] = useState(
     () => getVoucherState()?.selectedPill || null,
   );
-  const [redeemHovered, setRedeemHovered] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherPills, setVoucherPills] = useState([]);
   const [voucherPoints, setVoucherPoints] = useState(() => {
     const saved = getVoucherState();
     return saved?.voucherPoints !== undefined ? saved.voucherPoints : null;
   });
-  const [createMoreHovered, setCreateMoreHovered] = useState(false);
-  const [learnMoreHovered, setLearnMoreHovered] = useState(false);
 
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoInput, setPromoInput] = useState("");
-  const [promoHovered, setPromoHovered] = useState(false);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState(null);
   // Reads whatever CheckOut.jsx (or a previous visit here) last saved (see
@@ -630,11 +356,7 @@ export default function ModalAddToCart({
   const overlayRef = useRef(null);
   const giftContentRef = useRef(null);
 
-  // Opened from LandingCards/ExpertAdvicesDetail (add-to-cart), the cursor is usually still over
-  // the card, not the panel that slides in from the right — so start the 2s close timer
-  // immediately, and only cancel it while the cursor is actually over the panel. Opened from
-  // Navbar (viewing the cart), autoCloseOnLeave stays false and none of this runs — it never
-  // self-closes.
+  
   const autoCloseTimerRef = useRef(null);
   const clearAutoCloseTimer = () => {
     if (autoCloseTimerRef.current) {
@@ -1147,151 +869,50 @@ export default function ModalAddToCart({
   };
 
   const isEmpty = !isLoading && cartItems.length === 0;
+  const unlocked = !isEmpty && subtotal >= freeShippingThreshold;
+
+  // Which discount input (promo code / voucher) is open — both start closed,
+  // clicking the open one again collapses it.
+  const [discountTab, setDiscountTab] = useState(null);
 
   const renderGuestVoucherContent = () => (
-    <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-      <div
-        style={{
-          display: "flex",
-          border: `1px solid ${guestVoucherError ? "#e02424" : "#ddd"}`,
-          overflow: "hidden",
-          transition: "border-color 0.15s",
-        }}
-      >
-        <input
-          type="text"
-          placeholder={t("enterVoucherCodePlaceholder")}
-          value={guestVoucherInput}
-          onChange={handleGuestInputChange}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleGuestApply();
-          }}
-          style={{
-            flex: 1,
-            border: "none",
-            outline: "none",
-            padding: "11px 14px",
-            fontSize: "13px",
-            color: "#111",
-            background: "#fff",
-            cursor: "text",
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        />
-
-        <button
-          onClick={handleGuestApply}
-          disabled={!guestVoucherInput.trim()}
-          onMouseEnter={() => {
-            if (guestVoucherInput.trim()) setGuestApplyHovered(true);
-          }}
-          onMouseLeave={() => setGuestApplyHovered(false)}
-          style={{
-            border: "none",
-            borderLeft: "1px solid #ddd",
-            background: !guestVoucherInput.trim()
-              ? "#f3f3f3"
-              : guestApplyHovered
-                ? "#111"
-                : "transparent",
-            color: !guestVoucherInput.trim()
-              ? "#aaa"
-              : guestApplyHovered
-                ? "#fff"
-                : "#111",
-            padding: "11px 18px",
-            fontSize: "12px",
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            cursor: !guestVoucherInput.trim() ? "default" : "pointer",
-            transition: "background 0.2s, color 0.2s",
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-          }}
-        >
-          {t("apply")}
-        </button>
-      </div>
+    <div ref={giftContentRef}>
+      <CodeField
+        placeholder={t("enterVoucherCodePlaceholder")}
+        value={guestVoucherInput}
+        onChange={handleGuestInputChange}
+        onEnter={handleGuestApply}
+        hasError={!!guestVoucherError}
+        onApply={handleGuestApply}
+        applyDisabled={!guestVoucherInput.trim()}
+        applyLabel={t("apply")}
+      />
 
       {guestVoucherError && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginTop: "10px",
-            padding: "10px 12px",
-            background: "#fdecec",
-            border: "1px solid #f5c6c6",
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            style={{ flexShrink: 0 }}
+        <ErrorNote>
+          {guestVoucherError}{" "}
+          <button
+            type="button"
+            onClick={() => setIsLoginModalOpen(true)}
+            className="font-bold hover:underline underline-offset-2 cursor-pointer"
           >
-            <circle cx="12" cy="12" r="11" fill="#e02424" />
-            <path
-              d="M8 8l8 8M16 8l-8 8"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span
-            style={{
-              fontSize: "12px",
-              color: "#c0392b",
-              lineHeight: 1.4,
-              flex: 1,
-            }}
-          >
-            {guestVoucherError}{" "}
-            <span
-              onClick={() => setIsLoginModalOpen(true)}
-              onMouseEnter={() => setGuestLoginHovered(true)}
-              onMouseLeave={() => setGuestLoginHovered(false)}
-              style={{
-                fontSize: "12px",
-                color: "#c0392b",
-                fontWeight: 700,
-                cursor: "pointer",
-                textDecoration: guestLoginHovered ? "underline" : "none",
-              }}
-            >
-              {t("login")}
-            </span>
-          </span>
-        </div>
+            {t("login")}
+          </button>
+        </ErrorNote>
       )}
 
-      <p
-        style={{
-          margin: "10px 0 0",
-          fontSize: "12px",
-          color: "#888",
-          lineHeight: 1.5,
-        }}
-      >
+      <p className="mt-3 text-[12px] text-[#8a8880] leading-relaxed">
         {t("noVouchersYet")}{" "}
-        <span
+        <button
+          type="button"
           onClick={() => {
             onClose();
             router.push("/loyalty");
           }}
-          onMouseEnter={() => setLearnMoreHovered(true)}
-          onMouseLeave={() => setLearnMoreHovered(false)}
-          style={{
-            color: "#111",
-            cursor: "pointer",
-            fontWeight: 600,
-            textDecoration: learnMoreHovered ? "underline" : "none",
-          }}
+          className="text-[#0b0b0a] font-semibold hover:underline underline-offset-2 cursor-pointer"
         >
           {t("learnMore")}
-        </span>
+        </button>
       </p>
     </div>
   );
@@ -1303,245 +924,60 @@ export default function ModalAddToCart({
     const canCreateMoreVoucher = hasPoints;
 
     return (
-      <div ref={giftContentRef} style={{ paddingBottom: "16px" }}>
-        <div
-          style={{
-            display: "flex",
-            border: `1px solid ${loggedVoucherError ? "#e02424" : "#ddd"}`,
-            overflow: "hidden",
-            transition: "border-color 0.15s",
+      <div ref={giftContentRef}>
+        <CodeField
+          placeholder={t("enterVoucherCodePlaceholder")}
+          value={loggedVoucherInput}
+          disabled={loggedVoucherApplied}
+          title={loggedVoucherApplied ? t("alreadyAddedVoucherCode") : ""}
+          onChange={(e) => {
+            setLoggedVoucherInput(e.target.value);
+            if (loggedVoucherError) setLoggedVoucherError(null);
+            const match = voucherPills.find((p) => p.name === e.target.value);
+            if (match) setSelectedPill(match.name);
+            else setSelectedPill(null);
           }}
-        >
-          <input
-            type="text"
-            placeholder={t("enterVoucherCodePlaceholder")}
-            value={loggedVoucherInput}
-            disabled={loggedVoucherApplied}
-            onChange={(e) => {
-              setLoggedVoucherInput(e.target.value);
-              if (loggedVoucherError) setLoggedVoucherError(null);
-              const match = voucherPills.find((p) => p.name === e.target.value);
-              if (match) setSelectedPill(match.name);
-              else setSelectedPill(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleLoggedApply();
-            }}
-            title={loggedVoucherApplied ? t("alreadyAddedVoucherCode") : ""}
-            style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              padding: "11px 14px",
-              fontSize: "13px",
-              color: loggedVoucherApplied ? "#aaa" : "#111",
-              background: loggedVoucherApplied ? "#f9f9f9" : "#fff",
-              cursor: loggedVoucherApplied ? "not-allowed" : "text",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            }}
-          />
-          <button
-            onClick={handleLoggedApply}
-            disabled={
-              (!selectedPill && !loggedVoucherInput.trim()) ||
-              loggedVoucherApplied ||
-              loggedVoucherLoading
-            }
-            onMouseEnter={() => {
-              if (
-                (selectedPill || loggedVoucherInput.trim()) &&
-                !loggedVoucherApplied
-              )
-                setLoggedApplyHovered(true);
-            }}
-            onMouseLeave={() => setLoggedApplyHovered(false)}
-            style={{
-              border: "none",
-              borderLeft: "1px solid #ddd",
-              background:
-                (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
-                  ? "#f3f3f3"
-                  : loggedApplyHovered
-                    ? "#111"
-                    : "transparent",
-              color:
-                (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
-                  ? "#aaa"
-                  : loggedApplyHovered
-                    ? "#fff"
-                    : "#111",
-              padding: "11px 18px",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              cursor:
-                (!selectedPill && !loggedVoucherInput.trim()) ||
-                loggedVoucherApplied
-                  ? "default"
-                  : "pointer",
-              transition: "background 0.2s, color 0.2s",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: "56px",
-            }}
-          >
-            {loggedVoucherLoading ? (
-              <ButtonSpinner color={loggedApplyHovered ? "#fff" : "#111"} />
-            ) : (
-              t("apply")
-            )}
-          </button>
-        </div>
+          onEnter={handleLoggedApply}
+          hasError={!!loggedVoucherError}
+          onApply={handleLoggedApply}
+          applyDisabled={
+            (!selectedPill && !loggedVoucherInput.trim()) ||
+            loggedVoucherApplied ||
+            loggedVoucherLoading
+          }
+          loading={loggedVoucherLoading}
+          applyLabel={t("apply")}
+        />
 
         {selectedPill &&
           !loggedVoucherApplied &&
           voucherPills.some((p) => p.name === selectedPill) && (
-            <p
-              style={{
-                margin: "10px 0 6px",
-                fontSize: "12px",
-                color: "#555",
-                lineHeight: 1.5,
-              }}
-            >
+            <p className="mt-3 text-[12px] text-[#5c5a54] leading-relaxed">
               {t("voucherCodeAdded")}
             </p>
           )}
 
-        {loggedVoucherError && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "8px",
-              marginTop: "10px",
-              padding: "10px 12px",
-              background: "#fdecec",
-              border: "1px solid #f5c6c6",
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              style={{ flexShrink: 0, marginTop: "1px" }}
-            >
-              <circle cx="12" cy="12" r="11" fill="#e02424" />
-              <path
-                d="M8 8l8 8M16 8l-8 8"
-                stroke="#fff"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span
-              style={{ fontSize: "12px", color: "#c0392b", lineHeight: 1.4 }}
-            >
-              {loggedVoucherError}
-            </span>
-          </div>
-        )}
+        {loggedVoucherError && <ErrorNote>{loggedVoucherError}</ErrorNote>}
 
         {!loggedVoucherApplied && hasVouchers && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginTop: "12px",
-              alignItems: "center",
-            }}
-          >
+          <div className="flex flex-wrap items-center gap-2 mt-3.5">
             {voucherPills.map((pill) => {
               const code = pill.name;
-              const isSelected = selectedPill === code;
               return (
-                <div
+                <VoucherOption
                   key={pill.id}
+                  code={code}
+                  selected={selectedPill === code}
                   onClick={() => handlePillClick(code)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    border: "1px solid #ccc",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    background: isSelected ? "#111" : "#fff",
-                    transition: "background 0.15s",
-                    userSelect: "none",
-                  }}
-                >
-                  <span
-                    style={{
-                      padding: "6px 12px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: isSelected ? "#fff" : "#111",
-                      fontFamily:
-                        "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                    }}
-                  >
-                    {code}
-                  </span>
-                  {isSelected && (
-                    <>
-                      <span
-                        style={{
-                          display: "block",
-                          width: "1px",
-                          height: "28px",
-                          background: "rgba(255,255,255,0.3)",
-                        }}
-                      />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePillRemove();
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "6px 10px",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          color: "#fff",
-                        }}
-                      >
-                        <IoClose size={13} />
-                      </button>
-                    </>
-                  )}
-                </div>
+                  onRemove={handlePillRemove}
+                />
               );
             })}
             {canCreateMoreVoucher && (
               <button
+                type="button"
                 onClick={() => setIsVoucherModalOpen(true)}
-                onMouseEnter={() => setCreateMoreHovered(true)}
-                onMouseLeave={() => setCreateMoreHovered(false)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "7px 14px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  letterSpacing: "0.04em",
-                  background: createMoreHovered ? "#222" : "#f3f3f3",
-                  color: createMoreHovered ? "#fff" : "#111",
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  transition: "background 0.2s",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                  whiteSpace: "nowrap",
-                }}
+                className="inline-flex items-center justify-center px-3.5 py-1.5 text-[12px] font-semibold tracking-[0.02em] whitespace-nowrap border border-dashed border-black/30 text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white hover:border-[#0b0b0a] transition-colors duration-200 cursor-pointer"
               >
                 {t("createMoreVoucher")}
               </button>
@@ -1553,23 +989,8 @@ export default function ModalAddToCart({
           !hasVouchers &&
           hasPoints &&
           !loggedVoucherError && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: "12px",
-                gap: "12px",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "13px",
-                  color: "#111",
-                  lineHeight: 1.5,
-                }}
-              >
+            <div className="flex items-center justify-between gap-4 mt-3.5 px-4 py-3.5 bg-black/[0.03] border border-black/10">
+              <p className="text-[12px] text-[#0b0b0a] leading-relaxed">
                 <Trans
                   i18nKey="modaladdtocart:pointsRedeemMessage"
                   values={{
@@ -1580,24 +1001,9 @@ export default function ModalAddToCart({
                 />
               </p>
               <button
-                onMouseEnter={() => setRedeemHovered(true)}
-                onMouseLeave={() => setRedeemHovered(false)}
+                type="button"
                 onClick={() => setIsVoucherModalOpen(true)}
-                style={{
-                  flexShrink: 0,
-                  marginLeft: "12px",
-                  padding: "8px 16px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  background: redeemHovered ? "#333" : "#111",
-                  color: "#fff",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "background 0.2s",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                }}
+                className="shrink-0 px-4 py-2 text-[11.5px] font-semibold tracking-[0.1em] uppercase text-white bg-[#0b0b0a] hover:bg-[#25221e] transition-colors duration-200 cursor-pointer"
               >
                 {t("redeem")}
               </button>
@@ -1609,84 +1015,52 @@ export default function ModalAddToCart({
           !loggedVoucherApplied &&
           !hasVouchers &&
           !hasPoints && (
-            <p
-              style={{
-                margin: "10px 0 0",
-                fontSize: "12px",
-                color: "#888",
-                lineHeight: 1.5,
-              }}
-            >
+            <p className="mt-3 text-[12px] text-[#8a8880] leading-relaxed">
               {t("noVouchersYet")}{" "}
-              <span
+              <button
+                type="button"
                 onClick={() => {
                   onClose();
                   router.push("/loyalty");
                 }}
-                onMouseEnter={() => setLearnMoreHovered(true)}
-                onMouseLeave={() => setLearnMoreHovered(false)}
-                style={{
-                  color: "#111",
-                  cursor: "pointer",
-                  textDecoration: learnMoreHovered ? "underline" : "none",
-                }}
+                className="text-[#0b0b0a] font-semibold hover:underline underline-offset-2 cursor-pointer"
               >
                 {t("learnMore")}
-              </span>
+              </button>
             </p>
           )}
 
         {loggedVoucherApplied && selectedPill && (
-          <div style={{ marginTop: "10px" }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                background: "#111",
-                overflow: "hidden",
-              }}
-            >
-              <span
-                style={{
-                  padding: "6px 12px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "#fff",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                }}
-              >
-                {selectedPill}
-              </span>
-              <span
-                style={{
-                  display: "block",
-                  width: "1px",
-                  height: "28px",
-                  background: "rgba(255,255,255,0.25)",
-                }}
-              />
-              <button
-                onClick={handleLoggedRemoveVoucher}
-                title={t("removeVoucherCode")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "6px 10px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#fff",
-                }}
-              >
-                <IoClose size={13} />
-              </button>
-            </div>
+          <div className="mt-3.5">
+            <CodeChip
+              code={selectedPill}
+              onRemove={handleLoggedRemoveVoucher}
+              removeTitle={t("removeVoucherCode")}
+            />
           </div>
         )}
       </div>
     );
   };
+
+  // One line of the receipt: label ········· value, with an optional chip.
+  const receiptRow = (label, value, chip) => (
+    <div className="flex items-baseline gap-2 text-[13px]">
+      <span className="flex items-center gap-2 text-[#5c5a54] shrink-0">
+        {label}
+        {chip && (
+          <span className="px-1.5 py-0.5 bg-[#0b0b0a] text-white text-[10.5px] font-semibold tracking-[0.06em]">
+            {chip}
+          </span>
+        )}
+      </span>
+      <span className="flex-1 border-b border-dotted border-black/25 translate-y-[-3px]" />
+      <span className="text-[#0b0b0a] font-semibold tabular-nums shrink-0">{value}</span>
+    </div>
+  );
+
+  const stepBtn =
+    "w-9 h-full grid place-items-center text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors duration-150 cursor-pointer disabled:opacity-30 disabled:pointer-events-none";
 
   return (
     <>
@@ -1694,159 +1068,84 @@ export default function ModalAddToCart({
       <div
         ref={overlayRef}
         onClick={handleOverlayClick}
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(0,0,0,0.45)",
-          zIndex: 1000,
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? "auto" : "none",
-          transition: "opacity 0.35s ease",
-        }}
+        className={`fixed inset-0 z-[1000] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
       />
 
-      {/* Slide-in panel */}
+      {/* Slide-in drawer — light grey canvas, white cards */}
       <div
         onMouseEnter={clearAutoCloseTimer}
         onMouseLeave={startAutoCloseTimer}
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: "100%",
-          maxWidth: "520px",
-          backgroundColor: "#fff",
-          zIndex: 1001,
-          display: "flex",
-          flexDirection: "column",
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        }}
+        className={`fixed top-0 right-0 bottom-0 z-[1001] w-full max-w-[520px] bg-[#f3f3f3] flex flex-col  transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "20px 20px",
-            borderBottom: "1px solid #e5e5e5",
-            flexShrink: 0,
-            height: "68px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-            <span
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#111",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              {t("yourCart")}
-            </span>
-            {cartCount > 0 && (
-              <div
-                style={{
-                  height: "23px",
-                  width:
-                    cartCount >= 100
-                      ? "53px"
-                      : cartCount >= 10
-                        ? "33px"
-                        : "23px",
+        {/* Header — same dark gradient band as the Login/auth modals */}
+        <div className="relative shrink-0 bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] border-b border-white/5 px-5 sm:px-6 pt-5 pb-5 overflow-hidden">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: "radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px)",
+              backgroundSize: "14px 14px",
+              maskImage: "linear-gradient(to left, black, transparent 75%)",
+              WebkitMaskImage: "linear-gradient(to left, black, transparent 75%)",
+            }}
+          />
+          <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-20 bg-[#DFB400]" />
+          <IoBagHandleOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
 
-                  marginLeft: "5px",
-                  borderRadius: "999px",
-                  backgroundColor: "#111",
-                  color: "#fff",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  boxSizing: "border-box",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: "24px",
-                }}
-              >
-                {cartCount}
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 flex items-center justify-center bg-white/10 border border-white/15 shrink-0">
+                <IoBagHandleOutline className="w-5 h-5 text-white" />
               </div>
-            )}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#DFB400] shrink-0" />
+                  <span className="text-[10.5px] font-semibold tracking-[0.16em] uppercase text-white/40">
+                    Biogance
+                  </span>
+                </div>
+                <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase leading-none tracking-[0.08em] text-white">
+                  {t("yourCart")}
+                  {cartCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[23px] h-[23px] px-1.5 bg-white text-[#0b0b0a] text-[12px] font-semibold tracking-normal">
+                      {cartCount}
+                    </span>
+                  )}
+                </h2>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="flex items-center justify-center w-9 h-9 border border-white/15 text-white/70 hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
+            >
+              <IoClose size={18} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-black hover:text-gray-600 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
-            style={{ padding: "4px 0", display: "flex", alignItems: "center" }}
-          >
-            <IoClose size={22} />
-          </button>
+
         </div>
 
         {/* Loading */}
         {isLoading && (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <style>{`@keyframes cartSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                border: "3px solid #ddd",
-                borderTopColor: "#111",
-                animation: "cartSpin 0.75s linear infinite",
-              }}
-            />
+          <div className="flex-1 flex items-center justify-center">
+            <Spinner size={28} />
           </div>
         )}
 
         {/* Empty */}
         {isEmpty && (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <svg
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ccc"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ marginBottom: "4px" }}
-            >
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
-            </svg>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#111",
-              }}
-            >
-              {t("emptyCartTitle")}
-            </p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#999" }}>
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6 text-center">
+            <div className="relative w-24 h-24 grid place-items-center bg-white border border-black/10 mb-4 shadow-[0_24px_50px_-28px_rgba(0,0,0,.35)]">
+              <IoBagHandleOutline className="w-10 h-10 text-black/20" />
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#DFB400]" />
+            </div>
+            <p className="text-[14px] font-semibold text-[#0b0b0a]">{t("emptyCartTitle")}</p>
+            <p className="text-[13px] text-[#8a8880] max-w-[260px] leading-relaxed">
               {t("emptyCartSubtitle")}
             </p>
           </div>
@@ -1854,44 +1153,20 @@ export default function ModalAddToCart({
 
         {/* Removing overlay */}
         {isRemoving && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 10,
-              backgroundColor: "rgba(255,255,255,0.6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "all",
-            }}
-          >
-            <style>{`@keyframes panelSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                border: "3px solid #ddd",
-                borderTopColor: "#111",
-                borderRadius: "50%",
-                animation: "panelSpin 0.75s linear infinite",
-              }}
-            />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-[1px] pointer-events-auto">
+            <Spinner size={30} />
           </div>
         )}
 
         {/* Body */}
         {!isLoading && !isEmpty && (
           <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "0 24px",
-              pointerEvents: isRemoving ? "none" : "auto",
-              overscrollBehavior: "contain",
-              WebkitOverflowScrolling: "touch",
-            }}
+            className={`flex-1 overflow-y-auto px-5 sm:px-6 py-5 flex flex-col gap-4 ${
+              isRemoving ? "pointer-events-none" : "pointer-events-auto"
+            }`}
+            style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}
           >
+            {/* Item cards — compact, borderless, soft-shadow */}
             {cartItems.map((item) => {
               const p = item.product || {};
               const firstImage = p.images?.[0]?.media
@@ -1899,829 +1174,321 @@ export default function ModalAddToCart({
                 : "";
               const name =
                 lang === "fr" && p.french_name ? p.french_name : p.name || "";
-              const sizeOptions = p.size_name ? [p.size_name] : [];
-              const isSingleSize = sizeOptions.length <= 1;
+              const sizeLabel = p.size_name || "";
               const unitPrice =
                 parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
               const itemTotal = (unitPrice * item.quantity).toFixed(2);
+              const qty = parseInt(item.quantity) || 1;
               return (
                 <div
                   key={item.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "14px",
-                    padding: "20px 0",
-                    borderBottom: "1px solid #e5e5e5",
-                  }}
+                  className="flex items-center gap-3 p-2.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,.04),0_14px_30px_-22px_rgba(0,0,0,.3)] transition-shadow duration-300 hover:shadow-[0_1px_2px_rgba(0,0,0,.04),0_22px_40px_-22px_rgba(0,0,0,.4)]"
                 >
-                  <div
-                    style={{
-                      width: "64px",
-                      height: "80px",
-                      flexShrink: 0,
-                      backgroundColor: "#f3f3f3",
-                      overflow: "hidden",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <div className="relative w-[68px] h-[84px] shrink-0 bg-[#f3f3f3] overflow-hidden flex items-center justify-center">
                     {firstImage ? (
-                      <img
-                        src={firstImage}
-                        alt={name}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={firstImage} alt={name} className="w-full h-full object-cover" />
                     ) : (
-                      <div
-                        style={{
-                          width: "36px",
-                          height: "48px",
-                          backgroundColor: "#c8c2b0",
-                        }}
-                      />
+                      <div className="w-8 h-11 bg-black/10" />
                     )}
+                    <span className="absolute bottom-0 left-0 px-1.5 py-0.5 bg-[#0b0b0a] text-white text-[10.5px] font-semibold tabular-nums">
+                      ×{qty}
+                    </span>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      style={{
-                        margin: "0 0 4px",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        color: "#111",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {name}
-                    </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {/* NEW quantity dropdown — replaces old CustomDropdown for qty */}
-                      <CustomDropdown
-                        value={String(item.quantity)}
-                        onChange={(val) => handleQtyChange(item.id, val)}
-                      />
-                      {/* Size dropdown (old style, unchanged) */}
-                      {sizeOptions.length > 0 && (
-                        <SizeDropdown
-                          options={sizeOptions}
-                          value={sizeOptions[0]}
-                          onChange={() => {}}
-                          disabled={isSingleSize}
-                        />
-                      )}
+
+                  <div className="flex-1 min-w-0 self-stretch flex flex-col justify-between py-0.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-semibold leading-snug text-[#0b0b0a] line-clamp-2">
+                          {name}
+                        </p>
+                      </div>
                       <button
+                        type="button"
                         onClick={() => handleRemove(item.id)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: "4px",
-                          color: "#888",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
                         title={t("removeItem")}
+                        aria-label={t("removeItem")}
+                        className="shrink-0 grid place-items-center w-6 h-6 text-[#a8a69f] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                       >
-                        <RiDeleteBinLine className="hover:text-gray-600" />
+                        <IoTrashOutline className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      marginTop: "65px",
-                      color: "#555",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {formatPrice(itemTotal, lang)} €
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="inline-flex items-stretch h-7 bg-black/[0.05]">
+                        <button
+                          type="button"
+                          onClick={() => handleQtyChange(item.id, qty - 1)}
+                          disabled={qty <= 1}
+                          aria-label="Decrease quantity"
+                          className="w-7 h-full grid place-items-center text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors duration-150 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                          <IoRemove className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="min-w-[26px] px-1 grid place-items-center text-[12px] font-semibold tabular-nums">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleQtyChange(item.id, qty + 1)}
+                          disabled={qty >= 100}
+                          aria-label="Increase quantity"
+                          className="w-7 h-full grid place-items-center text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors duration-150 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                          <IoAdd className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      {sizeLabel && (
+                        <span className="text-[12px] text-[#8a8880] truncate">{sizeLabel}</span>
+                      )}
+                      </div>
+                      <span className="text-[13px] font-semibold text-[#0b0b0a] tabular-nums">
+                        {formatPrice(itemTotal, lang)} €
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
             })}
 
-            {/* Order Summary */}
-            <div
-              style={{ padding: "16px 0", borderBottom: "1px solid #e5e5e5" }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "6px",
-                  fontSize: "13px",
-                  color: "#555",
-                }}
-              >
-                <span>{t("subtotal")}</span>
-                <span>{formatPrice(subtotal, lang)} €</span>
-              </div>
-              {appliedPromo && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "6px",
-                    fontSize: "13px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span style={{ color: "#555" }}>{t("promoCode")}</span>
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        background: "#f0f0f0",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <span
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "11px",
-                          fontWeight: 600,
-                          color: "#111",
-                          letterSpacing: "0.04em",
-                          fontFamily:
-                            "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                        }}
-                      >
-                        {appliedPromo.code}
-                      </span>
-                    </div>
-                  </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>
-                    -{formatPrice(promoDiscount, lang)} €
-                  </span>
-                </div>
-              )}
-
-              {loggedVoucherApplied && selectedPill && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "6px",
-                    fontSize: "13px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span style={{ color: "#555" }}>{t("voucher")}</span>
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        background: "#f0f0f0",
-                      }}
-                    >
-                      <span
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "11px",
-                          fontWeight: 600,
-                          color: "#111",
-                          fontFamily:
-                            "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                        }}
-                      >
-                        {selectedPill}
-                      </span>
-                    </div>
-                  </div>
-                  <span style={{ color: "#111", fontWeight: 500 }}>
-                    -{formatPrice(appliedVoucherOff, lang)} €
-                  </span>
-                </div>
-              )}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "6px",
-                  fontSize: "13px",
-                  color: "#555",
-                }}
-              >
-                <span>{t("deliveryCosts")}</span>
-                {subtotal >= 39 ? (
-                  <span>{t("free")}</span>
-                ) : (
-                  <span>{formatPrice(5.9, lang)} €</span>
-                )}
-              </div>
-              <div
-                style={{ marginBottom: "6px", fontSize: "13px", color: "#555" }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    ref={deliveryDropdownRef}
-                    style={{ position: "relative" }}
-                  >
+            {/* Discounts — promo code / voucher as two tabs of one card */}
+            <div className="bg-white border border-black/[0.06]">
+              <div className="grid grid-cols-2">
+                {[
+                  { id: "promo", label: t("giftCardPromoCode"), icon: IoPricetagOutline, applied: !!appliedPromo },
+                  { id: "voucher", label: t("applyVoucher"), icon: IoTicketOutline, applied: loggedVoucherApplied && !!selectedPill },
+                ].map((tab) => {
+                  const active = discountTab === tab.id;
+                  return (
                     <button
-                      onClick={() => setDeliveryDropdownOpen((v) => !v)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px",
-                        fontSize: "13px",
-                        color: "#555",
-                        fontFamily:
-                          "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "#111";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = "#555";
-                      }}
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setDiscountTab(active ? null : tab.id)}
+                      className={`relative flex items-center justify-center gap-2 px-3 py-3.5 text-[12px] font-semibold border-b transition-colors duration-200 cursor-pointer ${
+                        active
+                          ? "text-[#0b0b0a] bg-white border-transparent"
+                          : "text-[#8a8880] bg-black/[0.03] border-black/10 hover:text-[#0b0b0a]"
+                      }`}
                     >
-                      <span>
-                        {deliveryMethod === "home"
-                          ? t("homeDelivery")
-                          : t("pickupPoint")}
-                      </span>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          width: 0,
-                          height: 0,
-                          borderLeft: "4px solid transparent",
-                          borderRight: "4px solid transparent",
-                          borderTop: "5px solid #555",
-                          flexShrink: 0,
-                          transform: deliveryDropdownOpen
-                            ? "rotate(180deg)"
-                            : "rotate(0deg)",
-                          transition: "transform 0.2s",
-                        }}
-                      />
+                      <tab.icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{tab.label}</span>
+                      {tab.applied && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
+                      {active && <span className="absolute left-0 right-0 top-0 h-[2px] bg-[#0b0b0a]" />}
                     </button>
-                    {deliveryDropdownOpen && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "calc(100% + 6px)",
-                          left: 90,
-                          background: "#fff",
-                          border: "1px solid #ddd",
-                          zIndex: 1100,
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          minWidth: "140px",
-                        }}
-                      >
-                        {["home", "pickup"].map((opt) => (
-                          <div
-                            key={opt}
-                            onClick={() => {
-                              setDeliveryMethod(opt);
-                              setDeliveryDropdownOpen(false);
-                              try {
-                                localStorage.setItem(
-                                  "checkoutDeliveryMethod",
-                                  opt,
-                                );
-                              } catch {
-                                /* ignore */
-                              }
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#111";
-                              e.currentTarget.style.color = "#fff";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (deliveryMethod === opt) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#f3f3f3";
-                                e.currentTarget.style.color = "#111";
-                              } else {
-                                e.currentTarget.style.backgroundColor = "#fff";
-                                e.currentTarget.style.color = "#111";
-                              }
-                            }}
-                            style={{
-                              padding: "9px 14px",
-                              fontSize: "13px",
-                              cursor: "pointer",
-                              background:
-                                deliveryMethod === opt ? "#f3f3f3" : "#fff",
-                              color: "#111",
-                              fontWeight: deliveryMethod === opt ? 600 : 400,
-                              transition: "background 0.15s, color 0.15s",
-                            }}
-                          >
-                            {opt === "home"
-                              ? t("homeDelivery")
-                              : t("pickupPoint")}
-                          </div>
-                        ))}
+                  );
+                })}
+              </div>
+              {discountTab && (
+              <div className="p-4">
+                {discountTab === "promo" ? (
+                  <>
+                    <CodeField
+                      placeholder={t("enterYourCodePlaceholder")}
+                      value={appliedPromo ? appliedPromo.code : promoInput}
+                      disabled={!!appliedPromo}
+                      title={appliedPromo ? t("alreadyAddedPromoCode") : ""}
+                      onChange={handlePromoInputChange}
+                      onEnter={handlePromoApply}
+                      hasError={!!promoError}
+                      onApply={handlePromoApply}
+                      applyDisabled={!promoInput.trim() || !!appliedPromo || promoLoading}
+                      loading={promoLoading}
+                      applyLabel={t("apply")}
+                    />
+                    {promoError && <ErrorNote>{promoError}</ErrorNote>}
+                    {appliedPromo && (
+                      <div className="mt-3.5">
+                        <CodeChip
+                          code={appliedPromo.code}
+                          onRemove={handleRemovePromo}
+                          removeTitle={t("removePromoCode")}
+                        />
                       </div>
                     )}
-                  </div>
-                  {isFreeDelivery ? (
-                    <span>{t("free")}</span>
-                  ) : (
-                    <span>{formatPrice(deliveryCost, lang)} €</span>
-                  )}
-                </div>
+                  </>
+                ) : isLoggedIn ? (
+                  renderLoggedVoucherContent()
+                ) : (
+                  renderGuestVoucherContent()
+                )}
               </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "10px",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  color: "#111",
-                }}
-              >
-                <span>{t("estimatedTotal")}</span>
-                <span>{formatPrice(totalWithDelivery, lang)} €</span>
-              </div>
+              )}
             </div>
 
-            {/* Promo Accordion */}
-            <div style={{ borderBottom: "1px solid #e5e5e5" }}>
-              <button
-                onClick={() => setPromoOpen((v) => !v)}
-                style={{
-                  width: "100%",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "16px 0",
-                  fontSize: "13px",
-                  color: "#111",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                }}
-              >
-                <span style={{ fontWeight: 500 }}>
-                  {t("giftCardPromoCode")}
-                </span>
-                <span
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: 300,
-                    display: "inline-block",
-                    transform: promoOpen ? "rotate(45deg)" : "rotate(0deg)",
-                    transition: "transform 0.3s ease",
-                  }}
-                >
-                  +
-                </span>
-              </button>
-              <div
-                style={{
-                  maxHeight: promoOpen ? "200px" : "0px",
-                  overflow: "hidden",
-                  transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
-                  opacity: promoOpen ? 1 : 0,
-                }}
-              >
-                <div style={{ paddingBottom: "16px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      border: `1px solid ${promoError ? "#e02424" : "#ddd"}`,
-                      overflow: "hidden",
-                      transition: "border-color 0.15s",
-                    }}
-                  >
-                    <div style={{ position: "relative", flex: 1 }}>
-                      <input
-                        type="text"
-                        placeholder={t("enterYourCodePlaceholder")}
-                        value={appliedPromo ? appliedPromo.code : promoInput}
-                        disabled={!!appliedPromo}
-                        onChange={handlePromoInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handlePromoApply();
-                        }}
-                        title={appliedPromo ? t("alreadyAddedPromoCode") : ""}
-                        style={{
-                          width: "100%",
-                          border: "none",
-                          outline: "none",
-                          padding: "11px 14px",
-                          fontSize: "13px",
-                          color: appliedPromo ? "#aaa" : "#111",
-                          background: appliedPromo ? "#f9f9f9" : "#fff",
-                          cursor: appliedPromo ? "not-allowed" : "text",
-                          fontFamily:
-                            "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                        }}
-                      />
-                    </div>
+            {/* Receipt-style summary */}
+            <div className="relative mb-2">
+              <div className="bg-white border border-black/[0.06] border-b-0 p-5 flex flex-col gap-3">
+                {receiptRow(t("subtotal"), `${formatPrice(subtotal, lang)} €`)}
+                {appliedPromo &&
+                  receiptRow(t("promoCode"), `-${formatPrice(promoDiscount, lang)} €`, appliedPromo.code)}
+                {loggedVoucherApplied &&
+                  selectedPill &&
+                  receiptRow(t("voucher"), `-${formatPrice(appliedVoucherOff, lang)} €`, selectedPill)}
+                {receiptRow(
+                  t("deliveryCosts"),
+                  subtotal >= 39 ? t("free") : `${formatPrice(5.9, lang)} €`,
+                )}
+
+                {/* Delivery method — segmented toggle */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {[
+                    { id: "home", label: t("homeDelivery"), icon: IoHomeOutline },
+                    { id: "pickup", label: t("pickupPoint"), icon: IoStorefrontOutline },
+                  ].map((opt) => (
                     <button
-                      onClick={handlePromoApply}
-                      disabled={
-                        !promoInput.trim() || !!appliedPromo || promoLoading
-                      }
-                      onMouseEnter={() => {
-                        if (promoInput.trim() && !appliedPromo)
-                          setPromoHovered(true);
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        setDeliveryMethod(opt.id);
+                        try {
+                          localStorage.setItem("checkoutDeliveryMethod", opt.id);
+                        } catch {
+                          /* ignore */
+                        }
                       }}
-                      onMouseLeave={() => setPromoHovered(false)}
-                      style={{
-                        border: "none",
-                        borderLeft: "1px solid #ddd",
-                        background:
-                          !promoInput.trim() || appliedPromo
-                            ? "#f3f3f3"
-                            : promoHovered
-                              ? "#111"
-                              : "transparent",
-                        color:
-                          !promoInput.trim() || appliedPromo
-                            ? "#aaa"
-                            : promoHovered
-                              ? "#fff"
-                              : "#111",
-                        padding: "11px 18px",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        cursor:
-                          !promoInput.trim() || appliedPromo
-                            ? "default"
-                            : "pointer",
-                        transition: "background 0.2s, color 0.2s",
-                        fontFamily:
-                          "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        minWidth: "56px",
-                      }}
+                      className={`flex items-center justify-center gap-2 py-2.5 text-[12px] font-semibold border transition-colors duration-200 cursor-pointer ${
+                        deliveryMethod === opt.id
+                          ? "bg-[#0b0b0a] border-[#0b0b0a] text-white"
+                          : "bg-white border-black/15 text-[#5c5a54] hover:border-black/40"
+                      }`}
                     >
-                      {promoLoading ? (
-                        <ButtonSpinner color={promoHovered ? "#fff" : "#111"} />
-                      ) : (
-                        t("apply")
-                      )}
+                      <opt.icon className="w-4 h-4" />
+                      {opt.label}
                     </button>
-                  </div>
-                  {promoError && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "8px",
-                        marginTop: "10px",
-                        padding: "10px 12px",
-                        background: "#fdecec",
-                        border: "1px solid #f5c6c6",
-                      }}
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        style={{ flexShrink: 0, marginTop: "1px" }}
-                      >
-                        <circle cx="12" cy="12" r="11" fill="#e02424" />
-                        <path
-                          d="M8 8l8 8M16 8l-8 8"
-                          stroke="#fff"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          color: "#c0392b",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {promoError}
-                      </span>
-                    </div>
-                  )}
-                  {appliedPromo && (
-                    <div style={{ marginTop: "10px" }}>
-                      <div
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          background: "#111",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <span
-                          style={{
-                            padding: "6px 12px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            color: "#fff",
-                            fontFamily:
-                              "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                          }}
-                        >
-                          {appliedPromo.code}
-                        </span>
-                        <span
-                          style={{
-                            display: "block",
-                            width: "1px",
-                            height: "28px",
-                            background: "rgba(255,255,255,0.25)",
-                          }}
-                        />
-                        <button
-                          onClick={handleRemovePromo}
-                          title={t("removePromoCode")}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "6px 10px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#fff",
-                          }}
-                        >
-                          <IoClose size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
+                {receiptRow(
+                  deliveryMethod === "home" ? t("homeDelivery") : t("pickupPoint"),
+                  isFreeDelivery ? t("free") : `${formatPrice(deliveryCost, lang)} €`,
+                )}
               </div>
-            </div>
-
-            {/* Voucher Accordion */}
-            <div style={{ paddingBottom: "8px" }}>
-              <button
-                onClick={() => setGiftOpen((v) => !v)}
-                style={{
-                  width: "100%",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "16px 0",
-                  fontSize: "13px",
-                  color: "#111",
-                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                }}
-              >
-                <span style={{ fontWeight: 500 }}>{t("applyVoucher")}</span>
-                <span
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: 300,
-                    display: "inline-block",
-                    transform: giftOpen ? "rotate(45deg)" : "rotate(0deg)",
-                    transition: "transform 0.3s ease",
-                  }}
-                >
-                  +
-                </span>
-              </button>
+              {/* torn-paper bottom edge */}
               <div
+                aria-hidden="true"
+                className="h-[7px]"
                 style={{
-                  maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px",
-                  overflow: "hidden",
-                  transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  backgroundImage:
+                    "linear-gradient(135deg, #fff 6px, transparent 0), linear-gradient(225deg, #fff 6px, transparent 0)",
+                  backgroundSize: "12px 12px",
+                  backgroundPosition: "left top",
+                  backgroundRepeat: "repeat-x",
                 }}
-              >
-                {isLoggedIn
-                  ? renderLoggedVoucherContent()
-                  : renderGuestVoucherContent()}
-              </div>
+              />
             </div>
           </div>
         )}
 
-        {/* Footer */}
-        <div
-          style={{
-            paddingLeft: "15px",
-            paddingRight: "15px",
-            paddingBottom: "15px",
-            borderTop: "1px solid #e5e5e5",
-            backgroundColor: "#f3f3f3",
-            flexShrink: 0,
-          }}
-        >
-          {subtotal < freeShippingThreshold && (
-            <div style={{ padding: "14px 24px 0" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "12px",
-                  color: "#555",
-                  marginBottom: "7px",
-                }}
-              >
-                <span>{t("completeForFreeShipping")}</span>
-                <span style={{ fontWeight: 600, color: "#111" }}>
+        {/* Free-shipping progress — stays visible; text flips once unlocked */}
+        <div className="shrink-0 bg-white border-t border-black/10 px-5 sm:px-6 pt-3.5 pb-3.5">
+          <div className="flex items-center justify-between gap-3 text-[12px] mb-2.5">
+            {unlocked ? (
+              <span className="flex items-center gap-1.5 font-semibold text-[#0b0b0a]">
+                <IoCheckmarkCircle className="w-4 h-4 shrink-0" />
+                {t("freeShippingUnlocked")}
+              </span>
+            ) : (
+              <>
+                <span className="text-[#5c5a54]">{t("completeForFreeShipping")}</span>
+                <span className="font-bold text-[#0b0b0a]">
                   {t("remainingAmount", {
                     amount: formatPrice(isEmpty ? 0 : remaining, lang),
                   })}
                 </span>
-              </div>
+              </>
+            )}
+          </div>
+          <div className="relative h-1.5 bg-black/10">
+            <div
+              className={`absolute left-0 top-0 h-full transition-[width] duration-500 ease-out bg-[#0b0b0a]`}
+              style={{ width: isEmpty ? "0%" : `${progressPercent}%` }}
+            />
+            <span
+              className={`absolute top-1/2 grid place-items-center w-6 h-6 -translate-y-1/2 -translate-x-1/2 bg-white border transition-[left] duration-500 ease-out border-[#0b0b0a] text-[#0b0b0a]`}
+              style={{ left: isEmpty ? "0%" : `${Math.min(progressPercent, 97)}%` }}
+            >
+              {unlocked ? <IoCheckmarkCircle className="w-3.5 h-3.5" /> : <IoCubeOutline className="w-3.5 h-3.5" />}
+            </span>
+          </div>
+        </div>
+
+        {/* Upsell strip — sits right above the checkout row */}
+        {upsellProducts.length > 0 && (
+          <div className="shrink-0 bg-white border-t border-black/10 px-5 sm:px-6 pt-3.5 pb-3.5">
+            <div className="relative overflow-hidden bg-[#f3f3f3] border-l-2 border-[#DFB400]">
               <div
+                className="flex"
                 style={{
-                  height: "4px",
-                  backgroundColor: "#e5e5e5",
-                  overflow: "hidden",
-                  marginBottom: "14px",
+                  transform: `translateX(-${upsellIndex * 100}%)`,
+                  transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
                 }}
               >
-                <div
-                  style={{
-                    height: "100%",
-                    width: isEmpty ? "0%" : `${progressPercent}%`,
-                    backgroundColor: "#111",
-                    transition: "width 0.4s ease",
-                  }}
-                />
+                {upsellProducts.map((item) => (
+                  <div key={item.id} className="pr-[76px]" style={{ minWidth: "100%" }}>
+                    <UpsellCard
+                      item={item}
+                      onAdd={handleUpsellAdd}
+                      isAdding={addingUpsellId === item.id}
+                    />
+                  </div>
+                ))}
               </div>
-            </div>
-          )}
 
-          {upsellProducts.length > 0 && (
-            <div
-              style={{
-                position: "relative",
-                padding: "0 24px",
-                marginTop: subtotal >= freeShippingThreshold ? "14px" : "0",
-              }}
-            >
-              {upsellProducts.length > 1 && upsellIndex > 0 && (
-                <button
-                  onClick={() => setUpsellIndex((i) => i - 1)}
-                  style={{
-                    position: "absolute",
-                    left: "0px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    zIndex: 5,
-                    width: "22px",
-                    height: "22px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 0,
-                  }}
-                >
-                  <MdKeyboardArrowLeft size={20} className="text-black" />
-                </button>
-              )}
-              {upsellProducts.length > 1 &&
-                upsellIndex < upsellProducts.length - 1 && (
+              {upsellProducts.length > 1 && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
-                    onClick={() => setUpsellIndex((i) => i + 1)}
-                    style={{
-                      position: "absolute",
-                      right: "0px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      zIndex: 5,
-                      width: "22px",
-                      height: "22px",
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 0,
-                    }}
+                    type="button"
+                    onClick={() => setUpsellIndex((i) => i - 1)}
+                    disabled={upsellIndex === 0}
+                    aria-label="Previous"
+                    className="grid place-items-center w-6 h-6 bg-white border border-black/10 text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
                   >
-                    <MdKeyboardArrowRight size={20} className="text-black" />
+                    <IoChevronBack size={13} />
                   </button>
-                )}
-              <div style={{ overflow: "hidden", backgroundColor: "#fff" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    transform: `translateX(-${upsellIndex * 100}%)`,
-                    transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
-                  }}
-                >
-                  {upsellProducts.map((item) => (
-                    <div key={item.id} style={{ minWidth: "100%" }}>
-                      <UpsellCard
-                        item={item}
-                        onAdd={handleUpsellAdd}
-                        isAdding={addingUpsellId === item.id}
-                      />
-                    </div>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setUpsellIndex((i) => i + 1)}
+                    disabled={upsellIndex >= upsellProducts.length - 1}
+                    aria-label="Next"
+                    className="grid place-items-center w-6 h-6 bg-white border border-black/10 text-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    <IoChevronForward size={13} />
+                  </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          <div
-            style={{
-              padding: "24px 24px 24px",
-              marginBottom: "-12px",
-              marginTop: "-10px",
-            }}
-          >
-            <button
-              onClick={isEmpty ? undefined : handleCheckout}
-              disabled={isEmpty || checkoutLoading}
-              onMouseEnter={(e) => {
-                if (!isEmpty) e.currentTarget.style.backgroundColor = "#333";
-              }}
-              onMouseLeave={(e) => {
-                if (!isEmpty)
-                  e.currentTarget.style.backgroundColor = checkoutLoading
-                    ? "#333"
-                    : "#111";
-              }}
-              style={{
-                width: "100%",
-                padding: "15px",
-                border: "none",
-                backgroundColor: isEmpty ? "#fff" : "#111",
-                color: isEmpty ? "#bbb" : "#fff",
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                cursor: isEmpty || checkoutLoading ? "default" : "pointer",
-                transition: "background 0.2s",
-                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "10px",
-              }}
-            >
-              {checkoutLoading ? (
-                <>
-                  <style>{`@keyframes checkoutSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
-                  <span
-                    style={{
-                      width: 16,
-                      height: 16,
-                      border: "2px solid rgba(255,255,255,0.4)",
-                      borderTopColor: "#fff",
-                      borderRadius: "50%",
-                      display: "inline-block",
-                      animation: "checkoutSpin 0.65s linear infinite",
-                    }}
-                  />
-                </>
-              ) : (
-                t("continueToCheckout")
               )}
-            </button>
+            </div>
           </div>
+        )}
+
+        {/* Footer — total on the left, CTA on the right */}
+        <div className="shrink-0 bg-white border-t border-black/10 px-5 sm:px-6 py-4 flex items-center gap-4">
+          <div className="min-w-0 shrink-0">
+            <p className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[#8a8880]">
+              {t("estimatedTotal")}
+            </p>
+            <p className="text-[16px] font-bold leading-tight text-[#0b0b0a] tabular-nums">
+              {formatPrice(isEmpty ? 0 : totalWithDelivery, lang)} €
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={isEmpty ? undefined : handleCheckout}
+            disabled={isEmpty || checkoutLoading}
+            className={`flex-1 inline-flex items-center justify-center gap-2.5 h-[48px] text-[12px] font-bold tracking-[0.1em] uppercase border transition-all duration-200 ${
+              isEmpty
+                ? "bg-black/[0.04] text-[#8a8880] border-black/10 cursor-default"
+                : "text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border-[#0b0b0a] hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:cursor-default disabled:translate-y-0 disabled:shadow-none"
+            }`}
+          >
+            {checkoutLoading ? (
+              <Spinner light size={16} />
+            ) : (
+              <>
+                {t("continueToCheckout")}
+                {!isEmpty && <IoArrowForward className="w-4 h-4" />}
+              </>
+            )}
+          </button>
         </div>
       </div>
 

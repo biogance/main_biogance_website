@@ -18,6 +18,7 @@
   "removePromoCode": "Supprimer le code promo",
   "applyVoucher": "Appliquer un bon d'achat",
   "completeForFreeShipping": "Complétez pour la livraison gratuite",
+  "freeShippingUnlocked": "Vous avez débloqué la livraison gratuite !",
   "remainingAmount": "{{amount}} € restants",
   "continueToCheckout": "Continuer vers le paiement",
   "enterVoucherCodePlaceholder": "Entrez le code du bon d'achat",

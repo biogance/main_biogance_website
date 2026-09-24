@@ -71,5 +71,18 @@
         "Gamme Plouf Fruité (Petit Budget)"
       ]
     }
-  ]
+  ],
+  "ourProducts": "Nos produits",
+  "collections": "Collections",
+  "shopBySpecies": "Choisir par espèce",
+  "speciesDescription": "Une gamme de soins pensée pour chaque compagnon.",
+  "featured": "À la une",
+  "addToCart": "Ajouter au panier",
+  "quickView": "Aperçu rapide",
+  "noProducts": "Aucun produit trouvé.",
+  "closeMenu": "Fermer le menu",
+  "showImage": "Afficher l'image {{n}}",
+  "productImage": "Image du produit {{n}}",
+  "couldNotAdd": "Impossible d'ajouter au panier.",
+  "somethingWrong": "Une erreur s'est produite."
 }

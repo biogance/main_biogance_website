@@ -18,6 +18,7 @@
   "removePromoCode": "Remove promo code",
   "applyVoucher": "Apply Voucher",
   "completeForFreeShipping": "Complete for free shipping",
+  "freeShippingUnlocked": "You've unlocked free shipping!",
   "remainingAmount": "{{amount}} € remaining",
   "continueToCheckout": "Continue to checkout",
   "enterVoucherCodePlaceholder": "Enter Voucher code",

@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { IoSearch, IoChevronDown } from "react-icons/io5";
+import { IoSearch, IoCheckmark, IoArrowForward, IoClose, IoChevronDown, IoGridOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { BASE_URL } from "../../API/API";
 import toast, { Toaster } from "react-hot-toast";
 import { getDeviceId } from "../../../utils/deviceId";
-import { BiLoaderAlt } from "react-icons/bi";
 import { TbLoader3 } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { startTopLoader } from "../TopLoader";
@@ -25,6 +24,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
   const [lastPage, setLastPage] = useState(1);
   const [isFetching, setIsFetching] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const dropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
   const suggestionsRef = useRef(null);
@@ -167,8 +167,9 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
   }, []);
 
   const handleCategorySelect = (cat) => {
-    setSelectedCategory(cat);
-    selectedCategoryRef.current = cat;
+    const next = selectedCategoryRef.current?.id === cat.id ? null : cat;
+    setSelectedCategory(next);
+    selectedCategoryRef.current = next;
     setIsDropdownOpen(false);
   };
 
@@ -182,7 +183,7 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
     <div
       ref={suggestionsRef}
       onScroll={handleSuggestionsScroll}
-      className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-20 overflow-y-auto max-h-72"
+      className="absolute top-full left-0 right-0 mt-2 z-30 max-h-72 overflow-y-auto bg-white border border-black/10 shadow-[0_30px_70px_-24px_rgba(0,0,0,.4)]"
     >
       {suggestions.map((s, i) => (
         <div
@@ -191,129 +192,151 @@ const SearchBar = ({ categories: categoriesProp = [], onSearchComplete }) => {
             e.preventDefault();
             handleSuggestionClick(s);
           }}
-          className="px-4 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-2"
+          className="group flex items-center gap-3 px-5 py-3.5 text-[14px] text-[#5c5a54] cursor-pointer border-b border-black/[0.06] last:border-b-0 transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white"
         >
-          <IoSearch className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          <span className="truncate">{s}</span>
+          <IoSearch className="w-3.5 h-3.5 text-[#8a8880] group-hover:text-white/60 shrink-0" />
+          <span className="flex-1 truncate">{s}</span>
+          <IoArrowForward className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 shrink-0" />
         </div>
       ))}
       {isFetching && (
-        <div className="px-4 py-3 text-sm text-gray-400 text-center">
+        <div className="flex items-center justify-center gap-2 px-4 py-3 text-[12.5px] text-[#8a8880]">
+          <TbLoader3 className="animate-spin w-4 h-4" />
           Loading...
         </div>
       )}
     </div>
   );
 
-  const searchButton = (className) => (
-    <button
-      onClick={() => handleSearch()}
-      disabled={isSearching}
-      className={`bg-black text-white cursor-pointer flex items-center justify-center disabled:cursor-not-allowed transition-colors hover:bg-gray-800 ${className}`}
-    >
-      {isSearching ? (
-        <TbLoader3 className="animate-spin w-5 h-5 text-white" />
-      ) : (
-        <IoSearch className="w-5 h-5" />
-      )}
-    </button>
-  );
-
   return (
-    <div className="p-4 md:p-8 bg-white">
+    <div className="w-full">
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-      <div className="max-w-4xl mx-auto">
-        {/* Desktop Layout */}
-        <div className="hidden md:flex gap-0">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={keyword}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-              placeholder={t("searchPlaceholder")}
-              className="w-full border border-gray-300 text-gray-700  px-4 py-3.5 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
-            />
-            {suggestionsList}
-          </div>
-          <div className="relative border-l-0" ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="appearance-none cursor-pointer border-y border border-gray-300 px-6 py-3.5 pr-12 text-sm text-gray-500 bg-white focus:outline-none focus:border-gray-400 transition-colors h-full min-w-[180px] text-left"
-            >
-              {selectedCategory?.label || t("selectCategory")}
-            </button>
-            <IoChevronDown
-              className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none transition-transform duration-200 ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
-                {categories.map((category, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleCategorySelect(category)}
-                    className="px-6 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-black hover:text-white transition-colors"
-                  >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {searchButton(" px-8 py-3.5")}
-        </div>
 
-        {/* Mobile Layout */}
-        <div className="md:hidden space-y-3">
-          <div className="flex gap-0">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={keyword}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={() =>
-                  suggestions.length > 0 && setShowSuggestions(true)
-                }
-                placeholder={t("searchPlaceholder")}
-                className="w-full border border-gray-300 text-gray-700  px-3 py-3 text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder-gray-400"
-              />
-              {suggestionsList}
+      {/* Field */}
+      <div className="relative">
+        <div
+          className={`relative flex items-center gap-3 h-14 pl-4 md:pl-5 pr-2 border transition-colors duration-300 ${
+            inputFocused ? "bg-white border-black/40 shadow-[0_20px_40px_-24px_rgba(0,0,0,.4)]" : "bg-black/[0.035] border-transparent"
+          }`}
+        >
+          <IoSearch className="w-5 h-5 text-[#0b0b0a] shrink-0" />
+          <input
+            type="text"
+            value={keyword}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              setInputFocused(true);
+              if (suggestions.length > 0) setShowSuggestions(true);
+            }}
+            onBlur={() => setInputFocused(false)}
+            placeholder={t("searchPlaceholder")}
+            className="flex-1 min-w-0 h-full text-[15px] md:text-[17px] font-medium text-[#0b0b0a] bg-transparent outline-none placeholder:text-[#8a8880] placeholder:font-normal"
+          />
+          {keyword && (
+            <button
+              type="button"
+              onClick={() => {
+                setKeyword("");
+                setSuggestions([]);
+                setShowSuggestions(false);
+              }}
+              aria-label="Clear"
+              className="shrink-0 grid place-items-center w-8 h-8 text-[#8a8880] hover:text-[#0b0b0a] hover:bg-black/[0.06] transition-colors cursor-pointer"
+            >
+              <IoClose className="w-4 h-4" />
+            </button>
+          )}
+          {categories.length > 0 && (
+            <div className="relative shrink-0 self-stretch hidden md:flex items-center border-l border-black/10 pl-2" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                aria-expanded={isDropdownOpen}
+                className="h-10 flex items-center gap-2 px-3 md:min-w-[170px] max-w-[190px] text-left cursor-pointer"
+              >
+                <IoGridOutline className="w-4 h-4 text-[#8a8880] shrink-0" />
+                <span className={`flex-1 truncate text-[13px] ${selectedCategory ? "text-[#0b0b0a] font-medium" : "text-[#8a8880]"}`}>
+                  {selectedCategory?.label || t("selectCategory")}
+                </span>
+                <IoChevronDown className={`w-4 h-4 text-[#8a8880] shrink-0 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute top-full right-0 mt-3 z-30 w-64 max-h-72 overflow-y-auto bg-white border border-black/10 shadow-[0_30px_70px_-24px_rgba(0,0,0,.4)]">
+                  {categories.map((category) => {
+                    const isSelected = selectedCategory?.id === category.id;
+                    return (
+                      <div
+                        key={category.id}
+                        onClick={() => handleCategorySelect(category)}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 text-[13.5px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${isSelected ? "bg-black/[0.04] text-[#0b0b0a] font-semibold" : "text-[#5c5a54]"}`}
+                      >
+                        <span className="truncate">{category.label}</span>
+                        {isSelected && <IoCheckmark className="w-4 h-4 shrink-0" />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            {searchButton(" px-6 py-3")}
-          </div>
-
-          <div className="relative w-full" ref={mobileDropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full appearance-none cursor-pointer border border-gray-300  px-4 py-3 pr-10 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400 transition-colors text-left"
-            >
-              {selectedCategory?.label || t("selectCategory")}
-            </button>
-            <IoChevronDown
-              className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none transition-transform duration-200 ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 mt-1  shadow-lg z-10 overflow-hidden">
-                {categories.map((category, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleCategorySelect(category)}
-                    className="px-4 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-black hover:text-white transition-colors"
-                  >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
+          )}
+          <button
+            type="button"
+            onClick={() => handleSearch()}
+            disabled={isSearching}
+            aria-label="Search"
+            className="shrink-0 grid place-items-center w-10 h-10 text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] transition-all duration-200 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:translate-y-0 disabled:shadow-none"
+          >
+            {isSearching ? (
+              <TbLoader3 className="animate-spin w-5 h-5" />
+            ) : (
+              <IoArrowForward className="w-5 h-5" />
             )}
-          </div>
+          </button>
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute left-0 bottom-0 h-[2px] bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-500 ${
+              inputFocused ? "w-full" : "w-0"
+            }`}
+          />
         </div>
+        {suggestionsList}
       </div>
+
+      {/* Small screens: the category selector sits on its own row under the field */}
+      {categories.length > 0 && (
+        <div className="md:hidden relative mt-2" ref={mobileDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            aria-expanded={isDropdownOpen}
+            className="w-full h-12 flex items-center gap-2.5 px-4 bg-white border border-black/12 text-left cursor-pointer"
+          >
+            <IoGridOutline className="w-4 h-4 text-[#8a8880] shrink-0" />
+            <span className={`flex-1 truncate text-[14px] ${selectedCategory ? "text-[#0b0b0a] font-medium" : "text-[#8a8880]"}`}>
+              {selectedCategory?.label || t("selectCategory")}
+            </span>
+            <IoChevronDown className={`w-4 h-4 text-[#8a8880] shrink-0 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-2 z-30 max-h-64 overflow-y-auto bg-white border border-black/10 shadow-[0_30px_70px_-24px_rgba(0,0,0,.4)]">
+              {categories.map((category) => {
+                const isSelected = selectedCategory?.id === category.id;
+                return (
+                  <div
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category)}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 text-[13.5px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${isSelected ? "bg-black/[0.04] text-[#0b0b0a] font-semibold" : "text-[#5c5a54]"}`}
+                  >
+                    <span className="truncate">{category.label}</span>
+                    {isSelected && <IoCheckmark className="w-4 h-4 shrink-0" />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

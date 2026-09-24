@@ -1,8 +1,13 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
-import { IoClose, IoSearch } from 'react-icons/io5';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect } from 'react';
+import {
+  IoClose,
+  IoTimeOutline,
+  IoTrendingUpOutline,
+  IoBagAddOutline,
+  IoSparklesOutline,
+} from 'react-icons/io5';
 import SearchBar from './SearchBar';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL, MEDIA_URL } from '../../API/API';
@@ -10,7 +15,9 @@ import { getDeviceId } from '../../../utils/deviceId';
 import { mergeCartItem } from '../../../utils/cartStorage';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import ModalAddToCart from './ModalAddToCart';
+import { FiShoppingCart } from 'react-icons/fi';
 
 const toCleanAmount = (val) => {
   if (typeof val === 'number') return val;
@@ -33,119 +40,81 @@ const ImageWithFallback = ({ src, alt, className, fallback = '/fallback-logo.png
   );
 };
 
-// Shimmer animation
-const shimmer = keyframes`
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-`;
+// One shimmer block — every skeleton here is built from this.
+const Bone = ({ w, h, className = '' }) => (
+  <span
+    className={`block bg-black/[0.06] ${className}`}
+    style={{ width: w, height: h, animation: 'searchShimmer 1.5s ease-in-out infinite' }}
+  />
+);
 
-// Spinner animation
-const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
+const Spinner = ({ size = 12 }) => (
+  <span
+    className="inline-block rounded-full border-2 border-white/40 border-t-white animate-spin"
+    style={{ width: size, height: size }}
+  />
+);
 
-// Base Shimmer component
-const ShimmerBase = styled.div`
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200px 100%;
-  animation: ${shimmer} 1.5s infinite;
-`;
-
-// Spinner component
-const Spinner = styled.div`
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #000000;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: ${spin} 0.8s linear infinite;
-`;
-
-// IMAGE_SIZE must match the real ProductItem image box exactly.
-// Tailwind's w-22/h-22 = 5.5rem = 88px.
 const IMG_SIZE = 88;
 
-// Loading Product Item — mirrors ProductItem DOM 1-to-1:
-// same -mx-2 px-2 py-3, same image size, same text rows, same button size.
+// Mirrors the product row 1-to-1: image box + name + price/button row.
 const LoadingProductItem = () => (
-  <div className="flex gap-4 items-start -mx-2 px-2 py-3">
-    <ShimmerBase style={{ width: IMG_SIZE, height: IMG_SIZE, flexShrink: 0 }} />
-    <div className="flex-1 min-w-0 flex flex-col justify-center">
-      {/* name — matches <h4 className="text-sm … mb-2"> line-height ~20px */}
-      <ShimmerBase style={{ width: '80%', height: 14, borderRadius: 3, marginBottom: 8 }} />
-      {/* price + button row — matches the justify-between flex row */}
+  <div className="flex gap-4 items-center p-3 bg-white">
+    <Bone w={IMG_SIZE} h={IMG_SIZE} className="shrink-0" />
+    <div className="flex-1 min-w-0">
+      <Bone w="85%" h={13} className="mb-2" />
+      <Bone w="50%" h={13} className="mb-3" />
       <div className="flex items-center justify-between gap-3">
-        <ShimmerBase style={{ width: 64, height: 14, borderRadius: 3 }} />
-        {/* button: width:90 height:30 — exact match to real button style */}
-        <ShimmerBase style={{ width: 90, height: 30, borderRadius: 0, flexShrink: 0 }} />
+        <Bone w={64} h={14} />
+        <Bone w={118} h={32} className="shrink-0" />
       </div>
     </div>
   </div>
 );
 
-// Loading Search Tags — mirrors SearchTags DOM 1-to-1:
-// same mb-8, same h3 text-sm font-medium mb-4, same px-4 py-2 buttons.
 const LoadingSearchTags = () => (
-  <div className="mb-8 max-w-4xl mx-auto">
-    {/* label — matches <h3 className="text-sm font-medium text-gray-800 mb-4"> */}
-    <ShimmerBase style={{ width: 140, height: 14, borderRadius: 3, marginBottom: 16 }} />
+  <div>
+    <Bone w={130} h={11} className="mb-3" />
     <div className="flex flex-wrap gap-2">
-      {[72, 72, 72, 72, 72, 72, 72, 72, 72, 72].map((w, i) => (
-        // px-4 py-2 on text-sm = ~36px tall, variable width
-        <ShimmerBase key={i} style={{ width: w, height: 36, borderRadius: 0 }} />
+      {[84, 96, 72, 90, 78, 100, 70, 88].map((w, i) => (
+        <Bone key={i} w={w} h={32} />
       ))}
     </div>
   </div>
 );
 
-const SearchTags = ({ items, label, onSelect }) => (
-  <div className="mb-8 max-w-4xl mx-auto">
-    <h3 className="text-sm font-medium text-gray-800 mb-4">{label}</h3>
-    <div className="flex flex-wrap gap-2">
-      {items.map((item, index) => {
-        const words = item.trim().split(/\s+/);
-        const displayText = words.length > 2 ? words.slice(0, 2).join(' ') + '...' : item;
-
-        return (
-          <button
-            key={index}
-            type="button"
-            onClick={() => onSelect?.(item)}
-            title={item}
-            className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300  text-gray-700 text-sm hover:bg-gray-200 transition-colors"
-          >
-            {displayText}
-          </button>
-        );
-      })}
-
-      {/* {items.map((item, index) => {
-  const displayText = item.length > 20 ? item.slice(0, 20) + '...' : item;
-
+const SearchTags = ({ items, label, recent, onSelect }) => {
+  const Icon = recent ? IoTimeOutline : IoTrendingUpOutline;
   return (
-    <button
-      key={index}
-      title={item}
-      className="px-4 py-2 cursor-pointer bg-transparent border border-gray-300 rounded-4xl text-gray-700 text-sm hover:bg-gray-200 transition-colors"
-    >
-      {displayText}
-    </button>
-  );
-})} */}
-    </div>
-  </div>
-);
+    <div>
+      <h3 className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase text-[#8a8880] mb-3">
+        <Icon className="w-3.5 h-3.5" />
+        {label}
+      </h3>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item, index) => {
+          const words = item.trim().split(/\s+/);
+          const displayText = words.length > 2 ? words.slice(0, 2).join(' ') + '...' : item;
 
-const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
+          return (
+            <button
+              key={index}
+              type="button"
+              onClick={() => onSelect?.(item)}
+              title={item}
+              className="group inline-flex items-center gap-1.5 h-8 px-3.5 bg-black/[0.045] text-[#3a3835] text-[12.5px] font-medium transition-colors duration-200 hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
+            >
+              <span className="text-[#8a8880] font-bold group-hover:text-white/60">#</span>
+              {displayText}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ProductItem = ({ product, index, onNavigate, onAddedToCart }) => {
   const { t, i18n } = useTranslation('searchmodal');
   const firstImage = product.products?.[0]?.images?.[0];
   const imageUrl = firstImage ? `${MEDIA_URL}${firstImage.media}` : null;
@@ -201,52 +170,51 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
   return (
     <div
       onClick={() => onNavigate(slug || product.id)}
-      className="flex gap-4 items-start hover:bg-gray-50 -mx-2 px-2 py-3 transition-colors cursor-pointer">
-      <div className="bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative" style={{ width: IMG_SIZE, height: IMG_SIZE }}>
+      className="group flex gap-4 items-center p-3 bg-white border border-black/[0.06] hover:border-black/25 transition-[border-color,box-shadow] duration-300 hover:shadow-[0_22px_44px_-28px_rgba(0,0,0,.4)] cursor-pointer"
+    >
+      <div className="relative bg-[#f3f3f3] overflow-hidden shrink-0" style={{ width: IMG_SIZE, height: IMG_SIZE }}>
         {!imageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#f3f3f3', zIndex: 1 }}>
-            <div style={{
-              width: 22,
-              height: 22,
-              borderRadius: '50%',
-              border: '3px solid #aaa',
-              borderTopColor: 'transparent',
-              animation: 'lcSpin 0.75s linear infinite',
-            }} />
+          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f3f3f3]">
+            <span className="w-5 h-5 rounded-full border-[3px] border-black/25 border-t-transparent animate-spin" />
           </div>
         )}
         {imageUrl ? (
           <ImageWithFallback
             src={imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full bg-gray-100" />
+          <div className="w-full h-full bg-[#f3f3f3]" />
         )}
+        <span className="absolute top-0 left-0 z-[2] px-1.5 py-0.5 bg-[#0b0b0a] text-white text-[10px] font-semibold tabular-nums">
+          {String(index).padStart(2, '0')}
+        </span>
       </div>
+
       <div className="flex-1 min-w-0 flex flex-col justify-center">
-        <h4 className="text-sm font-normal text-gray-800 mb-2">{displayName}</h4>
+        <h4 className="text-[13px] font-semibold leading-snug text-[#0b0b0a] line-clamp-2 mb-2.5">{displayName}</h4>
         <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-1.5 text-sm text-gray-900">
-            <span className="font-semibold">{formatPrice(price, i18n.language)} €</span>
+          <span className="flex items-baseline gap-1.5 text-[#0b0b0a] min-w-0">
+            <span className="text-[13.5px] font-bold tabular-nums">{formatPrice(price, i18n.language)} €</span>
             {variant?.size_name && (
-              <span className="text-xs text-gray-500">· {variant.size_name}</span>
+              <span className="text-[11.5px] text-[#8a8880] truncate">· {variant.size_name}</span>
             )}
           </span>
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={adding}
-            className="shrink-0 relative  border border-gray-900 text-[11px] font-medium uppercase tracking-wider text-gray-900 cursor-pointer transition-colors hover:bg-gray-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ width: 95, height: 30 }}
+            className="shrink-0 relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.06em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] cursor-pointer transition-all duration-200 hover:shadow-[0_14px_28px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-70 disabled:translate-y-0 disabled:shadow-none"
+            style={{ width: 118, height: 32 }}
           >
-            <span style={{ visibility: adding ? 'hidden' : 'visible' }}>
+            <span className="inline-flex items-center gap-1.5" style={{ visibility: adding ? 'hidden' : 'visible' }}>
+              <FiShoppingCart className="w-3.5 h-3.5" />
               {t('addToCart', { defaultValue: 'Add to Cart' })}
             </span>
             {adding && (
               <span className="absolute inset-0 flex items-center justify-center">
-                <Spinner style={{ width: 12, height: 12 }} />
+                <Spinner size={13} />
               </span>
             )}
           </button>
@@ -257,28 +225,36 @@ const ProductItem = ({ product, onNavigate, onAddedToCart }) => {
 };
 
 const ProductList = ({ title, products, isLoading, onNavigate, onAddedToCart }) => (
-  <div>
+  <section>
     {/* Title always rendered so shimmer and real layout occupy identical vertical space */}
-    <h3 className="text-lg font-semibold mb-6 text-gray-900">
-      {isLoading ? <ShimmerBase style={{ width: 120, height: 18, borderRadius: 3, display: 'inline-block' }} /> : title}
-    </h3>
-    <div className="space-y-5">
+    <div className="flex items-center gap-3 mb-4">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#0b0b0a] shrink-0" />
+      <h3 className="text-[13px] font-bold uppercase tracking-[0.1em] text-[#0b0b0a]">
+        {isLoading ? <Bone w={120} h={14} /> : title}
+      </h3>
+      <span className="flex-1 h-px bg-black/10" />
+      {!isLoading && products.length > 0 && (
+        <span className="text-[11px] font-semibold text-[#8a8880] tabular-nums">{products.length}</span>
+      )}
+    </div>
+    <div className="flex flex-col gap-3">
       {isLoading ? (
         Array.from({ length: 3 }).map((_, index) => (
           <LoadingProductItem key={index} />
         ))
       ) : (
-        products.map((product) => (
+        products.map((product, i) => (
           <ProductItem
             key={product.id}
             product={product}
+            index={i + 1}
             onNavigate={onNavigate}
             onAddedToCart={onAddedToCart}
           />
         ))
       )}
     </div>
-  </div>
+  </section>
 );
 
 export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
@@ -289,6 +265,7 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [searchTags, setSearchTags] = useState([]);
   const [searchTagsLabel, setSearchTagsLabel] = useState('');
+  const [searchTagsRecent, setSearchTagsRecent] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleNavigate = (slug) => {
@@ -300,6 +277,15 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
     onClose();
     router.push(`/shop?source=search&q=${encodeURIComponent(term)}`);
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -322,9 +308,11 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
             const recent = data.data.recent || [];
             if (recent.length > 0) {
               setSearchTags(recent);
+              setSearchTagsRecent(true);
               setSearchTagsLabel(t('recentSearch'));
             } else {
               setSearchTags(data.data.trending || []);
+              setSearchTagsRecent(false);
               setSearchTagsLabel(t('trendingSearch', { defaultValue: 'Trending Searches' }));
             }
           } else {
@@ -352,39 +340,76 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
           }
-          @keyframes lcSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
+          @keyframes searchShimmer { 0%, 100% { opacity: .4; } 50% { opacity: .9; } }
         `}
       </style>
+
       <div className="w-full h-full overflow-y-auto relative hide-scrollbar">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-           className="absolute top-2 right-4 p-1.5 text-black hover:text-gray-600 hover:bg-gray-100 z-10 cursor-pointer transition-all duration-300 hover:rotate-90"
-        >
-          <IoClose className="w-7 h-7" />
-        </button>
+        {/* Top bar — logo centred, ESC on the right */}
+        <div className="sticky top-0 z-20 grid grid-cols-[1fr_auto_1fr] items-center px-4 md:px-8 h-16 md:h-[72px] bg-white/90 backdrop-blur border-b border-black/[0.06]">
+          <span aria-hidden="true" />
+          <Link
+            href="/"
+            onClick={onClose}
+            className="flex-shrink-0 cursor-pointer flex items-center"
+          >
+            <ImageWithFallback
+              src="/logo.svg"
+              alt="Biogance Logo"
+              className="h-7 sm:h-10"
+            />
+          </Link>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="inline-flex items-center gap-2 h-7 pl-1.5 pr-1.5 border border-black/12 text-[11px] font-semibold tracking-[0.08em] text-[#5c5a54] bg-white hover:bg-[#0b0b0a] hover:text-white hover:border-[#0b0b0a] transition-colors cursor-pointer"
+            >
+             
+              <IoClose className="w-[18px] h-[18px]" />
+            </button>
+          </div>
+        </div>
 
-        {/* Content */}
-        <div className="p-8">
-          {/* Search Bar */}
-          <SearchBar
-            key={isOpen ? 'open' : 'closed'}
-            categories={categories}
-            onSearchComplete={onClose}
-          />
+        {/* Search section — white */}
+        <section className="relative bg-white px-4 md:px-8 pt-8 md:pt-6 pb-8 md:pb-10">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8">
+              <h2 className="text-[28px] sm:text-[34px] md:text-[46px] font-extrabold leading-[1.06] tracking-[-0.03em] text-[#0b0b0a]">
+                {t('searchHeading1')}
+                <br />
+                <span className="text-black/30">{t('searchHeading2')}</span>
+              </h2>
+              <p className="mt-3 md:mt-4 px-2 sm:px-0 text-[13.5px] md:text-[15px] leading-relaxed text-[#8a8880]">
+                {t('searchDescription')}
+              </p>
+            </div>
 
-          {/* Recent or Trending Searches */}
-          {isLoading ? (
-            <LoadingSearchTags />
-          ) : searchTags.length > 0 && (
-            <SearchTags items={searchTags} label={searchTagsLabel} onSelect={handleTagSearch} />
-          )}
+            <SearchBar
+              key={isOpen ? 'open' : 'closed'}
+              categories={categories}
+              onSearchComplete={onClose}
+            />
 
-          {/* Products Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="mt-8">
+              {isLoading ? (
+                <LoadingSearchTags />
+              ) : searchTags.length > 0 && (
+                <SearchTags
+                  items={searchTags}
+                  label={searchTagsLabel}
+                  recent={searchTagsRecent}
+                  onSelect={handleTagSearch}
+                />
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Products — carousels on a grey canvas */}
+        <section className="bg-[#f3f3f3] px-4 md:px-8 py-10 md:py-12 min-h-[40vh]">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
             <ProductList
               title={t('popularProducts')}
               products={popularProducts}
@@ -400,7 +425,7 @@ export const SearchModal = ({ isOpen, onClose, categories = [] }) => {
               onAddedToCart={() => setIsCartOpen(true)}
             />
           </div>
-        </div>
+        </section>
       </div>
 
       <ModalAddToCart

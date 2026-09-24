@@ -71,5 +71,18 @@
         "Plouf Fruity Range (Low Budget)"
       ]
     }
-  ]
+  ],
+  "ourProducts": "Our products",
+  "collections": "Collections",
+  "shopBySpecies": "Shop by species",
+  "speciesDescription": "A care range designed for every companion.",
+  "featured": "Featured",
+  "addToCart": "Add to cart",
+  "quickView": "Quick view",
+  "noProducts": "No products found.",
+  "closeMenu": "Close menu",
+  "showImage": "Show image {{n}}",
+  "productImage": "Product image {{n}}",
+  "couldNotAdd": "Could not add to cart.",
+  "somethingWrong": "Something went wrong."
 }

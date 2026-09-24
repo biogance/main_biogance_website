@@ -86,13 +86,13 @@ const initialsOf = (name) =>
 function NavIcon({ item, active, dark = false }) {
   if (item.Icon) return <item.Icon className="w-[17px] h-[17px] shrink-0" />;
   // /public SVGs are black; flip to white on the dark panel unless the row is
-  // the (white) active one.
+  // the active one.
   return (
     <img
       src={item.img}
       alt=""
       className={`w-[17px] h-[17px] shrink-0 brightness-0 transition-[filter,opacity] duration-300 ${
-        dark && !active ? "invert opacity-70" : ""
+        dark ? (active ? "invert" : "invert opacity-70") : ""
       }`}
     />
   );
@@ -132,7 +132,7 @@ function UserCard({ user, t }) {
   );
 }
 
-// The list of sections. A single white block slides between rows to mark the
+// The list of sections. A single white-bordered box slides between rows to mark the
 // active one (positioned by writing to the DOM directly — no re-renders).
 function NavList({ activeItem, onSelect, t }) {
   const navRef = useRef(null);
@@ -168,7 +168,7 @@ function NavList({ activeItem, onSelect, t }) {
       <span
         ref={hlRef}
         aria-hidden="true"
-        className="absolute left-0 right-0 top-0 bg-white opacity-0 transition-[transform,height,opacity] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]"
+        className="absolute left-0 right-0 top-0 border border-white box-border opacity-0 transition-[transform,height,opacity] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]"
       />
       {ACCOUNT_NAV.map((group) => (
         <div key={group.id} className="mt-6 first:mt-0">
@@ -189,7 +189,7 @@ function NavList({ activeItem, onSelect, t }) {
                     onClick={() => onSelect(item.key)}
                     aria-current={active ? "page" : undefined}
                     className={`group relative w-full h-12 px-4 flex items-center gap-3.5 bg-transparent border-0 cursor-pointer text-[14px] tracking-[0.01em] transition-colors duration-300 ${
-                      active ? "text-[#0b0b0a] font-semibold" : "text-white/75 font-normal hover:text-white hover:bg-white/[0.06]"
+                      active ? "text-white font-semibold" : "text-white/75 font-normal hover:text-white hover:bg-white/[0.06]"
                     }`}
                   >
                     <NavIcon item={item} active={active} dark />
