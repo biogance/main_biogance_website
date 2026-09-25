@@ -40,13 +40,16 @@ const LandingBanner = ({ data }) => {
     // Gallery strip — images separated by 1px ink gaps, grayscale until
     // hovered, index number pinned to each frame's corner.
     <div className="w-full overflow-hidden bg-[#0c0c0c]">
-      <div className="grid gap-px h-48 md:h-64 lg:h-[26rem]" style={gridStyle}>
+      <div
+        className="flex md:grid gap-px h-56 md:h-64 lg:h-[26rem] overflow-x-auto md:overflow-visible snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={gridStyle}
+      >
         {isLoading
           ? Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="relative overflow-hidden bg-[#1c1c1b] animate-pulse" />
+              <div key={index} className="relative shrink-0 w-[70%] sm:w-[40%] md:w-auto overflow-hidden bg-[#1c1c1b] animate-pulse" />
             ))
           : imageList.map((src, index) => (
-          <div key={index} className="group relative overflow-hidden bg-[#1c1c1b]">
+          <div key={index} className="group relative shrink-0 w-[70%] sm:w-[40%] md:w-auto snap-start overflow-hidden bg-[#1c1c1b]">
             <Image
               src={src}
               alt={`Blog ${index + 1}`}
@@ -89,7 +92,7 @@ const LandingBanner = ({ data }) => {
             <button
               onClick={() => setSelectedImage(null)}
               aria-label="Close"
-              className="absolute -top-11 right-0 z-10 cursor-pointer w-9 h-9 grid place-items-center border border-white/60 text-white hover:bg-white hover:text-black transition-colors duration-200"
+              className="absolute top-2 right-2 bg-black/50 z-10 cursor-pointer w-9 h-9 grid place-items-center border border-white/60 text-white hover:bg-white hover:text-black transition-colors duration-200"
             >
               <FiX size={18} />
             </button>

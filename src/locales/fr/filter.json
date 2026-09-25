@@ -153,5 +153,18 @@
     "whyBody": "Les mauvais produits peuvent provoquer inconfort, sécheresse ou irritation. Utiliser une routine adaptée à votre animal contribue à son confort tout en soutenant son bien-être général.",
     "whenTitle": "Quand appliquer cette routine ?",
     "whenBody": "Pour de meilleurs résultats, restez constant tout au long de l'année et suivez l'usage recommandé sur le produit choisi, en l'ajustant selon l'évolution des besoins de votre animal."
-  }
+  },
+  "productsCount": "produits",
+  "readMore": "Lire la suite",
+  "readLess": "Réduire",
+  "activeFilters": "Actifs",
+  "fromJournal": "Du journal",
+  "refine": "Affiner",
+  "showingOf": "{{shown}} sur {{total}} affichés",
+  "pickUpWhereYouLeft": "Reprenez là où vous vous êtes arrêté",
+  "clear": "Effacer",
+  "inThisEdit": "Dans cette sélection",
+  "speciesLabel": "Espèces",
+  "rangesLabel": "Gammes",
+  "rangesCount": "{{count}} gammes"
 }

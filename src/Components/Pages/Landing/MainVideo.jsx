@@ -432,7 +432,7 @@ export default function HeroSection() {
         <div
           ref={videoSectionRef}
           data-intro="wait"
-          className="relative w-full bg-[#0b0b0a] text-white overflow-hidden h-screen min-h-[640px]"
+          className="relative w-full bg-[#0b0b0a] text-white overflow-hidden h-svh min-h-[600px] max-[374px]:min-h-[660px]"
           style={{ fontFamily: HERO_FONT }}
         >
           <link
@@ -528,13 +528,13 @@ export default function HeroSection() {
           </div>
 
           {/* Corner frame marks — viewfinder feel */}
-          <div className="hidden sm:block absolute inset-x-0 top-0 h-screen min-h-[640px] z-[2] pointer-events-none">
+          <div className="hidden sm:block absolute inset-x-0 top-0 h-svh min-h-[600px] max-[374px]:min-h-[660px] z-[2] pointer-events-none">
             <span className="absolute left-[clamp(20px,2.4vw,46px)] top-[112px] w-5 h-5 border-t border-l border-white/50" />
             <span className="absolute right-[clamp(20px,2.4vw,46px)] top-[112px] w-5 h-5 border-t border-r border-white/50" />
           </div>
 
           {/* Big outlined wordmark — set on the diagonal (bottom-left → top-right), counter-drifting */}
-          <div className="absolute inset-x-0 top-0 h-screen min-h-[640px] z-[2] pointer-events-none overflow-hidden grid place-items-center">
+          <div className="absolute inset-x-0 top-0 h-svh min-h-[600px] max-[374px]:min-h-[660px] z-[2] pointer-events-none overflow-hidden grid place-items-center">
             <span
               aria-hidden="true"
               className="hv-anim select-none leading-[0.8] tracking-[-0.05em] font-extralight uppercase text-[clamp(64px,14vw,230px)] whitespace-nowrap"
@@ -551,7 +551,7 @@ export default function HeroSection() {
 
           {/* ── 3 · Copy — left, vertically centered ── */}
           <div
-            className="hv-anim relative z-10 self-start h-screen min-h-[640px] flex items-center px-5 sm:px-8 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-[100px] pb-[92px] sm:pb-[104px]"
+            className="hv-anim relative z-10 self-start h-svh min-h-[600px] max-[374px]:min-h-[660px] flex items-center px-5 sm:px-8 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-[100px] pb-[92px] sm:pb-[104px]"
             style={{
               transform: "translate3d(0, calc(var(--sp, 0) * -70px), 0)",
               opacity: "calc(1 - var(--sp, 0) * 1.25)",
@@ -560,21 +560,21 @@ export default function HeroSection() {
             <div className="w-full max-w-[640px]">
               {/* Tagline chip */}
               <div
-                className="hv-anim inline-flex items-center gap-2.5 border border-white/30 px-3 py-1.5 mb-4 md:mb-6 backdrop-blur-sm bg-white/[0.04]"
+                className="hv-anim inline-flex items-center gap-2.5 border border-white/30 px-3.5 py-2 sm:px-3 sm:py-1.5 mb-5 md:mb-6 backdrop-blur-sm bg-white/[0.04]"
                 style={{ animation: "hvFade .9s cubic-bezier(.2,.7,.2,1) 1.2s both" }}
               >
                 <span className="w-1.5 h-1.5 bg-white" style={{ animation: "hvPulse 2s ease-in-out infinite" }} />
-                <p className="m-0 text-[8px] sm:text-[9px] font-medium tracking-[0.26em] uppercase text-white/90">
+                <p className="m-0 text-[10px] sm:text-[9px] font-medium tracking-[0.24em] sm:tracking-[0.26em] uppercase text-white/90">
                   {heroContent.tagline}
                 </p>
               </div>
 
               {/* Headline — word-by-word mask rise, serif-italic closing word */}
               <h1
-                className={`m-0 mb-5 md:mb-7 ${
+                className={`m-0 mb-6 md:mb-7 ${
                   isFrench
-                    ? "text-[clamp(24px,7vw,32px)] sm:text-[clamp(32px,4vw,44px)] lg:text-[clamp(36px,3.4vw,56px)]"
-                    : "text-[clamp(28px,8.2vw,38px)] sm:text-[clamp(38px,4.8vw,54px)] lg:text-[clamp(44px,4vw,66px)]"
+                    ? "text-[clamp(30px,9vw,40px)] sm:text-[clamp(32px,4vw,44px)] lg:text-[clamp(36px,3.4vw,56px)]"
+                    : "text-[clamp(36px,11vw,48px)] sm:text-[clamp(38px,4.8vw,54px)] lg:text-[clamp(44px,4vw,66px)]"
                 } uppercase font-extralight leading-[1] tracking-[-0.035em] text-white`}
               >
                 {headingWords.map((word, i) => {
@@ -602,21 +602,21 @@ export default function HeroSection() {
 
               {/* Description with a drawn hairline */}
               <div
-                className="hv-anim flex items-start gap-4 sm:gap-5 mb-6 md:mb-8"
+                className="hv-anim flex items-start gap-4 sm:gap-5 mb-7 md:mb-8"
                 style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.7s both" }}
               >
                 <span
                   className="hidden sm:block w-px h-[54px] bg-white/45 shrink-0"
                   style={{ animation: "hvGrowY 1.2s cubic-bezier(.2,.7,.2,1) 1.8s both", transformOrigin: "top" }}
                 />
-                <p className="m-0 max-w-[400px] text-[12px] sm:text-[13px] leading-[1.75] font-light text-white/80 line-clamp-4 sm:line-clamp-none">
+                <p className="m-0 max-w-[400px] text-[17px] sm:text-[14px] leading-[1.75] font-light text-white/80 line-clamp-4 sm:line-clamp-none">
                   {heroContent.description}
                 </p>
               </div>
 
               {/* CTAs */}
               <div
-                className="hv-anim flex flex-col sm:flex-row sm:items-stretch gap-2.5 sm:gap-3"
+                className="hv-anim flex flex-col sm:flex-row sm:items-stretch gap-3"
                 style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.9s both" }}
               >
                 <button
@@ -625,17 +625,17 @@ export default function HeroSection() {
                   className="group relative overflow-hidden flex items-stretch text-[#0b0b0a] cursor-pointer border border-white/50 shadow-[0_16px_38px_-18px_rgba(255,255,255,.55)] transition-transform duration-300 ease-out"
                 >
                   <span className="hv-btn-sheen pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/70 transition-transform duration-[900ms] ease-out" />
-                  <span className="relative flex-1 px-6 sm:px-7 min-h-[46px] sm:min-h-[50px] flex items-center justify-center whitespace-nowrap uppercase text-[9px] sm:text-[10px] tracking-[0.22em] font-semibold">
+                  <span className="relative flex-1 px-4 min-[375px]:px-6 sm:px-7 min-h-[54px] sm:min-h-[50px] flex items-center justify-center whitespace-nowrap uppercase text-[10.5px] min-[375px]:text-[11.5px] sm:text-[10px] tracking-[0.16em] min-[375px]:tracking-[0.22em] font-semibold">
                     {t("hero.shopNow")}
                   </span>
-                  <span className="relative grid place-items-center w-[46px] sm:w-[50px] bg-[#0b0b0a] text-white text-[14px] transition-colors duration-500 group-hover:bg-[#2a2a28]">
+                  <span className="relative shrink-0 grid place-items-center w-[54px] sm:w-[50px] bg-[#0b0b0a] text-white text-[17px] sm:text-[14px] transition-colors duration-500 group-hover:bg-[#2a2a28]">
                     <span>→</span>
                   </span>
                 </button>
 
                 <button
                   onClick={scrollToFinder}
-                                                      className="group relative overflow-hidden min-h-[46px] sm:min-h-[50px] px-6 sm:px-7 border border-white/40 text-white hover:text-[#0b0b0a] inline-flex items-center justify-center gap-3 whitespace-nowrap uppercase text-[9px] sm:text-[10px] tracking-[0.22em] font-semibold cursor-pointer transition-[color,transform] duration-300 ease-out"
+                                                      className="group relative overflow-hidden min-h-[54px] sm:min-h-[50px] px-6 sm:px-7 border border-white/40 text-white hover:text-[#0b0b0a] inline-flex items-center justify-center gap-3 whitespace-nowrap uppercase text-[10.5px] min-[375px]:text-[11.5px] sm:text-[10px] tracking-[0.16em] min-[375px]:tracking-[0.2em] sm:tracking-[0.22em] font-semibold cursor-pointer transition-[color,transform] duration-300 ease-out"
                 >
                   <span className="absolute inset-0 bg-white -translate-x-full transition-transform duration-500 ease-out group-hover:translate-x-0" />
                   <span className="relative">{t("hero.discover")}</span>
@@ -646,7 +646,7 @@ export default function HeroSection() {
           </div>
 
           {/* ── 4 · Ticker rail + rotating badge, pinned to the first viewport's bottom ── */}
-          <div className="absolute inset-x-0 top-0 h-screen min-h-[640px] z-10 pointer-events-none">
+          <div className="absolute inset-x-0 top-0 h-svh min-h-[600px] max-[374px]:min-h-[660px] z-10 pointer-events-none">
             <div className="absolute inset-x-0 bottom-0 border-t border-white/20 bg-[#0b0b0a]/35 backdrop-blur-md">
               <div className="overflow-hidden py-3 sm:py-4 text-[9px] sm:text-[10px] font-light tracking-[0.3em] uppercase text-white/80">
                 <div

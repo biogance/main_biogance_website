@@ -4,14 +4,29 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { FaInstagram } from "react-icons/fa";
+import { FaInstagram, FaApple } from "react-icons/fa";
 import { FiMail, FiPhone, FiMapPin, FiCheck } from "react-icons/fi";
 import {
   SlSocialFacebook,
   SlSocialLinkedin,
   SlSocialYoutube,
 } from "react-icons/sl";
-import { PiXLogo } from "react-icons/pi";
+import {
+  PiXLogo,
+  PiDogFill,
+  PiCatFill,
+  PiHorseFill,
+  PiRabbitFill,
+  PiBirdFill,
+  PiPawPrintFill,
+  PiPackageFill,
+  PiHandshakeFill,
+  PiFlaskFill,
+  PiNewspaperFill,
+  PiAddressBookFill,
+  PiShareNetworkFill,
+} from "react-icons/pi";
+import { GiTurtle } from "react-icons/gi";
 import { BsTiktok } from "react-icons/bs";
 import ContactUs from "./Onboarding/ContactUs";
 import AppLaunchModal from "./AppLaunchModal";
@@ -62,7 +77,9 @@ export default function Footer() {
       if (res.data.status === false) {
         setNewsletterStatus("idle");
         toast.error(
-          res.data.action_message || res.data.action || "Something went wrong. Please try again.",
+          res.data.action_message ||
+            res.data.action ||
+            "Something went wrong. Please try again.",
         );
       } else {
         setNewsletterStatus("success");
@@ -143,6 +160,14 @@ export default function Footer() {
         (universe.sub_categories || []).filter((s) => s.type === "family"),
       );
 
+  // Splits the API categories into the two footer columns: dogs/cats (and
+  // their young) under "Pet care by species", everything else under
+  // "More animals".
+  const isSpecies = (category) =>
+    /dog|pupp|cat|kitten|chien|chiot|chat/i.test(category?.name || "");
+  const speciesCategories = (apiCategories || []).filter(isSpecies);
+  const otherCategories = (apiCategories || []).filter((c) => !isSpecies(c));
+
   // Get arrays from translation
   const dogsItems = t("categories.dogs.items", { returnObjects: true });
   const catsItems = t("categories.cats.items", { returnObjects: true });
@@ -157,638 +182,422 @@ export default function Footer() {
   const productRangesItems = t("productRanges.items", { returnObjects: true });
   const laboratoryItems = t("laboratory.items", { returnObjects: true });
   const professionalItems = t("professional.items", { returnObjects: true });
-  const ambassadorItems = t("ambassador.items", { returnObjects: true });
   const newsItems = t("news.items", { returnObjects: true });
 
+  const bioganceSocials = [
+    {
+      href: "https://www.facebook.com/bioganceofficiel/",
+      label: "Facebook",
+      Icon: SlSocialFacebook,
+    },
+    {
+      href: "https://www.instagram.com/bioganceofficiel/?hl=en",
+      label: "Instagram",
+      Icon: FaInstagram,
+    },
+    {
+      href: "https://www.youtube.com/channel/UCo-KLXCLV10LTMilyd-y7aQ",
+      label: "YouTube",
+      Icon: SlSocialYoutube,
+    },
+    {
+      href: "https://www.linkedin.com/company/biogance/",
+      label: "LinkedIn",
+      Icon: SlSocialLinkedin,
+    },
+    { href: "https://x.com/BIOGANCE", label: "X", Icon: PiXLogo },
+    {
+      href: "https://www.tiktok.com/@bioganceofficiel",
+      label: "TikTok",
+      Icon: BsTiktok,
+    },
+  ];
+  const ekinatSocials = [
+    {
+      href: "https://www.facebook.com/Ekinatofficiel",
+      label: "Facebook",
+      Icon: SlSocialFacebook,
+    },
+    {
+      href: "https://www.instagram.com/ekinatofficiel/?hl=fr",
+      label: "Instagram",
+      Icon: FaInstagram,
+    },
+    {
+      href: "https://www.tiktok.com/@ekinatofficiel?_t=8m2Ye0GqQDo&_r=1",
+      label: "TikTok",
+      Icon: BsTiktok,
+    },
+  ];
+
+  const staticSpecies = [
+    { title: t("categories.dogs.title"), items: dogsItems },
+    { title: t("categories.cats.title"), items: catsItems },
+  ];
+  const staticMoreAnimals = [
+    { title: t("categories.smallMammals.title"), items: smallMammalsItems },
+    { title: t("categories.birdsPoultry.title"), items: birdsPoultryItems },
+    { title: t("categories.horses.title"), items: horsesItems },
+    { title: t("categories.reptiles.title"), items: reptilesItems },
+  ];
+
+  const renderCategoryGroups = (categories) =>
+    categories.map((category) => (
+      <FooterGroup
+        key={category.id}
+        title={getName(category)}
+        icon={speciesIcon(category.name)}
+      >
+        {getFamilies(category).map((fam) => (
+          <FooterItem key={fam.id}>
+            <button
+              type="button"
+              onClick={() =>
+                goToShop({
+                  type: "family",
+                  category_id: category.id,
+                  family_name: fam.name,
+                })
+              }
+              className="text-left cursor-pointer"
+            >
+              {getName(fam)}
+            </button>
+          </FooterItem>
+        ))}
+      </FooterGroup>
+    ));
+
+  // Falls back to the static translation lists until splashData's
+  // categories have loaded.
+  const renderStaticGroups = (groups) =>
+    groups.map((group) => (
+      <FooterGroup
+        key={group.title}
+        title={group.title}
+        icon={speciesIcon(group.title)}
+      >
+        {(Array.isArray(group.items) ? group.items : []).map((item, index) => (
+          <FooterItem key={index}>
+            <a href="#">{item}</a>
+          </FooterItem>
+        ))}
+      </FooterGroup>
+    ));
+
+  const laboratoryLinks = [
+    { href: "/our-laboratory", label: laboratoryItems[0] },
+    { href: "/our-laboratory#commitments", label: laboratoryItems[1] },
+    { href: "/our-laboratory#proofs", label: laboratoryItems[2] },
+    { href: "/advices", label: laboratoryItems[3] },
+    { href: "/ingredients", label: laboratoryItems[4] },
+    { href: "/breed-guide", label: laboratoryItems[5] },
+    { href: "/loyalty", label: laboratoryItems[6] },
+  ];
+
+  const hasApiCategories = apiCategories && apiCategories.length > 0;
+  const bottomLinkClass = "hover:text-black transition-colors";
+
   return (
-    <footer className="bg-[#2a2a2a] text-white">
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-          {/* Left Column - Logo & Contact */}
-          <div className="lg:col-span-3 space-y-6 p-8 lg:pr-6">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img src="/logo2.svg" alt="Biogance Logo" />
-            </div>
+    <footer className="bg-[#1c1c1c] text-[#f3f3f3]">
+      <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[370px_1fr]">
+        {/* Brand, contact & socials */}
+        <div className="bg-[#1c1c1c] text-[#f3f3f3] border-b lg:border-b-0 lg:border-r border-white/10 px-4 sm:px-6 lg:px-8 xl:px-12 py-10">
+          <img src="/logo2.svg" alt="Biogance Logo" className="h-9 w-auto" />
+          {apiFooterDescription ? (
+            <p
+              className="mt-4 text-[12.5px] text-[#e7e7e5]/65 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: apiFooterDescription }}
+            />
+          ) : (
+            <p className="mt-4 text-[12.5px] text-[#e7e7e5]/65 leading-relaxed">
+              {t("company.description")}
+            </p>
+          )}
 
-            {apiFooterDescription ? (
-              <p
-                className="text-sm text-gray-300 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: apiFooterDescription }}
-              />
-            ) : (
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {t("company.description")}
+          {/* Contact Info — address opens Google Maps, email opens a
+              Gmail compose tab, phone opens the device's dialer. */}
+          <h3 className="mt-6 flex items-center gap-2.5 text-[14.5px] font-semibold">
+            <PiAddressBookFill className="w-[18px] h-[18px] flex-shrink-0" />
+            {t("company.contactTitle")}
+          </h3>
+          <ul className="mt-3 space-y-2.5 text-[13px] text-[#e7e7e5]/80">
+            <li className="flex items-start gap-2.5">
+              <FiMapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#e7e7e5]/50" />
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t("company.address"))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                {t("company.address")}
+              </a>
+            </li>
+            <li className="flex items-center gap-2.5">
+              <FiMail className="w-4 h-4 flex-shrink-0 text-[#e7e7e5]/50" />
+              <a
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(t("company.email"))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                {t("company.email")}
+              </a>
+            </li>
+            <li className="flex items-center gap-2.5">
+              <FiPhone className="w-4 h-4 flex-shrink-0 text-[#e7e7e5]/50" />
+              <a
+                href={`tel:${t("company.phone").replace(/\s+/g, "")}`}
+                className="hover:text-white transition-colors"
+              >
+                {t("company.phone")}
+              </a>
+            </li>
+          </ul>
+
+          {/* Social Media */}
+          <h3 className="mt-6 flex items-center gap-2.5 text-[14.5px] font-semibold">
+            <PiShareNetworkFill className="w-[18px] h-[18px] flex-shrink-0" />
+            {t("social.title")}
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-x-8 gap-y-3 lg:block lg:space-y-3">
+            <div>
+              <p className="text-[12px] text-[#e7e7e5]/50">
+                {t("social.biogance")}
               </p>
-            )}
-
-            {/* Contact Info — each one is now clickable: address opens
-                Google Maps, email opens a Gmail compose tab, phone opens
-                the device's dialer (tel: — on desktop this just no-ops or
-                prompts a calling app, but on mobile it drops straight into
-                the dial pad with the number already entered). */}
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-3">
-                <FiMapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t("company.address"))}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  {t("company.address")}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <FiMail className="w-4 h-4 flex-shrink-0" />
-                <a
-                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(t("company.email"))}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  {t("company.email")}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <FiPhone className="w-4 h-4 flex-shrink-0" />
-                <a
-                  href={`tel:${t("company.phone").replace(/\s+/g, "")}`}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  {t("company.phone")}
-                </a>
-              </div>
+              <SocialRow links={bioganceSocials} />
             </div>
-
-            {/* Social Media */}
-            <div className="space-y-4 ">
-              <p className="text-base font-medium">{t("social.title")}</p>
-
-              {/* @bioganceofficiel */}
-              <div>
-                <p className="text-sm text-gray-400 mb-2">
-                  {t("social.biogance")}
-                </p>
-                <div className="flex gap-2">
-                  <a
-                    href="https://www.facebook.com/bioganceofficiel/"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Facebook"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.instagram.com/bioganceofficiel/?hl=en"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Instagram"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.youtube.com/channel/UCo-KLXCLV10LTMilyd-y7aQ"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="YouTube"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <SlSocialYoutube className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/company/biogance/"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="LinkedIn"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <SlSocialLinkedin className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://x.com/BIOGANCE"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="X"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <PiXLogo className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.tiktok.com/@bioganceofficiel"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="TikTok"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <BsTiktok
-                      size={15}
-                      className="p-[0.9]  border border gray-200   text-[#E3E3E3] "
-                    />
-                  </a>
-                </div>
-              </div>
-
-              {/* @ekinatofficiel */}
-              <div>
-                <p className="text-sm text-gray-400 mb-2">
-                  {t("social.ekinat")}
-                </p>
-                <div className="flex gap-2">
-                  <a
-                    href="https://www.facebook.com/Ekinatofficiel"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Facebook"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <SlSocialFacebook className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.instagram.com/ekinatofficiel/?hl=fr"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Instagram"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <FaInstagram className="w-4 h-4  text-[#E3E3E3]" />
-                  </a>
-                  <a
-                    href="https://www.tiktok.com/@ekinatofficiel?_t=8m2Ye0GqQDo&_r=1"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="TikTok"
-                    className="w-8 h-8 bg-[#373737]  flex items-center justify-center hover:bg-[#5a5a5a] transition"
-                  >
-                    <BsTiktok
-                      size={15}
-                      className="p-[0.9]  text-[#E3E3E3] border border gray-200"
-                    />
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Newsletter */}
-            <div className="pt-4">
-              <p className="text-white font-medium mb-3 text-sm sm:text-base">
-                {t("newsletter.title")}
+            <div>
+              <p className="text-[12px] text-[#e7e7e5]/50">
+                {t("social.ekinat")}
               </p>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs sm:text-sm text-white block mb-2">
-                    {t("newsletter.emailLabel")}
-                  </label>
-                  <form
-                    onSubmit={handleSubscribe}
-                    className="flex flex-col sm:flex-row gap-2"
-                    noValidate
-                  >
-                    <input
-                      type="email"
-                      value={newsletterEmail}
-                      onChange={(e) => {
-                        setNewsletterEmail(e.target.value);
-                        if (newsletterError) setNewsletterError("");
-                      }}
-                      disabled={
-                        newsletterStatus === "loading" ||
-                        newsletterStatus === "success"
-                      }
-                      placeholder={t("newsletter.emailPlaceholder")}
-                      className={`flex-1 min-w-0 bg-[#393939] border ${
-                        newsletterError ? "border-red-500" : "border-[#393939]"
-                      } text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500 disabled:opacity-70`}
-                    />
+              <SocialRow links={ekinatSocials} />
+            </div>
+          </div>
+        </div>
+
+        {/* Link groups — CSS columns balance the groups across the width
+            so no column is left with a tall empty gap. */}
+        <div className="bg-[#111] px-4 sm:px-6 lg:px-8 xl:px-12 pt-10 pb-3 columns-2 md:columns-3 xl:columns-4 2xl:columns-5 gap-x-6 lg:gap-x-10">
+          {/* Pet care by species */}
+          {withEyebrow(
+            hasApiCategories
+              ? renderCategoryGroups(speciesCategories)
+              : renderStaticGroups(staticSpecies),
+            t("sections.petCare"),
+          )}
+
+          {/* More animals */}
+          {withEyebrow(
+            hasApiCategories
+              ? renderCategoryGroups(otherCategories)
+              : renderStaticGroups(staticMoreAnimals),
+            t("sections.moreAnimals"),
+          )}
+
+          {/* Explore ranges */}
+          <FooterGroup
+            eyebrow={t("sections.exploreRanges")}
+            title={t("productRanges.title")}
+            icon={PiPackageFill}
+          >
+            {apiRanges && apiRanges.length > 0
+              ? apiRanges.map((range) => (
+                  <FooterItem key={range.id}>
+                    {/* range.name (not the localized french_name) is what
+                        FilterProducts.jsx's Range filter actually matches
+                        against — see its shopDeepLink handling. */}
                     <button
-                      type="submit"
-                      disabled={
-                        newsletterStatus === "loading" ||
-                        newsletterStatus === "success"
+                      type="button"
+                      onClick={() =>
+                        goToShop({ type: "range", range_name: range.name })
                       }
-                      className="px-4 sm:px-6 py-2.5 border border-white cursor-pointer text-white text-xs sm:text-sm font-normal hover:bg-black transition whitespace-nowrap inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-80"
+                      className="text-left cursor-pointer"
                     >
-                      {newsletterStatus === "loading" ? (
-                        "Subscribing..."
-                      ) : newsletterStatus === "success" ? (
-                        <>
-                          You&apos;re in{" "}
-                          <FiCheck className="w-4 h-4 text-white" />
-                        </>
-                      ) : (
-                        t("newsletter.subscribeButton")
-                      )}
+                      {isFrench && range.french_name
+                        ? range.french_name
+                        : range.name}
                     </button>
-                  </form>
-                  {newsletterError && (
-                    <p className="text-red-500 text-xs mt-2">
-                      {newsletterError}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* App Download — neither store listing exists yet, so these
-                open the launch countdown modal rather than linking to # */}
-            <div className="flex flex-row items-start gap-0">
-              <button
-                type="button"
-                onClick={handleAppComingSoon}
-                aria-label={t("mobileApp.googlePlay")}
-                className="block cursor-pointer"
-              >
-                <img
-                  src="/FPlay.png"
-                  alt="Google Play"
-                  className="block w-[140px] h-[81px] object-fill -mt-1"
-                />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleAppComingSoon}
-                aria-label={t("mobileApp.appStore")}
-                className="block cursor-pointer"
-              >
-                <img
-                  src="/FApple.png"
-                  alt="App Store"
-                  className="block w-[140px] h-[85px] object-fill"
-                />
-              </button>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-[#1c1c1c] px-8 pb-12">
-            {apiCategories && apiCategories.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
-                {apiCategories.map((category) => (
-                  <div key={category.id}>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {getName(category)}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {getFamilies(category).map((fam) => (
-                        <li
-                          key={fam.id}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              goToShop({
-                                type: "family",
-                                category_id: category.id,
-                                family_name: fam.name,
-                              })
-                            }
-                            className="hover:text-white transition cursor-pointer text-left"
-                          >
-                            {getName(fam)}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  </FooterItem>
+                ))
+              : // Falls back to the static translation list until the home
+                // API's ranges have loaded, so this section is never empty.
+                productRangesItems.map((item, index) => (
+                  <FooterItem key={index}>
+                    <a href="#">{item}</a>
+                  </FooterItem>
                 ))}
-              </div>
-            ) : (
-              // Falls back to the static translation lists until
-              // splashData's categories have loaded.
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-8 pt-4">
-                  {/* Dogs & Puppies */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.dogs.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {dogsItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          </FooterGroup>
 
-                  {/* Cats & Kittens */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.cats.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {catsItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          {/* Professional — items[0] Resellers & Distributors, items[1]
+              Become Partner/Ambassadors (see footer.json) */}
+          <FooterGroup title={t("professional.title")} icon={PiHandshakeFill}>
+            <FooterItem>
+              <Link href="/become-a-reseller">{professionalItems[0]}</Link>
+            </FooterItem>
+            <FooterItem>
+              <Link href="/become-an-ambassador">{professionalItems[1]}</Link>
+            </FooterItem>
+          </FooterGroup>
 
-                  {/* Horses */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.horses.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {horsesItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          {/* Resources & about */}
+          <FooterGroup
+            eyebrow={t("sections.resources")}
+            title={t("laboratory.title")}
+            icon={PiFlaskFill}
+          >
+            {laboratoryLinks.map((link) => (
+              <FooterItem key={link.href}>
+                <Link href={link.href}>{link.label}</Link>
+              </FooterItem>
+            ))}
+            <FooterItem>
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="text-left cursor-pointer"
+              >
+                {laboratoryItems[7]}
+              </button>
+            </FooterItem>
+          </FooterGroup>
 
-                  {/* Empty column for spacing */}
-                  <div></div>
-                </div>
+          <FooterGroup title={t("news.title")} icon={PiNewspaperFill}>
+            {newsItems.map((item, index) => (
+              <FooterItem key={index}>
+                <Link href="/advices">{item}</Link>
+              </FooterItem>
+            ))}
+          </FooterGroup>
+        </div>
+      </div>
 
-                {/* Bottom row - Small Mammals, Birds & Poultry, Reptiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-4 pt-2 ">
-                  {/* Small Mammals */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.smallMammals.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {smallMammalsItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+      {/* Newsletter + app download band */}
+      <div className="bg-[#2a2a2a] text-[#f3f3f3]">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
+          <p className="text-[16px] font-semibold lg:whitespace-nowrap">
+            {t("newsletter.title")}
+          </p>
 
-                  {/* Birds & Poultry */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.birdsPoultry.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {birdsPoultryItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Reptiles */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-4 text-md">
-                      {t("categories.reptiles.title")}
-                    </h3>
-                    <ul className="space-y-2.5 text-sm text-gray-300">
-                      {reptilesItems.map((item, index) => (
-                        <li
-                          key={index}
-                          className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                        >
-                          <a href="#" className="hover:text-white transition">
-                            {item}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </>
+          <form
+            onSubmit={handleSubscribe}
+            className="flex-1 min-w-0 lg:max-w-[400px]"
+            noValidate
+          >
+            <div
+              className={`group relative flex items-center gap-2 bg-white border ${
+                newsletterError
+                  ? "border-red-500"
+                  : "border-white/15 focus-within:border-black/40"
+              } p-1 pl-2 transition-colors duration-200`}
+            >
+              <FiMail className="w-4 h-4 text-black/45 flex-shrink-0" />
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => {
+                  setNewsletterEmail(e.target.value);
+                  if (newsletterError) setNewsletterError("");
+                }}
+                disabled={
+                  newsletterStatus === "loading" ||
+                  newsletterStatus === "success"
+                }
+                placeholder={t("newsletter.barPlaceholder")}
+                aria-label={t("newsletter.emailLabel")}
+                className="flex-1 min-w-0 bg-transparent text-black text-[13px] placeholder-black/40 focus:outline-none disabled:opacity-70"
+              />
+              <button
+                type="submit"
+                disabled={
+                  newsletterStatus === "loading" ||
+                  newsletterStatus === "success"
+                }
+                className="h-10 px-5 sm:px-7 bg-black text-white text-[13px] font-semibold uppercase tracking-[0.08em] cursor-pointer hover:bg-black/80 transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-80"
+              >
+                {newsletterStatus === "loading" ? (
+                  "Subscribing..."
+                ) : newsletterStatus === "success" ? (
+                  <>
+                    You&apos;re in <FiCheck className="w-4 h-4" />
+                  </>
+                ) : (
+                  t("newsletter.subscribeButton")
+                )}
+              </button>
+              {/* Same focus treatment as AuthInput (Login): a black
+                  gradient bar grows in along the bottom edge. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-0 bottom-0 h-[2px] w-0 group-focus-within:w-full bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300"
+              />
+            </div>
+            {newsletterError && (
+              <p className="text-red-400 text-xs mt-2 pl-5">
+                {newsletterError}
+              </p>
             )}
-          </div>
+          </form>
 
-          {/* Right Column */}
-          <div className="lg:col-span-3 space-y-6 p-8 lg:pl-6">
-            {/* Our Products Ranges */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("productRanges.title")}
-              </h3>
-              <ul className="space-y-2.5 text-sm text-gray-300">
-                {apiRanges && apiRanges.length > 0
-                  ? apiRanges.map((range) => (
-                      <li
-                        key={range.id}
-                        className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                      >
-                        {/* range.name (not the localized french_name) is what
-                            FilterProducts.jsx's Range filter actually matches
-                            against — see its shopDeepLink handling. */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            goToShop({ type: "range", range_name: range.name })
-                          }
-                          className="hover:text-white transition cursor-pointer text-left"
-                        >
-                          {isFrench && range.french_name
-                            ? range.french_name
-                            : range.name}
-                        </button>
-                      </li>
-                    ))
-                  : // Falls back to the static translation list until the home
-                    // API's ranges have loaded (e.g. a first visit that
-                    // didn't land on the home page yet), so this section is
-                    // never empty.
-                    productRangesItems.map((item, index) => (
-                      <li
-                        key={index}
-                        className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                      >
-                        <a href="#" className="hover:text-white transition">
-                          {item}
-                        </a>
-                      </li>
-                    ))}
-              </ul>
-            </div>
-
-            {/* Our Laboratory */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("laboratory.title")}
-              </h3>
-              <ul className="space-y-2.5 text-sm text-gray-300">
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/our-laboratory"
-                    className="hover:text-white transition"
-                  >
-                    {laboratoryItems[0]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/our-laboratory#commitments"
-                    className="hover:text-white transition"
-                  >
-                    {laboratoryItems[1]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/our-laboratory#proofs"
-                    className="hover:text-white transition"
-                  >
-                    {laboratoryItems[2]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link href="/advices" className="hover:text-white transition">
-                    {laboratoryItems[3]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/ingredients"
-                    className="hover:text-white transition"
-                  >
-                    {laboratoryItems[4]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/breed-guide"
-                    className="hover:text-white transition"
-                  >
-                    {laboratoryItems[5]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link href="loyalty" className="hover:text-white transition">
-                    {laboratoryItems[6]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="hover:text-white transition text-left cursor-pointer"
-                  >
-                    {laboratoryItems[7]}
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Professional — items[0] Resellers & Distributors, items[1]
-                Become Partner/Ambassadors (see footer.json) */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md">
-                {t("professional.title")}
-              </h3>
-              <ul className="space-y-2.5 text-sm text-gray-300">
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/become-a-reseller"
-                    className="hover:text-white transition"
-                  >
-                    {professionalItems[0]}
-                  </Link>
-                </li>
-                <li className="hover:translate-x-2 cursor-pointer transition-all duration-300">
-                  <Link
-                    href="/become-an-ambassador"
-                    className="hover:text-white transition"
-                  >
-                    {professionalItems[1]}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* News */}
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-md ">
-                {t("news.title")}
-              </h3>
-              <ul className="space-y-2.5 text-sm text-gray-300 ">
-                {newsItems.map((item, index) => (
-                  <li
-                    key={index}
-                    className="hover:translate-x-2 cursor-pointer transition-all duration-300"
-                  >
-                    <Link
-                      href="/advices"
-                      className="hover:text-white transition "
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* App Download — neither store listing exists yet, so these
+              open the launch countdown modal rather than linking to # */}
+          <div className="flex flex-wrap items-center gap-3 lg:ml-auto lg:pl-8 lg:border-l lg:border-white/15">
+            <StoreBadge
+              onClick={handleAppComingSoon}
+              ariaLabel={t("mobileApp.googlePlay")}
+              icon={<GooglePlayIcon />}
+              prefix={t("mobileApp.googlePlayPrefix")}
+              name="Google Play"
+            />
+            <StoreBadge
+              onClick={handleAppComingSoon}
+              ariaLabel={t("mobileApp.appStore")}
+              icon={<FaApple className="w-5 h-5 text-white" />}
+              prefix={t("mobileApp.appStorePrefix")}
+              name="App Store"
+            />
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-5">
-          <div className="flex flex-col md:flex-row justify-between items-center  gap-4 text-xs  text-[14px] text-black">
-            <p>{t("bottom.copyright", { year: new Date().getFullYear() })}</p>
-            <div className="flex flex-wrap gap-5 justify-center ">
-              <a href="#" className="hover:text-gray-900 transition">
-                {t("bottom.conception")}
-              </a>
-              <a href="#" className="hover:text-gray-900 transition">
-                {t("bottom.agency")}
-              </a>
-              <Link href="/faq" className="hover:text-gray-900 transition">
-                {t("bottom.faqs")}
-              </Link>
-              <Link
-                href="/termsCondition?section=disclaimer"
-                className="hover:text-gray-900 transition cursor-pointer"
-              >
-                {t("bottom.disclaimer")}
-              </Link>
-              <Link
-                href="/termsCondition?section=shipping"
-                className="hover:text-gray-900 transition cursor-pointer"
-              >
-                {t("bottom.shipping")}
-              </Link>
-              <Link
-                href="/termsCondition?section=privacy"
-                className="hover:text-gray-900 transition cursor-pointer"
-              >
-                {t("bottom.privacy")}
-              </Link>
-              <Link
-                href="/termsCondition?section=terms"
-                className="hover:text-gray-900 transition cursor-pointer"
-              >
-                {t("bottom.terms")}
-              </Link>
-            </div>
+      <div className="border-t border-black/10 bg-[#f3f3f3]">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-5 flex flex-col lg:flex-row justify-between items-center gap-3 text-[12px] text-center text-black/60">
+          <p>{t("bottom.copyright", { year: new Date().getFullYear() })}</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-center">
+            <a href="#" className={bottomLinkClass}>
+              {t("bottom.conception")}
+            </a>
+            <a href="#" className={bottomLinkClass}>
+              {t("bottom.agency")}
+            </a>
+            <Link href="/faq" className={bottomLinkClass}>
+              {t("bottom.faqs")}
+            </Link>
+            <Link
+              href="/termsCondition?section=disclaimer"
+              className={bottomLinkClass}
+            >
+              {t("bottom.disclaimer")}
+            </Link>
+            <Link
+              href="/termsCondition?section=shipping"
+              className={bottomLinkClass}
+            >
+              {t("bottom.shipping")}
+            </Link>
+            <Link
+              href="/termsCondition?section=privacy"
+              className={bottomLinkClass}
+            >
+              {t("bottom.privacy")}
+            </Link>
+            <Link
+              href="/termsCondition?section=terms"
+              className={bottomLinkClass}
+            >
+              {t("bottom.terms")}
+            </Link>
           </div>
         </div>
       </div>
@@ -799,5 +608,121 @@ export default function Footer() {
         onClose={() => setShowAppModal(false)}
       />
     </footer>
+  );
+}
+
+// Puts a section label (e.g. "Pet care by species") above the first group
+// of a section.
+function withEyebrow(groups, eyebrow) {
+  return groups.map((group, index) =>
+    index === 0 ? React.cloneElement(group, { eyebrow }) : group,
+  );
+}
+
+// Picks an animal icon for a species group from its (English or French)
+// name. "dog" is checked before "pupp" so "Dogs & Puppies" gets the dog.
+const SPECIES_ICONS = [
+  [/dog|chien/i, PiDogFill],
+  [/pupp|chiot/i, PiPawPrintFill],
+  [/cat|kitten|chat/i, PiCatFill],
+  [/horse|cheva|equi/i, PiHorseFill],
+  [/mammal|mammif|rabbit|lapin/i, PiRabbitFill],
+  [/bird|poultry|oiseau|volaille/i, PiBirdFill],
+  [/reptile|turtle|tortue/i, GiTurtle],
+];
+
+function speciesIcon(name = "") {
+  const match = SPECIES_ICONS.find(([pattern]) => pattern.test(name));
+  return match ? match[1] : PiPawPrintFill;
+}
+
+// One block of links. break-inside-avoid keeps a group in a single column
+// of the masonry layout.
+function FooterGroup({ eyebrow, title, icon: Icon, children }) {
+  return (
+    <div className="break-inside-avoid mb-7">
+      {eyebrow && (
+        <p className="mb-2.5 flex items-center gap-2 text-[10.5px] uppercase tracking-[0.14em] text-[#e7e7e5]/50">
+          <span className="w-4 h-px bg-[#e7e7e5]/60" />
+          {eyebrow}
+        </p>
+      )}
+      <h3 className="flex items-center gap-2.5 text-[14.5px] font-semibold text-[#f3f3f3] mb-3">
+        {Icon && (
+          <Icon className="w-[18px] h-[18px] flex-shrink-0 text-[#f3f3f3]" />
+        )}
+        {title}
+      </h3>
+      <ul className="space-y-2 text-[13px] text-[#e7e7e5]/65">{children}</ul>
+    </div>
+  );
+}
+
+function FooterItem({ children }) {
+  return (
+    <li className="hover:text-white hover:translate-x-1 transition-all duration-200">
+      {children}
+    </li>
+  );
+}
+
+function SocialRow({ links }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {links.map(({ href, label, Icon }) => (
+        <a
+          key={label}
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={label}
+          className="w-8 h-8 border border-white/20 text-[#e7e7e5]/80 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-colors"
+        >
+          <Icon className="w-3.5 h-3.5" />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function StoreBadge({ onClick, ariaLabel, icon, prefix, name }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="h-10 px-3 bg-black border border-white/20 flex items-center gap-2 cursor-pointer hover:border-white transition-colors"
+    >
+      {icon}
+      <span className="flex flex-col items-start leading-none text-white">
+        <span className="text-[8px] tracking-wide uppercase text-[#e7e7e5]/80">
+          {prefix}
+        </span>
+        <span className="text-[14px] font-medium mt-0.5">{name}</span>
+      </span>
+    </button>
+  );
+}
+
+function GooglePlayIcon() {
+  return (
+    <svg viewBox="0 0 24 26" className="w-[18px] h-5" aria-hidden="true">
+      <path
+        d="M1 1.2 13.4 13 1 24.8c-.4-.2-.6-.7-.6-1.2V2.4c0-.5.2-1 .6-1.2Z"
+        fill="#2196F3"
+      />
+      <path
+        d="M17.6 8.8 13.4 13 1 1.2c.2-.1.4-.2.7-.2.3 0 .5.1.8.2l15.1 7.6Z"
+        fill="#4CAF50"
+      />
+      <path
+        d="M17.6 17.2 2.5 24.8c-.3.1-.5.2-.8.2-.3 0-.5-.1-.7-.2L13.4 13l4.2 4.2Z"
+        fill="#F44336"
+      />
+      <path
+        d="M23 13c0 .6-.3 1.1-.9 1.4l-4.5 2.8L13.4 13l4.2-4.2 4.5 2.8c.6.3.9.8.9 1.4Z"
+        fill="#FFC107"
+      />
+    </svg>
   );
 }

@@ -3,10 +3,11 @@
     "description": "Biogance blends science and nature to craft eco-certified pet care made in France — promoting animal well-being, sustainability, and safe, effective care for your companions.",
     "address": "Z.I. Anjou Atlantique, 49123 Champtocé-sur-Loire, France",
     "email": "info@biogance.fr",
-    "phone": "+33 2 41 73 15 15"
+    "phone": "+33 2 41 73 15 15",
+    "contactTitle": "Contact Us"
   },
   "social": {
-    "title": "Share your experience",
+    "title": "Connect with us",
     "biogance": "@bioganceofficiel",
     "ekinat": "@ekinatofficiel"
   },
@@ -14,7 +15,8 @@
     "title": "Subscribe to our newsletter",
     "emailLabel": "Email Address",
     "emailPlaceholder": "john_doe@gmail.com",
-    "subscribeButton": "Subscribe"
+    "subscribeButton": "Subscribe",
+    "barPlaceholder": "Enter your email address"
   },
   "mobileApp": {
     "title": "Download App on Mobile",
@@ -27,7 +29,9 @@
     "days": "Days",
     "hours": "Hours",
     "minutes": "Minutes",
-    "seconds": "Seconds"
+    "seconds": "Seconds",
+    "googlePlayPrefix": "GET IT ON",
+    "appStorePrefix": "Download on the"
   },
   "categories": {
     "dogs": {
@@ -150,11 +154,9 @@
       "Become Partner/Ambassadors"
     ]
   },
- 
   "news": {
     "title": "News",
     "items": [
-     
       "Latest Expert Advices"
     ]
   },
@@ -167,5 +169,11 @@
     "shipping": "Shipping & Return",
     "privacy": "Privacy Policy",
     "terms": "Terms & Conditions"
+  },
+  "sections": {
+    "petCare": "Pet care by species",
+    "moreAnimals": "More animals",
+    "exploreRanges": "Explore ranges",
+    "resources": "Resources & about"
   }
 }

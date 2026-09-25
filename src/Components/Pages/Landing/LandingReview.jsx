@@ -270,7 +270,7 @@ export default function LandingReview({ data }) {
 
                 {/* Controls — segmented progress, counter, arrows */}
                 <div className="relative mt-10 pt-6 border-t border-white/15 flex items-center gap-4 md:gap-6">
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
                     {apiReviews.map((_, i) => (
                       <button
                         key={i}
@@ -293,7 +293,7 @@ export default function LandingReview({ data }) {
                     {formatCounter(index + 1)} / {formatCounter(total)}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => { step(-1); restart(); }}

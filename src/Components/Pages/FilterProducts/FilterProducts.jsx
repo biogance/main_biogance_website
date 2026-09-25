@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
@@ -20,6 +21,10 @@ import {
   LuFlame,
   LuMegaphone,
   LuBookOpen,
+  LuArrowRight,
+  LuArrowDownUp,
+  LuHouse,
+  LuRotateCcw,
 } from "react-icons/lu";
 
 import Navbar from "../Navbar";
@@ -30,6 +35,10 @@ import { getDeviceId } from "@/utils/deviceId";
 
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
+
+// Same typefaces as the home page hero (MainVideo.jsx), used by the shop hero.
+const SHOP_FONT = "'Outfit', 'Sora', system-ui, -apple-system, sans-serif";
+const SHOP_FONT_SERIF = "'Instrument Serif', Georgia, 'Times New Roman', serif";
 
 // Matches the restProducts grid's actual column counts (grid-cols-2 below md,
 // md:grid-cols-3, lg:grid-cols-3, xl:grid-cols-4) — same responsive-per_page
@@ -1457,6 +1466,12 @@ export default function FilterProducts() {
     COLOR_SWATCHES_MAP,
   ]);
 
+  // Hero headline: last word set in the serif italic accent, like the home hero.
+  const titleWords = String(ctx.title || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
   const clearAll = () => {
     setAnimals([]);
     setUniverse([]);
@@ -1535,7 +1550,7 @@ export default function FilterProducts() {
         }}
       />
 
-      {/* Sticky filter rail */}
+      {/* Sticky filter toolbar — sits right under the navbar, above the hero */}
       <FilterRail
         railRef={filterRailRef}
         categoriesList={categoriesList}
@@ -1592,112 +1607,174 @@ export default function FilterProducts() {
         }}
       />
 
-      <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-        <section
-          ref={headerRef}
-          className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[#fbf9f7]"
+      {/* Page hero — compact dark band in the home hero's voice: breadcrumb,
+          headline (serif-italic last word) + live stats, description, and
+          search + sort. It continues the dark band of the filter toolbar above. */}
+      <header
+        ref={headerRef}
+        className="relative bg-[#0b0b0a] text-white"
+        style={{ fontFamily: SHOP_FONT }}
+      >
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+          precedence="default"
+        />
+        {/* Decoration is clipped on its own layer, not on the header, so the
+            sort dropdown can hang below the header without being cut off. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
         >
-          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-12 gap-x-8 gap-y-6 pt-6 pb-6">
-              {/* Left: headline + count, description underneath */}
-              <div className="col-span-12 lg:col-span-8">
-                <h4 className="mt-0 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
-                  <span
-                    style={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      paddingBottom: "0.1em",
-                    }}
-                  >
-                    {ctx.title}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 50% 120% at 92% -20%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%)",
+            }}
+          />
+          <span
+            className="absolute -bottom-[0.24em] right-[-0.03em] hidden select-none whitespace-nowrap text-[clamp(90px,11vw,190px)] font-extralight uppercase leading-none tracking-[-0.05em] text-transparent md:block"
+            style={{ WebkitTextStroke: "1px rgba(255,255,255,.07)" }}
+          >
+            Biogance
+          </span>
+        </div>
+
+        <div className="relative mx-auto max-w-10xl px-4 pb-6 pt-5 sm:px-6 sm:pb-7 lg:px-8">
+          {/* Breadcrumb + context */}
+          <nav
+            aria-label="Breadcrumb"
+            className="flex min-w-0 items-center gap-2.5 text-[10px] font-medium uppercase tracking-[0.24em] text-white/45"
+          >
+            <Link
+              href="/"
+              className="inline-flex shrink-0 items-center gap-1.5 transition-colors hover:text-white"
+            >
+              <LuHouse className="h-3.5 w-3.5" />
+              {t("home", "Home")}
+            </Link>
+            <span className="h-px w-5 shrink-0 bg-white/25" />
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-white/90">
+              <ctx.Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{ctx.crumbLabel || ctx.title}</span>
+            </span>
+          </nav>
+
+          <div className="mt-4 grid grid-cols-1 items-end gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(400px,500px)] lg:gap-12">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-end gap-x-5 gap-y-2">
+                <h1 className="min-w-0 text-[clamp(30px,3.8vw,54px)] font-extralight uppercase leading-[1] tracking-[-0.035em] text-white">
+                  <span className="line-clamp-2 break-words">
+                    {titleWords.map((word, i) => {
+                      const last =
+                        i === titleWords.length - 1 && titleWords.length > 1;
+                      return (
+                        <span
+                          key={`${word}-${i}`}
+                          className={
+                            last
+                              ? "font-normal normal-case italic tracking-[-0.02em]"
+                              : ""
+                          }
+                          style={
+                            last ? { fontFamily: SHOP_FONT_SERIF } : undefined
+                          }
+                        >
+                          {word}
+                          {i < titleWords.length - 1 ? " " : ""}
+                        </span>
+                      );
+                    })}
                   </span>
-                  <span className="font-sans text-lg sm:text-xl lg:text-2xl font-normal text-stone-400">
-                    ({totalCount})
+                </h1>
+                {/* Live stats */}
+                <p className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white/55 tabular-nums">
+                  <span className="border border-white/25 px-2 py-1 text-white">
+                    {totalCount} {t("productsCount", "products")}
                   </span>
-                  {/* Mobile-only: toggles the collapsed description below */}
-                  <button
-                    type="button"
-                    onClick={() => setMobileDescOpen((v) => !v)}
-                    aria-label={t("toggleDescription", "Toggle description")}
-                    className="ml-auto self-center cursor-pointer lg:hidden"
-                  >
-                    <LuChevronDown
-                      className={`h-5 w-5 text-stone-500 transition-transform duration-300 ${
-                        mobileDescOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                </h4>
-                <p className="mt-2 hidden max-w-[50vw] text-sm md:text-lg sm:text-xs text-stone-700 rich-text c-desc lg:block">
+                  {t("speciesCount", "{{count}} species", {
+                    count: categoriesList.length,
+                  })}
+                  <span className="h-1 w-1 bg-white/35" />
+                  {t("rangesCount", "{{count}} ranges", {
+                    count: RANGES_LIST.length,
+                  })}
+                </p>
+              </div>
+
+              <div className="mt-3 max-w-[640px]">
+                <p
+                  className={`text-[13px] font-light leading-[1.7] text-white/65 rich-text c-desc sm:text-[14px] ${
+                    mobileDescOpen ? "" : "line-clamp-2"
+                  }`}
+                >
                   {t(
                     "products.shopDescription",
                     "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
                   )}
                 </p>
-
-                {/* Mobile-only: same description, collapsed into an
-                    accordion instead of always showing */}
-                <div
-                  className={`grid transition-all duration-300 ease-out lg:hidden ${
-                    mobileDescOpen
-                      ? "grid-rows-[1fr] opacity-100 mt-2"
-                      : "grid-rows-[0fr] opacity-0"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setMobileDescOpen((v) => !v)}
+                  aria-expanded={mobileDescOpen}
+                  className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/80 transition-colors hover:text-white cursor-pointer"
                 >
-                  <div className="overflow-hidden">
-                    <p className="text-sm text-stone-700 rich-text c-desc">
-                      {t(
-                        "products.shopDescription",
-                        "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: search + sort */}
-              <div className="col-span-12 flex flex-col justify-center gap-3 lg:col-span-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
-                    <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => handleQueryChange(e.target.value)}
-                      placeholder={t(
-                        "searchPlaceholder",
-                        "Search shampoos, sprays, rituals…",
-                      )}
-                      className="h-11 w-full border border-stone-900/15 bg-white pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
-                    />
-                    {query && (
-                      <button
-                        onClick={() => {
-                          setQuery("");
-                          setDebouncedQuery("");
-                          clearTimeout(queryDebounceRef.current);
-                        }}
-                        className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
-                        aria-label={t("clearSearch", "Clear search")}
-                      >
-                        <LuX className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-                      {t("sort", "Sort")}
-                    </span>
-                    <SortMenu value={sort} onChange={setSort} />
-                  </div>
-                </div>
+                  {mobileDescOpen
+                    ? t("readLess", "Read less")
+                    : t("readMore", "Read more")}
+                  <LuChevronDown
+                    className={`h-3.5 w-3.5 transition-transform duration-300 ${
+                      mobileDescOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
               </div>
             </div>
+
+            {/* Search + sort */}
+            <div className="flex min-w-0 items-stretch gap-2">
+              <div className="group relative flex h-12 min-w-0 flex-1 items-center border border-white/20 bg-white/[0.06] backdrop-blur-sm transition-colors duration-200 focus-within:border-white/50">
+                {isSearchPending && query ? (
+                  <span className="pointer-events-none absolute left-4 h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                ) : (
+                  <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-white/50 transition-colors group-focus-within:text-white" />
+                )}
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => handleQueryChange(e.target.value)}
+                  placeholder={t(
+                    "searchPlaceholder",
+                    "Search shampoos, sprays, rituals…",
+                  )}
+                  className="h-full w-full min-w-0 bg-transparent pl-11 pr-10 text-[14px] text-white placeholder:text-white/40 focus:outline-none"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      setDebouncedQuery("");
+                      clearTimeout(queryDebounceRef.current);
+                    }}
+                    className="absolute right-2.5 grid h-7 w-7 place-items-center text-white/50 transition-colors hover:bg-white hover:text-black cursor-pointer"
+                    aria-label={t("clearSearch", "Clear search")}
+                  >
+                    <LuX className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {/* AuthInput-style focus bar, in white for the dark hero */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-white via-[#c4c4c0] to-white transition-all duration-300 group-focus-within:w-full"
+                />
+              </div>
+              <SortMenu value={sort} onChange={setSort} tone="dark" />
+            </div>
           </div>
-        </section>
-      </section>
+        </div>
+      </header>
 
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
@@ -2017,36 +2094,67 @@ export default function FilterProducts() {
             </div>
 
             {filteredProducts.length === 0 && hasSearched && (
-              <div className="flex flex-col items-center justify-center py-28 text-center">
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100">
-                  <LuSearch className="h-7 w-7 text-stone-400" />
+              <div className="mx-4 my-10 flex flex-col items-center justify-center border border-dashed border-[#d6d4cc] bg-[#fbfaf7] px-6 py-20 text-center sm:mx-6 lg:mx-8">
+                <div className="mb-6 grid h-14 w-14 place-items-center bg-black text-white">
+                  <LuSearch className="h-6 w-6" />
                 </div>
-                <p className="font-serif text-2xl text-stone-800">
+                <p className="text-[clamp(22px,3vw,32px)] font-extrabold uppercase leading-tight tracking-[-0.02em] text-black">
                   {t("noResultsFound", "No results found")}
                 </p>
-                <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
+                <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-[#555]">
                   {t(
                     "noResultsDesc",
                     "Try adjusting your filters or keyword — a small tweak often reveals the right formulation.",
                   )}
                 </p>
+                {activeChips.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="mt-7 inline-flex h-11 items-center gap-2 border border-black px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-black transition-colors hover:bg-black hover:text-white cursor-pointer"
+                  >
+                    <LuRotateCcw className="h-3.5 w-3.5" />
+                    {t("resetAll", "Reset all")}
+                  </button>
+                )}
               </div>
             )}
 
             {filteredProducts.length > 0 && page < lastPage && (
-              <div className="flex justify-center pt-10">
+              <div className="flex flex-col items-center gap-5 px-4 pt-12">
+                <div className="w-full max-w-[260px] text-center">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black/50 tabular-nums">
+                    {t("showingOf", "Showing {{shown}} of {{total}}", {
+                      shown: filteredProducts.length,
+                      total: totalCount,
+                    })}
+                  </p>
+                  <div className="mt-3 h-[2px] w-full bg-black/10">
+                    <div
+                      className="h-full bg-black transition-[width] duration-500"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (filteredProducts.length / Math.max(totalCount, 1)) *
+                            100,
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isFetchingMore}
-                  className="flex items-center gap-2 border border-stone-900 text-stone-900 text-xs font-semibold uppercase tracking-wider px-8 py-3 hover:bg-stone-900 hover:text-white transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex h-12 items-center gap-3 border border-black bg-black px-10 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-black cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isFetchingMore && (
-                    <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   )}
                   {isFetchingMore
                     ? t("loading", "Loading...")
                     : t("loadMore", "Load More")}
+                  {!isFetchingMore && <LuChevronDown className="h-4 w-4" />}
                 </button>
               </div>
             )}
@@ -2055,37 +2163,59 @@ export default function FilterProducts() {
       </section>
 
       {!isSearching && !isSearchPending && recentViews.length > 0 && (
-        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-16">
-          <h2 className="text-center text-lg font-bold uppercase tracking-[0.15em] text-stone-900 mb-8">
-            {t("recentlyViewed", "Recently Viewed")}
-          </h2>
-          <div className="flex justify-center gap-6 flex-wrap">
-            {recentViews.slice(0, 3).map((p, i) => (
-              <div key={p.id} className="w-[350px]">
-                <LandingCards
-                  product={p}
-                  showNav={true}
-                  index={i}
-                  compactButtons
-                  smallLabel
-                />
+        <section className="border-t border-[#d6d4cc] bg-[#f5f4f0] py-14 sm:py-20">
+          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 border-b border-black/15 pb-6 sm:mb-10">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="bg-black px-2.5 py-0.5 text-[10px] font-bold tracking-[0.2em] text-white tabular-nums">
+                  {String(Math.min(recentViews.length, 3)).padStart(2, "0")}
+                </span>
+                <span className="h-px w-8 bg-black/30" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#666]">
+                  {t("pickUpWhereYouLeft", "Pick up where you left off")}
+                </span>
               </div>
-            ))}
+              <h2 className="text-[clamp(26px,4vw,48px)] font-extrabold uppercase leading-[1.02] tracking-[-0.035em] text-black">
+                {t("recentlyViewed", "Recently Viewed")}
+              </h2>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6">
+              {recentViews.slice(0, 3).map((p, i) => (
+                <div key={p.id} className="w-[350px] max-w-full">
+                  <LandingCards
+                    product={p}
+                    showNav={true}
+                    index={i}
+                    compactButtons
+                    smallLabel
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       {!isSearching && !isSearchPending && featuredBlog && (
-        <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8 pb-14">
-          <div className="grid grid-cols-1 gap-12 border-t border-stone-900/10 pt-14 lg:grid-cols-2 lg:items-start">
-            <div className="lg:sticky lg:top-[230px] lg:self-start">
-              <h2 className="mb-4 font-serif text-4xl text-stone-900 sm:text-5xl">
+        <section className="border-t border-[#d6d4cc] bg-white py-14 sm:py-20">
+          <div className="mx-auto grid max-w-10xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-16 lg:px-8">
+            <div className="lg:sticky lg:top-[200px] lg:self-start">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="grid h-7 w-7 place-items-center bg-black text-white">
+                  <LuBookOpen className="h-3.5 w-3.5" />
+                </span>
+                <span className="h-px w-8 bg-black/30" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#666]">
+                  {t("fromJournal", "From the journal")}
+                </span>
+              </div>
+              <h2 className="text-[clamp(26px,3.4vw,44px)] font-extrabold uppercase leading-[1.04] tracking-[-0.03em] text-black">
                 {isFrench && featuredBlog.french_name
                   ? featuredBlog.french_name
                   : featuredBlog.name}
               </h2>
               {featuredBlog.images?.[0]?.media && (
-                <div className="w-full overflow-hidden">
+                <div className="mt-6 aspect-[4/3] w-full overflow-hidden border border-[#d6d4cc] bg-[#f5f4f0]">
                   <img
                     src={`${MEDIA_URL}${featuredBlog.images[0].media}`}
                     alt={
@@ -2093,14 +2223,16 @@ export default function FilterProducts() {
                         ? featuredBlog.french_name
                         : featuredBlog.name
                     }
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 </div>
               )}
             </div>
 
+            {/* Rich text from the API — styled here since the typography
+                plugin isn't installed. */}
             <div
-              className="prose prose-sm max-w-none text-stone-600"
+              className="max-w-none text-[15px] leading-[1.8] text-[#444] [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_h1]:mb-4 [&_h1]:mt-10 [&_h1]:text-[26px] [&_h1]:font-extrabold [&_h1]:uppercase [&_h1]:leading-tight [&_h1]:tracking-[-0.02em] [&_h1]:text-black [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-[22px] [&_h2]:font-extrabold [&_h2]:uppercase [&_h2]:leading-tight [&_h2]:tracking-[-0.02em] [&_h2]:text-black [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-[17px] [&_h3]:font-bold [&_h3]:text-black [&_li]:mb-1.5 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-5 [&_strong]:text-black [&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-5 [&>*:first-child]:mt-0"
               dangerouslySetInnerHTML={{
                 __html:
                   (isFrench && featuredBlog.long_french_description) ||
@@ -2274,140 +2406,108 @@ function FilterRail({
     setters.setMinPrice(0);
   };
 
+  const priceLabel =
+    state.minPrice > 0
+      ? `€${state.minPrice} – €${state.price}`
+      : `€${state.price}`;
+
   return (
     <div
       ref={(el) => {
         ref.current = el;
         if (railRef) railRef.current = el;
       }}
-      className="sticky top-[64px] lg:top-[104px] z-39 border-b border-stone-900/10 bg-white"
+      className="sticky top-[64px] z-39 border-b border-white/10 bg-[#0b0b0a]/95 text-white backdrop-blur-md lg:top-[104px]"
     >
-      {/* Mobile: single prominent CTA that opens the full filters modal */}
-      <div className="mx-auto flex max-w-10xl items-center gap-3 px-5 py-3 md:hidden">
+      {/* Mobile: Filters (opens the drawer) + price */}
+      <div className="flex items-stretch gap-2 px-4 py-3 md:hidden">
         <button
+          type="button"
           onClick={() => setAllOpen(true)}
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-900 bg-stone-900 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-sm active:scale-[0.99] cursor-pointer"
+          className="inline-flex h-11 flex-1 items-center justify-center gap-2.5 bg-white px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-black active:scale-[0.99] cursor-pointer"
         >
           <LuSlidersHorizontal className="h-4 w-4" />
           {t("filters", "Filters")}
-          {totalActive > 0 && (
-            <span
-              className="relative ml-1 shrink-0 rounded-full bg-white"
-              style={{
-                height: "20px",
-                width:
-                  totalActive >= 100
-                    ? "34px"
-                    : totalActive >= 10
-                      ? "26px"
-                      : "20px",
-              }}
-            >
-              <span
-                className="absolute text-[10px] font-semibold text-stone-900 tracking-normal normal-case"
-                style={{
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  letterSpacing: "normal",
-                  lineHeight: "1",
-                }}
-              >
-                {totalActive}
-              </span>
-            </span>
-          )}
+          <CountBadge count={totalActive} />
         </button>
-        <div className="relative shrink-0">
-          <button
-            ref={mobilePriceBtnRef}
-            onClick={() => {
-              setOpenKey(null);
-              setPriceOpen((v) => !v);
-            }}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${priceOpen ? "bg-stone-100 text-stone-900" : ""}`}
-          >
-            {state.minPrice > 0
-              ? `€${state.minPrice} - €${state.price}`
-              : `€${state.price}`}
-            <LuChevronDown
-              className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-        </div>
+        <button
+          type="button"
+          ref={mobilePriceBtnRef}
+          onClick={() => {
+            setOpenKey(null);
+            setPriceOpen((v) => !v);
+          }}
+          aria-expanded={priceOpen}
+          className={`inline-flex h-11 shrink-0 items-center gap-2 border px-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors cursor-pointer ${
+            priceOpen
+              ? "border-white bg-white text-black"
+              : "border-white/20 bg-white/[0.06] text-white"
+          }`}
+        >
+          {priceLabel}
+          <LuChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-300 ${priceOpen ? "rotate-180" : ""}`}
+          />
+        </button>
       </div>
 
-      {/* Desktop / tablet: existing horizontal tab rail */}
-      <div className="relative hidden md:block">
-        <div className="mx-auto flex max-w-10xl items-stretch gap-3 px-8">
-          <div className="filter-rail-scroll flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto">
-            <button
-              onClick={() => setAllOpen(true)}
-              className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
-              title={t("openAllFilters", "Open all filters")}
-            >
-              <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
-              {t("filter", "Filter")}
-              {totalActive > 0 && (
-                <span
-                  className="relative shrink-0 rounded-full bg-stone-900 ai-style-change-1"
-                  style={{
-                    height: "20px",
-                    width:
-                      totalActive >= 100
-                        ? "34px"
-                        : totalActive >= 10
-                          ? "26px"
-                          : "20px",
-                  }}
-                >
-                  <span
-                    className="absolute text-[13px] text-white tracking-normal normal-case"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      marginLeft: "-0.6px",
-                      transform: "translate(-50%, -50%)",
-                      letterSpacing: "normal",
-                      lineHeight: "1",
-                    }}
-                  >
-                    {totalActive}
-                  </span>
-                </span>
-              )}
-            </button>
-            {groups.map((g) => (
-              <FilterTab
-                key={g.key}
-                group={g}
-                open={openKey === g.key}
-                onOpen={() => {
-                  setPriceOpen(false);
-                  setOpenKey(openKey === g.key ? null : g.key);
-                }}
-                translateName={translateName}
-                isFrench={isFrench}
-              />
-            ))}
-            <button
-              ref={desktopPriceBtnRef}
-              onClick={() => {
-                setOpenKey(null);
-                setPriceOpen((v) => !v);
+      {/* Tablet / desktop: all-filters button, one pill per group, price */}
+      <div className="mx-auto hidden max-w-10xl items-center gap-3 px-6 py-3 md:flex lg:px-8">
+        <button
+          type="button"
+          onClick={() => setAllOpen(true)}
+          title={t("openAllFilters", "Open all filters")}
+          className="inline-flex h-10 shrink-0 items-center gap-2.5 bg-white px-4 text-[11px] font-bold uppercase tracking-[0.2em] text-black transition-colors hover:bg-[#e7e7e5] cursor-pointer"
+        >
+          <LuSlidersHorizontal className="h-3.5 w-3.5" />
+          {t("filter", "Filter")}
+          <CountBadge count={totalActive} />
+        </button>
+
+        <span className="h-6 w-px shrink-0 bg-white/15" />
+
+        <div className="filter-rail-scroll flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+          {groups.map((g) => (
+            <FilterTab
+              key={g.key}
+              group={g}
+              open={openKey === g.key}
+              onOpen={() => {
+                setPriceOpen(false);
+                setOpenKey(openKey === g.key ? null : g.key);
               }}
-              className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${priceOpen ? "bg-white text-stone-900" : ""}`}
-            >
-              {t("price", "Price")} ·{" "}
-              {state.minPrice > 0
-                ? `€${state.minPrice} - €${state.price}`
-                : `€${state.price}`}
-              <LuChevronDown
-                className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-          </div>
+              translateName={translateName}
+              isFrench={isFrench}
+            />
+          ))}
         </div>
+
+        <button
+          type="button"
+          ref={desktopPriceBtnRef}
+          onClick={() => {
+            setOpenKey(null);
+            setPriceOpen((v) => !v);
+          }}
+          aria-expanded={priceOpen}
+          className={`inline-flex h-10 shrink-0 items-center gap-2.5 whitespace-nowrap border px-3.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors cursor-pointer ${
+            priceOpen
+              ? "border-white bg-white text-black"
+              : "border-white/15 text-white/70 hover:border-white/40 hover:text-white"
+          }`}
+        >
+          {t("price", "Price")}
+          <span
+            className={`px-1.5 py-0.5 text-[11px] font-bold tracking-[0.04em] tabular-nums ${
+              priceOpen ? "bg-black text-white" : "bg-white/10 text-white"
+            }`}
+          >
+            {priceLabel}
+          </span>
+          <LuChevronDown
+            className={`h-3 w-3 transition-transform duration-300 ${priceOpen ? "rotate-180" : ""}`}
+          />
+        </button>
       </div>
 
       <PricePopover
@@ -2422,45 +2522,61 @@ function FilterRail({
         align="right"
       />
 
-      {/* Active filter chips — shown directly below the filter bar */}
+      {/* Active filter chips — one scrollable line, reset pinned right */}
       {activeChips && activeChips.length > 0 && (
-        <div className="mx-auto flex max-w-10xl flex-wrap items-center gap-2 px-8 py-2 border-t border-stone-900/10">
-          {activeChips.map((c, i) => (
-            <span
-              key={i}
-              className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-black hover:text-white"
-            >
-              {c.swatch ? (
-                <span
-                  className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                  style={{
-                    background: c.swatch,
-                    ...(c.swatch.includes("gradient") ? {} : { backgroundColor: c.swatch }),
-                  }}
-                  aria-label={c.label}
-                />
-              ) : (
-                translateName(c.label)
-              )}
-              <button
-                onClick={c.clear}
-                className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-200 hover:text-black cursor-pointer"
-                aria-label={t("removeFilter", "Remove {{label}}", { label: translateName(c.label) })}
-              >
-                <LuX className="h-2.5 w-2.5" />
-              </button>
+        <div className="border-t border-white/10 bg-[#141412]">
+          <div className="mx-auto flex max-w-10xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+            <span className="hidden shrink-0 text-[10px] font-bold uppercase tracking-[0.22em] text-white/40 sm:block">
+              {t("activeFilters", "Active")}
             </span>
-          ))}
-          <button
-            onClick={clearAllChips}
-            className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
-          >
-            {t("resetAll", "Reset all")}
-          </button>
+            <div className="filter-rail-scroll flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+              {activeChips.map((c, i) => (
+                <span
+                  key={i}
+                  className="inline-flex h-8 shrink-0 items-center gap-2 border border-white/15 bg-white/[0.05] pl-3 pr-1 text-[11px] font-medium text-white"
+                >
+                  {c.swatch ? (
+                    <span
+                      className="h-3.5 w-3.5 shrink-0 ring-1 ring-white/25"
+                      style={{
+                        background: c.swatch,
+                        ...(c.swatch.includes("gradient")
+                          ? {}
+                          : { backgroundColor: c.swatch }),
+                      }}
+                      aria-label={c.label}
+                    />
+                  ) : (
+                    <span className="whitespace-nowrap">
+                      {translateName(c.label)}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={c.clear}
+                    className="grid h-6 w-6 place-items-center text-white/45 transition-colors hover:bg-white hover:text-black cursor-pointer"
+                    aria-label={t("removeFilter", "Remove {{label}}", {
+                      label: translateName(c.label),
+                    })}
+                  >
+                    <LuX className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={clearAllChips}
+              className="inline-flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white cursor-pointer"
+            >
+              <LuRotateCcw className="h-3 w-3" />
+              {t("resetAll", "Reset all")}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Dynamic expanding filter panel container */}
+      {/* Expanding panel for the open pill */}
       <FilterPanel
         categoriesList={categoriesList}
         openKey={openKey}
@@ -2501,6 +2617,158 @@ function FilterRail({
 const PRICE_FLOOR = 0;
 const PRICE_CEILING = 500;
 
+// Small square count pill used on the filter triggers and the drawer header.
+function CountBadge({ count, tone = "dark" }) {
+  if (!count) return null;
+  return (
+    <span
+      className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center px-1.5 text-[10px] font-bold leading-none tracking-normal tabular-nums ${
+        tone === "dark" ? "bg-black text-white" : "bg-white text-black"
+      }`}
+    >
+      {count}
+    </span>
+  );
+}
+
+// One selectable filter value: a square tile with a checkbox mark, or a
+// colour swatch for the Color group. `tone="dark"` is the in-toolbar panel,
+// light is the white All-filters drawer.
+function OptionChip({ label, on, swatch, onClick, tone = "light" }) {
+  const dark = tone === "dark";
+  if (swatch) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        title={label}
+        aria-label={label}
+        aria-pressed={on}
+        className={`relative h-10 w-10 border p-1 transition-colors duration-200 cursor-pointer ${
+          on
+            ? dark
+              ? "border-white"
+              : "border-black"
+            : dark
+              ? "border-white/15 hover:border-white/50"
+              : "border-black/15 hover:border-black/50"
+        }`}
+      >
+        <span
+          className="block h-full w-full"
+          style={{
+            background: swatch,
+            ...(swatch.includes("gradient") ? {} : { backgroundColor: swatch }),
+          }}
+        />
+        {on && (
+          <span
+            className={`absolute right-0 top-0 grid h-4 w-4 place-items-center ${
+              dark ? "bg-white text-black" : "bg-black text-white"
+            }`}
+          >
+            <LuCheck className="h-2.5 w-2.5 stroke-[3]" />
+          </span>
+        )}
+      </button>
+    );
+  }
+  const chipTone = dark
+    ? on
+      ? "border-white bg-white text-black"
+      : "border-white/15 bg-white/[0.04] text-white/80 hover:border-white/50 hover:text-white"
+    : on
+      ? "border-black bg-black text-white"
+      : "border-black/15 bg-white text-[#333] hover:border-black hover:text-black";
+  const boxTone = dark
+    ? on
+      ? "border-black bg-black text-white"
+      : "border-white/30 group-hover:border-white"
+    : on
+      ? "border-white bg-white text-black"
+      : "border-black/30 group-hover:border-black";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={`group inline-flex min-h-9 items-center gap-2.5 border px-3.5 py-2 text-left text-[12px] leading-tight transition-colors duration-200 cursor-pointer ${chipTone}`}
+    >
+      <span
+        className={`grid h-3.5 w-3.5 shrink-0 place-items-center border transition-colors ${boxTone}`}
+      >
+        {on && <LuCheck className="h-2.5 w-2.5 stroke-[3]" />}
+      </span>
+      {label}
+    </button>
+  );
+}
+
+function GroupSearch({ value, onChange, placeholder, tone = "light" }) {
+  const dark = tone === "dark";
+  return (
+    <div className="relative mb-4 max-w-md">
+      <LuSearch
+        className={`pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 ${
+          dark ? "text-white/45" : "text-black/40"
+        }`}
+      />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`h-10 w-full border pl-10 pr-10 text-[13px] transition-colors focus:outline-none ${
+          dark
+            ? "border-white/15 bg-white/[0.05] text-white placeholder:text-white/35 focus:border-white/60"
+            : "border-black/15 bg-white text-black placeholder:text-black/35 focus:border-black"
+        }`}
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label="Clear"
+          className={`absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center transition-colors cursor-pointer ${
+            dark
+              ? "text-white/45 hover:bg-white hover:text-black"
+              : "text-black/40 hover:bg-black hover:text-white"
+          }`}
+        >
+          <LuX className="h-3 w-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function OptionList({
+  group,
+  filtered,
+  searchable,
+  colorSwatches,
+  translateName,
+  maxHeight,
+  tone = "light",
+}) {
+  const isColor = group.key === "color";
+  return (
+    <div
+      className={`flex flex-wrap gap-2 ${searchable ? `${maxHeight} overflow-y-auto pr-1` : ""}`}
+    >
+      {filtered.map((opt) => (
+        <OptionChip
+          key={opt}
+          tone={tone}
+          label={translateName(opt)}
+          on={group.values.includes(opt)}
+          swatch={isColor ? colorSwatches?.[opt] : undefined}
+          onClick={() => group.setter(opt)}
+        />
+      ))}
+    </div>
+  );
+}
+
 // Dual-thumb price slider — two overlapping range inputs whose track is
 // pointer-events-none so only each thumb (styled via the pseudo-element
 // arbitrary variants below) is actually clickable. `onChangeMin`/`onChangeMax`
@@ -2523,47 +2791,58 @@ function PriceRangeControl({
     ((maxValue - PRICE_FLOOR) / (PRICE_CEILING - PRICE_FLOOR)) * 100;
 
   const thumbClasses =
-    "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-stone-900 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-stone-900 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:appearance-none";
+    "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:shadow-[0_0_0_1px_#000] [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:appearance-none";
+
+  const fieldClass =
+    "flex h-11 items-center border border-black/15 bg-white transition-colors focus-within:border-black";
+  const inputClass =
+    "w-full min-w-0 bg-transparent px-2 text-[14px] font-semibold text-black tabular-nums focus:outline-none";
 
   return (
     <div>
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-stone-500">
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block">
+          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-black/45">
             {t("from", "From")}
-          </label>
-          <input
-            type="number"
-            min={PRICE_FLOOR}
-            max={maxValue}
-            value={minValue}
-            onChange={(e) =>
-              onChangeMin(Math.min(Number(e.target.value) || 0, maxValue))
-            }
-            className="w-full border border-stone-900/15 bg-white px-3 py-2.5 font-serif text-sm text-stone-900 transition-colors focus:border-stone-900 focus:outline-none"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-stone-500">
+          </span>
+          <span className={fieldClass}>
+            <span className="pl-3 text-[13px] text-black/40">€</span>
+            <input
+              type="number"
+              min={PRICE_FLOOR}
+              max={maxValue}
+              value={minValue}
+              onChange={(e) =>
+                onChangeMin(Math.min(Number(e.target.value) || 0, maxValue))
+              }
+              className={inputClass}
+            />
+          </span>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-black/45">
             {t("to", "To")}
-          </label>
-          <input
-            type="number"
-            min={minValue}
-            max={PRICE_CEILING}
-            value={maxValue}
-            onChange={(e) =>
-              onChangeMax(Math.max(Number(e.target.value) || 0, minValue))
-            }
-            className="w-full border border-stone-900/15 bg-white px-3 py-2.5 font-serif text-sm text-stone-900 transition-colors focus:border-stone-900 focus:outline-none"
-          />
-        </div>
+          </span>
+          <span className={fieldClass}>
+            <span className="pl-3 text-[13px] text-black/40">€</span>
+            <input
+              type="number"
+              min={minValue}
+              max={PRICE_CEILING}
+              value={maxValue}
+              onChange={(e) =>
+                onChangeMax(Math.max(Number(e.target.value) || 0, minValue))
+              }
+              className={inputClass}
+            />
+          </span>
+        </label>
       </div>
 
       <div className="relative mt-6 h-4">
-        <div className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 bg-stone-900/15" />
+        <div className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 bg-black/15" />
         <div
-          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-stone-900"
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-black"
           style={{ left: `${percentMin}%`, right: `${100 - percentMax}%` }}
         />
         <input
@@ -2574,7 +2853,7 @@ function PriceRangeControl({
           onChange={(e) =>
             onChangeMin(Math.min(Number(e.target.value), maxValue))
           }
-          className={`pointer-events-none absolute inset-0 w-full h-4 appearance-none bg-transparent ${thumbClasses}`}
+          className={`pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent ${thumbClasses}`}
         />
         <input
           type="range"
@@ -2584,28 +2863,28 @@ function PriceRangeControl({
           onChange={(e) =>
             onChangeMax(Math.max(Number(e.target.value), minValue))
           }
-          className={`pointer-events-none absolute inset-0 w-full h-4 appearance-none bg-transparent ${thumbClasses}`}
+          className={`pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent ${thumbClasses}`}
         />
       </div>
 
-      <div className="mt-2 flex justify-between text-[10px] uppercase tracking-[0.2em] text-stone-500">
+      <div className="mt-2 flex justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-black/40 tabular-nums">
         <span>€{PRICE_FLOOR}</span>
         <span>€{PRICE_CEILING}</span>
       </div>
 
       {showActions && (
-        <div className="mt-5 flex items-center gap-3">
+        <div className="mt-6 grid grid-cols-[auto_1fr] gap-2">
           <button
             type="button"
             onClick={onReset}
-            className="border border-stone-900/20 px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 transition-colors hover:border-stone-900 hover:bg-stone-100 cursor-pointer"
+            className="h-11 border border-black/20 px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:border-black cursor-pointer"
           >
             {t("reset", "Reset")}
           </button>
           <button
             type="button"
             onClick={onApply}
-            className="flex-1 bg-stone-900 px-5 py-2.5 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
+            className="h-11 bg-black px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-colors hover:bg-[#2a2a28] cursor-pointer"
           >
             {applyLabel || t("apply", "Apply")}
           </button>
@@ -2652,7 +2931,7 @@ function PricePopover({
       if (!anchor) return;
       const rect = anchor.getBoundingClientRect();
       setCoords({
-        top: rect.bottom + 10,
+        top: rect.bottom + 8,
         left: rect.left,
         right: window.innerWidth - rect.right,
       });
@@ -2671,45 +2950,52 @@ function PricePopover({
   return createPortal(
     <div
       ref={panelRef}
-      className="fixed z-[200] w-[320px] max-w-[calc(100vw-2rem)] border border-stone-900/10 bg-white p-6 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)]"
+      className="fixed z-[200] w-[340px] max-w-[calc(100vw-2rem)] border border-black/10 bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] animate-scale-in"
       style={{
         top: coords.top,
         ...(align === "right" ? { right: coords.right } : { left: coords.left }),
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-xs uppercase tracking-[0.2em] text-stone-500">
-          {t("price", "Price")}
-        </h3>
+      <div className="flex items-start justify-between gap-4 border-b border-[#e8e6df] px-5 py-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-black/45">
+            {t("price", "Price")}
+          </p>
+          <p className="mt-1 text-[20px] font-extrabold leading-none tracking-[-0.02em] text-black tabular-nums">
+            €{draftMin} – €{draftMax}
+          </p>
+        </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="text-stone-900 hover:text-stone-600 cursor-pointer"
+          className="grid h-8 w-8 shrink-0 place-items-center border border-black/15 text-black transition-colors hover:bg-black hover:text-white cursor-pointer"
         >
           <LuX className="h-4 w-4" />
         </button>
       </div>
 
-      <PriceRangeControl
-        minValue={draftMin}
-        maxValue={draftMax}
-        onChangeMin={setDraftMin}
-        onChangeMax={setDraftMax}
-        onReset={() => {
-          setDraftMin(0);
-          setDraftMax(PRICE_CEILING);
-          setMinPrice(0);
-          setPrice(PRICE_CEILING);
-        }}
-        onApply={() => {
-          setMinPrice(draftMin);
-          setPrice(draftMax);
-          onClose();
-        }}
-        applyLabel={t("done", "Done")}
-      />
+      <div className="p-5">
+        <PriceRangeControl
+          minValue={draftMin}
+          maxValue={draftMax}
+          onChangeMin={setDraftMin}
+          onChangeMax={setDraftMax}
+          onReset={() => {
+            setDraftMin(0);
+            setDraftMax(PRICE_CEILING);
+            setMinPrice(0);
+            setPrice(PRICE_CEILING);
+          }}
+          onApply={() => {
+            setMinPrice(draftMin);
+            setPrice(draftMax);
+            onClose();
+          }}
+          applyLabel={t("done", "Done")}
+        />
+      </div>
     </div>,
     document.body,
   );
@@ -2770,64 +3056,40 @@ function AllFiltersModal({
   return createPortal(
     <div className="fixed inset-0 z-[100] flex justify-end">
       <div
-        className={`absolute inset-0 bg-stone-900/40 backdrop-blur-sm ${
+        className={`absolute inset-0 bg-black/45 backdrop-blur-[2px] ${
           isClosing ? "animate-fade-out" : "animate-fade-in"
         }`}
         onClick={handleClose}
       />
       <aside
-        className={`relative flex h-full w-full max-w-[560px] flex-col bg-stone-50 shadow-2xl ${
+        className={`relative flex h-full w-full max-w-[480px] flex-col bg-white shadow-2xl ${
           isClosing ? "animate-slide-out-right" : "animate-slide-in-right"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-stone-900/10 bg-white px-7 py-5">
-          <div className="flex items-baseline gap-3">
-            <span className="text-xs uppercase tracking-[0.25em] text-stone-500">
-              {t("all", "All")}
-            </span>
-            <h2 className="font-serif text-3xl text-stone-900">
+        <div className="flex items-start justify-between gap-4 border-b border-[#e8e6df] px-5 pb-5 pt-6 sm:px-7">
+          <div>
+            <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.28em] text-black/45">
+              <LuSlidersHorizontal className="h-3.5 w-3.5" />
+              {t("refine", "Refine")}
+            </p>
+            <h2 className="mt-2 flex items-center gap-3 text-[28px] font-extrabold uppercase leading-none tracking-[-0.03em] text-black">
               {t("filters", "Filters")}
+              <CountBadge count={totalActive} />
             </h2>
-            {totalActive > 0 && (
-              <span
-                className="relative shrink-0 rounded-full bg-stone-900"
-                style={{
-                  height: "20px",
-                  width:
-                    totalActive >= 100
-                      ? "34px"
-                      : totalActive >= 10
-                        ? "26px"
-                        : "20px",
-                }}
-              >
-                <span
-                  className="absolute text-[13px] text-white tracking-normal normal-case"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    marginLeft: "-0.6px",
-                    transform: "translate(-50%, -50%)",
-                    letterSpacing: "normal",
-                    lineHeight: "1",
-                  }}
-                >
-                  {totalActive}
-                </span>
-              </span>
-            )}
           </div>
           <button
+            type="button"
             onClick={handleClose}
-            className="flex h-9 w-9 items-center text-stone-900 justify-center rounded-full border border-stone-900/15 transition hover:bg-stone-900 hover:text-white cursor-pointer"
+            aria-label="Close"
+            className="grid h-10 w-10 shrink-0 place-items-center border border-black/15 text-black transition-colors hover:bg-black hover:text-white cursor-pointer"
           >
             <LuX className="h-4 w-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-7 py-6">
+        <div className="flex-1 overflow-y-auto px-5 sm:px-7">
           {groups
             .filter((g) => !g.disabled)
             .map((g) => (
@@ -2841,10 +3103,12 @@ function AllFiltersModal({
             ))}
 
           {/* Price */}
-          <section className="border-t text-stone-900 border-stone-900/10 py-5">
-            <div className="mb-3 flex items-baseline justify-between">
-              <h3 className="font-serif text-lg">{t("price", "Price")}</h3>
-              <span className="font-serif text-xl">
+          <section className="py-6">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-black">
+                {t("price", "Price")}
+              </h3>
+              <span className="text-[15px] font-extrabold text-black tabular-nums">
                 €{draftMinPrice} – €{draftPrice}
               </span>
             </div>
@@ -2859,18 +3123,22 @@ function AllFiltersModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-stone-900/10 bg-white px-7 py-4">
+        <div className="grid grid-cols-[auto_1fr] gap-2 border-t border-[#e8e6df] bg-white p-4 sm:px-7">
           <button
+            type="button"
             onClick={handleClearAll}
-            className="text-xs uppercase tracking-[0.2em] text-stone-500 underline underline-offset-4 hover:text-stone-900 cursor-pointer"
+            className="inline-flex h-12 items-center gap-2 border border-black/20 px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:border-black cursor-pointer"
           >
+            <LuRotateCcw className="h-3.5 w-3.5" />
             {t("resetAll", "Reset all")}
           </button>
           <button
+            type="button"
             onClick={handleShowResults}
-            className=" bg-stone-900 px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 cursor-pointer"
+            className="group inline-flex h-12 items-center justify-center gap-3 bg-black px-6 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-colors hover:bg-[#2a2a28] cursor-pointer"
           >
             {t("showResults", "Show results")}
+            <LuArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
         </div>
       </aside>
@@ -2902,87 +3170,41 @@ function ModalGroupSection({ g, colorSwatches, translateName, isFrench }) {
     searchable && q
       ? g.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
       : g.options;
-  const isColor = g.key === "color";
   const displayTitle = t(`labels.${g.key}`, g.label);
   const searchPlaceholder = t("searchGroupPlaceholder", "Search {{label}}…", {
     label: displayTitle.toLowerCase(),
   });
 
   return (
-    <section className="border-b border-stone-900/10 py-5 last:border-b-0">
-      <div className="mb-3 flex items-baseline justify-between">
-        <div className="flex items-baseline gap-2">
-          <h3 className="font-serif text-lg text-stone-900">{displayTitle}</h3>
-          {g.values.length > 0 && (
-            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              {t("selectedCount", "{{count}} selected", {
-                count: g.values.length,
-              })}
-            </span>
-          )}
-        </div>
+    <section className="border-b border-[#e8e6df] py-6">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-black">
+          {displayTitle}
+        </h3>
+        {g.values.length > 0 && (
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45">
+            {t("selectedCount", "{{count}} selected", {
+              count: g.values.length,
+            })}
+          </span>
+        )}
       </div>
       {searchable && (
-        <div className="relative mb-3">
-          <LuSearch className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="h-9 w-full border border-stone-900/15 bg-white pl-8 pr-8 text-xs placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
-          />
-          {q && (
-            <button
-              onClick={() => setQ("")}
-              className="absolute right-2  top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
-            >
-              <LuX className="h-3 w-3" />
-            </button>
-          )}
-        </div>
+        <GroupSearch value={q} onChange={setQ} placeholder={searchPlaceholder} />
       )}
       {filtered.length === 0 ? (
-        <div className="text-xs text-stone-400">
+        <div className="text-[12px] text-black/40">
           {t("noOptions", "No options")}
         </div>
       ) : (
-        <div
-          className={`flex flex-wrap gap-2 ${searchable ? "max-h-60 overflow-y-auto pr-1" : ""}`}
-        >
-          {filtered.map((opt) => {
-            const on = g.values.includes(opt);
-            const swatch = isColor ? colorSwatches?.[opt] : undefined;
-            return (
-              <button
-                key={opt}
-                onClick={() => g.setter(opt)}
-                className={`group inline-flex items-center gap-1.5 border ${isColor ? "px-1.5 py-1.5" : "px-3.5 py-1.5"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
-                  on
-                    ? "border-stone-900 bg-stone-900 text-white shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)]"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-900"
-                }`}
-              >
-                {swatch ? (
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                    style={{
-                      background: swatch,
-                      ...(swatch.includes("gradient")
-                        ? {}
-                        : { backgroundColor: swatch }),
-                    }}
-                    aria-hidden
-                  />
-                ) : on ? (
-                  <span className="grid place-items-center rounded-full overflow-hidden bg-stone-300 mr-0.5 h-4 w-4">
-                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-black" />
-                  </span>
-                ) : null}
-                {!isColor && translateName(opt)}
-              </button>
-            );
-          })}
-        </div>
+        <OptionList
+          group={g}
+          filtered={filtered}
+          searchable={searchable}
+          colorSwatches={colorSwatches}
+          translateName={translateName}
+          maxHeight="max-h-60"
+        />
       )}
     </section>
   );
@@ -2999,43 +3221,25 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
 
   return (
     <button
+      type="button"
       onClick={onOpen}
       disabled={group.disabled}
       title={group.disabled ? displayTip : undefined}
-      className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer font-semibold ai-style-change-3 ${
+      aria-expanded={open}
+      className={`inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap border px-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
         group.disabled
-          ? "cursor-not-allowed text-stone-300"
-          : active
-            ? "text-stone-900 font-semibold"
-            : "text-stone-600 hover:text-stone-900"
-      } ${open ? "bg-stone-100 text-stone-900" : ""}`}
+          ? "cursor-not-allowed border-white/[0.06] text-white/25"
+          : open
+            ? "border-white bg-white text-black cursor-pointer"
+            : active
+              ? "border-white/60 text-white cursor-pointer"
+              : "border-white/15 text-white/70 hover:border-white/40 hover:text-white cursor-pointer"
+      }`}
     >
       {displayLabel}
-      {active && (
-        <span
-          className="relative shrink-0  border-opacity-15 rounded-full bg-stone-900 box-border"
-          style={{
-            height: "20px",
-            width: count >= 100 ? "34px" : count >= 10 ? "26px" : "20px",
-          }}
-        >
-          <span
-            className="absolute text-[12px] font-medium text-stone-100 tracking-normal normal-case"
-            style={{
-              top: "50%",
-              left: "50%",
-              marginLeft: "-0.6px",
-              transform: "translate(-50%, -50%)",
-              letterSpacing: "normal",
-              lineHeight: "1",
-            }}
-          >
-            {count}
-          </span>
-        </span>
-      )}
+      <CountBadge count={count} tone={open ? "dark" : "light"} />
       <LuChevronDown
-        className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`}
+        className={`h-3 w-3 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
       />
     </button>
   );
@@ -3164,13 +3368,11 @@ function FilterPanel({
 
   return (
     <div
-      className={`overflow-hidden transition-all duration-300 ease-in-out border-t border-stone-900/10 bg-stone-100 ${
-        isOpen
-          ? "max-h-[500px] opacity-100 py-6 sm:py-7"
-          : "max-h-0 opacity-0 py-0"
+      className={`overflow-hidden border-t border-white/10 bg-[#141412] text-white transition-all duration-300 ease-in-out ${
+        isOpen ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0"
       }`}
     >
-      <div className="mx-auto max-w-10xl px-8">
+      <div className="mx-auto max-w-10xl px-6 py-6 sm:py-7 lg:px-8">
         {group ? (
           <FilterSheetContent
             group={group}
@@ -3199,7 +3401,6 @@ function FilterSheetContent({
     searchable && q
       ? group.options.filter((o) => o.toLowerCase().includes(q.toLowerCase()))
       : group.options;
-  const isColor = group.key === "color";
   const displayTitle = t(`labels.${group.key}`, group.label);
   const searchPlaceholder = t("searchGroupPlaceholder", "Search {{label}}…", {
     label: displayTitle.toLowerCase(),
@@ -3211,96 +3412,68 @@ function FilterSheetContent({
 
   return (
     <>
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-[0.25em] text-stone-500">
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/45">
             {t("filterBy", "Filter by")}
-          </span>
-          <h3 className="font-serif text-2xl">{displayTitle}</h3>
-          {group.values.length > 0 && (
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-              {t("selectedCount", "{{count}} selected", {
-                count: group.values.length,
-              })}
-            </span>
-          )}
+          </p>
+          <h3 className="mt-1.5 flex items-center gap-3 text-[22px] font-extralight uppercase leading-none tracking-[-0.02em] text-white">
+            {displayTitle}
+            <CountBadge count={group.values.length} tone="light" />
+          </h3>
         </div>
-        <button
-          onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-900/15 hover:bg-stone-100 cursor-pointer"
-        >
-          <LuX className="h-4 w-4" />
-        </button>
-      </div>
-      {searchable && (
-        <div className="relative mb-4 max-w-md">
-          <LuSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="h-10 w-full border border-stone-900/15 bg-white pl-9 pr-9 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
-          />
-          {q && (
+        <div className="flex shrink-0 items-center gap-2">
+          {group.values.length > 0 && (
             <button
-              onClick={() => setQ("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
+              type="button"
+              // setter toggles, so toggling every selected value clears the group
+              onClick={() => group.values.forEach((v) => group.setter(v))}
+              className="inline-flex h-9 items-center gap-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white cursor-pointer"
             >
-              <LuX className="h-3 w-3" />
+              <LuRotateCcw className="h-3 w-3" />
+              {t("clear", "Clear")}
             </button>
           )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-9 w-9 place-items-center border border-white/20 text-white transition-colors hover:bg-white hover:text-black cursor-pointer"
+          >
+            <LuX className="h-4 w-4" />
+          </button>
         </div>
+      </div>
+      {searchable && (
+        <GroupSearch
+          value={q}
+          onChange={setQ}
+          placeholder={searchPlaceholder}
+          tone="dark"
+        />
       )}
       {filtered.length === 0 ? (
-        <div className="text-sm text-stone-500">
+        <div className="text-[13px] text-white/45">
           {t("noOptionsAvailable", "No options available.")}
         </div>
       ) : (
-        <div
-          className={`flex flex-wrap gap-2 ${searchable ? "max-h-[320px] overflow-y-auto pr-1" : ""}`}
-        >
-          {filtered.map((opt) => {
-            const on = group.values.includes(opt);
-            const swatch = isColor ? colorSwatches?.[opt] : undefined;
-            return (
-              <button
-                key={opt}
-                onClick={() => group.setter(opt)}
-                className={`group inline-flex items-center gap-1.5 border ${isColor ? "px-1.5 py-1.5" : "px-4 py-2"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
-                  on
-                    ? "border-stone-900 bg-stone-900 text-white shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)]"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:shadow-sm"
-                }`}
-              >
-                {swatch ? (
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                    style={{
-                      background: swatch,
-                      ...(swatch.includes("gradient")
-                        ? {}
-                        : { backgroundColor: swatch }),
-                    }}
-                    aria-hidden
-                  />
-                ) : on ? (
-                  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
-                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
-                  </span>
-                ) : null}
-
-                {!isColor && translateName(opt)}
-              </button>
-            );
-          })}
-        </div>
+        <OptionList
+          group={group}
+          filtered={filtered}
+          searchable={searchable}
+          colorSwatches={colorSwatches}
+          translateName={translateName}
+          maxHeight="max-h-[300px]"
+          tone="dark"
+        />
       )}
     </>
   );
 }
 // ───────────── Sort Menu ─────────────
 
-function SortMenu({ value, onChange }) {
+function SortMenu({ value, onChange, tone = "light" }) {
+  const dark = tone === "dark";
   const { t } = useTranslation("filter");
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -3360,21 +3533,37 @@ function SortMenu({ value, onChange }) {
   }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
+        type="button"
         onClick={handleOpen}
-        className="flex items-center gap-2 border-b border-stone-900 pb-1 text-sm cursor-pointer"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex h-12 items-center gap-3 border px-3.5 text-left transition-colors cursor-pointer sm:px-4 ${
+          dark
+            ? `bg-white/[0.06] text-white backdrop-blur-sm ${open ? "border-white" : "border-white/20 hover:border-white/50"}`
+            : `bg-white text-black ${open ? "border-black" : "border-black/15 hover:border-black"}`
+        }`}
       >
-        {getSortLabel(value)}
+        <LuArrowDownUp className="h-4 w-4 shrink-0" />
+        <span className="flex min-w-0 flex-col leading-none">
+          <span className={`hidden text-[9px] font-semibold uppercase tracking-[0.22em] sm:block ${dark ? "text-white/50" : "text-black/45"}`}>
+            {t("sort", "Sort")}
+          </span>
+          <span className="max-w-[92px] truncate text-[12px] font-semibold sm:mt-1 sm:max-w-[150px]">
+            {getSortLabel(value)}
+          </span>
+        </span>
         <LuChevronDown
-          className="h-3 w-3 transition-transform duration-200 ease-in-out"
+          className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 ease-in-out"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </button>
 
       {open && (
         <div
-          className="absolute right-0 top-full z-30 mt-2 w-56 border border-stone-900/10 bg-white p-2 origin-top"
+          role="listbox"
+          className="absolute right-0 top-full z-[45] mt-2 w-60 origin-top border border-black/10 bg-white py-1.5 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.3)]"
           style={{
             animation: isClosing
               ? "sortMenuClose 0.2s cubic-bezier(0.4, 0, 1, 1) forwards"
@@ -3391,15 +3580,27 @@ function SortMenu({ value, onChange }) {
               to   { opacity: 0; transform: scaleY(0.85) translateY(-6px); }
             }
           `}</style>
-          {opts.map((o) => (
-            <button
-              key={o}
-              onClick={() => handleSelect(o)}
-              className={`block w-full px-3 py-2 text-left text-sm hover:bg-stone-100 cursor-pointer ${value === o ? "font-semibold" : ""}`}
-            >
-              {getSortLabel(o)}
-            </button>
-          ))}
+          <p className="px-4 pb-2 pt-1.5 text-[9px] font-bold uppercase tracking-[0.24em] text-black/40">
+            {t("sort", "Sort")}
+          </p>
+          {opts.map((o) => {
+            const selected = value === o;
+            return (
+              <button
+                type="button"
+                role="option"
+                aria-selected={selected}
+                key={o}
+                onClick={() => handleSelect(o)}
+                className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] transition-colors hover:bg-[#f5f4f0] cursor-pointer ${
+                  selected ? "font-semibold text-black" : "text-[#444]"
+                }`}
+              >
+                {getSortLabel(o)}
+                {selected && <LuCheck className="h-4 w-4 shrink-0" />}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

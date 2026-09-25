@@ -125,11 +125,11 @@ export function LandingProductFinder({ data }) {
           <div className="relative z-10 w-full px-4 sm:px-10 md:px-14 py-8 sm:py-12 flex flex-col justify-between h-full flex-1">
             {/* Top Bar: Step Indicator & Title */}
             <div className="w-full mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-0.5 bg-white text-black text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase rounded-none">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                <span className="shrink-0 px-2.5 py-0.5 bg-white text-black text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase rounded-none">
                   FINDER WIZARD
                 </span>
-                <span className="h-px w-10 bg-white/40" />
+                <span className="hidden min-[400px]:block h-px w-10 bg-white/40" />
                 <span className="text-[10px] font-mono tracking-[0.22em] text-white/80 uppercase">
                   CUSTOM FORMULATION RECOMMENDATION
                 </span>

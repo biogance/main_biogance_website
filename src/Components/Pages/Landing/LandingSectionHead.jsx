@@ -21,22 +21,22 @@ export default function LandingSectionHead({
       }`}
     >
       {/* Top Row — Eyebrow Badge Left + Navigation Controls Right */}
-      <div className="flex items-center justify-between gap-4 mb-3 sm:mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-3 sm:mb-4">
         <div
-          className={`flex items-center gap-2.5 sm:gap-3 ${
+          className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${
             dark ? "text-white" : "text-black"
           }`}
         >
           {index ? (
             <span
-              className={`px-2.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] rounded-none ${
+              className={`shrink-0 px-2.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] rounded-none ${
                 dark ? "bg-white text-black" : "bg-black text-white"
               }`}
             >
               {index}
             </span>
           ) : null}
-          <span className={`h-px w-8 sm:w-12 ${dark ? "bg-white/40" : "bg-black/30"}`} />
+          <span className={`h-px w-8 sm:w-12 shrink-0 ${dark ? "bg-white/40" : "bg-black/30"}`} />
           <span
             className={`text-[9px] sm:text-[10px] font-bold tracking-[0.28em] uppercase ${
               dark ? "text-white/70" : "text-[#666]"
@@ -48,7 +48,7 @@ export default function LandingSectionHead({
 
         {/* Right Pinned Navigation Action Controls */}
         {children ? (
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0 max-w-full">
             {children}
           </div>
         ) : null}
