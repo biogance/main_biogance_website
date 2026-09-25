@@ -166,5 +166,12 @@
   "inThisEdit": "Dans cette sélection",
   "speciesLabel": "Espèces",
   "rangesLabel": "Gammes",
-  "rangesCount": "{{count}} gammes"
+  "rangesCount": "{{count}} gammes",
+  "recentlyViewedDesc": "Les formules que vous avez consultées récemment — réunies ici pour comparer et choisir.",
+  "keepBrowsing": "Continuer à explorer",
+  "allArticles": "Tous les articles",
+  "journalTag": "Journal",
+  "expertAdvice": "Conseil d'expert",
+  "readFullArticle": "Lire l'article complet",
+  "showLessArticle": "Réduire"
 }

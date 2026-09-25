@@ -166,5 +166,12 @@
   "inThisEdit": "In this edit",
   "speciesLabel": "Species",
   "rangesLabel": "Ranges",
-  "rangesCount": "{{count}} ranges"
+  "rangesCount": "{{count}} ranges",
+  "recentlyViewedDesc": "The formulations you looked at most recently — back in one place so you can compare and decide.",
+  "keepBrowsing": "Keep browsing",
+  "allArticles": "All articles",
+  "journalTag": "Journal",
+  "expertAdvice": "Expert advice",
+  "readFullArticle": "Read the full article",
+  "showLessArticle": "Show less"
 }

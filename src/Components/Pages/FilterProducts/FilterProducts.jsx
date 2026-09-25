@@ -656,6 +656,8 @@ export default function FilterProducts() {
   // Mobile-only: the shop description sits inside a collapsed accordion
   // instead of always showing (desktop keeps it always visible).
   const [mobileDescOpen, setMobileDescOpen] = useState(false);
+  // Journal article under the grid starts collapsed behind a fade.
+  const [articleOpen, setArticleOpen] = useState(false);
 
   useEffect(() => {
     const val = q || "";
@@ -2163,25 +2165,68 @@ export default function FilterProducts() {
       </section>
 
       {!isSearching && !isSearchPending && recentViews.length > 0 && (
-        <section className="border-t border-[#d6d4cc] bg-[#f5f4f0] py-14 sm:py-20">
-          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 border-b border-black/15 pb-6 sm:mb-10">
-              <div className="mb-3 flex items-center gap-3">
+        <section
+          className="border-t border-[#d6d4cc] bg-[#f5f4f0] py-14 sm:py-20"
+          style={{ fontFamily: SHOP_FONT }}
+        >
+          <div className="mx-auto grid max-w-10xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] lg:gap-14 lg:px-8">
+            {/* Intro — sticks beside the cards on desktop */}
+            <div className="lg:sticky lg:top-[200px] lg:self-start">
+              <div className="mb-5 flex items-center gap-3">
                 <span className="bg-black px-2.5 py-0.5 text-[10px] font-bold tracking-[0.2em] text-white tabular-nums">
                   {String(Math.min(recentViews.length, 3)).padStart(2, "0")}
                 </span>
                 <span className="h-px w-8 bg-black/30" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#666]">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-black/50">
                   {t("pickUpWhereYouLeft", "Pick up where you left off")}
                 </span>
               </div>
-              <h2 className="text-[clamp(26px,4vw,48px)] font-extrabold uppercase leading-[1.02] tracking-[-0.035em] text-black">
-                {t("recentlyViewed", "Recently Viewed")}
+              <h2 className="text-[clamp(34px,4.2vw,60px)] font-extralight uppercase leading-[0.95] tracking-[-0.035em] text-black">
+                {(() => {
+                  const words = String(
+                    t("recentlyViewed", "Recently Viewed"),
+                  ).split(" ");
+                  const last = words.pop();
+                  return (
+                    <>
+                      {words.join(" ")}{" "}
+                      <span
+                        className="font-normal normal-case italic tracking-[-0.02em]"
+                        style={{ fontFamily: SHOP_FONT_SERIF }}
+                      >
+                        {last}
+                      </span>
+                    </>
+                  );
+                })()}
               </h2>
+              <p className="mt-5 max-w-[320px] text-[14px] font-light leading-[1.7] text-black/60">
+                {t(
+                  "recentlyViewedDesc",
+                  "The formulations you looked at most recently — back in one place so you can compare and decide.",
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="group mt-7 inline-flex h-11 items-center gap-3 border border-black px-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-black transition-colors hover:bg-black hover:text-white cursor-pointer"
+              >
+                {t("keepBrowsing", "Keep browsing")}
+                <LuArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
             </div>
-            <div className="flex flex-wrap justify-center gap-6">
+
+            {/* Cards */}
+            <div
+              className={`grid grid-cols-2 gap-[3px] ${
+                recentViews.length >= 3 ? "md:grid-cols-3" : "md:max-w-[760px]"
+              }`}
+            >
               {recentViews.slice(0, 3).map((p, i) => (
-                <div key={p.id} className="w-[350px] max-w-full">
+                <div
+                  key={p.id}
+                  className={`w-full ${i === 2 ? "hidden md:block" : ""}`}
+                >
                   <LandingCards
                     product={p}
                     showNav={true}
@@ -2197,49 +2242,103 @@ export default function FilterProducts() {
       )}
 
       {!isSearching && !isSearchPending && featuredBlog && (
-        <section className="border-t border-[#d6d4cc] bg-white py-14 sm:py-20">
-          <div className="mx-auto grid max-w-10xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-16 lg:px-8">
-            <div className="lg:sticky lg:top-[200px] lg:self-start">
-              <div className="mb-4 flex items-center gap-3">
-                <span className="grid h-7 w-7 place-items-center bg-black text-white">
+        <section
+          className="bg-[#0b0b0a] py-14 text-white sm:py-20"
+          style={{ fontFamily: SHOP_FONT }}
+        >
+          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
+            {/* Section rail */}
+            <div className="mb-8 flex items-center justify-between gap-4 border-b border-white/15 pb-5 sm:mb-12">
+              <div className="flex items-center gap-3">
+                <span className="grid h-7 w-7 place-items-center bg-white text-black">
                   <LuBookOpen className="h-3.5 w-3.5" />
                 </span>
-                <span className="h-px w-8 bg-black/30" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#666]">
+                <span className="h-px w-8 bg-white/30" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-white/60">
                   {t("fromJournal", "From the journal")}
                 </span>
               </div>
-              <h2 className="text-[clamp(26px,3.4vw,44px)] font-extrabold uppercase leading-[1.04] tracking-[-0.03em] text-black">
-                {isFrench && featuredBlog.french_name
-                  ? featuredBlog.french_name
-                  : featuredBlog.name}
-              </h2>
-              {featuredBlog.images?.[0]?.media && (
-                <div className="mt-6 aspect-[4/3] w-full overflow-hidden border border-[#d6d4cc] bg-[#f5f4f0]">
-                  <img
-                    src={`${MEDIA_URL}${featuredBlog.images[0].media}`}
-                    alt={
-                      isFrench && featuredBlog.french_name
-                        ? featuredBlog.french_name
-                        : featuredBlog.name
-                    }
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
+              <Link
+                href="/advices"
+                className="group inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70 transition-colors hover:text-white"
+              >
+                {t("allArticles", "All articles")}
+                <LuArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
             </div>
 
-            {/* Rich text from the API — styled here since the typography
-                plugin isn't installed. */}
-            <div
-              className="max-w-none text-[15px] leading-[1.8] text-[#444] [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_h1]:mb-4 [&_h1]:mt-10 [&_h1]:text-[26px] [&_h1]:font-extrabold [&_h1]:uppercase [&_h1]:leading-tight [&_h1]:tracking-[-0.02em] [&_h1]:text-black [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-[22px] [&_h2]:font-extrabold [&_h2]:uppercase [&_h2]:leading-tight [&_h2]:tracking-[-0.02em] [&_h2]:text-black [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-[17px] [&_h3]:font-bold [&_h3]:text-black [&_li]:mb-1.5 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-5 [&_strong]:text-black [&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-5 [&>*:first-child]:mt-0"
-              dangerouslySetInnerHTML={{
-                __html:
-                  (isFrench && featuredBlog.long_french_description) ||
-                  featuredBlog.long_description ||
-                  "",
-              }}
-            />
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+              {/* Cover — sticks while the article scrolls */}
+              <div className="lg:sticky lg:top-[200px] lg:self-start">
+                {featuredBlog.images?.[0]?.media ? (
+                  <div className="group relative aspect-[4/5] w-full overflow-hidden border border-white/10 bg-white/[0.04]">
+                    <img
+                      src={`${MEDIA_URL}${featuredBlog.images[0].media}`}
+                      alt={
+                        isFrench && featuredBlog.french_name
+                          ? featuredBlog.french_name
+                          : featuredBlog.name
+                      }
+                      className="h-full w-full object-cover grayscale-[35%] transition-all duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <span className="absolute left-4 top-4 bg-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-black">
+                      {t("journalTag", "Journal")}
+                    </span>
+                    <span className="absolute bottom-4 left-4 right-4 text-[10px] font-medium uppercase tracking-[0.24em] text-white/80">
+                      Biogance · {t("expertAdvice", "Expert advice")}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="grid aspect-[4/5] w-full place-items-center border border-white/10 bg-white/[0.04]">
+                    <LuBookOpen className="h-10 w-10 text-white/30" />
+                  </div>
+                )}
+              </div>
+
+              {/* Article */}
+              <div className="min-w-0">
+                <h2 className="text-[clamp(28px,3.4vw,50px)] font-extralight uppercase leading-[1.02] tracking-[-0.03em] text-white">
+                  {isFrench && featuredBlog.french_name
+                    ? featuredBlog.french_name
+                    : featuredBlog.name}
+                </h2>
+                <span className="mt-6 block h-px w-16 bg-white/40" />
+
+                <div
+                  className={`relative mt-7 ${articleOpen ? "" : "max-h-[520px] overflow-hidden"}`}
+                >
+                  {/* Rich text from the API — styled here since the typography
+                      plugin isn't installed. First paragraph opens with a drop cap. */}
+                  <div
+                    className="text-[15px] font-light leading-[1.85] text-white/75 [&_*]:text-inherit! [&_*]:[font-size:inherit]! [&_*]:[line-height:inherit]! [&_*]:[font-family:inherit]! [&_*]:[background:transparent]! [&_a]:text-white! [&_a]:underline [&_a]:underline-offset-4 [&_h1]:mb-4 [&_h1]:mt-10 [&_h1]:text-[24px]! [&_h1]:leading-tight! [&_h1]:font-light [&_h1]:uppercase [&_h1]:tracking-[-0.02em] [&_h1]:text-white! [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-[20px]! [&_h2]:leading-tight! [&_h2]:font-normal [&_h2]:uppercase [&_h2]:tracking-[-0.01em] [&_h2]:text-white! [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-[16px]! [&_h3]:font-semibold [&_h3]:text-white! [&_strong]:font-semibold [&_strong]:text-white! [&_b]:text-white! [&_li]:mb-1.5 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-5 [&_p]:mb-5 [&>*:first-child]:mt-0 [&>p:first-of-type]:flow-root [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:mt-1 [&>p:first-of-type]:first-letter:text-[64px] [&>p:first-of-type]:first-letter:leading-[0.8] [&>p:first-of-type]:first-letter:text-white"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        (isFrench && featuredBlog.long_french_description) ||
+                        featuredBlog.long_description ||
+                        "",
+                    }}
+                  />
+                  {!articleOpen && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0b0b0a] to-transparent" />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setArticleOpen((v) => !v)}
+                  aria-expanded={articleOpen}
+                  className="mt-6 inline-flex h-12 items-center gap-3 bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-black transition-colors hover:bg-[#e7e7e5] cursor-pointer"
+                >
+                  {articleOpen
+                    ? t("showLessArticle", "Show less")
+                    : t("readFullArticle", "Read the full article")}
+                  <LuChevronDown
+                    className={`h-4 w-4 transition-transform duration-300 ${articleOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       )}
