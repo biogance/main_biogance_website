@@ -26,6 +26,22 @@ const heroSlides = [
   },
 ];
 
+// Premium modern UI typeface for the hero copy + buttons
+const HERO_FONT = "'Outfit', 'Sora', system-ui, -apple-system, sans-serif";
+
+// Accent voice for the closing headline word.
+const FONT_SERIF = "'Instrument Serif', Georgia, 'Times New Roman', serif";
+
+// Monochrome (white → silver → white) brushed-metal gradient for the primary
+// CTA — stays inside the site's black/white theme.
+const HERO_BTN_GRADIENT =
+  "linear-gradient(115deg, #ffffff 0%, #ececea 32%, #c4c4c0 62%, #ffffff 100%)";
+
+// Fine film-grain texture (inline SVG noise) laid over the footage.
+const HERO_GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>",
+)}")`;
+
 // Global cache variable to store the video blob URL so it plays instantly on SPA page navigation
 let globalVideoBlobUrl = null;
 
@@ -152,6 +168,26 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  // Intro gate — the hero mounts while the full-screen page loader is still
+  // covering it, so its entrance animation is held (paused on frame one via
+  // [data-intro="wait"]) and released the moment the loader reports it's gone.
+  // On later visits (loader already gone) it plays immediately.
+  useEffect(() => {
+    const el = videoSectionRef.current;
+    if (!el) return undefined;
+    const go = () => el.setAttribute("data-intro", "go");
+    if (window.__bgLoaderDone) {
+      go();
+      return undefined;
+    }
+    window.addEventListener("biogance-loader-done", go, { once: true });
+    const safety = setTimeout(go, 8000);
+    return () => {
+      window.removeEventListener("biogance-loader-done", go);
+      clearTimeout(safety);
     };
   }, []);
 
@@ -282,6 +318,65 @@ export default function HeroSection() {
 
   const currentImageUrl = currentSlideData?.url;
 
+  // Hero motion — mouse parallax + scroll-linked drift, all driven through CSS
+  // custom properties on the hero root (--mx/--my eased pointer position,
+  // --sp scroll progress 0→1), so nothing here triggers a React re-render.
+  useEffect(() => {
+    const el = videoSectionRef.current;
+    if (!el) return;
+
+    const canHover =
+      typeof window.matchMedia === "function"
+        ? window.matchMedia("(hover: hover)").matches
+        : true;
+
+    let tx = 0;
+    let ty = 0;
+    let cx = 0;
+    let cy = 0;
+    let raf = 0;
+
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      const h = Math.min(r.height, window.innerHeight);
+      tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      ty = ((e.clientY - r.top) / h - 0.5) * 2;
+    };
+
+    const loop = () => {
+      cx += (tx - cx) * 0.07;
+      cy += (ty - cy) * 0.07;
+      el.style.setProperty("--mx", cx.toFixed(4));
+      el.style.setProperty("--my", cy.toFixed(4));
+      raf = requestAnimationFrame(loop);
+    };
+
+    const onScroll = () => {
+      const p = Math.max(0, Math.min(1, window.scrollY / window.innerHeight));
+      el.style.setProperty("--sp", p.toFixed(4));
+    };
+
+    if (canHover) {
+      el.addEventListener("mousemove", onMove);
+      raf = requestAnimationFrame(loop);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Heading split into words: every word rises out of its own mask, the last
+  // one is set in the serif italic accent voice.
+  const headingWords = String(heroContent.heading || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
   return (
     <>
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
@@ -292,172 +387,204 @@ export default function HeroSection() {
       <main className="relative bg-white">
         <div
           ref={videoSectionRef}
-          className="relative w-full bg-[#f3f3f3] h-screen min-h-screen flex items-center justify-center overflow-hidden"
+          data-intro="wait"
+          className="relative w-full bg-[#0b0b0a] text-white overflow-hidden h-svh min-h-[600px] max-[374px]:min-h-[660px]"
+          style={{ fontFamily: HERO_FONT }}
         >
-          {/* Background Image or Video */}
-          {isCurrentVideo ? (
-            <video
-              ref={videoRef}
-              key={videoDisplaySrc}
-              src={videoDisplaySrc}
-              className="absolute inset-0 w-full h-full object-cover"
-              muted
-              autoPlay
-              loop
-              playsInline
-              preload="auto"
-              onError={(e) => {
-                const err = e.target.error;
-                console.error("Video error:", err?.code, err?.message);
-                // Fallback: if blob URL failed, switch to direct file
-                if (videoSrc !== "/VIDEO.mp4") {
-                  setVideoSrc("/VIDEO.mp4");
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+            precedence="default"
+          />
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes hvCurtainTop { from { transform: translateY(0); } to { transform: translateY(-101%); } }
+                @keyframes hvCurtainBottom { from { transform: translateY(0); } to { transform: translateY(101%); } }
+                @keyframes hvKen { from { transform: scale(1.14); } to { transform: scale(1); } }
+                @keyframes hvWord { from { transform: translateY(115%) rotate(4deg); } to { transform: translateY(0) rotate(0); } }
+                @keyframes hvFade { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes hvGrowY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+                @keyframes hvGrain { 0% { transform: translate(0,0); } 20% { transform: translate(-3%,2%); } 40% { transform: translate(2%,-3%); } 60% { transform: translate(-2%,-1%); } 80% { transform: translate(3%,3%); } 100% { transform: translate(0,0); } }
+                .hv-btn-sheen { transform: translateX(-130%) skewX(-18deg); }
+                .group:hover .hv-btn-sheen { transform: translateX(260%) skewX(-18deg); }
+                @media (prefers-reduced-motion: reduce) {
+                  .hv-anim, .hv-anim * { animation: none !important; transition: none !important; }
                 }
-              }}
-              onLoadedData={() => console.log("Video loaded successfully")}
-            >
-              Your browser does not support the video tag.
-            </video>
-          ) : (
-            <div
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-all duration-700"
-              style={{
-                backgroundImage: `url(${currentImageUrl})`,
-              }}
-            ></div>
-          )}
-
-          {/* Dark Overlay — same gradient used behind the hero text in HOMEPAGE V2.html so white text/buttons stay legible over the video */}
-          <div
-            className="absolute inset-0 z-[1] pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.18) 35%, rgba(0,0,0,.08) 60%, rgba(0,0,0,.05) 100%), linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.22))",
+                /* Hold the whole intro (curtain, headline…) on its first frame until the page loader has gone. */
+                [data-intro="wait"], [data-intro="wait"] * { animation-play-state: paused !important; }
+              `,
             }}
-          ></div>
+          />
 
-          {/* Content Container */}
-          <div className="relative z-10 w-full h-full flex items-center">
-           
-            <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-              <div className="max-w-3xl mt-0 md:mt-20 lg:mt-10 xl:mt-12 2xl:mt-20 text-center md:text-left mx-auto md:mx-0">
-                {/* Tagline */}
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-2 md:mb-4">
-                  <span className="w-[34px] h-px bg-white/90"></span>
-                  <p className="text-[10px] font-normal tracking-[0.22em] uppercase text-white/90">
-                    {heroContent.tagline}
-                  </p>
-                </div>
-
-                <h1
-                  className={`${isFrench ? "text-[clamp(30px,9vw,52px)] sm:text-[clamp(52px,8vw,84px)] md:text-[clamp(60px,8vw,84px)]" : "text-[clamp(60px,8vw,60px)] lg:text-[clamp(58px,5.5vw,72px)] xl:text-[clamp(60px,5vw,76px)] 2xl:text-[clamp(60px,8vw,80px)]"} uppercase leading-[1] tracking-[-0.082em] mb-2 md:mb-6 text-white break-words`}
-                >
-                  {heroContent.heading}
-                </h1>
-
-                {/* Description */}
-                <p className="text-[16px] mb-[28px] max-w-[520px] mx-auto md:mx-0 leading-[1.72] text-[rgba(255,255,255,.88)]">
-                  {heroContent.description}
-                </p>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-center md:justify-start">
-                  <button
-                    onClick={() => router.push("/shop")}
-                    className="min-h-[48px] px-[26px] border border-white bg-[#171717] text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717]"
+          {/* ── 1 · Media — parallaxes with the pointer, drifts on scroll ── */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div
+              className="hv-anim absolute -inset-[4%] will-change-transform"
+              style={{
+                transform:
+                  "translate3d(calc(var(--mx, 0) * -16px), calc(var(--my, 0) * -10px + var(--sp, 0) * 110px), 0)",
+              }}
+            >
+              <div
+                className="hv-anim absolute inset-0"
+                style={{ animation: "hvKen 2.8s cubic-bezier(.2,.7,.2,1) .2s both" }}
+              >
+                {isCurrentVideo ? (
+                  <video
+                    ref={videoRef}
+                    key={videoDisplaySrc}
+                    src={videoDisplaySrc}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                    preload="auto"
+                    onError={(e) => {
+                      const err = e.target.error;
+                      console.error("Video error:", err?.code, err?.message);
+                      // Fallback: if blob URL failed, switch to direct file
+                      if (videoSrc !== "/VIDEO.mp4") {
+                        setVideoSrc("/VIDEO.mp4");
+                      }
+                    }}
+                    onLoadedData={() => console.log("Video loaded successfully")}
                   >
-                    {t("hero.shopNow")}
-                  </button>
-                  <button
-                    onClick={scrollToFinder}
-                    className="min-h-[48px] px-[26px] border border-white/70 bg-transparent text-white inline-flex items-center justify-center uppercase text-[9px] tracking-[0.15em] font-[700] cursor-pointer transition-colors duration-200 hover:bg-white hover:text-[#171717] hover:border-white"
-                  >
-                    {t("hero.discover")}
-                  </button>
-                </div>
-
-                {/* Meta line — matches html's .hero-meta below the CTA buttons */}
-                <p className="mt-5 md:mt-8 text-[9px] tracking-[0.16em] uppercase text-[rgba(255,255,255,.92)]">
-                  {heroContent.meta}
-                </p>
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <div
+                    className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-all duration-700"
+                    style={{ backgroundImage: `url(${currentImageUrl})` }}
+                  ></div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Navigation Controls */}
-          {hasMultipleSlides && (
-            <>
-              {/* Desktop Navigation */}
-              {/* <div className="hidden md:flex absolute bottom-8 lg:bottom-10 right-8 lg:right-10 flex-col items-center gap-4 lg:gap-6 z-20">
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <button 
-                    onClick={goToPrevious}
-                    aria-label="Previous slide" 
-                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                  >
-                    <MdKeyboardArrowLeft size={24} className="lg:w-[30px] lg:h-[30px]" />
-                  </button>
-                  <button 
-                    onClick={goToNext}
-                    aria-label="Next slide" 
-                    className="w-9 h-9 lg:w-10 lg:h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                  >
-                    <MdKeyboardArrowRight size={24} className="lg:w-[30px] lg:h-[30px]" />
-                  </button>
-                </div>
+          {/* ── 2 · Tone + film grain ── */}
+          <div
+            className="absolute inset-0 z-[1] pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(11,11,10,.78) 0%, rgba(11,11,10,.42) 42%, rgba(11,11,10,.06) 78%), linear-gradient(0deg, rgba(11,11,10,.72) 0%, rgba(11,11,10,0) 34%), linear-gradient(180deg, rgba(11,11,10,.5) 0%, rgba(11,11,10,0) 20%)",
+            }}
+          />
+          <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
+            <div
+              className="hv-anim absolute -inset-[10%] opacity-[.1] mix-blend-overlay"
+              style={{ backgroundImage: HERO_GRAIN, animation: "hvGrain 1.4s steps(6) infinite" }}
+            />
+          </div>
 
-                <div className="flex items-center gap-2">
-                  {slides.map((_, index) => (
-                    <div
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={`cursor-pointer rounded-full transition-all duration-300 ${
-                        index === currentSlide
-                          ? 'w-8 lg:w-10 h-2 bg-white'
-                          : 'w-2 h-2 bg-white/50 hover:bg-white/70'
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-              </div> */}
+          {/* ── 3 · Copy — left, vertically centered ── */}
+          <div
+            className="hv-anim relative z-10 self-start h-svh min-h-[600px] max-[374px]:min-h-[660px] flex items-center px-5 sm:px-8 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-[100px] pb-[92px] sm:pb-[104px]"
+            style={{
+              transform: "translate3d(0, calc(var(--sp, 0) * -70px), 0)",
+              opacity: "calc(1 - var(--sp, 0) * 1.25)",
+            }}
+          >
+            <div className="w-full max-w-[640px]">
+              {/* Tagline — hairline + eyebrow */}
+              <div
+                className="hv-anim inline-flex items-center gap-3.5 mb-5 md:mb-6"
+                style={{ animation: "hvFade .9s cubic-bezier(.2,.7,.2,1) 1.2s both" }}
+              >
+                <span className="h-px w-10 shrink-0 bg-white/70" />
+                <p className="m-0 text-[10px] sm:text-[9px] font-medium tracking-[0.24em] sm:tracking-[0.26em] uppercase text-white/90">
+                  {heroContent.tagline}
+                </p>
+              </div>
 
-              {/* Mobile Navigation */}
-              {/* <div className="md:hidden absolute bottom-6 right-6 z-20">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={goToPrevious}
-                      aria-label="Previous slide" 
-                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
+              {/* Headline — word-by-word mask rise, serif-italic closing word */}
+              <h1
+                className={`m-0 mb-6 md:mb-7 ${
+                  isFrench
+                    ? "text-[clamp(30px,9vw,40px)] sm:text-[clamp(32px,4vw,44px)] lg:text-[clamp(36px,3.4vw,56px)]"
+                    : "text-[clamp(36px,11vw,48px)] sm:text-[clamp(38px,4.8vw,54px)] lg:text-[clamp(44px,4vw,66px)]"
+                } uppercase font-extralight leading-[1] tracking-[-0.035em] text-white`}
+              >
+                {headingWords.map((word, i) => {
+                  const last = i === headingWords.length - 1;
+                  return (
+                    <span
+                      key={`${word}-${i}`}
+                      className="inline-block overflow-hidden align-bottom pr-[0.22em] pb-[0.06em] -mb-[0.06em]"
                     >
-                      <MdKeyboardArrowLeft size={24} />
-                    </button>
-                    <button 
-                      onClick={goToNext}
-                      aria-label="Next slide" 
-                      className="w-10 h-10 cursor-pointer rounded-full border-2 border-white text-white bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-all"
-                    >
-                      <MdKeyboardArrowRight size={24} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {slides.map((_, index) => (
-                      <div
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`cursor-pointer rounded-full transition-all duration-300 ${
-                          index === currentSlide
-                            ? 'w-8 h-2 bg-white'
-                            : 'w-2 h-2 bg-white/50 hover:bg-white/70'
+                      <span
+                        className={`hv-anim inline-block will-change-transform ${
+                          last ? "normal-case font-normal italic tracking-[-0.02em]" : ""
                         }`}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-              </div> */}
-            </>
-          )}
+                        style={{
+                          fontFamily: last ? FONT_SERIF : undefined,
+                          animation: `hvWord 1.1s cubic-bezier(.2,.7,.2,1) ${1.05 + i * 0.09}s both`,
+                        }}
+                      >
+                        {word}
+                      </span>
+                    </span>
+                  );
+                })}
+              </h1>
+
+              {/* Description with a drawn hairline */}
+              <div
+                className="hv-anim flex items-start gap-4 sm:gap-5 mb-7 md:mb-8"
+                style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.7s both" }}
+              >
+                <span
+                  className="hidden sm:block w-px h-[54px] bg-white/45 shrink-0"
+                  style={{ animation: "hvGrowY 1.2s cubic-bezier(.2,.7,.2,1) 1.8s both", transformOrigin: "top" }}
+                />
+                <p className="m-0 max-w-[400px] text-[17px] sm:text-[14px] leading-[1.75] font-light text-white/80 line-clamp-4 sm:line-clamp-none">
+                  {heroContent.description}
+                </p>
+              </div>
+
+              {/* CTAs */}
+              <div
+                className="hv-anim flex flex-col sm:flex-row sm:items-stretch gap-3"
+                style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.9s both" }}
+              >
+                <button
+                  onClick={() => router.push("/shop")}
+                  style={{ backgroundImage: HERO_BTN_GRADIENT }}
+                  className="group relative overflow-hidden flex items-stretch text-[#0b0b0a] cursor-pointer border border-white/50 shadow-[0_16px_38px_-18px_rgba(255,255,255,.55)] transition-transform duration-300 ease-out"
+                >
+                  <span className="hv-btn-sheen pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/70 transition-transform duration-[900ms] ease-out" />
+                  <span className="relative flex-1 px-4 min-[375px]:px-6 sm:px-7 min-h-[54px] sm:min-h-[50px] flex items-center justify-center whitespace-nowrap uppercase text-[10.5px] min-[375px]:text-[11.5px] sm:text-[10px] tracking-[0.16em] min-[375px]:tracking-[0.22em] font-semibold">
+                    {t("hero.shopNow")}
+                  </span>
+                  <span className="relative shrink-0 grid place-items-center w-[54px] sm:w-[50px] bg-[#0b0b0a] text-white text-[17px] sm:text-[14px] transition-colors duration-500 group-hover:bg-[#2a2a28]">
+                    <span>→</span>
+                  </span>
+                </button>
+
+                <button
+                  onClick={scrollToFinder}
+                  className="group relative overflow-hidden min-h-[54px] sm:min-h-[50px] px-6 sm:px-7 border border-white/40 text-white hover:text-[#0b0b0a] inline-flex items-center justify-center gap-3 whitespace-nowrap uppercase text-[10.5px] min-[375px]:text-[11.5px] sm:text-[10px] tracking-[0.16em] min-[375px]:tracking-[0.2em] sm:tracking-[0.22em] font-semibold cursor-pointer transition-[color,transform] duration-300 ease-out"
+                >
+                  <span className="absolute inset-0 bg-white -translate-x-full transition-transform duration-500 ease-out group-hover:translate-x-0" />
+                  <span className="relative">{t("hero.discover")}</span>
+                  <span className="relative">↓</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 4 · Intro curtain — two ink halves that part on load ── */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[60]">
+            <span
+              className="hv-anim absolute inset-x-0 top-0 h-1/2 bg-[#0b0b0a]"
+              style={{ animation: "hvCurtainTop 1.25s cubic-bezier(.76,0,.24,1) .25s both" }}
+            />
+            <span
+              className="hv-anim absolute inset-x-0 bottom-0 h-1/2 bg-[#0b0b0a]"
+              style={{ animation: "hvCurtainBottom 1.25s cubic-bezier(.76,0,.24,1) .25s both" }}
+            />
+          </div>
         </div>
       </main>
 

@@ -154,12 +154,40 @@ export default function LandingCategories({ data }) {
     setCanScrollRight(newIndex < maxIndex);
   };
 
+  // Desktop: a wrapped paragraph keeps its max-width box even when its
+  // lines are shorter, which leaves a gap on the right. Shrink the box to
+  // the widest rendered line so the text sits flush with the right padding.
+  const subtitleRef = useRef(null);
+  useEffect(() => {
+    const el = subtitleRef.current;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.width = "";
+      if (window.innerWidth < 900) return;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const widest = Math.max(0, ...[...range.getClientRects()].map((r) => r.width));
+      if (widest) el.style.width = `${Math.ceil(widest)}px`;
+    };
+    fit();
+    document.fonts?.ready?.then(fit);
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [i18n.language]);
+
+  const arrowClass = (enabled) =>
+    `h-8 sm:h-9 px-3 min-w-[36px] sm:min-w-[42px] flex items-center justify-center border rounded-none transition-all duration-300 ${
+      enabled
+        ? "border-black/30 text-black cursor-pointer hover:bg-black hover:text-white shadow-sm active:scale-95"
+        : "border-black/15 text-black/25 cursor-not-allowed"
+    }`;
+
   return (
     // "Explore our collections" section — same editorial/monochrome design as
     // HOMEPAGE V2.html's .collections section, kept as a horizontal scroller
     // (6 cards visible at a time, same width/height as the html tiles),
     // with card data coming from the API.
-    <section className="bg-[#f6f6f4] py-[clamp(82px,9vw,138px)]">
+    <section className="bg-[#f5f4f0] py-[clamp(60px,7vw,110px)] text-[#0c0c0c]">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -193,50 +221,51 @@ export default function LandingCategories({ data }) {
       />
 
     
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-        {/* Editorial head — matches .collections-editorial-head */}
-        <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end mb-[34px] min-[721px]:mb-[52px]">
-          <div>
-            <div className="flex items-center gap-3 text-black">
-              <span className="w-[34px] h-px bg-current"></span>
-              <span className="text-[10px] tracking-[0.22em] uppercase">
-                {t("categories.eyebrow")}
-              </span>
-            </div>
-            <h2 className="mt-[18px] mb-0 text-[clamp(34px,11vw,50px)] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black">
-              {t("categories.headingLine1")}
-              <br />
-              {t("categories.headingLine2")}
-            </h2>
+      {/* Header — hairline + eyebrow, two-line title. The subtitle sits on
+          the first title line and the scroll arrows on the second, both
+          flush with the right padding (same as the left). */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-6 min-[721px]:mb-10">
+        <div className="w-full border-b border-black/15 pb-6 sm:pb-8">
+          <div className="mb-3 flex items-center gap-3 sm:mb-4">
+            <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
+              {t("categories.eyebrow")}
+            </span>
           </div>
-          {/* Subtitle + left/right scroll arrows — same placement/design as
-              LandingCards.jsx's PopularProducts default heading row. */}
-          <div className="flex items-end justify-between gap-4">
-            <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-6">
+            {/* display:contents lets the two title lines sit in the grid rows */}
+            <h2 className="contents">
+              <span className="col-start-1 row-start-1 block text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444]">
+                {t("categories.headingLine1")}
+              </span>
+              <span className="col-start-1 row-start-2 block text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]">
+                {t("categories.headingLine2")}
+              </span>
+            </h2>
+
+            <p
+              ref={subtitleRef}
+              className="col-span-2 row-start-3 mt-4 max-w-[480px] text-[13px] leading-[1.7] text-[#555] sm:text-[14px] min-[900px]:col-span-1 min-[900px]:col-start-2 min-[900px]:row-start-1 min-[900px]:mt-0 min-[900px]:justify-self-end min-[900px]:self-center">
               {t("categories.subtitle")}
             </p>
-            <div className="flex gap-2 flex-shrink-0">
+
+            <div className="col-start-2 row-start-2 flex shrink-0 gap-1.5 self-center justify-self-end sm:gap-2">
               <button
                 onClick={() => scroll("prev")}
                 disabled={!canScrollLeft}
-                className={`w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
+                aria-label="Previous"
+                className={arrowClass(canScrollLeft)}
               >
-                <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5" />
+                <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => scroll("next")}
                 disabled={!canScrollRight}
-                className={`w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                }`}
+                aria-label="Next"
+                className={arrowClass(canScrollRight)}
               >
-                <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5" />
+                <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>

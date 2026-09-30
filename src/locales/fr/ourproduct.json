@@ -1,4 +1,17 @@
 {
+  "ourProducts": "Nos Produits",
+  "shopBySpecies": "Par espèce",
+  "speciesDescription": "Choisissez votre compagnon pour découvrir des soins pensés pour son pelage, sa peau et ses besoins.",
+  "featured": "À la une",
+  "addToCart": "Ajouter au panier",
+  "quickView": "Aperçu rapide",
+  "noProducts": "Aucun produit disponible.",
+  "closeMenu": "Fermer le menu",
+  "productImage": "Image produit {{n}}",
+  "showImage": "Afficher l'image {{n}}",
+  "couldNotAdd": "Impossible d'ajouter au panier.",
+  "somethingWrong": "Une erreur est survenue.",
+  "shopAll": "Tout voir : {{name}}",
   "categories": [
     {
       "id": "dogs",

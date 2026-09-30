@@ -1,4 +1,17 @@
 {
+  "ourProducts": "Our Products",
+  "shopBySpecies": "Shop by species",
+  "speciesDescription": "Pick your companion to explore care rituals made for their coat, skin and needs.",
+  "featured": "Featured",
+  "addToCart": "Add to cart",
+  "quickView": "Quick view",
+  "noProducts": "No products available.",
+  "closeMenu": "Close menu",
+  "productImage": "Product image {{n}}",
+  "showImage": "Show image {{n}}",
+  "couldNotAdd": "Could not add to cart.",
+  "somethingWrong": "Something went wrong.",
+  "shopAll": "Shop all {{name}}",
   "categories": [
     {
       "id": "dogs",

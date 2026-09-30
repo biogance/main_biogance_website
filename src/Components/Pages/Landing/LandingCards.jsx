@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
+import { FaStar, FaRegStar } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
@@ -7,11 +7,10 @@ import { useTopLoader } from "../TopLoader";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../API/API";
-import { saveCartData, mergeCartItem } from "../../../utils/cartStorage";
+import { mergeCartItem } from "../../../utils/cartStorage";
 import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
-import { HiArrowTrendingUp } from "react-icons/hi2";
 import { GoArrowUpRight } from "react-icons/go";
 
 const toCleanAmount = (val) => {
@@ -23,42 +22,41 @@ const formatPrice = (val, lang) => {
   const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
   return num.toLocaleString(locale, { minimumFractionDigits: 2 });
 };
-// Loading Card Component — mirrors the real LandingCards shape exactly
-// (bg-[#efefee], aspect-[7/10], optional border, title/price overlaid at
-// the bottom of the card) instead of its own aspect-[5/6] box with a
-// separate title/price block below it, so the skeleton doesn't jump in
-// size once the real card swaps in. Same w-1/2 sm:w-1/3 md:w-1/4 wrapper
-// as the real cards handles the small/large screen sizing.
+// Loading Card — mirrors the real card's box (soft studio bg, spotlight, tag
+// top-left, glass caption along the bottom) so the skeleton doesn't jump in
+// size once the real card swaps in. Same w-1/2 sm:w-1/3 md:w-1/4 wrapper as
+// the real cards handles the small/large screen sizing. Sharp: the loader is a
+// sliding line, not a spinning circle.
 export const LoadingCard = ({ showBorder = false }) => (
   <div className="w-full h-full flex flex-col">
+    <style>{`@keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`}</style>
     <div
-      className={`bg-[#efefee] ${showBorder ? "border border-gray-300" : ""} relative flex flex-col aspect-[7/10] overflow-hidden`}
+      className={`bg-[#eceae4] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col aspect-[7/10] overflow-hidden`}
     >
-      {/* Top-left badge placeholder (New / Best / -20%) */}
-      <div className="absolute top-3 left-3 w-10 h-3 rounded-sm bg-gray-300/80 animate-pulse z-10" />
-      {/* Top-right product-label placeholder */}
-      <div className="absolute top-3 right-3 w-12 h-3 rounded-sm bg-gray-300/80 animate-pulse z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(255,255,255,.95),rgba(255,255,255,0)_62%)]" />
 
-      {/* Image area — same #f3f3f3 + spinning ring as the real card's image loader */}
-      <div
-        className="flex-1 flex items-center justify-center"
-        style={{ background: "#f3f3f3" }}
-      >
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            border: "3px solid #aaa",
-            borderTopColor: "transparent",
-            animation: "lcSpin 0.75s linear infinite",
-          }}
-        />
+      {/* Top-left tag placeholder (New / Best / -20%) */}
+      <div className="absolute top-2.5 left-2.5 w-14 h-6 bg-black/10 animate-pulse z-10" />
+      {/* Top-right product-label placeholder */}
+      <div className="absolute top-3 right-3 w-12 h-2 bg-black/10 animate-pulse z-10" />
+
+      {/* Image area — sliding line, like the real card's loader */}
+      <div className="relative flex-1 flex items-center justify-center">
+        <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
+          <span
+            className="absolute inset-y-0 left-0 w-1/3 bg-black"
+            style={{ animation: "lcSlide 1.1s ease-in-out infinite" }}
+          />
+        </span>
       </div>
 
-      {/* Title/price line placeholder, overlaid at the bottom like the real card */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 py-2">
-        <div className="h-3 w-3/4 bg-gray-300/80 rounded animate-pulse" />
+      {/* Caption placeholder */}
+      <div className="absolute inset-x-2 bottom-2 bg-white/70 border border-white/60 px-3.5 py-3 flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="h-3 w-3/4 bg-black/10 animate-pulse mb-2" />
+          <div className="h-2 w-1/3 bg-black/10 animate-pulse" />
+        </div>
+        <div className="h-3 w-10 bg-black/10 animate-pulse" />
       </div>
     </div>
   </div>
@@ -92,27 +90,31 @@ export const LandingCards = ({
   const videoRef = useRef(null);
   const hoverTimeout = useRef(null);
 
-  const [isLiked, setIsLiked] = useState(safeProduct.liked || false);
-  const [loadingFav, setLoadingFav] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // const [loadedImages, setLoadedImages] = useState(new Set()); // DISABLED: causes blank cards on Chrome macOS after infinite scroll
   const [noTransition, setNoTransition] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCardHovered, setIsCardHovered] = useState(false);
-  const [isDropupOpen, setIsDropupOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const imgRef = useRef(null);
 
   const isCurrentImageLoading = !imageLoaded;
 
   const handleImageLoaded = (_idx) => {
     if (_idx === currentImageIndex) setImageLoaded(true);
   };
+
+  const firstImage = safeProduct.images?.[0];
+  const restImages = safeProduct.images?.slice(1) || [];
+  const videoUrl = safeProduct.videoUrl || null;
+
+  const slides = [
+    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
+    ...restImages.map((url) => ({ type: "image", url })),
+  ];
 
   // Agar image browser cache mein ho to onLoad fire nahi hota — manually check karo
   useEffect(() => {
@@ -126,71 +128,8 @@ export const LandingCards = ({
     img.onload = () => setImageLoaded(true);
     img.onerror = () => setImageLoaded(true);
     img.src = url;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageIndex, safeProduct.image]);
-
-  const handleFavorite = async (e) => {
-    e.stopPropagation();
-    if (loadingFav) return;
-    setLoadingFav(true);
-    try {
-      const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
-      const token = loginData?.data?.token;
-      const payload = token ? {} : { device_id: getDeviceId() };
-      const res = await axios.post(
-        `${BASE_URL}/user/add/favorite/bundle/${safeProduct.id}`,
-        payload,
-        token ? { headers: { Authorization: `Bearer ${token}` } } : {},
-      );
-      if (res.data.status === false) {
-        const msg =
-          res.data.errors?.length > 0
-            ? res.data.errors[0].message
-            : (res.data.action_message || res.data.action);
-        toast.error(msg);
-      } else {
-        setIsLiked((prev) => !prev);
-      }
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoadingFav(false);
-    }
-  };
-
-  const firstImage = safeProduct.images?.[0];
-  const restImages = safeProduct.images?.slice(1) || [];
-  const videoUrl = safeProduct.videoUrl || null;
-
-  const slides = [
-    ...(firstImage ? [{ type: "image", url: firstImage }] : []),
-    ...restImages.map((url) => ({ type: "image", url })),
-  ];
-
-  const goToSlide = (idx) => {
-    const total = slides.length;
-    if (total === 0) return;
-    if (idx < 0 || idx >= total) {
-      const target = (idx + total) % total;
-      setNoTransition(true);
-      setCurrentImageIndex(target);
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => setNoTransition(false)),
-      );
-    } else {
-      setNoTransition(false);
-      setCurrentImageIndex(idx);
-    }
-  };
-
-  const handlePrevImage = (e) => {
-    e.stopPropagation();
-    goToSlide(currentImageIndex - 1);
-  };
-
-  const handleNextImage = (e) => {
-    e.stopPropagation();
-    goToSlide(currentImageIndex + 1);
-  };
 
   useEffect(() => {
     if (!videoUrl) return;
@@ -206,7 +145,6 @@ export const LandingCards = ({
     clearTimeout(hoverTimeout.current);
     setIsHovered(false);
     setIsCardHovered(false);
-    setIsDropupOpen(false);
     setSelectedSize(null);
     setSelectedColor(null);
   };
@@ -261,7 +199,6 @@ export const LandingCards = ({
       }) || allProducts[0];
     if (!matchedProduct) return;
     setAddingToCart(true);
-    setIsDropupOpen(false);
     try {
       const loginData = JSON.parse(localStorage.getItem("LoginData") || "null");
       const token = loginData?.data?.token;
@@ -289,15 +226,51 @@ export const LandingCards = ({
     }
   };
 
+  const badgeText =
+    index === 0 ? "New" : index === 1 ? "Best" : index === 2 ? "-20%" : null;
+  const isDiscountBadge = index === 2;
+  // Caption panel is open (add-to-cart / picker revealed) on hover, or always in promoStyle.
+  const panelOpen = isCardHovered || promoStyle;
+  // Round spinner (the one deliberate exception to the zero-radius rule).
+  const spinnerSquare = (size, light = true) => (
+    <span
+      style={{
+        display: "inline-block",
+        width: size,
+        height: size,
+        border: `2px solid ${light ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.25)"}`,
+        borderTopColor: light ? "#fff" : "#000",
+        borderRadius: "50%",
+        animation: "lcSpin 0.75s linear infinite",
+        verticalAlign: "middle",
+      }}
+    />
+  );
+  const swatchBackground = (color) => {
+    if (!color.includes(" & ")) return color;
+    const [a, b] = color.split(" & ").map((p) => p.trim());
+    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+  };
+  // Tiny colour preview next to the name (max 4, "+n" for the rest).
+  const previewColors = hasColors ? uniqueColors.slice(0, 4) : [];
+  const extraColors = hasColors ? Math.max(0, uniqueColors.length - 4) : 0;
+
+  const cartBtnClass = `group/btn w-full min-h-[40px] px-3.5 flex items-center justify-between text-[10px] font-semibold tracking-[0.2em] uppercase cursor-pointer border border-[#0b0b0a] transition-colors duration-300 ${
+    addingToCart
+      ? "bg-[#0b0b0a] text-white"
+      : "bg-[#0b0b0a] text-white hover:bg-transparent hover:text-[#0b0b0a]"
+  }`;
+
   return (
     <div className="w-full h-full flex flex-col">
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes btnSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
       `}</style>
       <div
-        className={`bg-[#efefee] ${showBorder ? "border border-gray-300" : ""} relative flex flex-col ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
+        className={`group/card bg-[#f3f3f3] ${showBorder ? "border border-[#d6d4cc]" : ""} relative flex flex-col overflow-hidden ${fillHeight ? "h-full" : compact ? "w-full h-140" : "aspect-[7/10]"} cursor-pointer`}
         onMouseEnter={() => {
           setIsCardHovered(true);
           handleMouseEnter();
@@ -315,31 +288,22 @@ export const LandingCards = ({
           router.push(`/product/${slug}`);
         }}
       >
-        {/* CHANGE 2: !(isHovered && videoUrl) condition hata di — ab video hover pe bhi show hoga */}
-        {index === 0 && (
-          // Replace karo:
-          <div
-            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
-          >
-            New
-          </div>
-        )}
+        {/* Studio spotlight behind the product */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(255,255,255,.95),rgba(255,255,255,0)_62%)] transition-opacity duration-700 group-hover/card:opacity-100 opacity-80" />
 
-        {index === 1 && (
-          // Replace karo:
+        {/* Tag — glass chip (solid ink for the discount) */}
+        {badgeText && (
           <div
-            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1  z-10`}
+            className={`absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 flex items-center gap-1.5 font-semibold uppercase tracking-[0.16em] ${
+              smallLabel ? "text-[8px] px-1.5 py-1" : "text-[9px] px-2 py-1.5"
+            } ${
+              isDiscountBadge
+                ? "bg-[#0b0b0a] text-white"
+                : "bg-white/75 backdrop-blur-md text-[#0b0b0a] border border-white"
+            }`}
           >
-            Best
-          </div>
-        )}
-
-        {index === 2 && (
-          // Replace karo:
-          <div
-            className={`absolute top-3 left-3 text-black ${smallLabel ? "text-[10px] px-1.5" : "text-xs px-2"} font-semibold py-1 z-10`}
-          >
-            -20%
+            {!isDiscountBadge && <span className="w-1 h-1 bg-[#0b0b0a]" />}
+            {badgeText}
           </div>
         )}
 
@@ -352,19 +316,7 @@ export const LandingCards = ({
           </div>
         )}
 
-        {/* Heart Icon - Commented Out */}
-        {/* <button
-          onClick={handleFavorite}
-          className="absolute top-3 right-3 cursor-pointer w-8 h-8 bg-white rounded-xl border border-gray-200 flex items-center justify-center z-10 hover:bg-gray-50 transition-colors"
-        >
-          {isLiked ? (
-            <FaHeart className="w-4 h-4 text-black" />
-          ) : (
-            <FaRegHeart className="w-4 h-4 text-gray-700" />
-          )}
-        </button> */}
-
-        {/* CHANGE 2: Product Label — from API */}
+        {/* Product Label — from API */}
         {(() => {
           const label =
             i18n.language === "fr" && safeProduct.french_product_label
@@ -372,10 +324,10 @@ export const LandingCards = ({
               : safeProduct.product_label || "";
           return label ? (
             <div
-              className={`absolute top-3 right-3 text-right text-black font-semibold py-1 z-10 ${
+              className={`absolute top-3 right-3 text-right text-[#55544e] font-medium uppercase tracking-[0.14em] z-10 ${
                 smallLabel
-                  ? "max-w-[65%] text-[10px] leading-tight px-1.5"
-                  : "max-w-[60%] truncate text-xs px-2"
+                  ? "max-w-[55%] text-[8px] leading-tight"
+                  : "max-w-[52%] truncate text-[9px]"
               }`}
             >
               {label}
@@ -384,40 +336,15 @@ export const LandingCards = ({
         })()}
 
         <div className="flex-1 relative overflow-hidden">
-          {/* CHANGE 1: showNav arrows — commented out (image case mein bhi) */}
-          {/* {showNav && slides.length > 1 && !(isHovered && videoUrl) && (
-            <>
-              <button
-                onClick={handlePrevImage}
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
-              >
-                <IoChevronBack className="w-6 h-6 text-gray-800" />
-              </button>
-              <button
-                onClick={handleNextImage}
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-transparent flex items-center justify-center z-20 transition-all opacity-70 hover:opacity-100 cursor-pointer"
-              >
-                <IoChevronForward className="w-6 h-6 text-gray-800" />
-              </button>
-            </>
-          )} */}
-
-          {/* Image loader — #aaa background + centered #aaa spinning ring */}
+          {/* Image loader — sliding line */}
           {isCurrentImageLoading && (
-            <div
-              className="absolute inset-0 z-10 flex items-center justify-center"
-              style={{ background: "#f3f3f3" }}
-            >
-              <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  border: "3px solid #aaa",
-                  borderTopColor: "transparent",
-                  animation: "lcSpin 0.75s linear infinite",
-                }}
-              />
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#eceae4]">
+              <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
+                <span
+                  className="absolute inset-y-0 left-0 w-1/3 bg-black"
+                  style={{ animation: "lcSlide 1.1s ease-in-out infinite" }}
+                />
+              </span>
             </div>
           )}
 
@@ -443,7 +370,7 @@ export const LandingCards = ({
                     opacity: 1,
                     transition: "opacity 0.3s ease",
                   }}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain px-3 pt-9 pb-[76px] "
                 />
               </div>
             ))}
@@ -473,282 +400,136 @@ export const LandingCards = ({
 
           {(isHovered || forceVideo) && videoUrl && !isVideoReady && (
             <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ zIndex: 3, background: "#f3f3f3" }}
+              className="absolute inset-0 flex items-center justify-center bg-[#eceae4]"
+              style={{ zIndex: 3 }}
             >
-              <div
-                // Replace karo:
-
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  border: "3px solid #aaa",
-                  borderTopColor: "transparent",
-                  animation: "spin 0.75s linear infinite",
-                }}
-              />
+              <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
+                <span
+                  className="absolute inset-y-0 left-0 w-1/3 bg-black"
+                  style={{ animation: "lcSlide 1.1s ease-in-out infinite" }}
+                />
+              </span>
             </div>
           )}
 
-          {/* CHANGE 1: Dot indicators — commented out (image case mein bhi) */}
-          {/* {slides.length > 1 && !(isHovered && videoUrl) && (
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
-              {slides.map((_, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                    width: idx === currentImageIndex ? "16px" : "6px",
-                    height: "6px",
-                    borderRadius: "9999px",
-                    backgroundColor:
-                      idx === currentImageIndex
-                        ? "#000"
-                        : "rgba(163, 163, 163, 0.8)",
-                  }}
-                />
-              ))}
-            </div>
-          )} */}
-
-          {/* Title + Price / Add to Cart overlay */}
+          {/* Glass caption — name, price, colour preview; the panel grows on
+              hover to reveal add-to-cart (single product) or, straight away,
+              the size/colour picker (products with variants) */}
           <div
-            className={`absolute bottom-0 ${compactButtons ? "mb-0 sm:mb-3" : "mb-0 sm:mb-4"} left-0 right-0 px-3 py-2`}
+            className="absolute inset-x-1.5 bottom-1.5 sm:inset-x-2 sm:bottom-2 bg-white/45 backdrop-blur-[6px] border border-white/60 shadow-[0_14px_30px_-18px_rgba(0,0,0,0.45)]"
             style={{ zIndex: 7 }}
           >
-            {/* Title + Price — hover pe hide (promoStyle mein hamesha hidden) */}
-            <p
-              className="text-black text-xs font-medium truncate cursor-pointer"
-              style={{
-                margin: 0,
-                opacity: isCardHovered || promoStyle ? 0 : 1,
-                transition: "opacity 0.2s ease",
-                pointerEvents: isCardHovered || promoStyle ? "none" : "auto",
-              }}
-            >
-              {shortTitle} —{" "}
-              <span style={{ color: "#6d6d6d" }}>
-                {formatPrice(price, i18n.language)} €
-              </span>
-            </p>
-
-            {/* QuickView OR Add to Cart button — hover pe show (promoStyle mein hamesha visible) */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: "12px",
-                right: "12px",
-                opacity: isCardHovered || promoStyle ? 1 : 0,
-                transition: "opacity 0.2s ease",
-                pointerEvents: isCardHovered || promoStyle ? "auto" : "none",
-              }}
-            >
-              {isSingleProduct ? (
-                /* Single product → Add to Cart button */
-                <button
-                  className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-                  style={{
-                    backgroundColor: promoStyle ? "black" : "white",
-                    color: promoStyle ? "white" : "black",
-                    border: "none",
-
-                    transition: "background-color 0.2s ease, color 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "black";
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = promoStyle
-                      ? "black"
-                      : "white";
-                    e.currentTarget.style.color = promoStyle
-                      ? "white"
-                      : "black";
-                  }}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (addingToCart) return;
-                    const firstProduct = safeProduct.products?.[0];
-                    if (firstProduct?.color || firstProduct?.size) {
-                      setIsCartOpen(true);
-                      return;
-                    }
-                    setAddingToCart(true);
-                    try {
-                      const loginData = JSON.parse(
-                        localStorage.getItem("LoginData") || "null",
-                      );
-                      const token = loginData?.data?.token;
-                      const res = await axios.post(
-                        `${BASE_URL}/user/cart/create`,
-                        token
-                          ? {
-                              product_id: firstProduct?.id ?? safeProduct.id,
-                              quantity: 1,
-                            }
-                          : {
-                              device_id: getDeviceId(),
-                              product_id: firstProduct?.id ?? safeProduct.id,
-                              quantity: 1,
-                            },
-                        token
-                          ? { headers: { Authorization: `Bearer ${token}` } }
-                          : {},
-                      );
-                      if (res.data.status === false) {
-                        toast.error(
-                          res.data.action_message || res.data.action || "Could not add to cart.",
-                        );
-                      } else {
-                        mergeCartItem(res.data.data);
-                        setIsCartOpen(true);
-                      }
-                    } catch {
-                      toast.error("Something went wrong.");
-                    } finally {
-                      setAddingToCart(false);
-                    }
-                  }}
-                >
-                  {addingToCart ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        border: "2px solid white",
-                        borderTopColor: "transparent",
-                        animation: "lcSpin 0.75s linear infinite",
-                        verticalAlign: "middle",
-                      }}
-                    />
-                  ) : (
-                    <>
-                      {t("products.addToCart")} –{" "}
-                      {formatPrice(safeProduct.price, i18n.language)} €
-                    </>
+            <div className={compactButtons ? "px-3 pt-2.5 pb-2.5" : "px-3.5 pt-3 pb-3"}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-[12px] font-medium leading-[1.3] tracking-[-0.005em] text-[#0b0b0a]">
+                    {shortTitle}
+                  </p>
+                  {previewColors.length > 0 && (
+                    <div className="mt-1.5 flex items-center gap-1">
+                      {previewColors.map((color) => (
+                        <span
+                          key={color}
+                          title={color}
+                          className="w-2 h-2 border border-black/25"
+                          style={{ background: swatchBackground(color) }}
+                        />
+                      ))}
+                      {extraColors > 0 && (
+                        <span className="ml-0.5 text-[9px] tabular-nums text-[#6c6a62]">
+                          +{extraColors}
+                        </span>
+                      )}
+                    </div>
                   )}
-                </button>
-              ) : (
-                /* Multiple products → button click pe dropup in-place expand */
-                <div style={{ position: "relative" }}>
-                  <button
-                    className="w-full py-2 text-xs font-semibold tracking-widest uppercase cursor-pointer"
-                    style={{
-                      backgroundColor:
-                        addingToCart || promoStyle ? "black" : "white",
-                      color: addingToCart || promoStyle ? "white" : "black",
-                      border: "none",
-                      visibility: isDropupOpen ? "hidden" : "visible",
-                      transition: "background-color 0.2s ease, color 0.2s ease",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "black";
-                      e.currentTarget.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!addingToCart) {
-                        e.currentTarget.style.backgroundColor = promoStyle
-                          ? "black"
-                          : "white";
-                        e.currentTarget.style.color = promoStyle
-                          ? "white"
-                          : "black";
-                      }
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedSize(null);
-                      setSelectedColor(null);
-                      setIsDropupOpen(true);
-                    }}
-                  >
-                    {addingToCart ? (
-                      <span
-                        style={{
-                          display: "inline-block",
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          border: "2px solid white",
-                          borderTopColor: "transparent",
-                          animation: "btnSpin 0.75s linear infinite",
-                          verticalAlign: "middle",
-                        }}
-                      />
-                    ) : (
-                      <>
-                        {t("products.addToCart")} –{" "}
-                        {formatPrice(safeProduct.price, i18n.language)} €
-                      </>
-                    )}
-                  </button>
+                </div>
+                <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[#0b0b0a]">
+                  {formatPrice(price, i18n.language)} €
+                </span>
+              </div>
+            </div>
 
-                  {/* Dropup — maxHeight animation for smooth open/close */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      zIndex: 9,
-                      maxHeight: isDropupOpen ? "300px" : "0px",
-                      overflow: "hidden",
-                      transition:
-                        "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    <div style={{ padding: "12px", position: "relative" }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsDropupOpen(false);
-                        }}
-                        style={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: 14,
-                          lineHeight: 1,
-                          color: "#555",
-                        }}
-                      >
-                        ✕
-                      </button>
+            {/* Expanding action area */}
+            <div
+              className="grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]"
+              style={{ gridTemplateRows: panelOpen ? "1fr" : "0fr" }}
+            >
+              <div className="overflow-hidden">
+                <div className={compactButtons ? "px-2.5 pb-2.5" : "px-3 pb-3"}>
+                  {isSingleProduct ? (
+                    /* Single product → Add to Cart button */
+                    <button
+                      className={cartBtnClass}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (addingToCart) return;
+                        const firstProduct = safeProduct.products?.[0];
+                        if (firstProduct?.color || firstProduct?.size) {
+                          setIsCartOpen(true);
+                          return;
+                        }
+                        setAddingToCart(true);
+                        try {
+                          const loginData = JSON.parse(
+                            localStorage.getItem("LoginData") || "null",
+                          );
+                          const token = loginData?.data?.token;
+                          const res = await axios.post(
+                            `${BASE_URL}/user/cart/create`,
+                            token
+                              ? {
+                                  product_id: firstProduct?.id ?? safeProduct.id,
+                                  quantity: 1,
+                                }
+                              : {
+                                  device_id: getDeviceId(),
+                                  product_id: firstProduct?.id ?? safeProduct.id,
+                                  quantity: 1,
+                                },
+                            token
+                              ? { headers: { Authorization: `Bearer ${token}` } }
+                              : {},
+                          );
+                          if (res.data.status === false) {
+                            toast.error(
+                              res.data.action_message || res.data.action || "Could not add to cart.",
+                            );
+                          } else {
+                            mergeCartItem(res.data.data);
+                            setIsCartOpen(true);
+                          }
+                        } catch {
+                          toast.error("Something went wrong.");
+                        } finally {
+                          setAddingToCart(false);
+                        }
+                      }}
+                    >
+                      {addingToCart ? (
+                        <span className="mx-auto">{spinnerSquare(14)}</span>
+                      ) : (
+                        <>
+                          <span>{t("products.addToCart")}</span>
+                          <span className="text-[14px] leading-none font-normal">+</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    /* Size / colour picker — shown directly on hover (no
+                       intermediate Add to Cart button, no close icon) */
+                    <div onClick={(e) => e.stopPropagation()} className="relative pt-1">
+                      {addingToCart && !(hasSizes && hasColors) && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+                          {spinnerSquare(14, false)}
+                        </div>
+                      )}
 
                       {hasSizes && (
-                        <div style={{ marginBottom: hasColors ? 10 : 0 }}>
-                          <p
-                            style={{
-                              margin: "0 0 6px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              color: "#111",
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                            }}
-                          >
+                        <div className={hasColors ? "mb-2.5" : ""}>
+                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.size") || "Size"}
                           </p>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 6,
-                            }}
-                          >
+                          <div className="flex flex-wrap gap-1.5">
                             {uniqueSizes.map((size) => (
                               <button
                                 key={size}
@@ -758,20 +539,11 @@ export const LandingCards = ({
                                   if (!hasColors)
                                     handleDropupSelect(size, selectedColor);
                                 }}
-                                style={{
-                                  padding: "5px 12px",
-                                  fontSize: 12,
-                                  cursor: "pointer",
-                                  border:
-                                    selectedSize === size
-                                      ? "1.5px solid #111"
-                                      : "1.5px solid #ddd",
-                                  backgroundColor:
-                                    selectedSize === size ? "#111" : "#fff",
-                                  color:
-                                    selectedSize === size ? "#fff" : "#111",
-                                  transition: "all 0.15s",
-                                }}
+                                className={`px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] cursor-pointer border transition-colors duration-150 ${
+                                  selectedSize === size
+                                    ? "bg-[#0b0b0a] text-white border-[#0b0b0a]"
+                                    : "bg-white/80 text-black border-black/20 hover:border-black"
+                                }`}
                               >
                                 {size}
                               </button>
@@ -781,72 +553,33 @@ export const LandingCards = ({
                       )}
 
                       {hasColors && (
-                        <div
-                          style={{
-                            marginBottom: hasSizes && hasColors ? 10 : 0,
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: "0 0 6px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              color: "#111",
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                            }}
-                          >
+                        <div className={hasSizes && hasColors ? "mb-2.5" : ""}>
+                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.color") || "Color"}
                           </p>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 8,
-                            }}
-                          >
-                            {uniqueColors.map((color) => {
-                              const isDual = color.includes(" & ");
-                              const swatchBg = isDual
-                                ? (() => {
-                                    const [a, b] = color
-                                      .split(" & ")
-                                      .map((p) => p.trim());
-                                    return `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
-                                  })()
-                                : color;
-                              return (
-                                <button
-                                  key={color}
-                                  type="button"
-                                  title={color}
-                                  aria-label={color}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedColor(color);
-                                    if (!hasSizes)
-                                      handleDropupSelect(selectedSize, color);
-                                  }}
-                                  style={{
-                                    width: 26,
-                                    height: 26,
-                                    padding: 0,
-                                    borderRadius: "50%",
-                                    cursor: "pointer",
-                                    background: swatchBg,
-                                    border:
-                                      selectedColor === color
-                                        ? "2px solid #111"
-                                        : "1.5px solid #ddd",
-                                    boxShadow:
-                                      selectedColor === color
-                                        ? "0 0 0 2px #fff inset"
-                                        : "none",
-                                    transition: "all 0.15s",
-                                  }}
-                                />
-                              );
-                            })}
+                          <div className="flex flex-wrap gap-2">
+                            {uniqueColors.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                title={color}
+                                aria-label={color}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedColor(color);
+                                  if (!hasSizes)
+                                    handleDropupSelect(selectedSize, color);
+                                }}
+                                className="w-5 h-5 p-0 cursor-pointer border border-black/25 transition-all duration-150"
+                                style={{
+                                  background: swatchBackground(color),
+                                  boxShadow:
+                                    selectedColor === color
+                                      ? "0 0 0 2px #fff, 0 0 0 3px #111"
+                                      : "none",
+                                }}
+                              />
+                            ))}
                           </div>
                         </div>
                       )}
@@ -859,48 +592,21 @@ export const LandingCards = ({
                               handleDropupSelect(selectedSize, selectedColor);
                           }}
                           disabled={!selectedSize || !selectedColor}
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            fontSize: 12,
-                            fontWeight: 600,
-                            backgroundColor:
-                              selectedSize && selectedColor ? "#111" : "#ccc",
-                            color: "#fff",
-                            border: "none",
-                            cursor:
-                              selectedSize && selectedColor
-                                ? "pointer"
-                                : "default",
-                            letterSpacing: "0.05em",
-                            textTransform: "uppercase",
-                            transition: "background 0.2s",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+                          className={`w-full min-h-[38px] text-[10px] font-semibold uppercase tracking-[0.2em] text-white border-0 flex items-center justify-center transition-colors duration-200 ${
+                            selectedSize && selectedColor
+                              ? "bg-[#0b0b0a] cursor-pointer"
+                              : "bg-[#b9b7af] cursor-default"
+                          }`}
                         >
-                          {addingToCart ? (
-                            <span
-                              style={{
-                                display: "inline-block",
-                                width: 14,
-                                height: 14,
-                                borderRadius: "50%",
-                                border: "2px solid rgba(255,255,255,0.4)",
-                                borderTopColor: "#fff",
-                                animation: "lcSpin 0.75s linear infinite",
-                              }}
-                            />
-                          ) : (
-                            t("products.addToCart")
-                          )}
+                          {addingToCart
+                            ? spinnerSquare(12)
+                            : t("products.addToCart")}
                         </button>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -912,27 +618,6 @@ export const LandingCards = ({
         product={safeProduct}
         autoCloseOnLeave
       />
-      {/* CHANGE 3: Neeche wala title/price/button section — removed (card ke andar move ho gaya) */}
-      {/* <div className="flex-shrink-0">
-        <h3
-          className={`text-gray-800 mb-2 line-clamp-2 ${compact ? "text-xs min-h-[2rem]" : "text-sm min-h-[2.5rem]"}`}
-        >
-          {displayName}
-        </h3>
-
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className={`font-bold text-gray-900 ${compact ? "text-base" : "text-xl"}`}
-          >
-            €{safeProduct.price ?? 0}
-          </span>
-          <button
-            className={`bg-black text-white cursor-pointer font-medium rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap ${compact ? "text-xs px-3 py-1.5" : "text-sm px-4 py-2"}`}
-          >
-            {t("products.addToCart")}
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 };
@@ -947,7 +632,7 @@ export default function PopularProducts({
   data,
   useGrid = false,
 }) {
-  const { t } = useTranslation("home");
+  const { t, i18n } = useTranslation("home");
   const router = useRouter();
   const { start } = useTopLoader();
   const currentCardIndexRef = useRef(0);
@@ -962,8 +647,8 @@ export default function PopularProducts({
   const bestSellerProducts = data?.best_seller || [];
   const sectionSource = isBestSeller ? "best" : "popular";
 
-  // Heading — same editorial style as HOMEPAGE V2.html's .commerce-heading
-  // (eyebrow + big two-line uppercase title, last word gets a trailing period).
+  // Heading — eyebrow + big two-line uppercase title (last word gets a
+  // trailing period), subtitle on the first line, controls on the second.
   const headingEyebrow = isBestSeller
     ? t("products.bestSellerEyebrow")
     : t("products.eyebrow");
@@ -1027,20 +712,41 @@ export default function PopularProducts({
     // Agar already loaded tha (cached data se), shimmer skip karo
     setIsLoading(false);
     setTimeout(checkScrollPosition, 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      // container.addEventListener("scroll", checkScrollPosition);
       window.addEventListener("resize", checkScrollPosition);
-
       return () => {
-        // container.removeEventListener("scroll", checkScrollPosition);
         window.removeEventListener("resize", checkScrollPosition);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
+
+  // Desktop: a wrapped paragraph keeps its max-width box even when its
+  // lines are shorter, which leaves a gap on the right. Shrink the box to
+  // the widest rendered line so the text sits flush with the right padding
+  // (same as LandingCategories).
+  const subtitleRef = useRef(null);
+  useEffect(() => {
+    const el = subtitleRef.current;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.width = "";
+      if (window.innerWidth < 900) return;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const widest = Math.max(0, ...[...range.getClientRects()].map((r) => r.width));
+      if (widest) el.style.width = `${Math.ceil(widest)}px`;
+    };
+    fit();
+    document.fonts?.ready?.then(fit);
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [i18n.language, headingSubtitle]);
 
   const scroll = (direction) => {
     if (!scrollContainerRef.current) return;
@@ -1079,27 +785,32 @@ export default function PopularProducts({
 
   const isDefaultRow = !useGrid && !isFavourite && !isWishlist;
 
+  // Square nav button — hairline black, compact height, rounded-none
+  const navBtnClass = (enabled) =>
+    `h-8 sm:h-9 px-3 min-w-[36px] sm:min-w-[42px] flex items-center justify-center border rounded-none transition-all duration-300 ${
+      enabled
+        ? "border-black/30 text-black cursor-pointer hover:bg-black hover:text-white hover:border-black shadow-sm active:scale-95"
+        : "border-black/15 text-black/25 cursor-not-allowed"
+    }`;
+
+  const goToSection = () => {
+    start();
+    router.push(`/shop?source=${sectionSource}`);
+  };
+
   return (
-    <div className="w-full bg-[#f6f6f4]">
+    <div className="w-full bg-[#f5f4f0]">
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @keyframes shimmer { 
-          0% { background-position: -200px 0; } 
-          100% { background-position: 200px 0; } 
-        }
-        @keyframes imgShimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @keyframes spin89345 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes lcSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hide-scrollbar { 
-          -ms-overflow-style: none; 
-          scrollbar-width: none; 
+        @keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
-        .hide-scrollbar::-webkit-scrollbar { 
-          display: none; 
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
         }
       `,
         }}
@@ -1113,35 +824,36 @@ export default function PopularProducts({
               ? "px-4 py-6"
               : isHorizontal || useGrid
                 ? "px-0 py-6 md:py-8 lg:py-10"
-                : // Default heading (below) already carries html's own
-                  // top/bottom rhythm, and html's .popular-products section
-                  // has padding-bottom:0 (cards sit flush against whatever
-                  // comes next) — so no extra top/bottom padding here at all.
+                : // Default heading (below) carries its own top/bottom
+                  // rhythm, and the cards sit flush against whatever comes
+                  // next — so no extra top/bottom padding here at all.
                   "px-0"
         }
       >
         {isFavourite ? null : isWishlist ? (
           <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+              <h1 className="text-2xl lg:text-4xl font-light uppercase tracking-[-0.03em] text-black">
                 {t("products.wishlistTitle")}
               </h1>
-              <button className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-black transition-colors self-start cursor-pointer">
-                <IoClose className="w-5 h-5" />
-                <span>{t("products.removeAll")}</span>
+              <button className="group flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase font-semibold text-black self-start cursor-pointer">
+                <IoClose className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />
+                <span className="border-b border-transparent group-hover:border-black transition-colors">
+                  {t("products.removeAll")}
+                </span>
               </button>
             </div>
 
-            <div className="flex gap-4 border-b border-gray-200">
+            <div className="flex gap-0 border-b border-black/15">
               <button
                 onClick={() => {
                   setActiveTab("favorite");
                   onTabChange?.("favorite");
                 }}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
+                className={`px-5 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold whitespace-nowrap cursor-pointer transition-colors duration-200 ${
                   activeTab === "favorite"
                     ? "bg-black text-white"
-                    : "bg-white text-black hover:bg-gray-50"
+                    : "bg-transparent text-black hover:bg-black/5"
                 }`}
               >
                 {t("products.favoriteProducts")}
@@ -1151,10 +863,10 @@ export default function PopularProducts({
                   setActiveTab("advice");
                   onTabChange?.("advice");
                 }}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap cursor-pointer ${
+                className={`px-5 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold whitespace-nowrap cursor-pointer transition-colors duration-200 ${
                   activeTab === "advice"
                     ? "bg-black text-white"
-                    : "bg-white text-black hover:bg-gray-50"
+                    : "bg-transparent text-black hover:bg-black/5"
                 }`}
               >
                 {t("products.favoriteAdvices")}
@@ -1163,111 +875,99 @@ export default function PopularProducts({
           </div>
         ) : isHorizontal ? (
           <div className="flex justify-end mb-6">
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               <button
                 onClick={() => scroll("prev")}
                 disabled={!canScrollLeft}
-                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? "bg-gray-100 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-400 cursor-not-allowed"
-                }`}
+                aria-label="Previous"
+                className={navBtnClass(canScrollLeft)}
               >
-                <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5 text-gray-700" />
+                <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => scroll("next")}
                 disabled={!canScrollRight}
-                className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? "bg-gray-100 cursor-pointer hover:bg-gray-200"
-                    : "bg-white border border-gray-400 cursor-not-allowed"
-                }`}
+                aria-label="Next"
+                className={navBtnClass(canScrollRight)}
               >
-                <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5 text-gray-700" />
+                <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
         ) : useGrid ? null : (
-          <div className="w-full bg-[#efefee] border-t border-[#d8d8d4]">
-            <div className="w-full px-4 min-[721px]:px-4 lg:px-[clamp(24px,2.4vw,46px)] pt-[68px] min-[721px]:pt-[clamp(72px,8vw,118px)] pb-[34px] min-[721px]:pb-[46px]">
-              <div className="grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end">
-                <div>
-                  <div className="flex items-center gap-3 text-black">
-                    <span className="w-[34px] h-px bg-current"></span>
-                    <span className="text-[10px] tracking-[0.22em] uppercase">
-                      {headingEyebrow}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      start();
-                      router.push(`/shop?source=${sectionSource}`);
-                    }}
-                    className="group mt-[18px] text-left text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black cursor-pointer"
-                  >
-                    <span className="relative inline-block">
-                      {titleFirstLine}
-                      <span className="absolute left-0 bottom-[-5px] h-[3px] w-0 bg-black transition-all duration-500 ease-out group-hover:w-full" />
-                    </span>
-
-                    <br />
-
-                    <span className="relative inline-block">
-                      {titleLastWord}.
-                      <span className="absolute left-0 bottom-[-5px] h-[3px] w-0 bg-black transition-all duration-500 ease-out group-hover:w-full" />
-                    </span>
-                  </button>
+          <div className="w-full bg-[#f5f4f0]">
+            <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-0 pb-8 min-[721px]:pb-14">
+              {/* Header — hairline + eyebrow, two-line title (no dividers). The subtitle
+                  sits on the first title line and the controls on the
+                  second, both flush with the right padding (same as the
+                  left), like LandingCategories. */}
+              <div className="w-full">
+                <div className="mb-3 flex items-center gap-3 sm:mb-4">
+                  <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
+                  <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
+                    {headingEyebrow}
+                  </span>
                 </div>
-                <div className="flex items-end justify-between gap-4">
-                  <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
+
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-6">
+                  {/* display:contents lets the two title lines sit in the grid rows */}
+                  <h2 className="contents">
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      onClick={goToSection}
+                      onKeyDown={(e) => e.key === "Enter" && goToSection()}
+                      className="col-start-1 row-start-1 block cursor-pointer text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444]"
+                    >
+                      {titleFirstLine}
+                    </span>
+                    <span
+                      role="link"
+                      tabIndex={-1}
+                      onClick={goToSection}
+                      className="col-start-1 row-start-2 block cursor-pointer text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]"
+                    >
+                      {`${titleLastWord}.`}
+                    </span>
+                  </h2>
+
+                  <p
+                    ref={subtitleRef}
+                    className="col-span-2 row-start-3 mt-4 max-w-[480px] text-[13px] leading-[1.7] text-[#555] sm:text-[14px] min-[900px]:col-span-1 min-[900px]:col-start-2 min-[900px]:row-start-1 min-[900px]:mt-0 min-[900px]:justify-self-end min-[900px]:self-center"
+                  >
                     {headingSubtitle}
                   </p>
-                  <div className="flex gap-2 flex-shrink-0">
+
+                  <div className="col-start-2 row-start-2 flex shrink-0 items-center gap-1.5 self-center justify-self-end sm:gap-2">
                     <button
                       onClick={() => scroll("prev")}
                       disabled={!canScrollLeft}
-                      className={`w-8 h-8 lg:w-10 lg:h-10  flex items-center justify-center transition-colors ${
-                        canScrollLeft
-                          ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                          : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                      }`}
+                      aria-label="Previous"
+                      className={navBtnClass(canScrollLeft)}
                     >
-                      <IoChevronBack className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                     <button
                       onClick={() => scroll("next")}
                       disabled={!canScrollRight}
-                      className={`w-8 h-8 lg:w-10 lg:h-10  flex items-center justify-center transition-colors ${
-                        canScrollRight
-                          ? "bg-gray-100 text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200"
-                          : "bg-white border border-gray-300 text-gray-300 cursor-not-allowed"
-                      }`}
+                      aria-label="Next"
+                      className={navBtnClass(canScrollRight)}
                     >
-                      <IoChevronForward className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        start();
+                        router.push("/shop");
+                      }}
+                      className="group ml-1 hidden sm:inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
+                    >
+                      {t("products.seeMore")}
+                      <GoArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Below the whole header row, right-aligned */}
-              <div className="flex justify-end mt-4 md:mt-5 -mb-4 md:-mb-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    start();
-                    router.push("/shop");
-                  }}
-                  className="group inline-flex items-center gap-0.5 md:gap-1 cursor-pointer text-[10px] md:text-[12px] tracking-[0.1em] md:tracking-[0.15em] uppercase font-bold text-black hover:opacity-70 transition-opacity whitespace-nowrap"
-                >
-                  <span className="relative">
-                    {t("products.seeMore")}
-                    <span className="absolute left-0 bottom-[-3px] h-[1px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
-                  </span>
-
-                  <GoArrowUpRight className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />
-                </button>
               </div>
             </div>
           </div>
@@ -1280,9 +980,7 @@ export default function PopularProducts({
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 "
               : isFavourite || isWishlist
                 ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
-                : isHorizontal
-                  ? "flex overflow-x-auto pb-4 hide-scrollbar"
-                  : "flex overflow-x-auto pb-4 hide-scrollbar"
+                : "flex overflow-x-auto pb-4 hide-scrollbar"
           }
         >
           {isLoading

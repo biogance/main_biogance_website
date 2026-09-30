@@ -46,19 +46,35 @@
   "features": {
     "title": "Pourquoi Choisir Biogance",
     "clientService": {
+"eyebrow": "À votre écoute",
+"value": "Service client",
+"label": "02 41 73 15 15",
+"note": "9h–12h · 14h–16h",
       "title": "Service Client",
       "subtitle": "+33 2 41 73 15 15",
       "description": "Disponible 9h-12h / 14h-16h"
     },
     "freeDelivery": {
+"eyebrow": "Offert dès",
+"value": "39€",
+"label": "En point relais",
+"note": "France",
       "title": "Livraison Gratuite",
       "description": "Profitez de la livraison GRATUITE sur les commandes de plus de 39€ (points de collecte France uniquement)"
     },
     "madeInFrance": {
+"eyebrow": "Origine",
+"value": "100%",
+"label": "Fabriqué en France",
+"note": "Savoir-faire français",
       "title": "100%",
       "description": "Tous nos produits sont fièrement 100% Fabriqués en France"
     },
     "securePayment": {
+"eyebrow": "Transaction",
+"value": "100%",
+"label": "Paiement sécurisé",
+"note": "Données protégées",
       "title": "Paiement Sécurisé",
       "description": "Achetez en toute confiance avec notre système de paiement sécurisé"
     }

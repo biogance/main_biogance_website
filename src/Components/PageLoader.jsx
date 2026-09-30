@@ -120,7 +120,13 @@ export default function PageLoader() {
 
     callSplashApi();
 
-    const hideLoader = () => setVisible(false);
+    // Also tells the home hero (MainVideo.jsx) the loader is gone, so its
+    // intro animation — held on frame one until now — can start.
+    const hideLoader = () => {
+      setVisible(false);
+      window.__bgLoaderDone = true;
+      window.dispatchEvent(new Event("biogance-loader-done"));
+    };
 
     if (pathname === "/") {
       window.addEventListener("biogance-home-ready", hideLoader, {
