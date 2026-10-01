@@ -144,7 +144,7 @@ export default function LandingExpertAdvice({ data, hideHeader = false }) {
         {!hideHeader && (
           // Header — hairline + eyebrow, two-line title (no index). The subtitle
           // sits on the first title line and "See all" on the second, flush right.
-          <div className="mb-6 min-[721px]:mb-10 w-full border-b border-black/15 pb-6 sm:pb-8">
+          <div className="mb-6 min-[721px]:mb-10 w-full pb-6 sm:pb-8">
             <div className="mb-3 flex items-center gap-3 sm:mb-4">
               <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
               <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">

@@ -114,7 +114,7 @@ export default function LandingReview({ data }) {
           the first title line and "Add a review" on the second, both flush
           with the right padding (same as the other landing sections). */}
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-10 min-[721px]:mb-14">
-        <div className="w-full border-b border-black/15 pb-6 sm:pb-8">
+        <div className="w-full  pb-6 sm:pb-8">
           <div className="mb-3 flex items-center gap-3 sm:mb-4">
             <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
             <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
