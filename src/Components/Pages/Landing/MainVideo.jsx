@@ -400,9 +400,6 @@ export default function HeroSection() {
                 @keyframes hvCurtainTop { from { transform: translateY(0); } to { transform: translateY(-101%); } }
                 @keyframes hvCurtainBottom { from { transform: translateY(0); } to { transform: translateY(101%); } }
                 @keyframes hvKen { from { transform: scale(1.14); } to { transform: scale(1); } }
-                @keyframes hvWord { from { transform: translateY(115%) rotate(4deg); } to { transform: translateY(0) rotate(0); } }
-                @keyframes hvFade { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
-                @keyframes hvGrowY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
                 @keyframes hvGrain { 0% { transform: translate(0,0); } 20% { transform: translate(-3%,2%); } 40% { transform: translate(2%,-3%); } 60% { transform: translate(-2%,-1%); } 80% { transform: translate(3%,3%); } 100% { transform: translate(0,0); } }
                 .hv-btn-sheen { transform: translateX(-130%) skewX(-18deg); }
                 .group:hover .hv-btn-sheen { transform: translateX(260%) skewX(-18deg); }
@@ -479,16 +476,11 @@ export default function HeroSection() {
           {/* ── 3 · Copy — left, vertically centered ── */}
           <div
             className="hv-anim relative z-10 self-start h-svh min-h-[600px] max-[374px]:min-h-[660px] flex items-center px-5 sm:px-8 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-[100px] pb-[92px] sm:pb-[104px]"
-            style={{
-              transform: "translate3d(0, calc(var(--sp, 0) * -70px), 0)",
-              opacity: "calc(1 - var(--sp, 0) * 1.25)",
-            }}
           >
             <div className="w-full max-w-[640px]">
               {/* Tagline — hairline + eyebrow */}
               <div
                 className="hv-anim inline-flex items-center gap-3.5 mb-5 md:mb-6"
-                style={{ animation: "hvFade .9s cubic-bezier(.2,.7,.2,1) 1.2s both" }}
               >
                 <span className="h-px w-10 shrink-0 bg-white/70" />
                 <p className="m-0 text-[10px] sm:text-[9px] font-medium tracking-[0.24em] sm:tracking-[0.26em] uppercase text-white/90">
@@ -496,7 +488,7 @@ export default function HeroSection() {
                 </p>
               </div>
 
-              {/* Headline — word-by-word mask rise, serif-italic closing word */}
+              {/* Headline — serif-italic closing word */}
               <h1
                 className={`m-0 mb-6 md:mb-7 ${
                   isFrench
@@ -517,7 +509,6 @@ export default function HeroSection() {
                         }`}
                         style={{
                           fontFamily: last ? FONT_SERIF : undefined,
-                          animation: `hvWord 1.1s cubic-bezier(.2,.7,.2,1) ${1.05 + i * 0.09}s both`,
                         }}
                       >
                         {word}
@@ -527,14 +518,12 @@ export default function HeroSection() {
                 })}
               </h1>
 
-              {/* Description with a drawn hairline */}
+              {/* Description with a hairline */}
               <div
                 className="hv-anim flex items-start gap-4 sm:gap-5 mb-7 md:mb-8"
-                style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.7s both" }}
               >
                 <span
                   className="hidden sm:block w-px h-[54px] bg-white/45 shrink-0"
-                  style={{ animation: "hvGrowY 1.2s cubic-bezier(.2,.7,.2,1) 1.8s both", transformOrigin: "top" }}
                 />
                 <p className="m-0 max-w-[400px] text-[17px] sm:text-[14px] leading-[1.75] font-light text-white/80 line-clamp-4 sm:line-clamp-none">
                   {heroContent.description}
@@ -544,7 +533,6 @@ export default function HeroSection() {
               {/* CTAs */}
               <div
                 className="hv-anim flex flex-col sm:flex-row sm:items-stretch gap-3"
-                style={{ animation: "hvFade 1s cubic-bezier(.2,.7,.2,1) 1.9s both" }}
               >
                 <button
                   onClick={() => router.push("/shop")}
