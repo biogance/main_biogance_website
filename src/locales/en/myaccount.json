@@ -1,9 +1,11 @@
 {
 
+
    "common": {
     "myAccount": "My Account",
     "home": "Home"
   },
+
 
   "orderDetails": {
     "title": "Order Details",
@@ -32,7 +34,7 @@
     "tellUsMorePlaceholder": "eg; I purchased the 250ml shampoo bottle last week, but the pump isn't working properly and it's difficult to get the product out.",
     "confirmButton": "Cancel This Order",
     "keepOrderButton": "Keep My Order"
-  }, 
+  },
   "createVoucher": {
     "title": "Create Voucher",
     "description1": "Redeem your loyalty points to generate a discount voucher.",
@@ -162,13 +164,18 @@
   },
   "deletePet": {
   "title": "Delete Pet Profile",
+  "headerBadge": "Pet Profile",
+  "cannotUndo": "This action cannot be undone",
+  "deleting": "Deleting...",
   "confirmation": "Are you sure you want to delete {{petName}}'s profile?",
   "warning": "This action cannot be undone.",
   "confirmButton": "Yes, Delete",
   "cancelButton": "No, Go Back"
 },
 
+
 "addaddress": {
+
 
   "addAddress": "Add Address",
   "addressType": "Address Type",
@@ -185,15 +192,16 @@
   "saveAddress": "Save Address"
 },
 "setsettings": {
-  
+ 
   "deleteAccount": {
-    
+   
     "confirmTitle": "Are you sure you want to delete your account?",
     "confirmDescription": "This action is permanent. All your saved information, including orders, loyalty points, and wishlist items, will be lost.",
     "confirmButton": "Continue to Delete",
     "cancelButton": "No, Go Back"
   }
 },
+
 
  "feedbackForm": {
     "title": "We'd love your feedback before you go",
@@ -236,7 +244,8 @@
     "cancelButton": "No, Go Back"
   },
 
-  
+
+ 
   "dashboard": {
     "welcome": "Welcome back, {{name}}!",
     "loyaltyPoints": "Loyalty Points",
@@ -261,14 +270,25 @@
       "title": "Your Cart is Empty",
       "description": "Looks like you haven't placed any orders yet.\nStart exploring and find the perfect products for your pet!",
       "browseProducts": "Browse Products"
-    }
+    },
+    "table": {
+      "order": "Order",
+      "date": "Date",
+      "status": "Status",
+      "total": "Total"
+    },
+    "quickAccess": "Quick Access",
+    "summary": "Summary",
+    "orderStatus": "Order Status"
   },
+
 
   "orderHistory": {
     "title": "Order History",
     "subtitle": "View and track all your purchases",
     "searchPlaceholder": "Search here",
     "placedOn": "Placed on",
+    "totalOrders": "Total Orders",
     "items": "Items",
     "moreDetails": "More Details",
     "filters": {
@@ -295,6 +315,7 @@
     }
   },
 
+
   "favourite": {
     "title": "My Favourites",
     "subtitle": "Products and articles you've saved for later",
@@ -317,6 +338,7 @@
     "addToCart": "Add to Cart"
   },
 
+
   "savedBlogs": {
     "title": "Articles",
     "subtitle": "Expert advice you've bookmarked",
@@ -331,6 +353,7 @@
     }
   },
 
+
   "savedBreeds": {
     "empty": {
       "title": "No saved breeds yet",
@@ -338,6 +361,7 @@
       "browseBreeds": "Browse Breeds"
     }
   },
+
 
   "loyalty": {
     "title": "Loyalty & Rewards",
@@ -372,9 +396,22 @@
     }
   },
 
+
   "userProfile": {
     "title": "User Profile",
     "subtitle": "Update your personal details",
+    "personalInfo": "Personal Information",
+    "profileDetails": "Profile Details",
+    "requiredFields": "Required fields",
+    "changePhoto": "Change Photo",
+    "avatarTitle": "Your Avatar",
+    "avatarDescription": "Square image works best. JPG or PNG.",
+    "uploadNewPhoto": "Upload New Photo",
+    "photoHint": "JPG, PNG up to 2MB",
+    "photoTipMain": "Profile photo helps others recognize you.",
+    "photoTipSub": "You can change it anytime.",
+    "keepUpdated": "Keep your information up to date",
+    "keepUpdatedHint": "This helps us provide a better and more personalized experience for you.",
     "updateImage": "Update Image",
     "remove": "Remove",
     "uploadImage": "Upload Image",
@@ -390,8 +427,10 @@
     "errorPhoneTooLong": "This phone number is too long for the selected country.",
     "errorPhoneInvalid": "This doesn't look like a valid phone number for the selected country.",
     "cancel": "Cancel",
-    "updateProfileDetails": "Update Profile Details"
+    "updateProfileDetails": "Update Profile Details",
+    "updating": "Updating..."
   },
+
 
   "petProfile": {
     "title": "Pet Profile",
@@ -407,8 +446,11 @@
       "gender": "Gender",
       "weight": "Weight",
       "specialNeeds": "Special Needs"
-    }
+    },
+    "limitReachedTitle": "Limit reached",
+    "limitReachedDescription": "Only 3 pets per account."
   },
+
 
   "address": {
     "title": "My Addresses",
@@ -419,11 +461,14 @@
     "city": "City",
     "postalCode": "Postal Code",
     "country": "Country",
+    "default": "Default",
+    "addressWord": "Address",
     "emptyTitle": "You Haven't Added Any Address",
     "emptyDescription": "You haven't saved any shipping or billing addresses yet. Add one now to speed up checkout and manage your orders more easily.",
     "addFirstAddress": "Add Your First Address",
     "emptyAlt": "Empty addresses illustration"
   },
+
 
   "settings": {
     "title": "Settings",
@@ -442,13 +487,17 @@
       "note2": "You'll need to sign in again with your new password.",
       "cancel": "Cancel",
       "updatePassword": "Update Password",
+      "updating": "Updating...",
+      "genericError": "Something went wrong. Please try again.",
       "errors": {
         "currentRequired": "Current password is required.",
         "currentIncorrect": "Current password is incorrect.",
         "newRequired": "New password is required.",
+        "newTooShort": "Password must be at least 6 characters.",
         "newMustDiffer": "New password must differ from current.",
         "passwordRequirements": "At least 8 characters, 1 number, 1 special character",
-        "confirmRequired": "Please confirm your new password."
+        "confirmRequired": "Please confirm your new password.",
+        "confirmMismatch": "New password and confirm password do not match."
       }
     },
     "emailNotifications": {
@@ -487,6 +536,7 @@
     }
   },
 
+
  "support": {
     "title": "Help & Support",
     "subtitle": "Manage your cancellations, refund requests, and support tickets all in one place.",
@@ -509,7 +559,8 @@
     "emptyState": {
       "title": "No Support Tickets Yet",
       "description": "You haven't created any support or refund requests yet. If you face any issue with your order, you can easily raise a ticket here and track it in real time.",
-      "createNewTicket": "Create New Ticket"
+      "createNewTicket": "Create New Ticket",
+      "illustrationAlt": "No support tickets illustration"
     },
     "noResults": {
       "title": "No ticket found",
@@ -520,6 +571,7 @@
       "closeChat": "Close Chat/Ticket",
       "writeMessage": "Write Message...",
       "dateSeparator": "Tuesday",
+      "supportTeam": "Support Team",
       "closeConfirm": {
         "title": "Are you sure you want to close this ticket?",
         "cancel": "Cancel",
@@ -579,3 +631,6 @@
     }
   }
 }
+
+
+

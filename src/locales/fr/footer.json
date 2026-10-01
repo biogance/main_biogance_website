@@ -3,10 +3,11 @@
     "description": "Biogance allie science et nature pour créer des soins pour animaux éco-certifiés fabriqués en France — promouvant le bien-être animal, la durabilité et des soins sûrs et efficaces pour vos compagnons.",
     "address": "Z.I. Anjou Atlantique, 49123 Champtocé-sur-Loire, France",
     "email": "info@biogance.fr",
-    "phone": "+33 2 41 73 15 15"
+    "phone": "+33 2 41 73 15 15",
+    "contactTitle": "Contactez-nous"
   },
   "social": {
-    "title": "Partagez votre expérience",
+    "title": "Suivez-nous",
     "biogance": "@bioganceofficiel",
     "ekinat": "@ekinatofficiel"
   },
@@ -14,7 +15,8 @@
     "title": "Abonnez-vous à notre newsletter",
     "emailLabel": "Adresse e-mail",
     "emailPlaceholder": "john_doe@gmail.com",
-    "subscribeButton": "S'abonner"
+    "subscribeButton": "S'abonner",
+    "barPlaceholder": "Saisissez votre adresse e-mail"
   },
   "mobileApp": {
     "title": "Télécharger l'application mobile",
@@ -27,7 +29,9 @@
     "days": "Jours",
     "hours": "Heures",
     "minutes": "Minutes",
-    "seconds": "Secondes"
+    "seconds": "Secondes",
+    "googlePlayPrefix": "DISPONIBLE SUR",
+    "appStorePrefix": "Télécharger dans"
   },
   "categories": {
     "dogs": {
@@ -150,11 +154,9 @@
       "Devenez partenaires/ambassadeurs"
     ]
   },
-  
   "news": {
     "title": "Actualités",
     "items": [
-    
       "Derniers conseils d'experts"
     ]
   },
@@ -167,5 +169,11 @@
     "shipping": "Expédition & Retour",
     "privacy": "Politique de Confidentialité",
     "terms": "Conditions Générales"
+  },
+  "sections": {
+    "petCare": "Soins par espèce",
+    "moreAnimals": "Autres animaux",
+    "exploreRanges": "Nos gammes",
+    "resources": "Ressources & à propos"
   }
 }

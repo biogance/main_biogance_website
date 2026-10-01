@@ -896,7 +896,11 @@ export default function PopularProducts({
           </div>
         ) : useGrid ? null : (
           <div className="w-full bg-[#f5f4f0]">
-            <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pt-0 pb-8 min-[721px]:pb-14">
+            <div
+              className={`w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pb-8 min-[721px]:pb-14 ${
+                isBestSeller ? "pt-[clamp(60px,7vw,110px)]" : "pt-0"
+              }`}
+            >
               {/* Header — hairline + eyebrow, two-line title (no dividers). The subtitle
                   sits on the first title line and the controls on the
                   second, both flush with the right padding (same as the

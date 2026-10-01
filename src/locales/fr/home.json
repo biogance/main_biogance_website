@@ -80,6 +80,17 @@
     }
   },
   "productFinder": {
+    "next": "Suivant",
+    "notChosen": "Pas encore choisi",
+    "stepPet": "Animal",
+    "stepCare": "Soin",
+    "stepConcern": "Besoin",
+    "back": "Retour",
+    "step": "Étape",
+    "profileNote": "Vous souhaitez créer le profil de votre animal ou un bon Biogance ?",
+    "learnMore": "En savoir plus",
+    "close": "Fermer",
+    "reset": "Réinitialiser",
     "title": "Trouvez Votre Produit Parfait",
     "sectionEyebrow": "Trouvez le produit parfait",
     "sectionHeadingLine1": "Pensé pour",
@@ -176,6 +187,9 @@
     }
   },
   "reviews": {
+    "eyebrow": "Adoré par nos clients",
+    "headingLine1": "Ce que disent",
+    "headingLine2": "nos clients.",
     "title": "Ce Que Disent les Parents d'Animaux",
     "subtitle": "Lisez de vrais avis de parents d'animaux heureux qui font confiance à nos produits.",
     "addReview": "Ajouter un avis",

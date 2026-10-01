@@ -4,6 +4,7 @@
     "home": "Maison"
   },
 
+
   "orderDetails": {
     "title": "Détails de la commande",
     "quantity": "Quantité",
@@ -161,14 +162,18 @@
   },
   "deletePet": {
   "title": "Supprimer le profil de l'animal",
+  "headerBadge": "Profil d'animal",
+  "cannotUndo": "Cette action est irréversible",
+  "deleting": "Suppression...",
   "confirmation": "Êtes-vous sûr de vouloir supprimer le profil de {{petName}} ?",
   "warning": "Cette action est irréversible.",
   "confirmButton": "Oui, supprimer",
   "cancelButton": "Non, retour"
 },
 
+
 "addaddress": {
-  
+ 
   "addAddress": "Ajouter une adresse",
   "addressType": "Type d'adresse",
   "addressTypePlaceholder": "ex : Domicile",
@@ -184,16 +189,18 @@
   "saveAddress": "Enregistrer l'adresse"
 },
 
+
 "setsettings": {
-  
+ 
   "deleteAccount": {
-    
+   
     "confirmTitle": "Êtes-vous sûr de vouloir supprimer votre compte ?",
     "confirmDescription": "Cette action est définitive. Toutes vos informations enregistrées, y compris les commandes, les points de fidélité et les articles de votre liste de souhaits, seront perdus.",
     "confirmButton": "Continuer la suppression",
     "cancelButton": "Non, retour"
   }
 },
+
 
  "feedbackForm": {
     "title": "Nous aimerions vos commentaires avant votre départ",
@@ -214,6 +221,7 @@
     "goBackButton": "Non, retour",
     "continueDeleteButton": "Continuer la suppression"
   },
+
 
    "confirmDeletion": {
     "title": "Confirmer la suppression du compte",
@@ -261,13 +269,23 @@
       "title": "Votre panier est vide",
       "description": "Il semble que vous n'ayez pas encore passé de commande.\nCommencez à explorer et trouvez les produits parfaits pour votre animal !",
       "browseProducts": "Parcourir les produits"
-    }
+    },
+    "table": {
+      "order": "Commande",
+      "date": "Date",
+      "status": "Statut",
+      "total": "Total"
+    },
+    "quickAccess": "Accès rapide",
+    "summary": "Résumé",
+    "orderStatus": "Statut des commandes"
   },
   "orderHistory": {
     "title": "Historique des commandes",
     "subtitle": "Consultez et suivez tous vos achats",
     "searchPlaceholder": "Rechercher ici",
     "placedOn": "Passée le",
+    "totalOrders": "Total des commandes",
     "items": "Articles",
     "moreDetails": "Plus de détails",
     "filters": {
@@ -294,6 +312,7 @@
     }
   },
 
+
   "favourite": {
     "title": "Mes favoris",
     "subtitle": "Produits et articles que vous avez sauvegardés pour plus tard",
@@ -316,6 +335,7 @@
     "addToCart": "Ajouter au panier"
   },
 
+
   "savedBlogs": {
     "title": "Articles",
     "subtitle": "Conseils d'experts que vous avez enregistrés",
@@ -330,6 +350,7 @@
     }
   },
 
+
   "savedBreeds": {
     "empty": {
       "title": "Aucune race enregistrée",
@@ -337,6 +358,7 @@
       "browseBreeds": "Parcourir les races"
     }
   },
+
 
   "loyalty": {
     "title": "Fidélité et Récompenses",
@@ -371,9 +393,22 @@
     }
   },
 
+
   "userProfile": {
     "title": "Profil utilisateur",
     "subtitle": "Mettez à jour vos informations personnelles",
+    "personalInfo": "Informations personnelles",
+    "profileDetails": "Détails du profil",
+    "requiredFields": "Champs obligatoires",
+    "changePhoto": "Changer la photo",
+    "avatarTitle": "Votre photo",
+    "avatarDescription": "Une image carrée fonctionne mieux. JPG ou PNG.",
+    "uploadNewPhoto": "Téléverser une nouvelle photo",
+    "photoHint": "JPG, PNG jusqu'à 2 Mo",
+    "photoTipMain": "La photo de profil aide les autres à vous reconnaître.",
+    "photoTipSub": "Vous pouvez la changer à tout moment.",
+    "keepUpdated": "Gardez vos informations à jour",
+    "keepUpdatedHint": "Cela nous aide à vous offrir une expérience plus personnalisée.",
     "updateImage": "Mettre à jour l'image",
     "remove": "Supprimer",
     "uploadImage": "Télécharger une image",
@@ -389,8 +424,10 @@
     "errorPhoneTooLong": "Ce numéro de téléphone est trop long pour le pays sélectionné.",
     "errorPhoneInvalid": "Ce numéro ne semble pas valide pour le pays sélectionné.",
     "cancel": "Annuler",
-    "updateProfileDetails": "Mettre à jour les détails du profil"
+    "updateProfileDetails": "Mettre à jour les détails du profil",
+    "updating": "Mise à jour..."
   },
+
 
   "petProfile": {
     "title": "Profil d'animal",
@@ -406,8 +443,11 @@
       "gender": "Genre",
       "weight": "Poids",
       "specialNeeds": "Besoins spéciaux"
-    }
+    },
+    "limitReachedTitle": "Limite atteinte",
+    "limitReachedDescription": "Seulement 3 animaux par compte."
   },
+
 
   "address": {
     "title": "Mes adresses",
@@ -418,11 +458,14 @@
     "city": "Ville",
     "postalCode": "Code postal",
     "country": "Pays",
+    "default": "Par défaut",
+    "addressWord": "Adresse",
     "emptyTitle": "Vous n'avez ajouté aucune adresse",
     "emptyDescription": "Vous n'avez encore enregistré aucune adresse de livraison ou de facturation. Ajoutez-en une maintenant pour accélérer le paiement et gérer vos commandes plus facilement.",
     "addFirstAddress": "Ajouter votre première adresse",
     "emptyAlt": "Illustration d'adresses vides"
   },
+
 
   "settings": {
     "title": "Paramètres",
@@ -441,13 +484,17 @@
       "note2": "Vous devrez vous reconnecter avec votre nouveau mot de passe.",
       "cancel": "Annuler",
       "updatePassword": "Mettre à jour le mot de passe",
+      "updating": "Mise à jour...",
+      "genericError": "Une erreur s'est produite. Veuillez réessayer.",
       "errors": {
         "currentRequired": "Le mot de passe actuel est requis.",
         "currentIncorrect": "Le mot de passe actuel est incorrect.",
         "newRequired": "Le nouveau mot de passe est requis.",
+        "newTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
         "newMustDiffer": "Le nouveau mot de passe doit être différent de l'actuel.",
         "passwordRequirements": "Au moins 8 caractères, 1 chiffre, 1 caractère spécial",
-        "confirmRequired": "Veuillez confirmer votre nouveau mot de passe."
+        "confirmRequired": "Veuillez confirmer votre nouveau mot de passe.",
+        "confirmMismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas."
       }
     },
     "emailNotifications": {
@@ -486,6 +533,7 @@
     }
   },
 
+
   "support": {
     "title": "Aide et assistance",
     "subtitle": "Gérez vos annulations, demandes de remboursement et tickets de support en un seul endroit.",
@@ -508,7 +556,8 @@
     "emptyState": {
       "title": "Aucun ticket de support encore",
       "description": "Vous n'avez pas encore créé de demandes de support ou de remboursement. Si vous rencontrez un problème avec votre commande, vous pouvez facilement créer un ticket ici et le suivre en temps réel.",
-      "createNewTicket": "Créer un nouveau ticket"
+      "createNewTicket": "Créer un nouveau ticket",
+      "illustrationAlt": "Illustration : aucun ticket de support"
     },
     "noResults": {
       "title": "Aucun ticket trouvé",
@@ -519,6 +568,7 @@
       "closeChat": "Fermer le chat/ticket",
       "writeMessage": "Écrire un message...",
       "dateSeparator": "Mardi",
+      "supportTeam": "Équipe support",
       "closeConfirm": {
         "title": "Êtes-vous sûr de vouloir fermer ce ticket ?",
         "cancel": "Annuler",
@@ -578,3 +628,6 @@
     }
   }
 }
+
+
+

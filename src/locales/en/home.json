@@ -80,6 +80,17 @@
     }
   },
   "productFinder": {
+    "next": "Next",
+    "notChosen": "Not chosen yet",
+    "stepPet": "Pet",
+    "stepCare": "Care",
+    "stepConcern": "Concern",
+    "back": "Back",
+    "step": "Step",
+    "profileNote": "Want to create your pet profile or a Biogance coupon?",
+    "learnMore": "Learn more",
+    "close": "Close",
+    "reset": "Reset",
     "title": "Find Your Perfect Product",
     "sectionEyebrow": "Find the perfect product",
     "sectionHeadingLine1": "Made for",
@@ -176,6 +187,9 @@
     }
   },
   "reviews": {
+    "eyebrow": "Loved by pet parents",
+    "headingLine1": "What pet parents",
+    "headingLine2": "are saying.",
     "title": "What Pet Parents Are Saying",
     "subtitle": "Read real reviews from happy pet parents who trust our products.",
     "addReview": "Add a review",

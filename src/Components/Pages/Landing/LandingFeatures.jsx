@@ -20,8 +20,8 @@ export const LandingFeatures = ({ data }) => {
         href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
         precedence="default"
       />
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)]">
-        <div className="grid grid-cols-2 border-l border-t border-white/[0.07] min-[1101px]:grid-cols-4">
+      <div className="w-full">
+        <div className="grid grid-cols-2 border-t border-white/[0.07] min-[1101px]:grid-cols-4">
           {keys.map((key, index) => {
             const tk = (field) => t(`home:features.${key}.${field}`, { defaultValue: '' });
             const value = tk('value');
@@ -29,7 +29,7 @@ export const LandingFeatures = ({ data }) => {
             return (
               <div
                 key={key}
-                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden border-b border-r border-white/[0.07] px-5 py-5 text-white min-[721px]:min-h-[250px] min-[721px]:px-6 min-[721px]:py-6"
+                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden border-b border-r border-white/[0.07] px-5 py-5 text-white even:border-r-0 min-[1101px]:even:border-r min-[1101px]:last:border-r-0 min-[721px]:min-h-[250px] min-[721px]:px-6 min-[721px]:py-6"
                 style={{
                   background:
                     'radial-gradient(ellipse 70% 55% at 100% 0%, rgba(201,162,74,.22), rgba(201,162,74,0) 62%), linear-gradient(180deg, #151412 0%, #0b0b0a 100%)',

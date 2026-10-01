@@ -308,12 +308,10 @@ export default function HeroSection() {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  // "Find the perfect product" scrolls down to the LandingProductFinder
-  // section instead of navigating away — matches html's href="#finder" anchor.
-  const scrollToFinder = () => {
-    document
-      .getElementById("finder")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // "Find the perfect product" opens the finder modal that lives in
+  // LandingProductFinder.jsx (it listens for this event).
+  const openFinder = () => {
+    window.dispatchEvent(new Event("biogance-open-finder"));
   };
 
   const currentImageUrl = currentSlideData?.url;
@@ -563,12 +561,12 @@ export default function HeroSection() {
                 </button>
 
                 <button
-                  onClick={scrollToFinder}
+                  onClick={openFinder}
                   className="group relative overflow-hidden min-h-[54px] sm:min-h-[50px] px-6 sm:px-7 border border-white/40 text-white hover:text-[#0b0b0a] inline-flex items-center justify-center gap-3 whitespace-nowrap uppercase text-[10.5px] min-[375px]:text-[11.5px] sm:text-[10px] tracking-[0.16em] min-[375px]:tracking-[0.2em] sm:tracking-[0.22em] font-semibold cursor-pointer transition-[color,transform] duration-300 ease-out"
                 >
                   <span className="absolute inset-0 bg-white -translate-x-full transition-transform duration-500 ease-out group-hover:translate-x-0" />
                   <span className="relative">{t("hero.discover")}</span>
-                  <span className="relative">↓</span>
+                  <span className="relative">→</span>
                 </button>
               </div>
             </div>
@@ -595,7 +593,7 @@ export default function HeroSection() {
       <LandingCards data={apiData} apiData={apiData} />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
-      {/* <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} /> */}
+      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} />
       <LandingExpertAdvice data={apiData} />
       <LandingReview data={apiData} />
       {/* <LandingBanner data={apiData} /> */}

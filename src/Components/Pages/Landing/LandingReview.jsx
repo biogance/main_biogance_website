@@ -74,6 +74,27 @@ export default function LandingReview({ data }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total]);
 
+  // Desktop: shrink the subtitle box to its widest rendered line so the
+  // text sits flush with the right padding (same as LandingCategories).
+  const { i18n } = useTranslation('home');
+  const subtitleRef = useRef(null);
+  useEffect(() => {
+    const el = subtitleRef.current;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.width = '';
+      if (window.innerWidth < 900) return;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const widest = Math.max(0, ...[...range.getClientRects()].map((r) => r.width));
+      if (widest) el.style.width = `${Math.ceil(widest)}px`;
+    };
+    fit();
+    document.fonts?.ready?.then(fit);
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [i18n.language]);
+
   // Real average rating from the API reviews, in place of html's hardcoded "4.9".
   const averageRating = total > 0
     ? (apiReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / total).toFixed(1)
@@ -89,32 +110,61 @@ export default function LandingReview({ data }) {
           centered cap opened up. Dropping the cap keeps it pinned to
           the same left inset at every viewport width — same fix as
           MainVideo.jsx's hero wrap. */}
+      {/* Header — hairline + eyebrow, two-line title. The subtitle sits on
+          the first title line and "Add a review" on the second, both flush
+          with the right padding (same as the other landing sections). */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-10 min-[721px]:mb-14">
+        <div className="w-full border-b border-black/15 pb-6 sm:pb-8">
+          <div className="mb-3 flex items-center gap-3 sm:mb-4">
+            <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
+              {t('reviews.eyebrow')}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-6">
+            {/* display:contents lets the two title lines sit in the grid rows */}
+            <h2 className="contents">
+              <span className="col-start-1 row-start-1 block text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444]">
+                {t('reviews.headingLine1')}
+              </span>
+              <span className="col-start-1 row-start-2 block text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]">
+                {t('reviews.headingLine2')}
+              </span>
+            </h2>
+
+            <p
+              ref={subtitleRef}
+              className="col-span-2 row-start-3 mt-4 max-w-[480px] text-[13px] leading-[1.7] text-[#555] sm:text-[14px] min-[900px]:col-span-1 min-[900px]:col-start-2 min-[900px]:row-start-1 min-[900px]:mt-0 min-[900px]:justify-self-end min-[900px]:self-center"
+            >
+              {t('reviews.subtitle')}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="group col-start-2 row-start-2 self-center justify-self-end inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
+            >
+              <span className="text-[13px] leading-none font-normal">+</span>
+              {t('reviews.addReview')}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1101px]:grid-cols-[0.75fr_1.25fr] gap-[42px] min-[721px]:gap-[70px] items-start">
 
         {/* Left column (.eyebrow / .score / .stars / .review-add) */}
         <div>
-          <div className="flex items-center gap-3 text-black">
-            <span className="w-[34px] h-px bg-current"></span>
-            <span className="text-[10px] tracking-[0.22em] uppercase">{t('reviews.title')}</span>
-          </div>
-
           {isLoading ? (
-            <div className="mt-[18px] h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(72px,9vw,145px)] leading-[0.8]" />
+            <div className="h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(72px,9vw,145px)] leading-[0.8]" />
           ) : averageRating && (
-            <div className="mt-[18px] text-[clamp(72px,9vw,145px)] leading-[0.8] tracking-[-0.075em] text-black">
+            <div className="text-[clamp(72px,9vw,145px)] leading-[0.8] tracking-[-0.075em] text-black">
               {averageRating}
             </div>
           )}
 
           <div className="mt-[22px] tracking-[0.18em] text-black" aria-hidden="true">★★★★★</div>
-
-          <button
-            type="button"
-            onClick={() => setIsReviewModalOpen(true)}
-            className="inline-flex items-center justify-center min-h-[44px] mt-[28px] px-5 border border-black bg-transparent text-black text-[9px] font-bold tracking-[0.15em] uppercase cursor-pointer transition-colors duration-200 hover:bg-black hover:text-white"
-          >
-            {t('reviews.addReview')}
-          </button>
         </div>
 
         {/* Right column — quote carousel (.review-carousel) */}

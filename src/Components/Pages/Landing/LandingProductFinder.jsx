@@ -1,30 +1,46 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { MEDIA_URL } from '../../API/API';
+import {
+  LuArrowLeft,
+  LuArrowRight,
+  LuArrowUpRight,
+  LuCheck,
+  LuPawPrint,
+  LuRotateCcw,
+  LuX,
+} from 'react-icons/lu';
 
+// Single static background (public/PF.webp).
+const BACKGROUND_IMAGE = '/PF.webp';
+
+// Product finder — the section is just an image stage with the heading,
+// one "View products" CTA and a pet-profile / coupon note. The CTA opens a
+// modal holding the three-tier cascading finder (pet → speciality → need),
+// built from the real category tree: category -> speciality (type
+// "perfect-specificity", in the category's sub_categories) -> need (type
+// "perfect-need", in the speciality's sub_categories).
 export function LandingProductFinder({ data }) {
   const { t, i18n } = useTranslation('home');
   const isFrench = i18n.language === 'fr';
   const router = useRouter();
-  // Three-tier cascading finder — same "pet → speciality → need" flow as
-  // HOMEPAGE V2.html's perfectMatchData finder, but built from the real
-  // category tree instead of hardcoded demo data. The tree is 3 levels:
-  // category (type "collection") -> speciality (type "perfect-specificity",
-  // sitting in the category's own sub_categories) -> need (type
-  // "perfect-need", sitting in the speciality's own sub_categories). This
-  // used to filter for "universe"/"family" — those types belong to
-  // OurProducts.jsx's separate shop-filter tree, not this one, so they
-  // never matched anything here and the 2nd/3rd tiers stayed empty.
+
   const [selectedPet, setSelectedPet] = useState('');
   const [selectedCare, setSelectedCare] = useState('');
   const [selectedConcern, setSelectedConcern] = useState('');
   const [categories, setCategories] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  // Wizard shows one step at a time; dir drives the slide-in direction.
+  const [step, setStep] = useState(0);
+  const [dir, setDir] = useState(1);
+  const goToStep = (next) => {
+    setDir(next > step ? 1 : -1);
+    setStep(next);
+  };
 
-  // Same french_name fallback OurProducts.jsx uses for its own category /
-  // universe (speciality) / family (need) names — this file already applied
-  // it to the top-level pet buttons but not to the speciality/need tiers
-  // below them, so those stayed English-only even in French mode.
   const getName = (item) => {
     if (!item) return '';
     return isFrench ? (item.french_name || item.name || '') : (item.name || '');
@@ -55,10 +71,10 @@ export function LandingProductFinder({ data }) {
   const careOptions = selectedPetObj?.sub_categories?.filter((s) => s.type === 'perfect-specificity') || [];
   const selectedCareObj = careOptions.find((c) => c.id === selectedCare);
   const concernOptions = selectedCareObj?.sub_categories?.filter((s) => s.type === 'perfect-need') || [];
+  const selectedConcernObj = concernOptions.find((c) => c.id === selectedConcern);
 
-  // Selecting a pet just resets the two lower tiers so the user picks the
-  // speciality (and then the need) themselves, instead of the first option
-  // in each list being auto-selected for them.
+  // Selecting a pet resets the two lower tiers. Picking an option never
+  // moves on by itself — the footer "Next" button does.
   const handleSelectPet = (cat) => {
     setSelectedPet(cat.id);
     setSelectedCare('');
@@ -70,199 +86,405 @@ export function LandingProductFinder({ data }) {
     setSelectedConcern('');
   };
 
-  // Background images array
-  const backgroundImages = [
-    'https://images.unsplash.com/photo-1764821800130-3b09a6f08cff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    'https://images.pexels.com/photos/31192222/pexels-photo-31192222.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-    'https://images.unsplash.com/photo-1517849845537-4d257902454a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    'https://images.pexels.com/photos/1041099/pexels-photo-1041099.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
+  const resetFinder = () => {
+    setSelectedPet('');
+    setSelectedCare('');
+    setSelectedConcern('');
+    goToStep(0);
+  };
+
+  const openModal = () => {
+    setDir(1);
+    setStep(0);
+    setIsOpen(true);
+  };
+
+  // The hero's "Find the perfect product" button (MainVideo.jsx) opens this
+  // modal through a window event.
+  useEffect(() => {
+    window.addEventListener('biogance-open-finder', openModal);
+    return () => window.removeEventListener('biogance-open-finder', openModal);
+  }, []);
+
+  // Modal: lock page scroll, close on Escape, animate out before unmounting.
+  const closeModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+    }, 250);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => e.key === 'Escape' && closeModal();
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen]);
+
+  const viewProducts = () => {
+    if (!selectedPetObj) return;
+    sessionStorage.setItem(
+      'shopDeepLink',
+      JSON.stringify({ type: 'family', category_id: selectedPetObj.id }),
+    );
+    window.dispatchEvent(new Event('shopDeepLinkReady'));
+    router.push('/shop');
+  };
+
+  // Steps shown in the modal; 2 and 3 unlock as the previous one is picked.
+  const steps = [
+    {
+      n: '01',
+      short: t('productFinder.stepPet', 'Pet'),
+      label: t('productFinder.whoIsYourPet'),
+      options: categories,
+      value: selectedPet,
+      onPick: handleSelectPet,
+      unlocked: true,
+    },
+    {
+      n: '02',
+      short: t('productFinder.stepCare', 'Care'),
+      label: t('productFinder.whatToCareFor'),
+      options: careOptions,
+      value: selectedCare,
+      onPick: handleSelectCare,
+      unlocked: !!selectedPet,
+    },
+    {
+      n: '03',
+      short: t('productFinder.stepConcern', 'Concern'),
+      label: t('productFinder.mainConcern'),
+      options: concernOptions,
+      value: selectedConcern,
+      onPick: (c) => setSelectedConcern(c.id),
+      unlocked: !!selectedCare,
+    },
   ];
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Auto slideshow every 2.5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
-        prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [backgroundImages.length]);
-
-  // Manual navigation
-  const goToPrevious = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? backgroundImages.length - 1 : prev - 1
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentImageIndex((prev) => 
-      prev === backgroundImages.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  return (
-    <>
-     
-      <section id="finder" className="w-full bg-white pt-[clamp(82px,9vw,138px)] scroll-mt-24">
-        
-        <div className="w-full grid grid-cols-1 min-[1101px]:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-[26px] min-[721px]:gap-[clamp(34px,4vw,64px)] items-end px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-[34px] min-[721px]:mb-[46px]">
-          <div>
-            <div className="flex items-center gap-3 text-black">
-              <span className="w-[34px] h-px bg-current"></span>
-              <span className="text-[10px] tracking-[0.22em] uppercase">{t('productFinder.sectionEyebrow')}</span>
-            </div>
-            <h2 className="mt-[18px] mb-0 text-[50px] min-[721px]:text-[clamp(48px,7vw,108px)] leading-[0.9] tracking-[-0.072em] uppercase font-[100] text-black">
-              {t('productFinder.sectionHeadingLine1')}<br />{t('productFinder.sectionHeadingLine2')}
-            </h2>
+  // Modal — split layout: image + vertical stepper on the left, question +
+  // option list on the right.
+  const pickedObjs = [selectedPetObj, selectedCareObj, selectedConcernObj];
+  // Footer CTA: "Next" on steps 1–2, "View products" on the last step — or
+  // earlier when the picked option has nothing further to choose from.
+  const nextHasOptions = step < steps.length - 1 && steps[step + 1].options.length > 0;
+  const showNext = step < steps.length - 1 && !(steps[step].value && !nextHasOptions);
+  const modal = (
+    <div
+      className={`fixed inset-0 z-[1000] flex items-end justify-center bg-black/55 sm:items-center sm:p-4 ${
+        isClosing ? 'backdrop-out' : 'backdrop-in'
+      }`}
+      onClick={closeModal}
+    >
+      <style>{`
+        @keyframes pfStepIn { from { opacity: 0; transform: translateX(var(--pf-from)); } to { opacity: 1; transform: translateX(0); } }
+      `}</style>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('productFinder.heading')}
+        onClick={(e) => e.stopPropagation()}
+        className={`flex h-[90dvh] w-full overflow-hidden bg-white shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] sm:h-[min(620px,88vh)] sm:max-w-[980px] ${
+          isClosing ? 'modal-pop-out' : 'modal-pop-in'
+        }`}
+      >
+        {/* Left — image + vertical stepper (desktop) */}
+        <aside className="hidden w-[300px] shrink-0 flex-col bg-[#f5f4f0] md:flex lg:w-[330px]">
+          <div className="relative h-[44%] shrink-0 overflow-hidden">
+            <img src={BACKGROUND_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#f5f4f0] via-[#f5f4f0]/10 to-transparent" />
           </div>
-          <p className="mb-2 max-w-[600px] text-[#595955] text-[15px] leading-[1.75]">
-            {t('productFinder.sectionSubtitle')}
-          </p>
-        </div>
-      </section>
-
-    <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background Slideshow */}
-      <div className="absolute inset-0">
-        {backgroundImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              backgroundImage: `url('${image}')`,
-            }}
-          />
-        ))}
-        <div className="absolute inset-0 bg-black/40" />
-      </div>
-
-      {/* Content — card styled like .finder-card / .finder-intro / .question /
-          .choice / .finder-result in HOMEPAGE V2.html */}
-      <div className="relative min-h-screen flex items-center justify-center sm:justify-start px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-12">
-        <div className="bg-white/[0.14] backdrop-blur-[4px] p-6 sm:p-8 md:p-9 max-w-[360px] w-full border border-white/50">
-
-          {/* Header (.finder-intro) */}
-          <div className="mb-0">
-            <h2 className="text-white text-[34px] sm:text-[clamp(34px,3.7vw,60px)] leading-[0.9] tracking-[-0.065em] uppercase font-medium mb-[18px]">
-              {t('productFinder.heading')}
-            </h2>
-            <p className="text-white/90 text-sm leading-[1.72] mb-6">
-              {t('productFinder.description')}
+          <div className="flex flex-1 flex-col px-7 pb-7">
+            <div className="my-auto py-4">
+            <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#8a8880]">
+              <span className="h-px w-6 bg-black/30" />
+              {t('productFinder.sectionEyebrow')}
             </p>
-          </div>
-
-          {/* Step 1 — Who is your pet? (.question + .choice-row.pet-tabs) */}
-          <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
-            {t('productFinder.whoIsYourPet')}
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleSelectPet(cat)}
-                className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
-                  selectedPet === cat.id
-                    ? 'bg-white/[0.18] text-white border-white/70'
-                    : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
-                }`}
-              >
-                {getName(cat)}
-              </button>
-            ))}
-          </div>
-
-          {/* Step 2 — What do you want to care for? (.choice-row.need-tabs) */}
-          {careOptions.length > 0 && (
-            <>
-              <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
-                {t('productFinder.whatToCareFor')}
-              </div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {careOptions.map((care) => (
-                  <button
-                    key={care.id}
-                    onClick={() => handleSelectCare(care)}
-                    className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
-                      selectedCare === care.id
-                        ? 'bg-white/[0.18] text-white border-white/70'
-                        : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
-                    }`}
-                  >
-                    {getName(care)}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Step 3 — What is the main concern? (.choice-row.concern-tabs) */}
-          {concernOptions.length > 0 && (
-            <>
-              <div className="text-white/95 text-[10px] tracking-[0.16em] uppercase mt-[18px] mb-3">
-                {t('productFinder.mainConcern')}
-              </div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {concernOptions.map((concern) => (
-                  <button
-                    key={concern.id}
-                    onClick={() => setSelectedConcern(concern.id)}
-                    className={`px-[14px] py-[11px] cursor-pointer text-[11px] font-semibold transition-all duration-200 border ${
-                      selectedConcern === concern.id
-                        ? 'bg-white/[0.18] text-white border-white/70'
-                        : 'bg-white/5 text-white hover:bg-white/[0.18] border-white/40 hover:border-white/70'
-                    }`}
-                  >
-                    {getName(concern)}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-         
-          <div className="mt-[22px] pt-[18px] border-t border-white/25">
-            <button
-              disabled={!selectedPetObj}
-              onClick={() => {
-                if (!selectedPetObj) return;
-                sessionStorage.setItem(
-                  'shopDeepLink',
-                  JSON.stringify({ type: 'family', category_id: selectedPetObj.id }),
+            <ol className="relative mt-5 flex flex-col gap-1">
+              {/* rail */}
+              <span aria-hidden="true" className="absolute bottom-4 left-[13px] top-4 w-px bg-black/10" />
+              {steps.map((s, i) => {
+                const active = i === step;
+                const picked = pickedObjs[i];
+                const reachable = s.unlocked && s.options.length > 0;
+                return (
+                  <li key={s.n} className="relative">
+                    <button
+                      type="button"
+                      disabled={!reachable}
+                      onClick={() => goToStep(i)}
+                      className={`flex w-full items-start gap-3.5 py-2.5 text-left transition-colors cursor-pointer disabled:cursor-default ${
+                        active ? 'text-[#0b0b0a]' : reachable ? 'text-[#5c5a54] hover:text-[#0b0b0a]' : 'text-black/25'
+                      }`}
+                    >
+                      <span
+                        className={`relative z-[1] grid h-[27px] w-[27px] shrink-0 place-items-center text-[10px] font-bold tabular-nums transition-colors ${
+                          picked
+                            ? 'bg-[#0b0b0a] text-white'
+                            : active
+                              ? 'border border-[#0b0b0a] bg-white'
+                              : 'border border-black/15 bg-[#f5f4f0]'
+                        }`}
+                      >
+                        {picked ? <LuCheck className="h-3.5 w-3.5 stroke-[3]" /> : s.n}
+                      </span>
+                      <span className="min-w-0 pt-0.5">
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.2em]">{s.short}</span>
+                        <span className={`mt-1 block truncate text-[13px] ${picked ? 'font-medium text-[#0b0b0a]' : 'text-[#8a8880]'}`}>
+                          {picked ? getName(picked) : t('productFinder.notChosen', 'Not chosen yet')}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
                 );
-                window.dispatchEvent(new Event('shopDeepLinkReady'));
-                router.push('/shop');
-              }}
-              className="w-full min-h-[48px] cursor-pointer bg-white text-[#171717] border border-white hover:bg-transparent hover:text-white hover:border-white/70 uppercase text-[9px] tracking-[0.15em] font-bold transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#171717]"
+              })}
+            </ol>
+            </div>
+            <button
+              type="button"
+              onClick={resetFinder}
+              disabled={!selectedPet}
+              className="inline-flex w-fit items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5c5a54] transition-colors hover:text-[#0b0b0a] cursor-pointer disabled:pointer-events-none disabled:opacity-30"
             >
-              {t('productFinder.viewProducts')}
+              <LuRotateCcw className="h-3.5 w-3.5" />
+              {t('productFinder.reset', 'Reset')}
+            </button>
+          </div>
+        </aside>
+
+        {/* Right — question + options */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex shrink-0 items-start justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a8880] tabular-nums">
+                {t('productFinder.step', 'Step')} {steps[step].n}
+                <span className="text-black/25"> / 03</span>
+              </p>
+              <h2
+                key={`q2-${step}`}
+                className="mt-2 text-[clamp(24px,3vw,34px)] font-light leading-[1.1] tracking-[-0.02em] text-[#0b0b0a]"
+                style={{ '--pf-from': dir > 0 ? '16px' : '-16px', animation: 'pfStepIn .35s cubic-bezier(.2,.7,.2,1) both' }}
+              >
+                {steps[step].label}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label={t('productFinder.close', 'Close')}
+              className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 text-[#0b0b0a] transition-colors duration-200 hover:border-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
+            >
+              <LuX className="h-[18px] w-[18px]" />
+            </button>
+          </div>
+
+          {/* Mobile progress + picked chips (the left panel is hidden there) */}
+          <div className="shrink-0 px-5 pt-4 md:hidden">
+            <div className="grid grid-cols-3 gap-1.5">
+              {steps.map((s, i) => (
+                <span key={s.n} className={`h-[3px] ${i <= step ? 'bg-[#0b0b0a]' : 'bg-black/10'}`} />
+              ))}
+            </div>
+            {pickedObjs.some(Boolean) && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {pickedObjs.filter(Boolean).map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => goToStep(i)}
+                    className="bg-[#f5f4f0] px-2.5 py-1 text-[11px] font-medium text-[#0b0b0a] cursor-pointer"
+                  >
+                    {getName(p)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8" style={{ overscrollBehavior: 'contain' }}>
+            {(() => {
+              const s = steps[step];
+              const isPetStep = step === 0;
+              if (s.options.length === 0) return <p className="text-[13px] text-[#8a8880]">—</p>;
+              return (
+                <ul
+                  key={step}
+                  className={`grid ${isPetStep ? 'grid-cols-1 gap-2 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 sm:gap-x-6'}`}
+                  style={{ '--pf-from': dir > 0 ? '24px' : '-24px', animation: 'pfStepIn .35s cubic-bezier(.2,.7,.2,1) both' }}
+                >
+                  {s.options.map((opt, idx) => {
+                    const on = s.value === opt.id;
+                    if (isPetStep) {
+                      return (
+                        <li key={opt.id}>
+                          <button
+                            type="button"
+                            onClick={() => s.onPick(opt)}
+                            aria-pressed={on}
+                            className={`group flex h-16 w-full items-center gap-4 border px-4 text-left transition-all duration-200 cursor-pointer ${
+                              on
+                                ? 'border-[#0b0b0a] bg-[#0b0b0a] text-white'
+                                : 'border-black/10 bg-white text-[#0b0b0a] hover:border-[#0b0b0a] hover:shadow-[0_14px_28px_-20px_rgba(0,0,0,.45)]'
+                            }`}
+                          >
+                            <span
+                              className={`grid h-10 w-10 shrink-0 place-items-center transition-colors ${
+                                on ? 'bg-white/10' : 'bg-[#f5f4f0] group-hover:bg-[#ebe9e3]'
+                              }`}
+                            >
+                              {opt.media ? (
+                                <img
+                                  src={`${MEDIA_URL}${opt.media}`}
+                                  alt=""
+                                  className={`h-6 w-6 object-contain brightness-0 ${on ? 'invert' : ''}`}
+                                />
+                              ) : (
+                                <LuPawPrint className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="flex-1 text-[13px] font-semibold">{getName(opt)}</span>
+                            {on ? (
+                              <LuCheck className="h-4 w-4 shrink-0 stroke-[3]" />
+                            ) : (
+                              <LuArrowRight className="h-4 w-4 shrink-0 text-black/25 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[#0b0b0a]" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    }
+                    return (
+                      <li key={opt.id} className="border-b border-black/10">
+                        <button
+                          type="button"
+                          onClick={() => s.onPick(opt)}
+                          aria-pressed={on}
+                          className="group flex w-full items-center gap-4 py-4 text-left cursor-pointer"
+                        >
+                          <span className={`w-6 shrink-0 text-[11px] tabular-nums ${on ? 'font-bold text-[#0b0b0a]' : 'text-black/30'}`}>
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <span
+                            className={`flex-1 text-[14px] transition-colors ${
+                              on ? 'font-semibold text-[#0b0b0a]' : 'text-[#3a3936] group-hover:text-[#0b0b0a]'
+                            }`}
+                          >
+                            {getName(opt)}
+                          </span>
+                          {/* selected → tick; otherwise a faint arrow on hover */}
+                          {on ? (
+                            <LuCheck aria-hidden="true" className="h-5 w-5 shrink-0 stroke-[2.5] text-[#0b0b0a]" />
+                          ) : (
+                            <LuArrowRight
+                              aria-hidden="true"
+                              className="h-4 w-4 shrink-0 -translate-x-1 text-[#0b0b0a] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                            />
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            })()}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3 border-t border-black/10 px-5 py-4 sm:px-8">
+            {step > 0 ? (
+              <button
+                type="button"
+                onClick={() => goToStep(step - 1)}
+                className="group inline-flex h-12 items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0b0b0a] cursor-pointer"
+              >
+                <LuArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                {t('productFinder.back', 'Back')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={resetFinder}
+                disabled={!selectedPet}
+                className="inline-flex h-12 items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5c5a54] cursor-pointer disabled:pointer-events-none disabled:opacity-30 md:hidden"
+              >
+                <LuRotateCcw className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={showNext ? () => goToStep(step + 1) : viewProducts}
+              disabled={!steps[step].value}
+              className="ml-auto inline-flex h-12 w-full max-w-[300px] items-center justify-center gap-2.5 bg-[#0b0b0a] px-6 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-[#2a2a28] cursor-pointer disabled:cursor-not-allowed disabled:bg-black/[0.08] disabled:text-[#8a8880]"
+            >
+              {showNext ? t('productFinder.next', 'Next') : t('productFinder.viewProducts')}
+              <LuArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
-
-      {/* Navigation Arrows */}
-      {/* <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 right-4 sm:right-6 md:right-10 flex gap-2 sm:gap-3 md:gap-4">
-        <button
-          onClick={goToPrevious}
-          className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 cursor-pointer backdrop-blur-md hover:bg-white/30 border border-white/40 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-        >
-          <FaChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-        </button>
-        <button
-          onClick={goToNext}
-          className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 cursor-pointer backdrop-blur-md hover:bg-white/30 border border-white/40 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-        >
-          <FaChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-        </button>
-      </div> */}
     </div>
-    </>
+  );
+
+  return (
+    <section id="finder" className="w-full scroll-mt-24 bg-[#f5f4f0] pt-[clamp(60px,7vw,110px)]">
+      <div className="relative w-full overflow-hidden bg-[#0c0c0e]">
+      {/* Background */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('${BACKGROUND_IMAGE}')` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+      </div>
+
+      {/* Heading, CTA and note — inside the stage */}
+      <div className="relative z-10 flex min-h-[560px] w-full flex-col justify-center px-4 py-14 min-[721px]:min-h-[640px] min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:py-[clamp(60px,6vw,96px)]">
+        <div className="max-w-[640px]">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="h-px w-8 shrink-0 bg-white/60 sm:w-12" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/80 sm:text-[10px]">
+              {t('productFinder.sectionEyebrow')}
+            </span>
+          </div>
+          <h2 className="m-0 text-[clamp(32px,5vw,64px)] uppercase leading-[1.02] tracking-[-0.035em]">
+            <span className="block font-light text-white/85">{t('productFinder.sectionHeadingLine1')}</span>
+            <span className="block font-extrabold text-white">{t('productFinder.sectionHeadingLine2')}</span>
+          </h2>
+          <p className="mt-5 max-w-[520px] text-[14px] leading-[1.7] text-white/80 sm:text-[15px]">
+            {t('productFinder.sectionSubtitle')}
+          </p>
+
+          <button
+            type="button"
+            onClick={openModal}
+            className="group mt-8 inline-flex h-12 items-center gap-3 border border-white bg-white px-8 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0b0b0a] transition-colors duration-300 hover:bg-transparent hover:text-white cursor-pointer"
+          >
+            {t('productFinder.viewProducts')}
+            <LuArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </button>
+
+          <p className="mt-5 text-[13px] leading-relaxed text-white/75">
+            {t('productFinder.profileNote')}{' '}
+            <button
+              type="button"
+              onClick={() => router.push('/my-account?tab=pet')}
+              className="inline-flex items-center gap-1 font-semibold text-white decoration-white underline-offset-4 hover:underline cursor-pointer"
+            >
+              {t('productFinder.learnMore')}
+              <LuArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </p>
+        </div>
+      </div>
+
+      </div>
+
+      {isOpen && typeof document !== 'undefined' && createPortal(modal, document.body)}
+    </section>
   );
 }
