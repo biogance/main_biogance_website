@@ -1,12 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { IoClose, IoCalendarOutline } from 'react-icons/io5';
+import { IoClose, IoCalendarOutline, IoChevronDown, IoCheckmark, IoAlertCircleOutline, IoCloudUploadOutline, IoTrashOutline } from 'react-icons/io5';
 import { PiPawPrint } from 'react-icons/pi';
-import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
-import { FaRegEdit } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { BASE_URL, MEDIA_URL } from '../../../API/API';
+
+
+function FieldError({ message }) {
+  if (!message) return null;
+  return (
+    <span className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
+      <IoAlertCircleOutline className="w-3.5 h-3.5 shrink-0" />
+      {message}
+    </span>
+  );
+}
+
 
 // ── Single Select Custom Dropdown ───────────────────────────────────────────
 const CustomDropdown = ({ label, options, value, onChange, placeholder = "", insideModal = false, error = false }) => {
@@ -14,137 +25,61 @@ const CustomDropdown = ({ label, options, value, onChange, placeholder = "", ins
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
 
+
   const selectedOption = options.find(opt => opt.value === value);
   const displayValue = selectedOption ? selectedOption.label : placeholder;
+
 
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+        <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">{label}</label>
       )}
       <button
         type="button"
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full flex items-center justify-between px-4 py-3
-          bg-gray-50 border text-left cursor-pointer
-          focus:outline-none focus:ring-2 focus:ring-gray-300
-          transition-all duration-200
-          ${error ? 'border-red-500' : isOpen ? 'border-gray-400 shadow-sm' : 'border-gray-200 hover:border-gray-300'}
-        `}
+        aria-expanded={isOpen}
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-white border text-left text-[14px] transition-colors duration-200 cursor-pointer ${
+          error ? 'border-red-400' : isOpen ? 'border-black/30' : 'border-black/10 hover:border-black/25'
+        }`}
       >
-        <span className={!selectedOption ? "text-gray-400" : "text-black"}>
+        <span className={`truncate ${!selectedOption ? "text-[#8a8880]" : "text-[#0b0b0a] font-medium"}`}>
           {displayValue}
         </span>
-        <MdOutlineKeyboardArrowDown 
-          className={`text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          size={20}
+        <IoChevronDown
+          className={`w-4 h-4 shrink-0 text-[#8a8880] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
+
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 bg-transparent" 
+          <button
+            type="button"
+            aria-label="Close"
+            className="fixed inset-0 bg-transparent border-0 cursor-default"
             style={{ zIndex: insideModal ? 40 : 10 }}
-            onClick={() => setIsOpen(false)} 
+            onClick={() => setIsOpen(false)}
           />
           <div
             ref={dropdownRef}
-            className="absolute mt-1 w-full max-h-[280px] overflow-auto bg-white  shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
+            className="absolute left-0 right-0 top-full mt-2 max-h-[280px] overflow-auto bg-white border border-black/10 shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)]"
             style={{ zIndex: insideModal ? 50 : 20 }}
           >
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => { onChange(option.value); setIsOpen(false); }}
-                className={`
-                  w-full text-left px-4 py-2.5 cursor-pointer
-                  transition-colors duration-150
-                  hover:bg-black hover:text-white
-                  ${value === option.value ? 'bg-gray-100 font-medium text-black' : 'text-black'}
-                `}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-// ── Multi Select Dropdown ───────────────────────────────────────────────────
-const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder = "Select options" }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const buttonRef = useRef(null);
-
-  const toggleOption = (optionValue) => {
-    const newValue = value.includes(optionValue)
-      ? value.filter(v => v !== optionValue)
-      : [...value, optionValue];
-    onChange(newValue);
-  };
-
-  const selectedLabels = value
-    .map(val => options.find(opt => opt.value === val)?.label)
-    .filter(Boolean)
-    .join(', ');
-
-  const displayValue = selectedLabels || placeholder;
-
-  return (
-    <div className="relative w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
-      <button
-        type="button"
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full flex items-center justify-between px-4 py-3
-          bg-gray-50 border border-gray-200  text-left cursor-pointer
-          focus:outline-none focus:ring-2 focus:ring-gray-300
-          transition-all duration-200
-          ${isOpen ? 'border-gray-400 shadow-sm' : 'hover:border-gray-300'}
-        `}
-      >
-        <span className={`truncate ${value.length ? "text-black" : "text-gray-400"}`}>{displayValue}</span>
-        <MdOutlineKeyboardArrowDown className={`text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} size={20} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
-          <div
-            className="fixed z-20 max-h-[160px] overflow-auto bg-white  shadow-2xl border border-gray-200 py-2 text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50"
-            style={{
-              top: buttonRef.current?.getBoundingClientRect().bottom + 4 + 'px',
-              left: Math.max(8, Math.min(
-                buttonRef.current?.getBoundingClientRect().left || 0,
-                window.innerWidth - (buttonRef.current?.getBoundingClientRect().width || 0) - 8
-              )) + 'px',
-              width: buttonRef.current?.getBoundingClientRect().width + 'px',
-              maxWidth: 'calc(100vw - 16px)',
-            }}
-          >
             {options.map((option) => {
-              const isSelected = value.includes(option.value);
+              const isSelected = value === option.value;
               return (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => toggleOption(option.value)}
-                  className={`group w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 cursor-pointer ${isSelected ? 'bg-gray-100' : 'hover:bg-black hover:text-white'}`}
+                  onClick={() => { onChange(option.value); setIsOpen(false); }}
+                  className={`w-full flex items-center justify-between gap-3 text-left px-4 py-3 text-[13.5px] cursor-pointer transition-colors duration-150 hover:bg-[#0b0b0a] hover:text-white ${
+                    isSelected ? 'bg-black/[0.04] text-[#0b0b0a] font-semibold' : 'text-[#5c5a54]'
+                  }`}
                 >
-                  <div className={`w-5 h-5  border flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected ? 'bg-black border-black' : 'border-gray-300 bg-white group-hover:border-gray-200'}`}>
-                    {isSelected && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                  </div>
-                  <span className={`transition-colors duration-200 ${isSelected ? 'font-medium text-black' : 'text-black group-hover:text-white'}`}>
-                    {option.label}
-                  </span>
+                  <span className="truncate">{option.label}</span>
+                  {isSelected && <IoCheckmark className="w-4 h-4 shrink-0" />}
                 </button>
               );
             })}
@@ -155,12 +90,140 @@ const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder
   );
 };
 
+
+// ── Multi Select Dropdown ───────────────────────────────────────────────────
+const MultiSelectDropdown = ({ label, options, value = [], onChange, placeholder = "Select options" }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef(null);
+  // Menu position in viewport coordinates. The menu is portaled to
+  // document.body: inside the modal card, position:fixed resolves against
+  // the card (its pop-in animation leaves a transform on it) and the card's
+  // overflow-hidden then clips the list, so it never showed.
+  const [menuPos, setMenuPos] = useState(null);
+
+  const openMenu = () => {
+    const r = buttonRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const MENU_MAX = 220;
+    const spaceBelow = window.innerHeight - r.bottom - 16;
+    const openUp = spaceBelow < 180 && r.top > spaceBelow;
+    setMenuPos({
+      left: Math.max(8, Math.min(r.left, window.innerWidth - r.width - 8)),
+      width: r.width,
+      maxHeight: Math.max(120, Math.min(MENU_MAX, (openUp ? r.top : spaceBelow) - 8)),
+      ...(openUp ? { bottom: window.innerHeight - r.top + 8 } : { top: r.bottom + 8 }),
+    });
+    setIsOpen(true);
+  };
+
+
+  const toggleOption = (optionValue) => {
+    const newValue = value.includes(optionValue)
+      ? value.filter(v => v !== optionValue)
+      : [...value, optionValue];
+    onChange(newValue);
+  };
+
+
+  const selectedLabels = value
+    .map(val => options.find(opt => opt.value === val)?.label)
+    .filter(Boolean)
+    .join(', ');
+
+
+  const displayValue = selectedLabels || placeholder;
+
+
+  return (
+    <div className="relative w-full">
+      <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">{label}</label>
+      <button
+        type="button"
+        ref={buttonRef}
+        onClick={() => (isOpen ? setIsOpen(false) : openMenu())}
+        aria-expanded={isOpen}
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-white border text-left text-[14px] transition-colors duration-200 cursor-pointer ${
+          isOpen ? 'border-black/30' : 'border-black/10 hover:border-black/25'
+        }`}
+      >
+        <span className={`truncate ${value.length ? "text-[#0b0b0a] font-medium" : "text-[#8a8880]"}`}>{displayValue}</span>
+        <IoChevronDown className={`w-4 h-4 shrink-0 text-[#8a8880] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+
+      {isOpen && menuPos && createPortal(
+        <>
+          <button
+            type="button"
+            aria-label="Close"
+            className="fixed inset-0 z-[1300] bg-transparent border-0 cursor-default"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed z-[1301] overflow-auto bg-white shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)] border border-black/10"
+            style={{ ...menuPos, maxWidth: 'calc(100vw - 16px)' }}
+          >
+            {options.map((option) => {
+              const isSelected = value.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => toggleOption(option.value)}
+                  className={`group w-full flex items-center gap-3 px-4 py-3 text-left text-[13.5px] transition-colors duration-150 cursor-pointer hover:bg-[#0b0b0a] hover:text-white ${
+                    isSelected ? 'bg-black/[0.04]' : ''
+                  }`}
+                >
+                  <div className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-colors duration-150 ${
+                    isSelected ? 'bg-[#0b0b0a] border-[#0b0b0a]' : 'border-black/20 bg-white group-hover:border-white/50'
+                  }`}>
+                    {isSelected && <IoCheckmark className="w-3 h-3 text-white" />}
+                  </div>
+                  <span className={`truncate ${isSelected ? 'font-semibold text-[#0b0b0a] group-hover:text-white' : 'text-[#5c5a54] group-hover:text-white'}`}>
+                    {option.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </>,
+        document.body,
+      )}
+    </div>
+  );
+};
+
+
 // ── Age Picker with Day Selection ───────────────────────────────────────────
 const AgePicker = ({ value, onChange, error = false }) => {
   const { t } = useTranslation("myaccount");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const containerRef = useRef(null);
+  // Calendar position in viewport coordinates. Like MultiSelectDropdown, the
+  // popup is portaled to document.body — inside the modal card position:fixed
+  // resolves against the (transformed) card and gets clipped by it.
+  const [popupPos, setPopupPos] = useState(null);
+
+  const openPicker = () => {
+    const r = containerRef.current?.querySelector('input')?.getBoundingClientRect();
+    if (!r) return;
+    const POPUP_H = 366;
+    const width = Math.min(Math.max(r.width, 296), window.innerWidth - 16);
+    const spaceBelow = window.innerHeight - r.bottom - 16;
+    const spaceAbove = r.top - 16;
+    // Directly under the field, like the other dropdowns; flips above it
+    // only when there is not enough room below (never covers the field).
+    const openUp = spaceBelow < POPUP_H && spaceAbove > spaceBelow;
+    setPopupPos({
+      left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)),
+      width,
+      maxHeight: Math.max(220, (openUp ? spaceAbove : spaceBelow) - 8),
+      ...(openUp ? { bottom: window.innerHeight - r.top + 8 } : { top: r.bottom + 8 }),
+    });
+    setIsOpen(true);
+  };
+
 
   const months = [
     t('addPet.months.january'),
@@ -178,11 +241,13 @@ const AgePicker = ({ value, onChange, error = false }) => {
   ];
   const monthOptions = months.map((m, i) => ({ value: i, label: m }));
 
+
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 30 }, (_, i) => ({
     value: currentYear - i,
     label: `${currentYear - i}`
   }));
+
 
   const calculateAge = (birthDateString) => {
     if (!birthDateString) return '';
@@ -203,6 +268,7 @@ const AgePicker = ({ value, onChange, error = false }) => {
     }
   };
 
+
   useEffect(() => {
     if (value) {
       try {
@@ -219,16 +285,20 @@ const AgePicker = ({ value, onChange, error = false }) => {
     }
   }, [value]);
 
+
   const displayMonth = selectedDate ? selectedDate.getMonth() : new Date().getMonth();
   const displayYear = selectedDate ? selectedDate.getFullYear() : currentYear;
 
+
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const firstDay = new Date(displayYear, displayMonth, 1).getDay();
+
 
   const handleDayClick = (day) => {
     const newDate = new Date(displayYear, displayMonth, day);
     setSelectedDate(newDate);
   };
+
 
   const handleApply = () => {
     if (selectedDate) {
@@ -240,6 +310,7 @@ const AgePicker = ({ value, onChange, error = false }) => {
     setIsOpen(false);
   };
 
+
   const isSelectedDay = (day) => {
     if (!selectedDate) return false;
     return (
@@ -248,6 +319,7 @@ const AgePicker = ({ value, onChange, error = false }) => {
       selectedDate.getFullYear() === displayYear
     );
   };
+
 
   const weekDays = [
     t('addPet.weekDays.mon'),
@@ -259,9 +331,11 @@ const AgePicker = ({ value, onChange, error = false }) => {
     t('addPet.weekDays.sun')
   ];
 
+
   return (
     <div className="relative w-full" ref={containerRef}>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('addPet.age')}</label>
+      <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">{t('addPet.age')}</label>
+
 
       <div className="relative">
         <input
@@ -269,43 +343,36 @@ const AgePicker = ({ value, onChange, error = false }) => {
           readOnly
           placeholder={t('addPet.selectBirthdate')}
           value={value ? t('addPet.yearsOld', { years: calculateAge(value) }) : ''}
-          onClick={() => setIsOpen(true)}
-          className={`w-full px-4 text-black py-3 pr-10 bg-gray-50 border cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400 ${
-            error ? 'border-red-500' : 'border-gray-200'
+          onClick={openPicker}
+          className={`w-full px-4 py-3.5 pr-10 text-[14px] text-[#0b0b0a] border cursor-pointer outline-none placeholder:text-[#8a8880] transition-colors duration-200 ${
+            error ? 'border-red-400' : 'border-black/10 focus:border-black/30'
           }`}
         />
-        <IoCalendarOutline className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+        <IoCalendarOutline className="absolute right-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#8a8880] pointer-events-none" />
       </div>
 
-      {isOpen && (
+
+      {isOpen && popupPos && createPortal(
         <>
-          <div className="fixed inset-0 z-10 bg-black/30" onClick={() => setIsOpen(false)} />
+          <button
+            type="button"
+            aria-label="Close"
+            className="fixed inset-0 z-[1300] bg-transparent border-0 cursor-default"
+            onClick={() => setIsOpen(false)}
+          />
+
 
           <div
-            className="fixed z-30 bg-white  shadow-2xl border border-gray-200 p-5 w-[90vw] md:w-[340px] max-h-[90vh] overflow-y-auto"
-            style={{
-              top: window.innerWidth < 768 
-                ? '50%' 
-                : Math.min(
-                    containerRef.current?.getBoundingClientRect().bottom + 8 || 0,
-                    window.innerHeight - 400 - 16
-                  ) + 'px',
-              left: window.innerWidth < 768 
-                ? '50%' 
-                : Math.max(8, Math.min(
-                    containerRef.current?.getBoundingClientRect().left || 0,
-                    window.innerWidth - 340 - 8
-                  )) + 'px',
-              transform: window.innerWidth < 768 ? 'translate(-50%, -50%)' : 'none',
-            }}
+            className="fixed z-[1301] bg-white shadow-[0_24px_60px_-24px_rgba(0,0,0,.4)] border border-black/10 p-4 overflow-y-auto"
+            style={popupPos}
           >
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <CustomDropdown
                 label={t('addPet.month')}
                 options={monthOptions}
                 value={displayMonth}
                 onChange={(m) => {
-                  const newDate = selectedDate 
+                  const newDate = selectedDate
                     ? new Date(selectedDate.getFullYear(), m, selectedDate.getDate())
                     : new Date(displayYear, m, 1);
                   setSelectedDate(newDate);
@@ -313,12 +380,13 @@ const AgePicker = ({ value, onChange, error = false }) => {
                 insideModal={true}
               />
 
+
               <CustomDropdown
                 label={t('addPet.year')}
                 options={yearOptions}
                 value={displayYear}
                 onChange={(y) => {
-                  const newDate = selectedDate 
+                  const newDate = selectedDate
                     ? new Date(y, selectedDate.getMonth(), selectedDate.getDate())
                     : new Date(y, displayMonth, 1);
                   setSelectedDate(newDate);
@@ -327,15 +395,18 @@ const AgePicker = ({ value, onChange, error = false }) => {
               />
             </div>
 
-            <div className="mb-6">
-              <div className="grid grid-cols-7 text-center text-xs text-gray-500 mb-2 font-medium">
+
+            <div className="mb-4">
+              <div className="grid grid-cols-7 text-center text-[11px] text-[#8a8880] mb-2 font-semibold uppercase tracking-[0.05em]">
                 {weekDays.map(d => <div key={d}>{d}</div>)}
               </div>
+
 
               <div className="grid grid-cols-7 gap-1 text-center">
                 {Array(firstDay === 0 ? 6 : firstDay - 1).fill(null).map((_, i) => (
                   <div key={`empty-${i}`} className="py-2" />
                 ))}
+
 
                 {Array.from({ length: daysInMonth }, (_, i) => {
                   const day = i + 1;
@@ -345,12 +416,11 @@ const AgePicker = ({ value, onChange, error = false }) => {
                       key={day}
                       type="button"
                       onClick={() => handleDayClick(day)}
-                      className={`
-                        w-full p-2 text-sm transition-colors cursor-pointer
-                        ${selected 
-                          ? 'bg-black text-white font-medium' 
-                          : 'hover:bg-black hover:text-white text-gray-700'}
-                      `}
+                      className={`w-full py-1 text-[13px] transition-colors duration-150 cursor-pointer ${
+                        selected
+                          ? 'bg-[#0b0b0a] text-white font-semibold'
+                          : 'hover:bg-[#0b0b0a] hover:text-white text-[#5c5a54]'
+                      }`}
                     >
                       {day}
                     </button>
@@ -359,11 +429,12 @@ const AgePicker = ({ value, onChange, error = false }) => {
               </div>
             </div>
 
+
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 border cursor-pointer border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                className="flex-1 py-2.5 border border-black/10 cursor-pointer text-[13px] font-medium text-[#0b0b0a] hover:border-black/30 transition-colors duration-200"
               >
                 {t('addPet.cancel')}
               </button>
@@ -371,22 +442,29 @@ const AgePicker = ({ value, onChange, error = false }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selectedDate}
-                className={`flex-1 py-3 cursor-pointer font-medium transition-colors ${selectedDate ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                className={`flex-1 py-2.5 text-[13px] font-medium tracking-[0.02em] transition-all duration-200 ${
+                  selectedDate
+                    ? 'cursor-pointer text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px'
+                    : 'bg-black/5 text-[#8a8880] border border-black/10 cursor-not-allowed'
+                }`}
               >
                 {t('addPet.apply')}
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );
 };
 
+
 // ── Main AddPetModal ────────────────────────────────────────────────────────
 export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   const { t } = useTranslation("myaccount");
   const isEditMode = !!petToEdit;
+
 
   const emptyForm = {
     name: '',
@@ -400,6 +478,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     imageFile: null
   };
 
+
   const [formData, setFormData] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -407,6 +486,14 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const modalCardRef = useRef(null);
+  // Same pop-in/pop-out lifecycle as LogoutModal.jsx — stays mounted for
+  // the exit animation's duration instead of unmounting the instant
+  // isOpen flips. Shared by the main form and the success screen (mutually
+  // exclusive); the image preview lightbox gets its own since it can be
+  // open at the same time as the main form.
+  const [isClosing, setIsClosing] = useState(false);
+  const [isPreviewClosing, setIsPreviewClosing] = useState(false);
+
 
   useEffect(() => {
     try {
@@ -415,6 +502,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
       setCategoryOptions(cats.map(c => ({ value: c.id, label: c.name })));
     } catch { setCategoryOptions([]); }
   }, []);
+
 
   // Pre-fill form when editing
   useEffect(() => {
@@ -436,6 +524,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     setErrors({});
   }, [isOpen, petToEdit]);
 
+
   useEffect(() => {
     if (isOpen || isSuccessModalOpen || showImagePreview) {
       const scrollY = window.scrollY;
@@ -454,12 +543,14 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     }
   }, [isOpen, isSuccessModalOpen, showImagePreview]);
 
+
   const getToken = () => {
     try {
       const splashData = JSON.parse(localStorage.getItem('splashData') || '{}');
       return splashData?.user?.token || localStorage.getItem('token') || '';
     } catch { return ''; }
   };
+
 
   // Required-field check — mirrors the fields the API actually needs
   // (special needs stays optional, per its "(Optional)" label). Run before
@@ -476,6 +567,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
     setIsSubmitting(true);
@@ -490,6 +582,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
       body.append('weight', formData.weight);
       if (formData.specialNeeds.length > 0) body.append('special_need', formData.specialNeeds.join(','));
       if (formData.imageFile) body.append('profile_picture', formData.imageFile);
+
 
       const endpoint = isEditMode ? `${BASE_URL}/user/pet/edit` : `${BASE_URL}/user/pet/create`;
       const res = await fetch(endpoint, {
@@ -517,10 +610,12 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     }
   };
 
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors(prev => (prev[field] ? { ...prev, [field]: '' } : prev));
   };
+
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -531,7 +626,9 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     }
   };
 
+
   const handleUploadClick = () => document.getElementById('pet-image-upload').click();
+
 
   const handleRemoveImage = () => {
     setFormData(prev => ({ ...prev, image: null, imageFile: null }));
@@ -539,17 +636,27 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     document.getElementById('pet-image-upload').value = '';
   };
 
+
   const handleImageClick = () => {
     if (formData.image) setShowImagePreview(true);
   };
 
-  if (!isOpen) return null;
+
+  const handleClosePreview = () => {
+    setIsPreviewClosing(true);
+    setTimeout(() => { setIsPreviewClosing(false); setShowImagePreview(false); }, 250);
+  };
+
+
+  if (!isOpen && !isClosing) return null;
+
 
   const genderOptions = [
     { value: 'male', label: t('addPet.genders.male') },
     { value: 'female', label: t('addPet.genders.female') },
     { value: 'unknown', label: t('addPet.genders.unknown') },
   ];
+
 
   const weightOptions = [
     { value: '0-5', label: t('addPet.weights.0-5') },
@@ -558,6 +665,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     { value: '20-30', label: t('addPet.weights.20-30') },
     { value: '30+', label: t('addPet.weights.30+') },
   ];
+
 
   const breedOptions = [
     { value: 'labrador_retriever', label: t('addPet.breeds.labrador') },
@@ -568,6 +676,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     { value: 'poodle', label: t('addPet.breeds.poodle') },
     { value: 'rottweiler', label: t('addPet.breeds.rottweiler') },
   ];
+
 
   const specialNeedsOptions = [
     { value: 'dietary_restrictions', label: t('addPet.specialNeeds.dietary') },
@@ -580,6 +689,7 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     { value: 'behavioral_needs', label: t('addPet.specialNeeds.behavioral') },
   ];
 
+
   const handleBackdropClick = () => {
     if (modalCardRef.current) {
       modalCardRef.current.classList.add('modal-shake');
@@ -589,120 +699,151 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
     }
   };
 
-  const handleCloseAll = () => {
-    setIsSuccessModalOpen(false);
-    setFormData({
-      name: '',
-      category: '',
-      breed: '',
-      age: '',
-      gender: '',
-      weight: '',
-      specialNeeds: [],
-      image: null,
-      imageFile: null
-    });
-    setErrors({});
-    onSuccess?.();
-    onClose();
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); onClose(); }, 250);
   };
+
+
+  const handleCloseAll = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setIsSuccessModalOpen(false);
+      setFormData({
+        name: '',
+        category: '',
+        breed: '',
+        age: '',
+        gender: '',
+        weight: '',
+        specialNeeds: [],
+        image: null,
+        imageFile: null
+      });
+      setErrors({});
+      onSuccess?.();
+      onClose();
+    }, 250);
+  };
+
 
   return (
     <>
       {/* Main Add Pet Modal */}
       {!isSuccessModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-60" onClick={handleBackdropClick}>
+        <div className={`fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-60 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`} onClick={handleBackdropClick}>
           <div
             ref={modalCardRef}
             onClick={(e) => e.stopPropagation()}
-            className="
-            bg-white
-            w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl
-            h-[90vh] sm:h-auto
-            flex flex-col
-            overflow-hidden
-          ">
-            {/* Fixed Header */}
-            <div className="
-              px-5 sm:px-6 py-4 
-              border-b border-gray-100 
-              bg-white shrink-0
-            ">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                {isEditMode ? 'Edit Pet' : t('addPet.title')}
-              </h2>
+            className={`bg-white w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
+          >
+            {/* Dark editorial header band — kept compact so it doesn't push the form below the fold */}
+            <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-5 sm:px-8 py-5 sm:py-10 shrink-0 overflow-hidden flex items-center gap-4 border-b border-white/5">
+              <PiPawPrint className="pointer-events-none absolute -right-6 -top-8 w-32 h-32 text-white/[0.05] rotate-[18deg]" />
+
+
+              <div className="relative w-11 h-11 flex items-center justify-center bg-white/10 border border-white/15 shrink-0">
+                <PiPawPrint className="w-5 h-5 text-white" />
+              </div>
+
+
+              <div className="relative min-w-0 pr-10">
+                <div className="flex items-center gap-2 mb-0.5">
+                  {/* <span className="w-1.5 h-1.5 rounded-full bg-[#DFB400] shrink-0" />
+                  <span className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-white/40">
+                    {isEditMode ? 'Edit profile' : 'New companion'}
+                  </span> */}
+                </div>
+                <h2 className="text-[19px] sm:text-[21px] font-extrabold leading-[1.05] tracking-tight text-white">
+                  {isEditMode ? 'Edit Pet' : t('addPet.title')}
+                </h2>
+                <p className="text-[12px] text-white/40 mt-1 leading-snug">
+                  {isEditMode ? 'Update your pet\'s details below.' : 'Fill in your pet\'s details to get personalised recommendations.'}
+                </p>
+              </div>
+
+
+              <button
+                onClick={handleClose}
+                aria-label="Close"
+                className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6 flex items-center justify-center w-9 h-9 border border-white/15 text-white/70 hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
+              >
+                <IoClose size={18} />
+              </button>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 sm:py-6">
-              <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
-                {/* Image Section */}
-                <div className="flex flex-col items-center gap-4 md:min-w-[160px]">
-                  <div 
+
+            {/* Scrollable Content — a PetProfile-style photo panel beside a two-column field grid */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-6">
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-7">
+                {/* Photo panel */}
+                <div className="w-full sm:w-[150px] shrink-0 flex flex-col gap-2">
+                  {/* Image box — click to preview if image exists */}
+                  <div
                     onClick={handleImageClick}
-                    className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm ${
-                      formData.image ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''
-                    }`}
+                    className={`relative w-full h-40 sm:h-[313px] bg-gradient-to-br from-black/[0.05] to-black/[0.02] border border-black/10 overflow-hidden ${formData.image ? 'cursor-zoom-in' : 'cursor-default'}`}
                   >
                     {formData.image ? (
-                      <img src={formData.image} alt="Pet preview" className="w-full h-full object-cover" />
+                      <img src={formData.image} alt="Pet preview" className="absolute inset-0 w-full h-full object-cover" />
                     ) : (
-                      <PiPawPrint className="w-14 h-14 sm:w-16 sm:h-16 text-gray-300" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <PiPawPrint className="w-10 h-10 text-black/15" />
+                      </div>
                     )}
                   </div>
 
+
+                  {/* Upload / Remove button */}
                   {formData.image ? (
-                    <div className="flex flex-col gap-2 w-full max-w-[160px]">
-                      <button 
-                        type="button" 
-                        onClick={handleUploadClick} 
-                        className="text-sm border cursor-pointer border-gray-300 px-5 py-2 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                      >
-                        {t('addPet.updateImage')}
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={handleRemoveImage} 
-                        className="text-sm cursor-pointer text-red-600 font-medium hover:text-red-700 transition-colors text-center"
-                      >
-                        {t('addPet.remove')}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      type="button" 
-                      onClick={handleUploadClick} 
-                      className="text-sm border cursor-pointer border-gray-300 px-6 py-2 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 text-[12px] font-semibold tracking-[0.06em] uppercase border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors duration-200 cursor-pointer"
                     >
-                      {t('addPet.uploadImage')}
+                      <IoTrashOutline className="w-3.5 h-3.5" />
+                      Remove Photo
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleUploadClick}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 text-[12px] font-semibold tracking-[0.06em] uppercase border border-black/10 text-[#0b0b0a] bg-white hover:bg-[#0b0b0a] hover:text-white hover:border-[#0b0b0a] transition-colors duration-200 cursor-pointer"
+                    >
+                      <IoCloudUploadOutline className="w-3.5 h-3.5" />
+                      Upload Photo
                     </button>
                   )}
 
-                  <input 
-                    id="pet-image-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
-                    className="hidden" 
+
+                  <input
+                    id="pet-image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
                 </div>
 
-                {/* Form Fields */}
-                <div className="flex-1 space-y-5 sm:space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+
+                {/* Field grid — exactly two fields per row */}
+                <div className="flex-1 min-w-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('addPet.petName')}</label>
+                      <label className="block text-[11px] font-semibold tracking-[0.1em] uppercase text-[#8a8880] mb-2">{t('addPet.petName')}</label>
                       <input
                         type="text"
                         placeholder={t('addPet.petNamePlaceholder')}
                         value={formData.name}
                         onChange={(e) => handleChange('name', e.target.value)}
-                        className={`w-full px-4 py-3 text-black bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400 ${
-                          errors.name ? 'border-red-500' : 'border-gray-200'
+                        className={`w-full px-4 py-3 text-[14px] text-[#0b0b0a] border outline-none placeholder:text-[#8a8880] transition-colors duration-200 ${
+                          errors.name ? 'border-red-400' : 'border-black/10 focus:border-black/30'
                         }`}
                       />
-                      {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+                      <FieldError message={errors.name} />
                     </div>
+
 
                     <div>
                       <CustomDropdown
@@ -713,8 +854,9 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
                         onChange={(val) => handleChange('category', val)}
                         error={!!errors.category}
                       />
-                      {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
+                      <FieldError message={errors.category} />
                     </div>
+
 
                     <div>
                       <CustomDropdown
@@ -725,17 +867,9 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
                         onChange={(val) => handleChange('breed', val)}
                         error={!!errors.breed}
                       />
-                      {errors.breed && <p className="mt-1 text-xs text-red-500">{errors.breed}</p>}
+                      <FieldError message={errors.breed} />
                     </div>
 
-                    <div>
-                      <AgePicker
-                        value={formData.age}
-                        onChange={(val) => handleChange('age', val)}
-                        error={!!errors.age}
-                      />
-                      {errors.age && <p className="mt-1 text-xs text-red-500">{errors.age}</p>}
-                    </div>
 
                     <div>
                       <CustomDropdown
@@ -746,8 +880,19 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
                         onChange={(val) => handleChange('gender', val)}
                         error={!!errors.gender}
                       />
-                      {errors.gender && <p className="mt-1 text-xs text-red-500">{errors.gender}</p>}
+                      <FieldError message={errors.gender} />
                     </div>
+
+
+                    <div>
+                      <AgePicker
+                        value={formData.age}
+                        onChange={(val) => handleChange('age', val)}
+                        error={!!errors.age}
+                      />
+                      <FieldError message={errors.age} />
+                    </div>
+
 
                     <div>
                       <CustomDropdown
@@ -758,41 +903,41 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
                         onChange={(val) => handleChange('weight', val)}
                         error={!!errors.weight}
                       />
-                      {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight}</p>}
+                      <FieldError message={errors.weight} />
                     </div>
+                  </div>
 
-                    <div className="md:col-span-2">
-                      <MultiSelectDropdown
-                        label={t('addPet.specialNeedsLabel')}
-                        options={specialNeedsOptions}
-                        value={formData.specialNeeds}
-                        onChange={(vals) => handleChange('specialNeeds', vals)}
-                        placeholder={t('addPet.selectSpecialNeeds')}
-                      />
-                    </div>
+
+                  <div className="mt-5">
+                    <MultiSelectDropdown
+                      label={t('addPet.specialNeedsLabel')}
+                      options={specialNeedsOptions}
+                      value={formData.specialNeeds}
+                      onChange={(vals) => handleChange('specialNeeds', vals)}
+                      placeholder={t('addPet.selectSpecialNeeds')}
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
+
             {/* Fixed Bottom Buttons */}
-            <div className="
-              px-5 sm:px-6 py-4 
-              border-t border-gray-100 
-              bg-white shrink-0
-              flex flex-col sm:flex-row gap-3 sm:gap-4
-            ">
+            <div className="px-5 sm:px-8 py-4 sm:py-5 border-t border-black/10 bg-white shrink-0 flex flex-col-reverse sm:flex-row gap-3">
               <button
-                onClick={onClose}
-                className="flex-1 px-6 py-3 cursor-pointer border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1"
+                onClick={handleClose}
+                className="flex-1 py-3.5 text-[13.5px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer"
               >
                 {t('addPet.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 cursor-pointer bg-black text-white hover:bg-gray-900 transition-colors font-medium order-1 sm:order-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer disabled:opacity-60 disabled:pointer-events-none disabled:translate-y-0 disabled:shadow-none"
               >
+                {isSubmitting && (
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                )}
                 {isSubmitting
                   ? (isEditMode ? 'Updating...' : 'Adding...')
                   : (isEditMode ? 'Update Pet' : t('addPet.addPetButton'))
@@ -803,22 +948,24 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
         </div>
       )}
 
+
       {/* Image Preview Modal */}
       {showImagePreview && (
-        <div 
-          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-[60] p-4"
-          onClick={() => setShowImagePreview(false)}
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-[60] p-4 ${isPreviewClosing ? 'backdrop-out' : 'backdrop-in'}`}
+          onClick={handleClosePreview}
         >
-          <div className="relative max-w-[90vw] max-h-[90vh]">
+          <div className={`relative max-w-[90vw] max-h-[90vh] ${isPreviewClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
             <button
-              onClick={() => setShowImagePreview(false)}
-              className="absolute -top-2 -right-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800 transition-colors bg-white rounded-full p-2 shadow-lg"
+              onClick={handleClosePreview}
+              aria-label="Close"
+              className="absolute -top-3 -right-3 z-10 flex items-center justify-center w-9 h-9 border border-white/15 bg-[#0b0b0a] text-white hover:bg-white hover:text-[#0b0b0a] hover:border-white transition-colors duration-200 cursor-pointer"
             >
-              <FiX size={24} />
+              <FiX size={18} />
             </button>
-            <img 
-              src={formData.image} 
-              alt="Pet Preview" 
+            <img
+              src={formData.image}
+              alt="Pet Preview"
               className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
               onClick={(e) => e.stopPropagation()}
             />
@@ -826,34 +973,39 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
         </div>
       )}
 
+
       {/* Success Modal */}
       {isSuccessModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-70">
-          <div className="bg-white shadow-2xl w-full max-w-xl p-8">
-            <div className="flex justify-center mb-6">
-              <img src="successpet.svg" alt="" />
+        <div className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-70 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}>
+          <div className={`bg-white w-full max-w-xl shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+            <div className="bg-[#0b0b0a] px-8 pt-8 pb-7 flex flex-col items-center text-center">
+              <img src="successpet.svg" alt="" className="w-24 h-24 mb-5" />
+              <h2 className="text-[22px] font-extrabold leading-[1.05] tracking-tight text-white">
+                {t('addPet.success.title')}
+              </h2>
             </div>
 
-            <h2 className="text-xl text-black font-semibold text-center mb-3">
-              {t('addPet.success.title')}
-            </h2>
 
-            <p className="text-center text-gray-700">
-              {t('addPet.success.earnedPoints')} <span className='text-[#DFB400] font-semibold'>{t('addPet.success.pointsAmount')}</span> {t('addPet.success.forAdding')}
-            </p>
-            <p className="text-center text-gray-700 mb-6">
-              {t('addPet.success.recommendations')}
-            </p>
+            <div className="px-8 py-7 text-center">
+              <p className="text-[14px] text-[#5c5a54] leading-relaxed">
+                {t('addPet.success.earnedPoints')} <span className="text-[#DFB400] font-semibold">{t('addPet.success.pointsAmount')}</span> {t('addPet.success.forAdding')}
+              </p>
+              <p className="text-[14px] text-[#5c5a54] leading-relaxed mb-7">
+                {t('addPet.success.recommendations')}
+              </p>
 
-            <button
-              onClick={handleCloseAll}
-              className="w-full px-6 py-3 bg-black cursor-pointer text-white font-medium hover:bg-gray-800 transition-colors"
-            >
-              {t('addPet.success.okay')}
-            </button>
+
+              <button
+                onClick={handleCloseAll}
+                className="w-full py-3.5 text-[13.5px] font-medium tracking-[0.02em] text-white bg-gradient-to-b from-[#25221e] to-[#0b0b0a] border border-[#0b0b0a] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
+              >
+                {t('addPet.success.okay')}
+              </button>
+            </div>
           </div>
         </div>
       )}
     </>
   );
 }
+

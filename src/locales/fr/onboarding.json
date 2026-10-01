@@ -17,6 +17,7 @@
     }
   },
   "login": {
+    "terms": "En vous connectant, vous acceptez nos",
     "title": "Bienvenue chez Biogance",
     "description": "Connectez-vous pour accéder à votre compte, suivre vos commandes et profiter de récompenses exclusives de notre programme de fidélité.",
     "form": {

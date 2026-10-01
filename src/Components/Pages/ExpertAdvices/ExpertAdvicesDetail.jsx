@@ -802,6 +802,32 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
         </div>
       </section>
 
+      {/* Rich HTML from the CMS editor. Tailwind preflight strips list
+          markers, list indent and heading sizes, so <ul><li>…</li></ul> from
+          the API rendered as plain lines — put them back for .rich-html. */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .rich-html ul, .rich-html ol { margin: 0.75em 0; padding-left: 1.5em; }
+            .rich-html ul { list-style: disc outside; }
+            .rich-html ol { list-style: decimal outside; }
+            .rich-html ul ul { list-style-type: circle; }
+            .rich-html ul ul ul { list-style-type: square; }
+            .rich-html ol ol { list-style-type: lower-alpha; }
+            .rich-html li { margin: 0.35em 0; padding-left: 0.25em; }
+            .rich-html li::marker { color: #0b0b0a; }
+            .rich-html h1, .rich-html h2, .rich-html h3, .rich-html h4 { margin: 1.2em 0 0.5em; font-weight: 700; line-height: 1.25; color: #0b0b0a; }
+            .rich-html h1 { font-size: 1.7em; }
+            .rich-html h2 { font-size: 1.4em; }
+            .rich-html h3 { font-size: 1.2em; }
+            .rich-html h4 { font-size: 1.05em; }
+            .rich-html a { color: #0b0b0a; text-decoration: underline; text-underline-offset: 3px; }
+            .rich-html blockquote { margin: 1em 0; padding-left: 1em; border-left: 2px solid #0b0b0a; font-style: italic; }
+            .rich-html strong, .rich-html b { font-weight: 700; }
+          `,
+        }}
+      />
+
       {/* Article body + product recommendation */}
     <div className="px-6 pb-15 sm:px-10 lg:px-16 pt-4 lg:pt-15">
         {hasProducts ? (
@@ -811,7 +837,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
             <div className="w-full order-1 lg:col-start-1">
               {getBlogField(blog, "long_description", isFr) ? (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700"
+                  className="rich-html max-w-none text-gray-700"
                   dangerouslySetInnerHTML={{
                     __html: stripTrailingEmptyLine(
                       getBlogField(blog, "long_description", isFr),
@@ -1059,7 +1085,7 @@ function ExpertArticleDetail({ seoKeyword: seoKeywordProp }) {
           <div>
             {getBlogField(blog, "long_description", isFr) ? (
               <div
-                className="prose prose-sm max-w-none text-gray-700"
+                className="rich-html max-w-none text-gray-700"
                 dangerouslySetInnerHTML={{
                   __html: stripTrailingEmptyLine(
                     getBlogField(blog, "long_description", isFr),

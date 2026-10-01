@@ -17,6 +17,7 @@
     }
   },
   "login": {
+    "terms": "By logging in, you agree to our",
     "title": "Login Biogance",
     "description": "Log in to access your account, track your orders, and enjoy exclusive rewards from our loyalty program.",
     "form": {

@@ -13,8 +13,24 @@ import {
   LuX,
 } from 'react-icons/lu';
 
-// Single static background (public/PF.webp).
-const BACKGROUND_IMAGE = '/PF.webp';
+// Fallback background (public/PF.webp) — used until the splash data is in
+// localStorage, or when admin hasn't uploaded media for a slot.
+const BACKGROUND_IMAGE = '/DPF.webp';
+
+// Admin-uploaded media for a slot, from the splash response
+// ({ media, media_type: "image" | "video" }) — either is valid, so render a
+// muted looping <video> or an <img> accordingly.
+function FinderMedia({ data, className }) {
+  const media = typeof data?.media === 'string' ? data.media : '';
+  if (!media) return <img src={BACKGROUND_IMAGE} alt="" className={className} />;
+  const src = /^https?:\/\//i.test(media) ? media : `${MEDIA_URL}${media}`;
+  const isVideo = data.media_type === 'video' || /\.(mp4|webm|ogg|mov)$/i.test(media);
+  return isVideo ? (
+    <video key={src} src={src} autoPlay loop muted playsInline className={className} />
+  ) : (
+    <img key={src} src={src} alt="" className={className} />
+  );
+}
 
 // Product finder — the section is just an image stage with the heading,
 // one "View products" CTA and a pet-profile / coupon note. The CTA opens a
@@ -31,6 +47,10 @@ export function LandingProductFinder({ data }) {
   const [selectedCare, setSelectedCare] = useState('');
   const [selectedConcern, setSelectedConcern] = useState('');
   const [categories, setCategories] = useState([]);
+  // Section background (home_perfect_product) and modal visual
+  // (home_view_product) — both come from the cached splash data.
+  const [sectionMedia, setSectionMedia] = useState(null);
+  const [modalMedia, setModalMedia] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   // Wizard shows one step at a time; dir drives the slide-in direction.
@@ -58,6 +78,8 @@ export function LandingProductFinder({ data }) {
           .slice()
           .sort((a, b) => (a.sorting_number || 0) - (b.sorting_number || 0));
         setCategories(list);
+        setSectionMedia(splash?.home_perfect_product || null);
+        setModalMedia(splash?.home_view_product || null);
       } catch {
         setCategories([]);
       }
@@ -197,7 +219,7 @@ export function LandingProductFinder({ data }) {
         {/* Left — image + vertical stepper (desktop) */}
         <aside className="hidden w-[300px] shrink-0 flex-col bg-[#f5f4f0] md:flex lg:w-[330px]">
           <div className="relative h-[44%] shrink-0 overflow-hidden">
-            <img src={BACKGROUND_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <FinderMedia data={modalMedia} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#f5f4f0] via-[#f5f4f0]/10 to-transparent" />
           </div>
           <div className="flex flex-1 flex-col px-7 pb-7">
@@ -434,10 +456,7 @@ export function LandingProductFinder({ data }) {
       <div className="relative w-full overflow-hidden bg-[#0c0c0e]">
       {/* Background */}
       <div className="absolute inset-0 z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${BACKGROUND_IMAGE}')` }}
-        />
+        <FinderMedia data={sectionMedia} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/15" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
       </div>

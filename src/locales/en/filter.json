@@ -153,5 +153,28 @@
     "whyBody": "The wrong products can cause discomfort, dryness or irritation. Using a routine adapted to your pet helps keep them comfortable while supporting their overall well-being.",
     "whenTitle": "When should you apply this routine?",
     "whenBody": "For best results, stay consistent throughout the year and follow the recommended usage on your chosen product, adjusting as your pet's needs evolve."
-  }
+  },
+  "productsCount": "products",
+  "readMore": "Read more",
+  "readLess": "Read less",
+  "activeFilters": "Active",
+  "fromJournal": "From the journal",
+  "refine": "Refine",
+  "showingOf": "Showing {{shown}} of {{total}}",
+  "pickUpWhereYouLeft": "Pick up where you left off",
+  "clear": "Clear",
+  "inThisEdit": "In this edit",
+  "speciesLabel": "Species",
+  "rangesLabel": "Ranges",
+  "rangesCount": "{{count}} ranges",
+  "recentlyViewedDesc": "The formulations you looked at most recently — back in one place so you can compare and decide.",
+  "keepBrowsing": "Keep browsing",
+  "allArticles": "All articles",
+  "journalTag": "Journal",
+  "expertAdvice": "Expert advice",
+  "readFullArticle": "Read the full article",
+  "showLessArticle": "Show less"
 }
+
+
+

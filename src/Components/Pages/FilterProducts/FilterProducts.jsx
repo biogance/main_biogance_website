@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
@@ -20,6 +21,8 @@ import {
   LuFlame,
   LuMegaphone,
   LuBookOpen,
+  LuArrowDownUp,
+  LuHouse,
 } from "react-icons/lu";
 
 import Navbar from "../Navbar";
@@ -30,6 +33,10 @@ import { getDeviceId } from "@/utils/deviceId";
 
 // Fixed navbar height (matches the `mt-[104px]` / `top-[104px]` used across this page).
 const NAVBAR_HEIGHT = 104;
+
+// Same typefaces as the home page hero (MainVideo.jsx), used by the shop header.
+const SHOP_FONT = "'Outfit', 'Sora', system-ui, -apple-system, sans-serif";
+const SHOP_FONT_SERIF = "'Instrument Serif', Georgia, 'Times New Roman', serif";
 
 // Matches the restProducts grid's actual column counts (grid-cols-2 below md,
 // md:grid-cols-3, lg:grid-cols-3, xl:grid-cols-4) — same responsive-per_page
@@ -1457,6 +1464,12 @@ export default function FilterProducts() {
     COLOR_SWATCHES_MAP,
   ]);
 
+  // Header headline: last word set in the serif italic accent, like the home hero.
+  const titleWords = String(ctx.title || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
   const clearAll = () => {
     setAnimals([]);
     setUniverse([]);
@@ -1592,112 +1605,162 @@ export default function FilterProducts() {
         }}
       />
 
-      <section className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-        <section
-          ref={headerRef}
-          className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[#fbf9f7]"
+      {/* Page header — breadcrumb, headline (serif-italic last word) + live
+          stats, description, and search + sort. Same layout as the dark shop
+          hero, on the page's original light background. */}
+      <header
+        ref={headerRef}
+        className="relative bg-[#fbf9f7] text-[#0b0b0a]"
+        style={{ fontFamily: SHOP_FONT }}
+      >
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+          precedence="default"
+        />
+        {/* Decoration is clipped on its own layer, not on the header, so the
+            sort dropdown can hang below the header without being cut off. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
         >
-          <div className="mx-auto max-w-10xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-12 gap-x-8 gap-y-6 pt-6 pb-6">
-              {/* Left: headline + count, description underneath */}
-              <div className="col-span-12 lg:col-span-8">
-                <h4 className="mt-0 flex flex-wrap items-baseline gap-3 font-serif text-3xl sm:text-4xl lg:text-5xl leading-[0.92] tracking-[-0.01em] text-stone-900 pb-1">
-                  <span
-                    style={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      paddingBottom: "0.1em",
-                    }}
-                  >
-                    {ctx.title}
+         
+        </div>
+
+        <div className="relative mx-auto max-w-10xl px-4 pb-6 pt-5 sm:px-6 sm:pb-7 lg:px-8">
+          {/* Breadcrumb + context */}
+          <nav
+            aria-label="Breadcrumb"
+            className="flex min-w-0 items-center gap-2.5 text-[10px] font-medium uppercase tracking-[0.24em] text-black/45"
+          >
+            <Link
+              href="/"
+              className="inline-flex shrink-0 items-center gap-1.5 transition-colors hover:text-black"
+            >
+              <LuHouse className="h-3.5 w-3.5" />
+              {t("home", "Home")}
+            </Link>
+            <span className="h-px w-5 shrink-0 bg-black/25" />
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-black/90">
+              <ctx.Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{ctx.crumbLabel || ctx.title}</span>
+            </span>
+          </nav>
+
+          <div className="mt-4 grid grid-cols-1 items-end gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(400px,500px)] lg:gap-12">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-end gap-x-5 gap-y-2">
+                <h1 className="min-w-0 text-[clamp(30px,3.8vw,54px)] font-extralight uppercase leading-[1] tracking-[-0.035em] text-[#0b0b0a]">
+                  <span className="line-clamp-2 break-words">
+                    {titleWords.map((word, i) => {
+                      const last =
+                        i === titleWords.length - 1 && titleWords.length > 1;
+                      return (
+                        <span
+                          key={`${word}-${i}`}
+                          className={
+                            last
+                              ? "font-normal normal-case italic tracking-[-0.02em]"
+                              : ""
+                          }
+                          style={
+                            last ? { fontFamily: SHOP_FONT_SERIF } : undefined
+                          }
+                        >
+                          {word}
+                          {i < titleWords.length - 1 ? " " : ""}
+                        </span>
+                      );
+                    })}
                   </span>
-                  <span className="font-sans text-lg sm:text-xl lg:text-2xl font-normal text-stone-400">
-                    ({totalCount})
+                </h1>
+                {/* Live stats */}
+                <p className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium uppercase tracking-[0.2em] text-black/50 tabular-nums">
+                  <span className="border border-black/20 bg-white px-2 py-1 text-[#0b0b0a]">
+                    {totalCount} {t("productsCount", "products")}
                   </span>
-                  {/* Mobile-only: toggles the collapsed description below */}
-                  <button
-                    type="button"
-                    onClick={() => setMobileDescOpen((v) => !v)}
-                    aria-label={t("toggleDescription", "Toggle description")}
-                    className="ml-auto self-center cursor-pointer lg:hidden"
-                  >
-                    <LuChevronDown
-                      className={`h-5 w-5 text-stone-500 transition-transform duration-300 ${
-                        mobileDescOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                </h4>
-                <p className="mt-2 hidden max-w-[50vw] text-sm md:text-lg sm:text-xs text-stone-700 rich-text c-desc lg:block">
+                  {t("speciesCount", "{{count}} species", {
+                    count: categoriesList.length,
+                  })}
+                  <span className="h-1 w-1 bg-black/30" />
+                  {t("rangesCount", "{{count}} ranges", {
+                    count: RANGES_LIST.length,
+                  })}
+                </p>
+              </div>
+
+              <div className="mt-3 max-w-[640px]">
+                <p
+                  className={`text-[13px] font-light leading-[1.7] text-black/65 rich-text c-desc sm:text-[14px] ${
+                    mobileDescOpen ? "" : "line-clamp-2"
+                  }`}
+                >
                   {t(
                     "products.shopDescription",
                     "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
                   )}
                 </p>
-
-                {/* Mobile-only: same description, collapsed into an
-                    accordion instead of always showing */}
-                <div
-                  className={`grid transition-all duration-300 ease-out lg:hidden ${
-                    mobileDescOpen
-                      ? "grid-rows-[1fr] opacity-100 mt-2"
-                      : "grid-rows-[0fr] opacity-0"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setMobileDescOpen((v) => !v)}
+                  aria-expanded={mobileDescOpen}
+                  className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/70 transition-colors hover:text-black cursor-pointer"
                 >
-                  <div className="overflow-hidden">
-                    <p className="text-sm text-stone-700 rich-text c-desc">
-                      {t(
-                        "products.shopDescription",
-                        "External parasites such as fleas and ticks can quickly affect your dog's comfort and well-being. Walks outdoors or contact with other animals can encourage infestations, leading to itching and skin irritation.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: search + sort */}
-              <div className="col-span-12 flex flex-col justify-center gap-3 lg:col-span-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <div className="group relative flex w-full items-center sm:flex-1 lg:max-w-sm">
-                    <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-stone-400 transition group-focus-within:text-stone-900" />
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => handleQueryChange(e.target.value)}
-                      placeholder={t(
-                        "searchPlaceholder",
-                        "Search shampoos, sprays, rituals…",
-                      )}
-                      className="h-11 w-full border border-stone-900/15 bg-white pl-11 pr-10 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/10"
-                    />
-                    {query && (
-                      <button
-                        onClick={() => {
-                          setQuery("");
-                          setDebouncedQuery("");
-                          clearTimeout(queryDebounceRef.current);
-                        }}
-                        className="absolute right-3 flex h-6 w-6 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
-                        aria-label={t("clearSearch", "Clear search")}
-                      >
-                        <LuX className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
-                      {t("sort", "Sort")}
-                    </span>
-                    <SortMenu value={sort} onChange={setSort} />
-                  </div>
-                </div>
+                  {mobileDescOpen
+                    ? t("readLess", "Read less")
+                    : t("readMore", "Read more")}
+                  <LuChevronDown
+                    className={`h-3.5 w-3.5 transition-transform duration-300 ${
+                      mobileDescOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
               </div>
             </div>
+
+            {/* Search + sort */}
+            <div className="flex min-w-0 items-stretch gap-2">
+              <div className="group relative flex h-12 min-w-0 flex-1 items-center border border-black/15 bg-white transition-colors duration-200 focus-within:border-black/40">
+                {isSearchPending && query ? (
+                  <span className="pointer-events-none absolute left-4 h-4 w-4 animate-spin rounded-full border-2 border-black/15 border-t-black" />
+                ) : (
+                  <LuSearch className="pointer-events-none absolute left-4 h-4 w-4 text-black/40 transition-colors group-focus-within:text-black" />
+                )}
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => handleQueryChange(e.target.value)}
+                  placeholder={t(
+                    "searchPlaceholder",
+                    "Search shampoos, sprays, rituals…",
+                  )}
+                  className="h-full w-full min-w-0 bg-transparent pl-11 pr-10 text-[14px] text-black placeholder:text-black/40 focus:outline-none"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      setDebouncedQuery("");
+                      clearTimeout(queryDebounceRef.current);
+                    }}
+                    className="absolute right-2.5 grid h-7 w-7 place-items-center text-black/40 transition-colors hover:bg-black hover:text-white cursor-pointer"
+                    aria-label={t("clearSearch", "Clear search")}
+                  >
+                    <LuX className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {/* Same focus bar as AuthInput (Login) */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300 group-focus-within:w-full"
+                />
+              </div>
+              <SortMenu value={sort} onChange={setSort} />
+            </div>
           </div>
-        </section>
-      </section>
+        </div>
+      </header>
 
       {/* Products — grid */}
       <section className="mx-auto max-w-10xl pb-24">
@@ -2281,40 +2344,19 @@ function FilterRail({
         if (railRef) railRef.current = el;
       }}
       className="sticky top-[64px] lg:top-[104px] z-39 border-b border-stone-900/10 bg-white"
+      style={{ fontFamily: SHOP_FONT }}
     >
       {/* Mobile: single prominent CTA that opens the full filters modal */}
-      <div className="mx-auto flex max-w-10xl items-center gap-3 px-5 py-3 md:hidden">
+      <div className="mx-auto flex max-w-10xl items-stretch gap-2 px-4 py-3 sm:px-6 md:hidden">
         <button
           onClick={() => setAllOpen(true)}
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-900 bg-stone-900 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-sm active:scale-[0.99] cursor-pointer"
+          className="flex h-12 flex-1 items-center justify-center gap-2.5 bg-[#0b0b0a] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white transition-colors active:bg-black cursor-pointer"
         >
           <LuSlidersHorizontal className="h-4 w-4" />
           {t("filters", "Filters")}
           {totalActive > 0 && (
-            <span
-              className="relative ml-1 shrink-0 rounded-full bg-white"
-              style={{
-                height: "20px",
-                width:
-                  totalActive >= 100
-                    ? "34px"
-                    : totalActive >= 10
-                      ? "26px"
-                      : "20px",
-              }}
-            >
-              <span
-                className="absolute text-[10px] font-semibold text-stone-900 tracking-normal normal-case"
-                style={{
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  letterSpacing: "normal",
-                  lineHeight: "1",
-                }}
-              >
-                {totalActive}
-              </span>
+            <span className="grid h-[18px] min-w-[18px] place-items-center bg-white px-1 text-[10px] font-semibold leading-none tracking-normal text-[#0b0b0a] tabular-nums">
+              {totalActive}
             </span>
           )}
         </button>
@@ -2325,55 +2367,36 @@ function FilterRail({
               setOpenKey(null);
               setPriceOpen((v) => !v);
             }}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-2.5 text-[11px] uppercase tracking-[0.2em] text-stone-700 cursor-pointer ${priceOpen ? "bg-stone-100 text-stone-900" : ""}`}
+            className={`flex h-12 shrink-0 items-center gap-2 border px-3.5 text-[11px] font-medium uppercase tracking-[0.18em] text-[#0b0b0a] transition-colors tabular-nums cursor-pointer ${
+              priceOpen ? "border-black" : "border-black/15"
+            }`}
           >
             {state.minPrice > 0
               ? `€${state.minPrice} - €${state.price}`
               : `€${state.price}`}
             <LuChevronDown
-              className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${priceOpen ? "rotate-180" : ""}`}
             />
           </button>
         </div>
       </div>
 
-      {/* Desktop / tablet: existing horizontal tab rail */}
+      {/* Desktop / tablet: horizontal tab rail */}
       <div className="relative hidden md:block">
-        <div className="mx-auto flex max-w-10xl items-stretch gap-3 px-8">
-          <div className="filter-rail-scroll flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto">
+        <div className="mx-auto flex max-w-10xl items-stretch px-6 lg:px-8">
+          <div className="filter-rail-scroll flex min-w-0 flex-1 items-stretch overflow-x-auto">
             <button
               onClick={() => setAllOpen(true)}
-              className="flex items-center gap-2 pr-4 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 cursor-pointer"
+              className="group/all mr-2 flex h-14 shrink-0 items-center gap-2.5 border-r border-black/10 pr-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0b0b0a] cursor-pointer"
               title={t("openAllFilters", "Open all filters")}
             >
-              <LuSlidersHorizontal className="h-3.5 w-3.5" />{" "}
+              <span className="grid h-8 w-8 place-items-center border border-black/15 transition-colors group-hover/all:border-black group-hover/all:bg-[#0b0b0a] group-hover/all:text-white">
+                <LuSlidersHorizontal className="h-3.5 w-3.5" />
+              </span>
               {t("filter", "Filter")}
               {totalActive > 0 && (
-                <span
-                  className="relative shrink-0 rounded-full bg-stone-900 ai-style-change-1"
-                  style={{
-                    height: "20px",
-                    width:
-                      totalActive >= 100
-                        ? "34px"
-                        : totalActive >= 10
-                          ? "26px"
-                          : "20px",
-                  }}
-                >
-                  <span
-                    className="absolute text-[13px] text-white tracking-normal normal-case"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      marginLeft: "-0.6px",
-                      transform: "translate(-50%, -50%)",
-                      letterSpacing: "normal",
-                      lineHeight: "1",
-                    }}
-                  >
-                    {totalActive}
-                  </span>
+                <span className="grid h-[18px] min-w-[18px] place-items-center bg-[#0b0b0a] px-1 text-[10px] font-semibold leading-none tracking-normal text-white tabular-nums">
+                  {totalActive}
                 </span>
               )}
             </button>
@@ -2396,14 +2419,24 @@ function FilterRail({
                 setOpenKey(null);
                 setPriceOpen((v) => !v);
               }}
-              className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] text-stone-600 hover:text-stone-900 cursor-pointer ${priceOpen ? "bg-white text-stone-900" : ""}`}
+              className={`group/tab relative flex h-14 shrink-0 items-center gap-2 whitespace-nowrap px-4 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors cursor-pointer ${
+                priceOpen ? "text-black" : "text-black/55 hover:text-black"
+              }`}
             >
-              {t("price", "Price")} ·{" "}
-              {state.minPrice > 0
-                ? `€${state.minPrice} - €${state.price}`
-                : `€${state.price}`}
+              {t("price", "Price")}
+              <span className="font-semibold tracking-[0.06em] text-[#0b0b0a] tabular-nums">
+                {state.minPrice > 0
+                  ? `€${state.minPrice} - €${state.price}`
+                  : `€${state.price}`}
+              </span>
               <LuChevronDown
-                className={`h-3 w-3 transition ${priceOpen ? "rotate-180" : ""}`}
+                className={`h-3 w-3 transition-transform duration-200 ${priceOpen ? "rotate-180" : ""}`}
+              />
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-left bg-[#0b0b0a] transition-transform duration-300 ${
+                  priceOpen ? "scale-x-100" : "scale-x-0 group-hover/tab:scale-x-100"
+                }`}
               />
             </button>
           </div>
@@ -2424,39 +2457,48 @@ function FilterRail({
 
       {/* Active filter chips — shown directly below the filter bar */}
       {activeChips && activeChips.length > 0 && (
-        <div className="mx-auto flex max-w-10xl flex-wrap items-center gap-2 px-8 py-2 border-t border-stone-900/10">
-          {activeChips.map((c, i) => (
-            <span
-              key={i}
-              className="group inline-flex shrink-0 items-center border border-gray-300 gap-1.5 bg-stone-100 py-1 pl-3 pr-1 text-[11px] font-medium text-stone-700 transition hover:bg-black hover:text-white"
-            >
-              {c.swatch ? (
-                <span
-                  className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
-                  style={{
-                    background: c.swatch,
-                    ...(c.swatch.includes("gradient") ? {} : { backgroundColor: c.swatch }),
-                  }}
-                  aria-label={c.label}
-                />
-              ) : (
-                translateName(c.label)
-              )}
-              <button
-                onClick={c.clear}
-                className="flex h-4 w-4 items-center justify-center rounded-full text-stone-400 transition hover:bg-stone-200 hover:text-black cursor-pointer"
-                aria-label={t("removeFilter", "Remove {{label}}", { label: translateName(c.label) })}
-              >
-                <LuX className="h-2.5 w-2.5" />
-              </button>
+        <div className="border-t border-black/10">
+          <div className="mx-auto flex max-w-10xl flex-wrap items-center gap-2 px-4 py-2.5 sm:px-6 lg:px-8">
+            <span className="mr-1 hidden text-[10px] font-medium uppercase tracking-[0.24em] text-black/45 sm:inline">
+              {t("activeFilters", "Active")}
             </span>
-          ))}
-          <button
-            onClick={clearAllChips}
-            className="shrink-0 text-[10px] font-medium uppercase tracking-[0.15em] text-stone-400 underline underline-offset-4 transition hover:text-stone-700 cursor-pointer"
-          >
-            {t("resetAll", "Reset all")}
-          </button>
+            {activeChips.map((c, i) => (
+              <span
+                key={i}
+                className="inline-flex h-8 shrink-0 items-center gap-2 border border-black/15 bg-white pl-3 pr-1 text-[12px] font-medium text-[#0b0b0a] transition-colors hover:border-black"
+              >
+                {c.swatch ? (
+                  <span
+                    className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                    style={{
+                      background: c.swatch,
+                      ...(c.swatch.includes("gradient") ? {} : { backgroundColor: c.swatch }),
+                    }}
+                    aria-label={c.label}
+                  />
+                ) : (
+                  translateName(c.label)
+                )}
+                <button
+                  onClick={c.clear}
+                  className="grid h-6 w-6 place-items-center text-black/45 transition-colors hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
+                  aria-label={t("removeFilter", "Remove {{label}}", { label: translateName(c.label) })}
+                >
+                  <LuX className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={clearAllChips}
+              className="group/reset relative ml-2 shrink-0 pb-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/55 transition-colors hover:text-black cursor-pointer"
+            >
+              {t("resetAll", "Reset all")}
+              <span
+                aria-hidden="true"
+                className="absolute bottom-0 left-0 h-px w-full origin-left bg-current transition-transform duration-300 group-hover/reset:scale-x-0"
+              />
+            </button>
+          </div>
         </div>
       )}
 
@@ -3002,41 +3044,33 @@ function FilterTab({ group, open, onOpen, translateName, isFrench }) {
       onClick={onOpen}
       disabled={group.disabled}
       title={group.disabled ? displayTip : undefined}
-      className={`flex h-14 items-center gap-2 whitespace-nowrap px-4 text-xs uppercase tracking-[0.18em] transition cursor-pointer font-semibold ai-style-change-3 ${
+      aria-expanded={open}
+      className={`group/tab relative flex h-14 shrink-0 items-center gap-2 whitespace-nowrap px-4 text-[11px] uppercase tracking-[0.2em] transition-colors ${
         group.disabled
-          ? "cursor-not-allowed text-stone-300"
-          : active
-            ? "text-stone-900 font-semibold"
-            : "text-stone-600 hover:text-stone-900"
-      } ${open ? "bg-stone-100 text-stone-900" : ""}`}
+          ? "cursor-not-allowed font-medium text-black/25"
+          : open || active
+            ? "cursor-pointer font-semibold text-black"
+            : "cursor-pointer font-medium text-black/55 hover:text-black"
+      }`}
     >
       {displayLabel}
       {active && (
-        <span
-          className="relative shrink-0  border-opacity-15 rounded-full bg-stone-900 box-border"
-          style={{
-            height: "20px",
-            width: count >= 100 ? "34px" : count >= 10 ? "26px" : "20px",
-          }}
-        >
-          <span
-            className="absolute text-[12px] font-medium text-stone-100 tracking-normal normal-case"
-            style={{
-              top: "50%",
-              left: "50%",
-              marginLeft: "-0.6px",
-              transform: "translate(-50%, -50%)",
-              letterSpacing: "normal",
-              lineHeight: "1",
-            }}
-          >
-            {count}
-          </span>
+        <span className="grid h-[18px] min-w-[18px] place-items-center bg-[#0b0b0a] px-1 text-[10px] font-semibold leading-none tracking-normal text-white tabular-nums">
+          {count}
         </span>
       )}
       <LuChevronDown
-        className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`}
+        className={`h-3 w-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
       />
+      {/* Underline: grows on hover, stays while the tab's panel is open */}
+      {!group.disabled && (
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-left bg-[#0b0b0a] transition-transform duration-300 ${
+            open ? "scale-x-100" : "scale-x-0 group-hover/tab:scale-x-100"
+          }`}
+        />
+      )}
     </button>
   );
 }
@@ -3170,7 +3204,7 @@ function FilterPanel({
           : "max-h-0 opacity-0 py-0"
       }`}
     >
-      <div className="mx-auto max-w-10xl px-8">
+      <div className="mx-auto max-w-10xl px-6 lg:px-8">
         {group ? (
           <FilterSheetContent
             group={group}
@@ -3211,14 +3245,20 @@ function FilterSheetContent({
 
   return (
     <>
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-[0.25em] text-stone-500">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="inline-flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.26em] text-black/45">
+            <span className="h-px w-6 bg-black/30" />
             {t("filterBy", "Filter by")}
           </span>
-          <h3 className="font-serif text-2xl">{displayTitle}</h3>
+          <h3
+            className="text-[28px] italic leading-none tracking-[-0.01em] text-[#0b0b0a]"
+            style={{ fontFamily: SHOP_FONT_SERIF }}
+          >
+            {displayTitle}
+          </h3>
           {group.values.length > 0 && (
-            <span className="text-xs uppercase tracking-[0.2em] text-stone-500">
+            <span className="border border-black/20 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-[#0b0b0a] tabular-nums">
               {t("selectedCount", "{{count}} selected", {
                 count: group.values.length,
               })}
@@ -3227,32 +3267,37 @@ function FilterSheetContent({
         </div>
         <button
           onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-900/15 hover:bg-stone-100 cursor-pointer"
+          aria-label={t("close", "Close")}
+          className="grid h-9 w-9 shrink-0 place-items-center border border-black/15 bg-white text-[#0b0b0a] transition-colors hover:border-black hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
         >
           <LuX className="h-4 w-4" />
         </button>
       </div>
       {searchable && (
-        <div className="relative mb-4 max-w-md">
-          <LuSearch className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+        <div className="group relative mb-4 flex h-11 max-w-md items-center border border-black/15 bg-white transition-colors focus-within:border-black/40">
+          <LuSearch className="pointer-events-none absolute left-3.5 h-3.5 w-3.5 text-black/40 transition-colors group-focus-within:text-black" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-10 w-full border border-stone-900/15 bg-white pl-9 pr-9 text-sm placeholder:text-stone-400 focus:border-stone-900 focus:outline-none"
+            className="h-full w-full bg-transparent pl-10 pr-10 text-[13px] text-black placeholder:text-black/40 focus:outline-none"
           />
           {q && (
             <button
               onClick={() => setQ("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 cursor-pointer"
+              className="absolute right-2 grid h-7 w-7 place-items-center text-black/40 transition-colors hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
             >
               <LuX className="h-3 w-3" />
             </button>
           )}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300 group-focus-within:w-full"
+          />
         </div>
       )}
       {filtered.length === 0 ? (
-        <div className="text-sm text-stone-500">
+        <div className="text-[13px] text-black/50">
           {t("noOptionsAvailable", "No options available.")}
         </div>
       ) : (
@@ -3266,15 +3311,20 @@ function FilterSheetContent({
               <button
                 key={opt}
                 onClick={() => group.setter(opt)}
-                className={`group inline-flex items-center gap-1.5 border ${isColor ? "px-1.5 py-1.5" : "px-4 py-2"} text-xs transition-all duration-300 ease-out hover:-translate-y-0.5 cursor-pointer ${
+                aria-pressed={on}
+                className={`inline-flex h-10 items-center gap-2 border text-[13px] transition-colors duration-200 cursor-pointer ${
+                  isColor ? "w-10 justify-center" : "px-4"
+                } ${
                   on
-                    ? "border-stone-900 bg-stone-900 text-white shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)]"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:shadow-sm"
+                    ? isColor
+                      ? "border-black bg-white ring-1 ring-black"
+                      : "border-[#0b0b0a] bg-[#0b0b0a] font-medium text-white"
+                    : "border-black/15 bg-white text-black/75 hover:border-black hover:text-black"
                 }`}
               >
                 {swatch ? (
                   <span
-                    className="h-4 w-4 shrink-0 rounded-full ring-1 ring-stone-900/15"
+                    className="h-5 w-5 shrink-0 rounded-full ring-1 ring-stone-900/15"
                     style={{
                       background: swatch,
                       ...(swatch.includes("gradient")
@@ -3284,9 +3334,7 @@ function FilterSheetContent({
                     aria-hidden
                   />
                 ) : on ? (
-                  <span className="grid place-items-center overflow-hidden rounded-full bg-white/15 mr-0.5 h-4 w-4">
-                    <LuCheck className="h-2.5 w-2.5 stroke-[3] text-white" />
-                  </span>
+                  <LuCheck className="h-3.5 w-3.5 shrink-0 stroke-[2.5]" />
                 ) : null}
 
                 {!isColor && translateName(opt)}
@@ -3360,21 +3408,34 @@ function SortMenu({ value, onChange }) {
   }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
+        type="button"
         onClick={handleOpen}
-        className="flex items-center gap-2 border-b border-stone-900 pb-1 text-sm cursor-pointer"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex h-12 items-center gap-3 border bg-white px-3.5 text-left text-black transition-colors cursor-pointer sm:px-4 ${
+          open ? "border-black" : "border-black/15 hover:border-black"
+        }`}
       >
-        {getSortLabel(value)}
+        <LuArrowDownUp className="h-4 w-4 shrink-0" />
+        <span className="flex min-w-0 flex-col leading-none">
+          <span className="hidden text-[9px] font-semibold uppercase tracking-[0.22em] text-black/45 sm:block">
+            {t("sort", "Sort")}
+          </span>
+          <span className="max-w-[92px] truncate text-[12px] font-semibold sm:mt-1 sm:max-w-[150px]">
+            {getSortLabel(value)}
+          </span>
+        </span>
         <LuChevronDown
-          className="h-3 w-3 transition-transform duration-200 ease-in-out"
+          className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 ease-in-out"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </button>
 
       {open && (
         <div
-          className="absolute right-0 top-full z-30 mt-2 w-56 border border-stone-900/10 bg-white p-2 origin-top"
+          className="absolute right-0 top-full z-30 mt-2 w-60 origin-top border border-black/10 bg-white py-1.5 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.3)]"
           style={{
             animation: isClosing
               ? "sortMenuClose 0.2s cubic-bezier(0.4, 0, 1, 1) forwards"
@@ -3395,9 +3456,10 @@ function SortMenu({ value, onChange }) {
             <button
               key={o}
               onClick={() => handleSelect(o)}
-              className={`block w-full px-3 py-2 text-left text-sm hover:bg-stone-100 cursor-pointer ${value === o ? "font-semibold" : ""}`}
+              className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] transition-colors hover:bg-[#f5f4f0] cursor-pointer ${value === o ? "font-semibold text-black" : "text-[#444]"}`}
             >
               {getSortLabel(o)}
+              {value === o && <LuCheck className="h-4 w-4 shrink-0" />}
             </button>
           ))}
         </div>
