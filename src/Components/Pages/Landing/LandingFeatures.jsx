@@ -36,7 +36,7 @@ export const LandingFeatures = ({ data }) => {
             >
               {/* Icon */}
               <div className="flex items-start">
-                <span className="grid h-9 w-9 place-items-center border border-white/15 text-white/80 transition-colors duration-300 group-hover:border-white group-hover:bg-white group-hover:text-[#0b0b0a] min-[721px]:h-11 min-[721px]:w-11">
+                <span className="grid h-9 w-9 place-items-center border border-white/15 text-white/80 min-[721px]:h-11 min-[721px]:w-11">
                   <Icon className="h-4 w-4 min-[721px]:h-[18px] min-[721px]:w-[18px]" strokeWidth={1.5} />
                 </span>
               </div>

@@ -155,20 +155,20 @@ export default function LandingReview({ data }) {
       </div>
 
       {/* Reviews — grey panel */}
-      <div className="border-y border-gray-300 bg-[#e7e7e5] py-8 min-[721px]:py-12">
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1101px]:grid-cols-[0.75fr_1.25fr] gap-7 min-[721px]:gap-10 items-start">
+      <div className="border-y border-gray-300 bg-[#e7e7e5] py-12 min-[721px]:py-[clamp(60px,7vw,110px)]">
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1101px]:grid-cols-[0.75fr_1.25fr] gap-[42px] min-[721px]:gap-[70px] items-start">
 
         {/* Left column (.eyebrow / .score / .stars / .review-add) */}
         <div>
           {isLoading ? (
-            <div className="h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(56px,6.5vw,104px)] leading-[0.8]" />
+            <div className="h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(72px,9vw,145px)] leading-[0.8]" />
           ) : averageRating && (
-            <div className="text-[clamp(56px,6.5vw,104px)] leading-[0.8] tracking-[-0.075em] text-black">
+            <div className="text-[clamp(72px,9vw,145px)] leading-[0.8] tracking-[-0.075em] text-black">
               {averageRating}
             </div>
           )}
 
-          <div className="mt-4 tracking-[0.18em] text-black" aria-hidden="true">★★★★★</div>
+          <div className="mt-[22px] tracking-[0.18em] text-black" aria-hidden="true">★★★★★</div>
         </div>
 
         {/* Right column — quote carousel (.review-carousel) */}
@@ -190,10 +190,10 @@ export default function LandingReview({ data }) {
               >
                 {apiReviews.map((review, i) => (
                   <article key={review.id ?? i} className="w-full shrink-0 grow-0 basis-full pr-0 md:pr-[clamp(8px,2vw,30px)]">
-                    <blockquote className="m-0 text-[clamp(22px,2.8vw,40px)] leading-[1.12] tracking-[-0.035em] font-medium text-black">
+                    <blockquote className="m-0 text-[clamp(30px,4vw,62px)] leading-[1.02] tracking-[-0.043em] font-medium text-black">
                       “{review.message}”
                     </blockquote>
-                    <div className="mt-5 uppercase text-[9px] tracking-[0.14em] text-black">
+                    <div className="mt-[30px] uppercase text-[9px] tracking-[0.14em] text-black">
                       {[review.name, review.date].filter(Boolean).join(' · ')}
                     </div>
                   </article>
@@ -201,7 +201,7 @@ export default function LandingReview({ data }) {
               </div>
 
               {/* Controls (.review-controls) */}
-              <div className="mt-6 md:mt-7 pt-4 border-t border-black/[0.18] flex items-center justify-between gap-[14px] md:gap-[24px]">
+              <div className="mt-[28px] md:mt-[38px] pt-[18px] border-t border-black/[0.18] flex items-center justify-between gap-[14px] md:gap-[24px]">
                 <div className="flex gap-2">
                   <button
                     type="button"
