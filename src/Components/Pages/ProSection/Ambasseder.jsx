@@ -2992,13 +2992,13 @@ export default function Ambasseder() {
           border-color: var(--ink);
         }
 
+        /* Fills the whole visual column — no inset, frame or shadow, so the
+           media runs flush to every edge. */
         :global(.hero-video-frame) {
           position: absolute;
-          inset: clamp(24px, 4vw, 62px);
-          border: 1px solid rgba(17, 17, 17, 0.14);
+          inset: 0;
           background: #111;
           overflow: hidden;
-          box-shadow: 0 40px 100px rgba(0, 0, 0, 0.08);
         }
         :global(.hero-video-frame video),
         :global(.hero-video-frame img) {
@@ -3208,7 +3208,7 @@ export default function Ambasseder() {
             padding: 24px;
           }
           .hero-video-frame {
-            inset: 20px;
+            inset: 0;
           }
           .video-nav {
             padding: 0 18px;

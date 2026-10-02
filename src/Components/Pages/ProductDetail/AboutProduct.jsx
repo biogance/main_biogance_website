@@ -32,10 +32,86 @@ export default function AboutProduct({ apiProduct }) {
     }
   }, [isVideo, aboutMedia]);
 
+  // Species tree from the splash API response, cached in localStorage as
+  // "splashData" (see PageLoader.jsx): species -> universe -> family ->
+  // specificity ("For all dogs", "Long coats", "Short coats", …).
+  const [splashCategories, setSplashCategories] = useState([]);
+  useEffect(() => {
+    const read = () => {
+      try {
+        const splash = JSON.parse(localStorage.getItem("splashData") || "null");
+        setSplashCategories(Array.isArray(splash?.categories) ? splash.categories : []);
+      } catch {
+        setSplashCategories([]);
+      }
+    };
+    read();
+    window.addEventListener("splashDataReady", read);
+    return () => window.removeEventListener("splashDataReady", read);
+  }, []);
+
+  const catName = (c) =>
+    ((language === "fr" ? c?.french_name || c?.name : c?.name) || "").trim();
+
+  // "Type of coat" — only the specificities this product itself is tagged
+  // with: its bundle_categories of type "specificity" in the product detail
+  // response ("For all dogs", "Long coats", …), grouped under the species
+  // (bundle_categories of type "collection") each one belongs to. A
+  // specificity only carries its family's id, so the splash tree is used to
+  // find which species that family sits under.
+  const coatGroups = (() => {
+    const bundle = apiProduct?.bundle_categories || [];
+    const speciesList = bundle
+      .filter((c) => c?.type === "collection" && c?.category)
+      .map((c) => c.category);
+
+    // every category id in the splash tree -> the species (top level) it is under
+    const speciesIdOf = new Map();
+    splashCategories
+      .filter((c) => !c.parent_id)
+      .forEach((sp) => {
+        const walk = (nodes) =>
+          (nodes || []).forEach((node) => {
+            speciesIdOf.set(node.id, sp.id);
+            walk(node.sub_categories);
+          });
+        walk(sp.sub_categories);
+      });
+
+    const groups = new Map();
+    bundle
+      .filter((c) => c?.type === "specificity" && c?.category)
+      .forEach((c) => {
+        const name = catName(c.category);
+        if (!name) return;
+        const speciesId =
+          speciesIdOf.get(c.category.id) ??
+          speciesIdOf.get(c.category.parent_id) ??
+          "other";
+        if (!groups.has(speciesId)) groups.set(speciesId, []);
+        const list = groups.get(speciesId);
+        if (!list.includes(name)) list.push(name);
+      });
+
+    const findSpecies = (id) =>
+      speciesList.find((sp) => sp.id === id) ||
+      splashCategories.find((sp) => sp.id === id) ||
+      null;
+
+    return [...groups.entries()]
+      .map(([speciesId, items]) => ({ species: findSpecies(speciesId), items }))
+      .sort(
+        (x, y) =>
+          (x.species?.sorting_number ?? 999) - (y.species?.sorting_number ?? 999),
+      )
+      .map((g) => ({ label: g.species ? catName(g.species) : "", items: g.items }));
+  })();
+
   const accordionData = [
     {
       title: t("typeOfCoat"),
-      content: t("typeOfCoatContent"),
+      content: coatGroups.length ? coatGroups : t("noData"),
+      isGroups: coatGroups.length > 0,
     },
     {
       title: t("whyChooseThisProduct"),
@@ -196,7 +272,25 @@ export default function AboutProduct({ apiProduct }) {
                 : "opacity 0.2s ease, transform 0.2s ease, padding 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
             }}
           >
-            {item.isList ? (
+            {item.isGroups ? (
+              // Species heading (only when there is more than one) + bullets
+              <div className="flex flex-col gap-4">
+                {item.content.map((group, gi) => (
+                  <div key={gi}>
+                    {item.content.length > 1 && group.label && (
+                      <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#1C1C1C]">
+                        {group.label}
+                      </p>
+                    )}
+                    <ul className="list-disc pl-5 marker:text-[#1C1C1C] grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
+                      {group.items.map((line, i) => (
+                        <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : item.isList ? (
               <ul className="flex flex-col gap-1">
                 {item.content.map((line, i) => (
                   <li key={i} className="text-[14px] text-[#555555] leading-relaxed">{line}</li>

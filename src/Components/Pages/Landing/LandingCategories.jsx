@@ -73,7 +73,11 @@ export default function LandingCategories({ data }) {
   const { t, i18n } = useTranslation("home");
   const router = useRouter();
   const isFrench = i18n.language === "fr";
-  const [loadingState, setLoadingState] = useState("shimmer");
+  // Starts loaded when the categories are already there on mount (returning
+  // to the home page paints from memory — see MainVideo.jsx), so no shimmer.
+  const [loadingState, setLoadingState] = useState(() =>
+    data?.categories?.length ? "loaded" : "shimmer",
+  );
 
   const categories = data?.categories || [];
 
@@ -90,68 +94,55 @@ export default function LandingCategories({ data }) {
     };
   }, [categories.length]);
 
-  // Left/right scroll-by-page arrows — same pattern as LandingCards.jsx's
-  // PopularProducts default heading row (scrollContainerRef + a page-based
-  // scroll() using currentCardIndexRef so repeated clicks don't fight a
-  // stale closure, plus canScrollLeft/canScrollRight to enable/disable and
-  // style the buttons).
+  // Scroll arrows. Large screens: in the header, disabled when that
+  // direction can't scroll. Small screens: on top of the card row at its
+  // left/right edges, and only the usable directions are shown — right only
+  // at the start, both in the middle, left only at the end. State is read
+  // from the real scroll position, so it also follows touch/trackpad
+  // scrolling, not just arrow clicks.
   const scrollContainerRef = useRef(null);
-  const currentCardIndexRef = useRef(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScrollPosition = () => {
-    if (currentCardIndexRef.current > 0) return;
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 2);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2);
   };
 
   useEffect(() => {
-    if (loadingState !== "loaded") return;
-    setTimeout(checkScrollPosition, 100);
-  }, [loadingState]);
+    if (loadingState !== "loaded") return undefined;
+    const timer = setTimeout(checkScrollPosition, 100);
+    return () => clearTimeout(timer);
+  }, [loadingState, categories.length]);
 
   useEffect(() => {
     window.addEventListener("resize", checkScrollPosition);
     return () => window.removeEventListener("resize", checkScrollPosition);
   }, []);
 
+  // One card per click, snapped to the card's left edge.
   const scroll = (direction) => {
-    if (!scrollContainerRef.current) return;
-
     const container = scrollContainerRef.current;
+    if (!container) return;
     const cards = container.querySelectorAll(":scope > div");
     if (!cards.length) return;
 
-    const totalCards = cards.length;
-    const firstCard = cards[0];
-    const cardWidth = firstCard.offsetWidth;
-    const visibleCount = Math.round(container.clientWidth / cardWidth);
-    const maxIndex = totalCards - visibleCount;
+    const cardWidth = cards[0].offsetWidth;
+    const visibleCount = Math.max(1, Math.round(container.clientWidth / cardWidth));
+    const maxIndex = Math.max(0, cards.length - visibleCount);
+    const currentIndex = Math.round(container.scrollLeft / cardWidth);
+    const newIndex =
+      direction === "next"
+        ? Math.min(currentIndex + 1, maxIndex)
+        : Math.max(currentIndex - 1, 0);
 
-    const currentIndex = currentCardIndexRef.current;
-
-    let newIndex;
-    if (direction === "next") {
-      newIndex = Math.min(currentIndex + 1, maxIndex);
-    } else {
-      newIndex = Math.max(currentIndex - 1, 0);
-    }
-
-    currentCardIndexRef.current = newIndex;
-
-    const targetCard = cards[newIndex];
     container.scrollTo({
-      left: targetCard.offsetLeft,
+      left: cards[newIndex].offsetLeft - cards[0].offsetLeft,
       behavior: "smooth",
     });
-
-    setCanScrollLeft(newIndex > 0);
-    setCanScrollRight(newIndex < maxIndex);
   };
 
   // Desktop: a wrapped paragraph keeps its max-width box even when its
@@ -175,11 +166,17 @@ export default function LandingCategories({ data }) {
     return () => window.removeEventListener("resize", fit);
   }, [i18n.language]);
 
-  const arrowClass = (enabled) =>
-    `h-8 sm:h-9 px-3 min-w-[36px] sm:min-w-[42px] flex items-center justify-center border rounded-none transition-all duration-300 ${
+  const headerArrowClass = (enabled) =>
+    `h-9 px-3 min-w-[42px] flex items-center justify-center border rounded-none transition-all duration-300 ${
       enabled
         ? "border-black/30 text-black cursor-pointer hover:bg-black hover:text-white shadow-sm active:scale-95"
         : "border-black/15 text-black/25 cursor-not-allowed"
+    }`;
+
+  // Small screens only (hidden from 721px up)
+  const arrowClass = (visible) =>
+    `absolute top-1/2 z-10 grid h-9 w-9 min-[721px]:hidden -translate-y-1/2 place-items-center border border-black/15 bg-white text-black shadow-[0_6px_18px_-8px_rgba(0,0,0,0.35)] transition-all duration-300 hover:border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer ${
+      visible ? "opacity-100" : "pointer-events-none opacity-0"
     }`;
 
   return (
@@ -222,10 +219,10 @@ export default function LandingCategories({ data }) {
 
     
       {/* Header — hairline + eyebrow, two-line title. The subtitle sits on
-          the first title line and the scroll arrows on the second, both
-          flush with the right padding (same as the left). */}
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-6 min-[721px]:mb-10">
-        <div className="w-full pb-6 sm:pb-8">
+          the first title line and (large screens) the scroll arrows on the
+          second, both flush with the right padding (same as the left). */}
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]">
+        <div className="w-full pb-6 -mt-7 sm:pb-8 min-[721px]:-mt-12">
           <div className="mb-3 flex items-center gap-3 sm:mb-4">
             <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
             <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
@@ -239,7 +236,7 @@ export default function LandingCategories({ data }) {
               <span className="col-start-1 row-start-1 block text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444]">
                 {t("categories.headingLine1")}
               </span>
-              <span className="col-start-1 row-start-2 block text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]">
+              <span className="col-start-1 row-start-2 block text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.2] tracking-[-0.035em] text-[#0c0c0c]">
                 {t("categories.headingLine2")}
               </span>
             </h2>
@@ -250,30 +247,58 @@ export default function LandingCategories({ data }) {
               {t("categories.subtitle")}
             </p>
 
-            <div className="col-start-2 row-start-2 flex shrink-0 gap-1.5 self-center justify-self-end sm:gap-2">
+            {/* Large screens: arrows stay in the header, on the second title line */}
+            <div className="col-start-2 row-start-2 hidden shrink-0 gap-2 self-center justify-self-end min-[721px]:flex">
               <button
                 onClick={() => scroll("prev")}
                 disabled={!canScrollLeft}
                 aria-label="Previous"
-                className={arrowClass(canScrollLeft)}
+                className={headerArrowClass(canScrollLeft)}
               >
-                <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <IoChevronBack className="w-4 h-4" />
               </button>
               <button
                 onClick={() => scroll("next")}
                 disabled={!canScrollRight}
                 aria-label="Next"
-                className={arrowClass(canScrollRight)}
+                className={headerArrowClass(canScrollRight)}
               >
-                <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <IoChevronForward className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Card row — edge to edge at every width. Small screens get their own
+          arrows on the row, flush with the screen edges; from 721px up the
+          header arrows are used instead. */}
+      <div>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => scroll("prev")}
+          aria-label="Previous"
+          aria-hidden={!canScrollLeft}
+          tabIndex={canScrollLeft ? 0 : -1}
+          className={`left-0 ${arrowClass(canScrollLeft)}`}
+        >
+          <IoChevronBack className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => scroll("next")}
+          aria-label="Next"
+          aria-hidden={!canScrollRight}
+          tabIndex={canScrollRight ? 0 : -1}
+          className={`right-0 ${arrowClass(canScrollRight)}`}
+        >
+          <IoChevronForward className="h-4 w-4" />
+        </button>
+
       <div
         ref={scrollContainerRef}
+        onScroll={checkScrollPosition}
         className="flex overflow-x-auto hide-scrollbar border-t border-l border-[#d8d8d4]"
       >
         {loadingState === "shimmer"
@@ -318,6 +343,8 @@ export default function LandingCategories({ data }) {
                   </div>
                 </div>
               ))}
+      </div>
+      </div>
       </div>
     </section>
   );

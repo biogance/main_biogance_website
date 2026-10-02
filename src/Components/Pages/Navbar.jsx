@@ -24,6 +24,7 @@ import { FaPlus } from "react-icons/fa";
 import { getCartData } from "../../utils/cartStorage";
 import ModalAddToCart from "./Modal/ModalAddToCart";
 import ModalQuickView from "./Modal/ModalQuickView";
+import { MdMenu } from "react-icons/md";
 
 const logoImage = "/logo.svg";
 
@@ -478,6 +479,12 @@ export default function Navbar({
   const dotClass =
     "block w-1.5 h-1.5 bg-black rounded-full transition-opacity duration-200 opacity-0 group-hover:opacity-100 mt-1";
 
+  // True while the nav bar has no background (sitting over the hero video) —
+  // the same condition that picks "bg-transparent" on the <nav> below.
+  const isNavTransparent =
+    isVideoVisible &&
+    !(isNavHovered || isProductsOpen || isMobileMenuOpen || bgWhite);
+
   const navItemBase =
     "group relative flex flex-col items-center justify-center px-2 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none self-stretch";
 
@@ -682,12 +689,16 @@ export default function Navbar({
               <div className="flex items-center gap-1 lg:hidden">
                 <button
                   onClick={handleMobileMenuToggle}
-                  className="p-2 text-gray-600 hover:text-gray-900 transition-transform active:scale-90 duration-200"
+                  className={`p-2 transition-[color,transform] active:scale-90 duration-200 ${
+                    isNavTransparent
+                      ? "text-black"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
                 >
                   {isMobileMenuOpen ? (
                     <FiX className="w-6 h-6 cursor-pointer" />
                   ) : (
-                    <FiMenu className="w-6 h-6 cursor-pointer" />
+                   <MdMenu className="w-6 h-6 cursor-pointer" />
                   )}
                 </button>
                 <button

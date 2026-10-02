@@ -591,11 +591,23 @@ export default function FilterProducts() {
   // guessed constant, which is what left them still needing a scroll.
   const filterRailRef = useRef(null);
   const [railHeight, setRailHeight] = useState(0);
+  // Height of the rail's bar alone (tabs on desktop, the Filters button on
+  // mobile) — unlike railHeight it does not grow when a filter panel or the
+  // active-chips row opens. The cards are sized from this, so opening or
+  // closing a filter never resizes the grid: it keeps its closed-state size.
+  const [railBarHeight, setRailBarHeight] = useState(0);
 
   useEffect(() => {
     const el = filterRailRef.current;
     if (!el) return;
-    const update = () => setRailHeight(el.offsetHeight);
+    const update = () => {
+      setRailHeight(el.offsetHeight);
+      let bar = 0;
+      el.querySelectorAll("[data-rail-bar]").forEach((b) => {
+        bar += b.offsetHeight;
+      });
+      setRailBarHeight(bar || el.offsetHeight);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -611,7 +623,7 @@ export default function FilterProducts() {
   // worth of scroll, which read as the page being "stuck" every time a row reached the
   // viewport. rowHeight still sizes each row to roughly fill the viewport so the grid+video
   // layout looks right, it just no longer pins in place while you scroll past it.
-  const reservedTop = NAVBAR_HEIGHT + railHeight;
+  const reservedTop = NAVBAR_HEIGHT + railBarHeight;
   const featuredRowHeight = `max(420px, calc(100dvh - ${reservedTop}px))`;
   const row1Height = featuredRowHeight;
 
@@ -2347,7 +2359,7 @@ function FilterRail({
       style={{ fontFamily: SHOP_FONT }}
     >
       {/* Mobile: single prominent CTA that opens the full filters modal */}
-      <div className="mx-auto flex max-w-10xl items-stretch gap-2 px-4 py-3 sm:px-6 md:hidden">
+      <div data-rail-bar className="mx-auto flex max-w-10xl items-stretch gap-2 px-4 py-3 sm:px-6 md:hidden">
         <button
           onClick={() => setAllOpen(true)}
           className="flex h-12 flex-1 items-center justify-center gap-2.5 bg-[#0b0b0a] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white transition-colors active:bg-black cursor-pointer"
@@ -2382,7 +2394,7 @@ function FilterRail({
       </div>
 
       {/* Desktop / tablet: horizontal tab rail */}
-      <div className="relative hidden md:block">
+      <div data-rail-bar className="relative hidden md:block">
         <div className="mx-auto flex max-w-10xl items-stretch px-6 lg:px-8">
           <div className="filter-rail-scroll flex min-w-0 flex-1 items-stretch overflow-x-auto">
             <button

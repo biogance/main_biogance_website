@@ -372,10 +372,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
             <span className="w-5 h-px bg-[#0b0b0a]" />
             {t('ourProducts')}
           </span>
-          <h2
-            className="m-0 mt-5 text-[38px] leading-[1.02] italic text-[#0b0b0a]"
-            style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
-          >
+          <h2 className="m-0 mt-5 text-[30px] font-light uppercase leading-[1.06] tracking-[-0.03em] text-[#0b0b0a]">
             {t('shopBySpecies')}
           </h2>
           <p className="m-0 mt-4 text-[12px] leading-relaxed text-[#5c5a54]">
@@ -421,10 +418,7 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
                 if (families.length === 0) return null;
                 return (
                   <div key={universe.id} className="flex flex-col min-w-0">
-                    <span
-                      className="block text-[46px] leading-none italic text-[#e4e2dc] select-none"
-                      style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
-                    >
+                    <span className="block text-[40px] font-light leading-none tracking-[-0.03em] tabular-nums text-[#e4e2dc] select-none">
                       {String(uIdx + 1).padStart(2, '0')}
                     </span>
                     <h3 className="m-0 mt-3 mb-3 pb-3 border-b border-[#0b0b0a] text-[11px] font-bold text-[#0b0b0a] uppercase tracking-[0.16em]">

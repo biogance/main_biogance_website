@@ -298,6 +298,98 @@ export default function Footer() {
   const hasApiCategories = apiCategories && apiCategories.length > 0;
   const bottomLinkClass = "hover:text-black transition-colors";
 
+  // Newsletter + app download band. Rendered in two places (only one is ever
+  // visible): after the brand / "Connect with us" block on small screens,
+  // and under the link groups on large screens.
+  const newsletterBand = (
+    <div className="bg-[#2a2a2a] text-[#f3f3f3]">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
+        <p className="text-[16px] font-semibold lg:whitespace-nowrap">
+          {t("newsletter.title")}
+        </p>
+
+        <form
+          onSubmit={handleSubscribe}
+          className="flex-1 min-w-0 lg:max-w-[400px]"
+          noValidate
+        >
+          <div
+            className={`group relative flex items-center gap-2 bg-white border ${
+              newsletterError
+                ? "border-red-500"
+                : "border-white/15 focus-within:border-black/40"
+            } p-1 pl-2 transition-colors duration-200`}
+          >
+            <FiMail className="w-4 h-4 text-black/45 flex-shrink-0" />
+            <input
+              type="email"
+              value={newsletterEmail}
+              onChange={(e) => {
+                setNewsletterEmail(e.target.value);
+                if (newsletterError) setNewsletterError("");
+              }}
+              disabled={
+                newsletterStatus === "loading" ||
+                newsletterStatus === "success"
+              }
+              placeholder={t("newsletter.barPlaceholder")}
+              aria-label={t("newsletter.emailLabel")}
+              className="flex-1 min-w-0 bg-transparent text-black text-[13px] placeholder-black/40 focus:outline-none disabled:opacity-70"
+            />
+            <button
+              type="submit"
+              disabled={
+                newsletterStatus === "loading" ||
+                newsletterStatus === "success"
+              }
+              className="h-10 px-5 sm:px-7 bg-black text-white text-[13px] font-semibold uppercase tracking-[0.08em] cursor-pointer hover:bg-black/80 transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-80"
+            >
+              {newsletterStatus === "loading" ? (
+                "Subscribing..."
+              ) : newsletterStatus === "success" ? (
+                <>
+                  You&apos;re in <FiCheck className="w-4 h-4" />
+                </>
+              ) : (
+                t("newsletter.subscribeButton")
+              )}
+            </button>
+            {/* Same focus treatment as AuthInput (Login): a black
+                gradient bar grows in along the bottom edge. */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 bottom-0 h-[2px] w-0 group-focus-within:w-full bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300"
+            />
+          </div>
+          {newsletterError && (
+            <p className="text-red-400 text-xs mt-2 pl-5">
+              {newsletterError}
+            </p>
+          )}
+        </form>
+
+        {/* App Download — neither store listing exists yet, so these
+            open the launch countdown modal rather than linking to # */}
+        <div className="flex flex-wrap items-center gap-3 lg:ml-auto lg:pl-8 lg:border-l lg:border-white/15">
+          <StoreBadge
+            onClick={handleAppComingSoon}
+            ariaLabel={t("mobileApp.googlePlay")}
+            icon={<GooglePlayIcon />}
+            prefix={t("mobileApp.googlePlayPrefix")}
+            name="Google Play"
+          />
+          <StoreBadge
+            onClick={handleAppComingSoon}
+            ariaLabel={t("mobileApp.appStore")}
+            icon={<FaApple className="w-5 h-5 text-white" />}
+            prefix={t("mobileApp.appStorePrefix")}
+            name="App Store"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <footer className="bg-[#1c1c1c] text-[#f3f3f3]">
       <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[370px_1fr]">
@@ -375,6 +467,10 @@ export default function Footer() {
             </div>
           </div>
         </div>
+
+        {/* Small screens: newsletter + app download right after "Connect
+            with us" */}
+        <div className="lg:hidden">{newsletterBand}</div>
 
         {/* Link groups — CSS columns balance the groups across the width
             so no column is left with a tall empty gap. */}
@@ -472,93 +568,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Newsletter + app download band */}
-      <div className="bg-[#2a2a2a] text-[#f3f3f3]">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
-          <p className="text-[16px] font-semibold lg:whitespace-nowrap">
-            {t("newsletter.title")}
-          </p>
-
-          <form
-            onSubmit={handleSubscribe}
-            className="flex-1 min-w-0 lg:max-w-[400px]"
-            noValidate
-          >
-            <div
-              className={`group relative flex items-center gap-2 bg-white border ${
-                newsletterError
-                  ? "border-red-500"
-                  : "border-white/15 focus-within:border-black/40"
-              } p-1 pl-2 transition-colors duration-200`}
-            >
-              <FiMail className="w-4 h-4 text-black/45 flex-shrink-0" />
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => {
-                  setNewsletterEmail(e.target.value);
-                  if (newsletterError) setNewsletterError("");
-                }}
-                disabled={
-                  newsletterStatus === "loading" ||
-                  newsletterStatus === "success"
-                }
-                placeholder={t("newsletter.barPlaceholder")}
-                aria-label={t("newsletter.emailLabel")}
-                className="flex-1 min-w-0 bg-transparent text-black text-[13px] placeholder-black/40 focus:outline-none disabled:opacity-70"
-              />
-              <button
-                type="submit"
-                disabled={
-                  newsletterStatus === "loading" ||
-                  newsletterStatus === "success"
-                }
-                className="h-10 px-5 sm:px-7 bg-black text-white text-[13px] font-semibold uppercase tracking-[0.08em] cursor-pointer hover:bg-black/80 transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-80"
-              >
-                {newsletterStatus === "loading" ? (
-                  "Subscribing..."
-                ) : newsletterStatus === "success" ? (
-                  <>
-                    You&apos;re in <FiCheck className="w-4 h-4" />
-                  </>
-                ) : (
-                  t("newsletter.subscribeButton")
-                )}
-              </button>
-              {/* Same focus treatment as AuthInput (Login): a black
-                  gradient bar grows in along the bottom edge. */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute left-0 bottom-0 h-[2px] w-0 group-focus-within:w-full bg-gradient-to-r from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a] transition-all duration-300"
-              />
-            </div>
-            {newsletterError && (
-              <p className="text-red-400 text-xs mt-2 pl-5">
-                {newsletterError}
-              </p>
-            )}
-          </form>
-
-          {/* App Download — neither store listing exists yet, so these
-              open the launch countdown modal rather than linking to # */}
-          <div className="flex flex-wrap items-center gap-3 lg:ml-auto lg:pl-8 lg:border-l lg:border-white/15">
-            <StoreBadge
-              onClick={handleAppComingSoon}
-              ariaLabel={t("mobileApp.googlePlay")}
-              icon={<GooglePlayIcon />}
-              prefix={t("mobileApp.googlePlayPrefix")}
-              name="Google Play"
-            />
-            <StoreBadge
-              onClick={handleAppComingSoon}
-              ariaLabel={t("mobileApp.appStore")}
-              icon={<FaApple className="w-5 h-5 text-white" />}
-              prefix={t("mobileApp.appStorePrefix")}
-              name="App Store"
-            />
-          </div>
-        </div>
-      </div>
+      {/* Newsletter + app download band — large screens (on small screens
+          it sits right after "Connect with us", see above) */}
+      <div className="hidden lg:block">{newsletterBand}</div>
 
       {/* Bottom Bar */}
       <div className="border-t border-black/10 bg-[#f3f3f3]">

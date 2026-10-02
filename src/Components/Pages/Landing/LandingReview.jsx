@@ -101,7 +101,7 @@ export default function LandingReview({ data }) {
     : null;
 
   return (
-    <section className="bg-[#e7e7e5] border border-gray-300 py-[76px] min-[721px]:py-[clamp(78px,9vw,138px)]">
+    <section className="bg-[#f5f4f0]">
       {/* Padding lives on this div (not the outer section) — same
           structure as the other sections' headers, so widths line up.
           No max-w-[1840px]/mx-auto — that cap only centers once the
@@ -110,11 +110,13 @@ export default function LandingReview({ data }) {
           centered cap opened up. Dropping the cap keeps it pinned to
           the same left inset at every viewport width — same fix as
           MainVideo.jsx's hero wrap. */}
-      {/* Header — hairline + eyebrow, two-line title. The subtitle sits on
-          the first title line and "Add a review" on the second, both flush
-          with the right padding (same as the other landing sections). */}
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] mb-10 min-[721px]:mb-14">
-        <div className="w-full  pb-6 sm:pb-8">
+      {/* Header — same as LandingExpertAdvice: cream background, 8 / 12 top
+          spacing, hairline + eyebrow, two-line title. Large screens: subtitle
+          on the first title line, "Add a review" on the second, flush right.
+          Small screens: "Add a review" on its own row under the description,
+          right-aligned. The reviews below keep their grey panel. */}
+      <div className="w-full px-4 pt-6 min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:pt-11">
+        <div className="w-full pb-6 sm:pb-8">
           <div className="mb-3 flex items-center gap-3 sm:mb-4">
             <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
             <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
@@ -143,7 +145,7 @@ export default function LandingReview({ data }) {
             <button
               type="button"
               onClick={() => setIsReviewModalOpen(true)}
-              className="group col-start-2 row-start-2 self-center justify-self-end inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
+              className="group col-span-2 row-start-4 mt-4 self-center justify-self-end inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm min-[721px]:col-span-1 min-[721px]:col-start-2 min-[721px]:row-start-2 min-[721px]:mt-0"
             >
               <span className="text-[13px] leading-none font-normal">+</span>
               {t('reviews.addReview')}
@@ -152,19 +154,21 @@ export default function LandingReview({ data }) {
         </div>
       </div>
 
-      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1101px]:grid-cols-[0.75fr_1.25fr] gap-[42px] min-[721px]:gap-[70px] items-start">
+      {/* Reviews — grey panel */}
+      <div className="border-y border-gray-300 bg-[#e7e7e5] py-8 min-[721px]:py-12">
+      <div className="w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] grid grid-cols-1 min-[1101px]:grid-cols-[0.75fr_1.25fr] gap-7 min-[721px]:gap-10 items-start">
 
         {/* Left column (.eyebrow / .score / .stars / .review-add) */}
         <div>
           {isLoading ? (
-            <div className="h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(72px,9vw,145px)] leading-[0.8]" />
+            <div className="h-[0.8em] w-[3ch] bg-black/10 rounded animate-pulse text-[clamp(56px,6.5vw,104px)] leading-[0.8]" />
           ) : averageRating && (
-            <div className="text-[clamp(72px,9vw,145px)] leading-[0.8] tracking-[-0.075em] text-black">
+            <div className="text-[clamp(56px,6.5vw,104px)] leading-[0.8] tracking-[-0.075em] text-black">
               {averageRating}
             </div>
           )}
 
-          <div className="mt-[22px] tracking-[0.18em] text-black" aria-hidden="true">★★★★★</div>
+          <div className="mt-4 tracking-[0.18em] text-black" aria-hidden="true">★★★★★</div>
         </div>
 
         {/* Right column — quote carousel (.review-carousel) */}
@@ -186,10 +190,10 @@ export default function LandingReview({ data }) {
               >
                 {apiReviews.map((review, i) => (
                   <article key={review.id ?? i} className="w-full shrink-0 grow-0 basis-full pr-0 md:pr-[clamp(8px,2vw,30px)]">
-                    <blockquote className="m-0 text-[clamp(30px,4vw,62px)] leading-[1.02] tracking-[-0.043em] font-medium text-black">
+                    <blockquote className="m-0 text-[clamp(22px,2.8vw,40px)] leading-[1.12] tracking-[-0.035em] font-medium text-black">
                       “{review.message}”
                     </blockquote>
-                    <div className="mt-[30px] uppercase text-[9px] tracking-[0.14em] text-black">
+                    <div className="mt-5 uppercase text-[9px] tracking-[0.14em] text-black">
                       {[review.name, review.date].filter(Boolean).join(' · ')}
                     </div>
                   </article>
@@ -197,7 +201,7 @@ export default function LandingReview({ data }) {
               </div>
 
               {/* Controls (.review-controls) */}
-              <div className="mt-[28px] md:mt-[38px] pt-[18px] border-t border-black/[0.18] flex items-center justify-between gap-[14px] md:gap-[24px]">
+              <div className="mt-6 md:mt-7 pt-4 border-t border-black/[0.18] flex items-center justify-between gap-[14px] md:gap-[24px]">
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -239,6 +243,7 @@ export default function LandingReview({ data }) {
             </>
           )}
         </div>
+      </div>
       </div>
 
       <ProductModalAddReview

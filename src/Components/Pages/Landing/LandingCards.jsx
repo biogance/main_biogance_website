@@ -638,7 +638,11 @@ export default function PopularProducts({
   const currentCardIndexRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Starts loaded when the data is already there on mount (returning to the
+  // home page paints from memory — see MainVideo.jsx), so no shimmer flashes.
+  const [isLoading, setIsLoading] = useState(
+    () => !((isBestSeller ? data?.best_seller : data?.popular) || []).length,
+  );
   const [activeTab, setActiveTab] = useState("favorite");
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -784,6 +788,47 @@ export default function PopularProducts({
   };
 
   const isDefaultRow = !useGrid && !isFavourite && !isWishlist;
+  // Landing row with the editorial header (Popular / Best Selling)
+  const isLandingRow = isDefaultRow && !isHorizontal;
+
+  // Small screens (landing row): the arrows sit on the card row's edges
+  // instead of the header, and only the usable directions are shown — right
+  // only at the start, both in the middle, left only at the end. Read from
+  // the real scroll position so swiping updates them too.
+  const [edgeLeft, setEdgeLeft] = useState(false);
+  const [edgeRight, setEdgeRight] = useState(false);
+  // False when every card already fits in the row — then there is nothing
+  // to scroll and no arrows are shown at all (header ones included).
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const updateEdges = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setEdgeLeft(el.scrollLeft > 2);
+    setEdgeRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+    setHasOverflow(el.scrollWidth > el.clientWidth + 2);
+  };
+  useEffect(() => {
+    if (!isDefaultRow) return undefined;
+    const timer = setTimeout(updateEdges, 150);
+    window.addEventListener("resize", updateEdges);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateEdges);
+    };
+  }, [isDefaultRow, isLoading, products.length]);
+
+  // One card per tap
+  const scrollByCard = (dir) => {
+    const el = scrollContainerRef.current;
+    const card = el?.querySelector(":scope > div");
+    if (!card) return;
+    el.scrollBy({ left: dir * card.offsetWidth, behavior: "smooth" });
+  };
+
+  const edgeBtnClass = (visible) =>
+    `absolute ${isBestSeller ? "top-[calc(50%-8px)]" : "top-1/2"} z-10 grid h-9 w-9 -translate-y-1/2 place-items-center border border-black/15 bg-white text-black shadow-[0_6px_18px_-8px_rgba(0,0,0,0.35)] transition-all duration-300 active:scale-95 cursor-pointer min-[721px]:hidden ${
+      visible ? "opacity-100" : "pointer-events-none opacity-0"
+    }`;
 
   // Square nav button — hairline black, compact height, rounded-none
   const navBtnClass = (enabled) =>
@@ -875,7 +920,7 @@ export default function PopularProducts({
           </div>
         ) : isHorizontal ? (
           <div className="flex justify-end mb-6">
-            <div className="flex gap-1.5 sm:gap-2">
+            <div className={`gap-1.5 sm:gap-2 ${hasOverflow ? "flex" : "hidden"}`}>
               <button
                 onClick={() => scroll("prev")}
                 disabled={!canScrollLeft}
@@ -897,7 +942,7 @@ export default function PopularProducts({
         ) : useGrid ? null : (
           <div className="w-full bg-[#f5f4f0]">
             <div
-              className={`w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pb-8 min-[721px]:pb-14 ${
+              className={`w-full px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] pb-6 min-[721px]:pb-8 ${
                 isBestSeller ? "pt-[clamp(60px,7vw,110px)]" : "pt-0"
               }`}
             >
@@ -906,7 +951,7 @@ export default function PopularProducts({
                   second, both flush with the right padding (same as the
                   left), like LandingCategories. */}
               <div className="w-full">
-                <div className="mb-3 flex items-center gap-3 sm:mb-4">
+                <div className="mb-3 -mt-7 min-[721px]:-mt-12 flex items-center gap-3 sm:mb-4">
                   <span className="h-px w-8 shrink-0 bg-black/30 sm:w-12" />
                   <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#666] sm:text-[10px]">
                     {headingEyebrow}
@@ -942,12 +987,19 @@ export default function PopularProducts({
                     {headingSubtitle}
                   </p>
 
-                  <div className="col-start-2 row-start-2 flex shrink-0 items-center gap-1.5 self-center justify-self-end sm:gap-2">
+                  {/* Small screens: only "See more", on its own row under the
+                      description, right-aligned. From 721px up: arrows +
+                      "See more" on the second title line. */}
+                  <div className="col-span-2 row-start-4 mt-4 flex shrink-0 items-center gap-1.5 self-center justify-self-end sm:gap-2 min-[721px]:col-span-1 min-[721px]:col-start-2 min-[721px]:row-start-2 min-[721px]:mt-0">
+                    {/* Arrows live here from 721px up; below that they sit
+                        on the card row (see edgeBtnClass). Hidden entirely
+                        when all the cards fit and there's nothing to scroll. */}
                     <button
                       onClick={() => scroll("prev")}
                       disabled={!canScrollLeft}
                       aria-label="Previous"
-                      className={navBtnClass(canScrollLeft)}
+                      className={`max-[720px]:hidden ${navBtnClass(canScrollLeft)}`}
+                      style={hasOverflow ? undefined : { display: "none" }}
                     >
                       <IoChevronBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
@@ -955,7 +1007,8 @@ export default function PopularProducts({
                       onClick={() => scroll("next")}
                       disabled={!canScrollRight}
                       aria-label="Next"
-                      className={navBtnClass(canScrollRight)}
+                      className={`max-[720px]:hidden ${navBtnClass(canScrollRight)}`}
+                      style={hasOverflow ? undefined : { display: "none" }}
                     >
                       <IoChevronForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
@@ -965,7 +1018,7 @@ export default function PopularProducts({
                         start();
                         router.push("/shop");
                       }}
-                      className="group ml-1 hidden sm:inline-flex items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
+                      className="group inline-flex min-[721px]:ml-1 items-center gap-2 cursor-pointer border border-black/30 px-4 h-8 sm:h-9 text-[9px] sm:text-[10px] tracking-[0.18em] uppercase font-bold text-black whitespace-nowrap rounded-none transition-all duration-300 hover:bg-black hover:text-white hover:border-black active:scale-95 shadow-sm"
                     >
                       {t("products.seeMore")}
                       <GoArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -977,14 +1030,45 @@ export default function PopularProducts({
           </div>
         )}
 
+        {/* Landing row: edge to edge at every width. On small screens the
+            arrows sit on the row, flush with the screen edges. */}
+        <div>
+        <div className={isLandingRow ? "relative" : undefined}>
+        {isLandingRow && (
+          <>
+            <button
+              type="button"
+              onClick={() => scrollByCard(-1)}
+              aria-label="Previous"
+              aria-hidden={!edgeLeft}
+              tabIndex={edgeLeft ? 0 : -1}
+              className={`left-0 ${edgeBtnClass(edgeLeft)}`}
+            >
+              <IoChevronBack className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCard(1)}
+              aria-label="Next"
+              aria-hidden={!edgeRight}
+              tabIndex={edgeRight ? 0 : -1}
+              className={`right-0 ${edgeBtnClass(edgeRight)}`}
+            >
+              <IoChevronForward className="h-4 w-4" />
+            </button>
+          </>
+        )}
         <div
           ref={scrollContainerRef}
+          onScroll={isLandingRow ? updateEdges : undefined}
           className={
             useGrid
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 "
               : isFavourite || isWishlist
                 ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
-                : "flex overflow-x-auto pb-4 hide-scrollbar"
+                : // Popular row: no space under the cards — the features
+                  // band (LandingFeatures) sits flush against them.
+                  `flex overflow-x-auto hide-scrollbar ${isLandingRow && !isBestSeller ? "" : "pb-4"}`
           }
         >
           {isLoading
@@ -1018,6 +1102,8 @@ export default function PopularProducts({
                   />
                 </div>
               ))}
+        </div>
+        </div>
         </div>
       </div>
     </div>

@@ -17,6 +17,12 @@ import {
 // localStorage, or when admin hasn't uploaded media for a slot.
 const BACKGROUND_IMAGE = '/DPF.webp';
 
+// Last splash-derived values, kept in memory while the tab lives so that
+// coming back to the home page paints the right media/categories on the
+// first frame (no fallback-image flash); they are still re-read from
+// localStorage on every mount.
+let finderMemory = { categories: [], sectionMediaSet: { desktop: null, tab: null, mobile: null }, modalMedia: null, screenTier: 'desktop' };
+
 // Admin-uploaded media for a slot, from the splash response
 // ({ media, media_type: "image" | "video" }) — either is valid, so render a
 // muted looping <video> or an <img> accordingly.
@@ -46,11 +52,35 @@ export function LandingProductFinder({ data }) {
   const [selectedPet, setSelectedPet] = useState('');
   const [selectedCare, setSelectedCare] = useState('');
   const [selectedConcern, setSelectedConcern] = useState('');
-  const [categories, setCategories] = useState([]);
-  // Section background (home_perfect_product) and modal visual
-  // (home_view_product) — both come from the cached splash data.
-  const [sectionMedia, setSectionMedia] = useState(null);
-  const [modalMedia, setModalMedia] = useState(null);
+  const [categories, setCategories] = useState(() => finderMemory.categories);
+  // Section background per screen size, each an image or a video:
+  // desktop = home_perfect_product, tablet = home_perfect_tab_media,
+  // mobile = home_perfect_mobile_media.
+  const [sectionMediaSet, setSectionMediaSet] = useState(() => finderMemory.sectionMediaSet);
+  // Only the media for the current screen size is rendered (so a phone never
+  // downloads the desktop video). Tiers match the rest of the landing page:
+  // mobile < 721px, tablet 721–1100px, desktop from 1101px.
+  const [screenTier, setScreenTier] = useState(() => finderMemory.screenTier);
+  useEffect(() => {
+    const read = () => {
+      const w = window.innerWidth;
+      const tier = w < 721 ? 'mobile' : w < 1101 ? 'tab' : 'desktop';
+      finderMemory = { ...finderMemory, screenTier: tier };
+      setScreenTier(tier);
+    };
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
+  }, []);
+  // Falls back to the next larger size when a slot has no media.
+  const hasMedia = (m) => (typeof m?.media === 'string' && m.media ? m : null);
+  const sectionMedia =
+    (screenTier === 'mobile' && hasMedia(sectionMediaSet.mobile)) ||
+    (screenTier !== 'desktop' && hasMedia(sectionMediaSet.tab)) ||
+    sectionMediaSet.desktop;
+  // Modal visual (home_view_product). All of these come from the cached
+  // splash data.
+  const [modalMedia, setModalMedia] = useState(() => finderMemory.modalMedia);
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   // Wizard shows one step at a time; dir drives the slide-in direction.
@@ -77,9 +107,16 @@ export function LandingProductFinder({ data }) {
           .filter((cat) => !cat.parent_id)
           .slice()
           .sort((a, b) => (a.sorting_number || 0) - (b.sorting_number || 0));
+        const mediaSet = {
+          desktop: splash?.home_perfect_product || null,
+          tab: splash?.home_perfect_tab_media || null,
+          mobile: splash?.home_perfect_mobile_media || null,
+        };
+        const modal = splash?.home_view_product || null;
+        finderMemory = { ...finderMemory, categories: list, sectionMediaSet: mediaSet, modalMedia: modal };
         setCategories(list);
-        setSectionMedia(splash?.home_perfect_product || null);
-        setModalMedia(splash?.home_view_product || null);
+        setSectionMediaSet(mediaSet);
+        setModalMedia(modal);
       } catch {
         setCategories([]);
       }
@@ -199,7 +236,7 @@ export function LandingProductFinder({ data }) {
   const showNext = step < steps.length - 1 && !(steps[step].value && !nextHasOptions);
   const modal = (
     <div
-      className={`fixed inset-0 z-[1000] flex items-end justify-center bg-black/55 sm:items-center sm:p-4 ${
+      className={`fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-3 min-[400px]:p-4 ${
         isClosing ? 'backdrop-out' : 'backdrop-in'
       }`}
       onClick={closeModal}
@@ -212,17 +249,17 @@ export function LandingProductFinder({ data }) {
         aria-modal="true"
         aria-label={t('productFinder.heading')}
         onClick={(e) => e.stopPropagation()}
-        className={`flex h-[90dvh] w-full overflow-hidden bg-white shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] sm:h-[min(620px,88vh)] sm:max-w-[980px] ${
+        className={`flex h-[min(600px,calc(100dvh-24px))] w-full max-w-[520px] overflow-hidden bg-white shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] min-[400px]:h-[min(600px,calc(100dvh-32px))] md:h-[min(620px,88vh)] md:max-w-[980px] ${
           isClosing ? 'modal-pop-out' : 'modal-pop-in'
         }`}
       >
         {/* Left — image + vertical stepper (desktop) */}
-        <aside className="hidden w-[300px] shrink-0 flex-col bg-[#f5f4f0] md:flex lg:w-[330px]">
+        <aside className="hidden w-[260px] shrink-0 flex-col bg-[#f5f4f0] md:flex lg:w-[330px]">
           <div className="relative h-[44%] shrink-0 overflow-hidden">
             <FinderMedia data={modalMedia} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#f5f4f0] via-[#f5f4f0]/10 to-transparent" />
           </div>
-          <div className="flex flex-1 flex-col px-7 pb-7">
+          <div className="flex flex-1 flex-col px-5 pb-6 lg:px-7 lg:pb-7">
             <div className="my-auto py-4">
             <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#8a8880]">
               <span className="h-px w-6 bg-black/30" />
@@ -282,7 +319,7 @@ export function LandingProductFinder({ data }) {
 
         {/* Right — question + options */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex shrink-0 items-start justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
+          <div className="flex shrink-0 items-start justify-between gap-4 px-4 pt-4 min-[400px]:px-5 min-[400px]:pt-5 lg:px-8 lg:pt-7">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a8880] tabular-nums">
                 {t('productFinder.step', 'Step')} {steps[step].n}
@@ -290,7 +327,7 @@ export function LandingProductFinder({ data }) {
               </p>
               <h2
                 key={`q2-${step}`}
-                className="mt-2 text-[clamp(24px,3vw,34px)] font-light leading-[1.1] tracking-[-0.02em] text-[#0b0b0a]"
+                className="mt-2 text-[clamp(22px,3vw,34px)] font-light leading-[1.1] tracking-[-0.02em] text-[#0b0b0a]"
                 style={{ '--pf-from': dir > 0 ? '16px' : '-16px', animation: 'pfStepIn .35s cubic-bezier(.2,.7,.2,1) both' }}
               >
                 {steps[step].label}
@@ -300,14 +337,14 @@ export function LandingProductFinder({ data }) {
               type="button"
               onClick={closeModal}
               aria-label={t('productFinder.close', 'Close')}
-              className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 text-[#0b0b0a] transition-colors duration-200 hover:border-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
+              className="grid h-9 w-9 shrink-0 place-items-center border border-black/10 text-[#0b0b0a] min-[400px]:h-10 min-[400px]:w-10 transition-colors duration-200 hover:border-[#0b0b0a] hover:bg-[#0b0b0a] hover:text-white cursor-pointer"
             >
               <LuX className="h-[18px] w-[18px]" />
             </button>
           </div>
 
           {/* Mobile progress + picked chips (the left panel is hidden there) */}
-          <div className="shrink-0 px-5 pt-4 md:hidden">
+          <div className="shrink-0 px-4 pt-4 min-[400px]:px-5 md:hidden">
             <div className="grid grid-cols-3 gap-1.5">
               {steps.map((s, i) => (
                 <span key={s.n} className={`h-[3px] ${i <= step ? 'bg-[#0b0b0a]' : 'bg-black/10'}`} />
@@ -329,7 +366,7 @@ export function LandingProductFinder({ data }) {
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8" style={{ overscrollBehavior: 'contain' }}>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 min-[400px]:px-5 min-[400px]:py-5 lg:px-8" style={{ overscrollBehavior: 'contain' }}>
             {(() => {
               const s = steps[step];
               const isPetStep = step === 0;
@@ -337,7 +374,7 @@ export function LandingProductFinder({ data }) {
               return (
                 <ul
                   key={step}
-                  className={`grid ${isPetStep ? 'grid-cols-1 gap-2 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 sm:gap-x-6'}`}
+                  className={`grid ${isPetStep ? 'grid-cols-1 gap-2 min-[480px]:grid-cols-2' : 'grid-cols-1 lg:grid-cols-2 lg:gap-x-6'}`}
                   style={{ '--pf-from': dir > 0 ? '24px' : '-24px', animation: 'pfStepIn .35s cubic-bezier(.2,.7,.2,1) both' }}
                 >
                   {s.options.map((opt, idx) => {
@@ -349,7 +386,7 @@ export function LandingProductFinder({ data }) {
                             type="button"
                             onClick={() => s.onPick(opt)}
                             aria-pressed={on}
-                            className={`group flex h-16 w-full items-center gap-4 border px-4 text-left transition-all duration-200 cursor-pointer ${
+                            className={`group flex h-14 w-full items-center gap-3 border px-3 text-left min-[400px]:h-16 min-[400px]:gap-4 min-[400px]:px-4 transition-all duration-200 cursor-pointer ${
                               on
                                 ? 'border-[#0b0b0a] bg-[#0b0b0a] text-white'
                                 : 'border-black/10 bg-white text-[#0b0b0a] hover:border-[#0b0b0a] hover:shadow-[0_14px_28px_-20px_rgba(0,0,0,.45)]'
@@ -370,7 +407,7 @@ export function LandingProductFinder({ data }) {
                                 <LuPawPrint className="h-5 w-5" />
                               )}
                             </span>
-                            <span className="flex-1 text-[13px] font-semibold">{getName(opt)}</span>
+                            <span className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">{getName(opt)}</span>
                             {on ? (
                               <LuCheck className="h-4 w-4 shrink-0 stroke-[3]" />
                             ) : (
@@ -416,7 +453,7 @@ export function LandingProductFinder({ data }) {
             })()}
           </div>
 
-          <div className="flex shrink-0 items-center gap-3 border-t border-black/10 px-5 py-4 sm:px-8">
+          <div className="flex shrink-0 items-center gap-3 border-t border-black/10 px-4 py-3 min-[400px]:px-5 min-[400px]:py-4 lg:px-8">
             {step > 0 ? (
               <button
                 type="button"
@@ -440,7 +477,7 @@ export function LandingProductFinder({ data }) {
               type="button"
               onClick={showNext ? () => goToStep(step + 1) : viewProducts}
               disabled={!steps[step].value}
-              className="ml-auto inline-flex h-12 w-full max-w-[300px] items-center justify-center gap-2.5 bg-[#0b0b0a] px-6 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-[#2a2a28] cursor-pointer disabled:cursor-not-allowed disabled:bg-black/[0.08] disabled:text-[#8a8880]"
+              className="ml-auto inline-flex h-12 w-full max-w-[220px] items-center min-[480px]:max-w-[300px] justify-center gap-2.5 bg-[#0b0b0a] px-6 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-[#2a2a28] cursor-pointer disabled:cursor-not-allowed disabled:bg-black/[0.08] disabled:text-[#8a8880]"
             >
               {showNext ? t('productFinder.next', 'Next') : t('productFinder.viewProducts')}
               <LuArrowRight className="h-4 w-4" />
@@ -452,17 +489,17 @@ export function LandingProductFinder({ data }) {
   );
 
   return (
-    <section id="finder" className="w-full scroll-mt-24 bg-[#f5f4f0] pt-[clamp(60px,7vw,110px)]">
+    <section id="finder" className="w-full scroll-mt-24 bg-[#f5f4f0]">
       <div className="relative w-full overflow-hidden bg-[#0c0c0e]">
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <FinderMedia data={sectionMedia} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/15" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-black/5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
       </div>
 
       {/* Heading, CTA and note — inside the stage */}
-      <div className="relative z-10 flex min-h-[560px] w-full flex-col justify-center px-4 py-14 min-[721px]:min-h-[640px] min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:py-[clamp(60px,6vw,96px)]">
+      <div className="relative z-10 flex min-h-[560px] w-full flex-col justify-center px-4 py-14 min-[721px] min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:py-[clamp(60px,6vw,96px)]">
         <div className="max-w-[640px]">
           <div className="mb-4 flex items-center gap-3">
             <span className="h-px w-8 shrink-0 bg-white/60 sm:w-12" />
@@ -483,7 +520,7 @@ export function LandingProductFinder({ data }) {
             onClick={openModal}
             className="group mt-8 inline-flex h-12 items-center gap-3 border border-white bg-white px-8 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0b0b0a] transition-colors duration-300 hover:bg-transparent hover:text-white cursor-pointer"
           >
-            {t('productFinder.viewProducts')}
+            {t('productFinder.findPerfectProduct', 'Find perfect product')}
             <LuArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </button>
 

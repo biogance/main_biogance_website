@@ -125,13 +125,7 @@ export default function LabortorySection() {
     : DEFAULT_MARQUEE_TAGS;
   const marqueeTags =
     Array.isArray(footerData?.tags) && footerData.tags.length > 0 ? footerData.tags : resolvedDefaultTags;
-  // Repeated several times (not just once) so the CSS keyframe
-  // (translateX -50%) keeps looping seamlessly with no gap at the end —
-  // if the API returns a short tag list, two copies alone can be narrower
-  // than the viewport, leaving a blank stretch before the loop restarts.
-  // The marquee's CSS animation-duration is scaled to match (90s = 30s per
-  // "set" x 3 sets moved per cycle), so the scroll speed stays the same as
-  // the original single-set version instead of speeding up.
+  
   const MARQUEE_REPEAT = 6;
   const marqueeItems = Array.from({ length: MARQUEE_REPEAT }, () => marqueeTags).flat();
 
@@ -149,12 +143,7 @@ export default function LabortorySection() {
 
   return (
     <>
-      {/* Rendered outside .laboratory-landing on purpose: that wrapper sets
-          its own font-family/color via CSS custom properties below, and
-          since Navbar is a real child component (not styled-jsx-scoped
-          content), those properties would otherwise inherit straight into
-          Navbar's own text through normal CSS inheritance, overriding its
-          intended site-wide styling. */}
+     
       <Navbar bgWhite={true} />
 
       <div className="laboratory-landing">
@@ -185,10 +174,10 @@ export default function LabortorySection() {
               <div className={`hero-editorial${hasHeaderMedia ? " has-media" : ""}`}>
                 <SplashMedia data={headerMedia} />
               </div>
-              <div className="hero-editorial-card">
+              {/* <div className="hero-editorial-card">
                 <span>{t('hero.cardBadge')}</span>
                 <strong>{t('hero.cardStrong')}</strong>
-              </div>
+              </div> */}
             </div>
           </section>
 
@@ -629,11 +618,11 @@ export default function LabortorySection() {
         }
 
         .hero-editorial {
+          /* Fills the whole visual column — no inset, frame or shadow, so
+             the image runs flush to every edge. */
           position: absolute;
-          inset: 8%;
+          inset: 0;
           overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.76);
-          box-shadow: 0 40px 100px rgba(0, 0, 0, 0.09);
           background:
             linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.46)),
             radial-gradient(circle at 62% 32%, rgba(255, 255, 255, 0.88), transparent 0 17%, transparent 18%),

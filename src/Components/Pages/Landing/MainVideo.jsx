@@ -45,6 +45,16 @@ const HERO_GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
 // Global cache variable to store the video blob URL so it plays instantly on SPA page navigation
 let globalVideoBlobUrl = null;
 
+// Last home / splash data seen by this page, kept in memory for as long as
+// the tab lives (a full reload clears it). It decides how the page loads:
+//  - first visit (nothing here yet): sections show their shimmers until the
+//    home API answers;
+//  - coming back from another route (logo click etc.): the page paints
+//    straight from this copy — no shimmer — while the API is refreshed in the
+//    background, and the UI is only updated if the response actually differs.
+let homeDataMemory = null;
+let splashCategoriesMemory = null;
+
 // Initialize cache check immediately on script load (client-side only)
 if (typeof window !== "undefined" && "caches" in window) {
   const videoUrl = "/VIDEO.mp4";
@@ -194,9 +204,9 @@ export default function HeroSection() {
   useEffect(() => {
     preloadHeroVideos();
   }, []);
-  const [apiData, setApiData] = useState(null);
-  const [splashCategories, setSplashCategories] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [apiData, setApiData] = useState(() => homeDataMemory);
+  const [splashCategories, setSplashCategories] = useState(() => splashCategoriesMemory);
+  const [isLoading, setIsLoading] = useState(() => !homeDataMemory);
 
   // Load splash categories from localStorage cache first
   useEffect(() => {
@@ -204,7 +214,8 @@ export default function HeroSection() {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        setSplashCategories(parsed.categories || []);
+        splashCategoriesMemory = parsed.categories || [];
+        setSplashCategories(splashCategoriesMemory);
       } catch (e) {}
     }
 
@@ -214,24 +225,13 @@ export default function HeroSection() {
       if (updated) {
         try {
           const parsed = JSON.parse(updated);
-          setSplashCategories(parsed.categories || []);
+          splashCategoriesMemory = parsed.categories || [];
+          setSplashCategories(splashCategoriesMemory);
         } catch (e) {}
       }
     };
     window.addEventListener("splashDataReady", onSplashReady);
     return () => window.removeEventListener("splashDataReady", onSplashReady);
-  }, []);
-
-  useEffect(() => {
-    const cached = localStorage.getItem("homePageData");
-    if (cached) {
-      try {
-        setApiData(JSON.parse(cached));
-        setIsLoading(false);
-      } catch (e) {
-        localStorage.removeItem("homePageData");
-      }
-    }
   }, []);
 
   useEffect(() => {
@@ -259,7 +259,17 @@ export default function HeroSection() {
           // is a nice-to-have for instant paint on next visit, not a
           // requirement for showing this response — so it must never be
           // able to block the render.
-          setApiData(res.data.data);
+          const fresh = res.data.data;
+          // Background refresh: leave the UI alone when nothing changed, so
+          // returning to the page never re-renders or flickers for no reason.
+          let changed = true;
+          try {
+            changed =
+              !homeDataMemory ||
+              JSON.stringify(homeDataMemory) !== JSON.stringify(fresh);
+          } catch (e) {}
+          homeDataMemory = fresh;
+          if (changed) setApiData(fresh);
           try {
             localStorage.setItem("homePageData", JSON.stringify(res.data.data));
           } catch (e) {
@@ -272,7 +282,20 @@ export default function HeroSection() {
           window.dispatchEvent(new Event("homePageDataReady"));
         }
       })
-      .catch((err) => console.error("API Error:", err))
+      .catch((err) => {
+        console.error("API Error:", err);
+        // First visit and the API failed — fall back to the copy saved by an
+        // earlier session, if there is one, instead of an endless shimmer.
+        if (!homeDataMemory) {
+          try {
+            const cached = JSON.parse(localStorage.getItem("homePageData") || "null");
+            if (cached) {
+              homeDataMemory = cached;
+              setApiData(cached);
+            }
+          } catch (e) {}
+        }
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -493,7 +516,7 @@ export default function HeroSection() {
                 className={`m-0 mb-6 md:mb-7 ${
                   isFrench
                     ? "text-[clamp(30px,9vw,40px)] sm:text-[clamp(32px,4vw,44px)] lg:text-[clamp(36px,3.4vw,56px)]"
-                    : "text-[clamp(36px,11vw,48px)] sm:text-[clamp(38px,4.8vw,54px)] lg:text-[clamp(44px,4vw,66px)]"
+                    : "text-[clamp(30px,11vw,42px)] sm:text-[clamp(38px,4vw,44px)] lg:text-[clamp(44px,4vw,66px)]"
                 } uppercase font-extralight leading-[1] tracking-[-0.035em] text-white`}
               >
                 {headingWords.map((word, i) => {
