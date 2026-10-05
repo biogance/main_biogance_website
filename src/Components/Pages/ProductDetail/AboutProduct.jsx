@@ -107,11 +107,35 @@ export default function AboutProduct({ apiProduct }) {
       .map((g) => ({ label: g.species ? catName(g.species) : "", items: g.items }));
   })();
 
+  // Shown as one plain bullet list: no species headings, and a name that
+  // appears under more than one species is listed once. Species name the
+  // same thing slightly differently ("White coats" for dogs, "White coat"
+  // for cats), so names are compared ignoring case, punctuation and a
+  // plural "s"; the first spelling seen is the one shown.
+  const sameKey = (name) =>
+    name
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w))
+      .join(" ");
+  const coatItems = [];
+  const seenKeys = new Set();
+  coatGroups
+    .flatMap((g) => g.items)
+    .forEach((name) => {
+      const key = sameKey(name);
+      if (seenKeys.has(key)) return;
+      seenKeys.add(key);
+      coatItems.push(name);
+    });
+
   const accordionData = [
     {
       title: t("typeOfCoat"),
-      content: coatGroups.length ? coatGroups : t("noData"),
-      isGroups: coatGroups.length > 0,
+      content: coatItems.length ? [{ label: "", items: coatItems }] : t("noData"),
+      isGroups: coatItems.length > 0,
     },
     {
       title: t("whyChooseThisProduct"),
