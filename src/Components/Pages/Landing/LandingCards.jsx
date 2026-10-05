@@ -444,7 +444,8 @@ export const LandingCards = ({
                   )}
                 </div>
                 <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[#0b0b0a]">
-                  {formatPrice(price, i18n.language)} €
+                  {/* priceLabel (shop page) = the API's price as-is */}
+                  {safeProduct.priceLabel || formatPrice(price, i18n.language)} €
                 </span>
               </div>
             </div>
