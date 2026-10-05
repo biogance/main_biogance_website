@@ -655,21 +655,8 @@ export default function FilterProducts() {
   const [ranges, setRanges] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [colors, setColors] = useState([]);
-  const [price, setPrice] = useState(PRICE_CEILING);
-  const [minPrice, setMinPrice] = useState(PRICE_FLOOR);
-  // Becomes true the first time the user picks / removes / resets a filter
-  // in the filter rail (or its modal / price popover). Until then — i.e.
-  // when the page is opened from another page, deep links included — the
-  // price bounds are not sent to the API at all; afterwards min_price and
-  // max_price always are. A ref (not state) so flipping it never refetches
-  // by itself, and load-more pages use the same params as page 1.
-  const userFilteredRef = useRef(false);
-  const byUser =
-    (fn) =>
-    (...args) => {
-      userFilteredRef.current = true;
-      return fn(...args);
-    };
+  const [price, setPrice] = useState(500);
+  const [minPrice, setMinPrice] = useState(0);
   const [sort, setSort] = useState("Featured");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -1178,9 +1165,8 @@ export default function FilterProducts() {
       ...(breedIds ? { breed_id: breedIds } : {}),
       ...(sizes.length > 0 ? { size_name: sizes.join(",") } : {}),
       ...(colors.length > 0 ? { color_name: colors.join(",") } : {}),
-      // Price bounds only once the user has chosen a filter (see
-      // userFilteredRef) — not when arriving from another page.
-      ...(userFilteredRef.current ? { min_price: minPrice, max_price: price } : {}),
+      min_price: minPrice,
+      max_price: price,
       sort: sortParam,
       page: targetPage,
       per_page: perPage,
@@ -1507,8 +1493,8 @@ export default function FilterProducts() {
     setRanges([]);
     setSizes([]);
     setColors([]);
-    setPrice(PRICE_CEILING);
-    setMinPrice(PRICE_FLOOR);
+    setPrice(500);
+    setMinPrice(0);
   };
 
   return (
@@ -1578,8 +1564,8 @@ export default function FilterProducts() {
       <FilterRail
         railRef={filterRailRef}
         categoriesList={categoriesList}
-        activeChips={activeChips.map((c) => ({ ...c, clear: byUser(c.clear) }))}
-        clearAll={byUser(clearAll)}
+        activeChips={activeChips}
+        clearAll={clearAll}
         translateName={translateName}
         state={{
           animals,
@@ -1596,18 +1582,18 @@ export default function FilterProducts() {
           minPrice,
         }}
         setters={{
-          setAnimals: byUser(setAnimals),
-          setUniverse: byUser(setUniverse),
-          setFamilies: byUser(setFamilies),
-          setSpecificity: byUser(setSpecificity),
-          setNeeds: byUser(setNeeds),
-          setBreeds: byUser(setBreeds),
-          setForWhich: byUser(setForWhich),
-          setRanges: byUser(setRanges),
-          setSizes: byUser(setSizes),
-          setColors: byUser(setColors),
-          setPrice: byUser(setPrice),
-          setMinPrice: byUser(setMinPrice),
+          setAnimals,
+          setUniverse,
+          setFamilies,
+          setSpecificity,
+          setNeeds,
+          setBreeds,
+          setForWhich,
+          setRanges,
+          setSizes,
+          setColors,
+          setPrice,
+          setMinPrice,
         }}
         options={{
           familyOptions,
@@ -2359,8 +2345,8 @@ function FilterRail({
     setters.setRanges([]);
     setters.setSizes([]);
     setters.setColors([]);
-    setters.setPrice(PRICE_CEILING);
-    setters.setMinPrice(PRICE_FLOOR);
+    setters.setPrice(500);
+    setters.setMinPrice(0);
   };
 
   return (
@@ -2397,7 +2383,7 @@ function FilterRail({
               priceOpen ? "border-black" : "border-black/15"
             }`}
           >
-            {state.minPrice > PRICE_FLOOR
+            {state.minPrice > 0
               ? `€${state.minPrice} - €${state.price}`
               : `€${state.price}`}
             <LuChevronDown
@@ -2451,7 +2437,7 @@ function FilterRail({
             >
               {t("price", "Price")}
               <span className="font-semibold tracking-[0.06em] text-[#0b0b0a] tabular-nums">
-                {state.minPrice > PRICE_FLOOR
+                {state.minPrice > 0
                   ? `€${state.minPrice} - €${state.price}`
                   : `€${state.price}`}
               </span>
@@ -2566,8 +2552,8 @@ function FilterRail({
   );
 }
 
-const PRICE_FLOOR = 5;
-const PRICE_CEILING = 10000;
+const PRICE_FLOOR = 0;
+const PRICE_CEILING = 500;
 
 // Dual-thumb price slider — two overlapping range inputs whose track is
 // pointer-events-none so only each thumb (styled via the pseudo-element
@@ -2606,7 +2592,7 @@ function PriceRangeControl({
             max={maxValue}
             value={minValue}
             onChange={(e) =>
-              onChangeMin(Math.min(Number(e.target.value) || PRICE_FLOOR, maxValue))
+              onChangeMin(Math.min(Number(e.target.value) || 0, maxValue))
             }
             className="w-full border border-stone-900/15 bg-white px-3 py-2.5 font-serif text-sm text-stone-900 transition-colors focus:border-stone-900 focus:outline-none"
           />
@@ -2766,9 +2752,9 @@ function PricePopover({
         onChangeMin={setDraftMin}
         onChangeMax={setDraftMax}
         onReset={() => {
-          setDraftMin(PRICE_FLOOR);
+          setDraftMin(0);
           setDraftMax(PRICE_CEILING);
-          setMinPrice(PRICE_FLOOR);
+          setMinPrice(0);
           setPrice(PRICE_CEILING);
         }}
         onApply={() => {
@@ -2819,8 +2805,8 @@ function AllFiltersModal({
 
   const handleClearAll = () => {
     onClearAll();
-    setDraftPrice(PRICE_CEILING);
-    setDraftMinPrice(PRICE_FLOOR);
+    setDraftPrice(500);
+    setDraftMinPrice(0);
   };
 
   useEffect(() => {
