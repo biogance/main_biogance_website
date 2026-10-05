@@ -426,6 +426,9 @@ function UpsellCard({ item, onAdd, isAdding }) {
     parseFloat(
       String(item.price ?? item.products?.[0]?.price ?? "0").replace(",", "."),
     ) || 0;
+  // Shown exactly as the API sends it ("12,3" stays "12,3"); the number above
+  // is only for maths.
+  const priceLabel = String(item.price ?? item.products?.[0]?.price ?? "").trim();
   const name =
     lang === "fr" && item.french_name ? item.french_name : item.name || "";
   return (
@@ -519,7 +522,7 @@ function UpsellCard({ item, onAdd, isAdding }) {
               />
             </>
           ) : (
-            `${t("add")} — ${formatPrice(price, lang)} €`
+            `${t("add")} — ${priceLabel || formatPrice(price, lang)} €`
           )}
         </button>
       </div>
@@ -2006,7 +2009,13 @@ export default function ModalAddToCart({
                       flexShrink: 0,
                     }}
                   >
-                    {formatPrice(itemTotal, lang)} €
+                    {/* One unit: the API's price as-is ("12,3"). More than
+                        one: a computed total, so it is formatted. */}
+                    {Number(item.quantity) === 1 &&
+                    String(item.price ?? "").trim()
+                      ? String(item.price).trim()
+                      : formatPrice(itemTotal, lang)}{" "}
+                    €
                   </div>
                 </div>
               );
