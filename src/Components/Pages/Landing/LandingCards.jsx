@@ -444,8 +444,14 @@ export const LandingCards = ({
                   )}
                 </div>
                 <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[#0b0b0a]">
-                  {/* priceLabel (shop page) = the API's price as-is */}
-                  {safeProduct.priceLabel || formatPrice(price, i18n.language)} €
+                  {/* The price exactly as the API sends it ("12,35" stays
+                      "12,35"). priceLabel = shop page; elsewhere the raw
+                      price string. Only a non-string value gets formatted. */}
+                  {safeProduct.priceLabel ||
+                    (typeof price === "string" && price.trim()
+                      ? price.trim()
+                      : formatPrice(price, i18n.language))}{" "}
+                  €
                 </span>
               </div>
             </div>

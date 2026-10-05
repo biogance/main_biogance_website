@@ -793,17 +793,15 @@ export default function FilterProducts() {
         (item.products?.[0]?.description
           ? item.products[0].description.slice(0, 50) + "..."
           : t("careFormulation", "Care formulation")),
-      // API prices use a decimal comma ("12,3") — parseFloat alone cut them
-      // to whole euros (12).
+      // Number for any maths: the API's decimal comma read as a point
+      // ("12,35" -> 12.35) — parseFloat alone cut it to whole euros (12).
       price:
         parseFloat(
           String(item.price || item.products?.[0]?.price || "0").replace(",", "."),
         ) || 0,
-      // Shown on the card as the API sends it (no added ".00"), with a
-      // decimal point instead of the comma: "12,3" -> "12.3".
-      priceLabel: String(item.price || item.products?.[0]?.price || "")
-        .trim()
-        .replace(",", "."),
+      // Shown on the card exactly as the API sends it ("12,35" stays
+      // "12,35" — no added ".00", no comma/point change).
+      priceLabel: String(item.price || item.products?.[0]?.price || "").trim(),
       oldPrice: item.products?.[0]?.price
         ? (parseFloat(String(item.products[0].price).replace(",", ".")) || 0) * 1.2
         : null,

@@ -7,7 +7,11 @@ const toCleanAmount = (val) => {
   if (typeof val === "number") return val;
   return parseFloat(String(val ?? "0").replace(",", ".")) || 0;
 };
+// Shows the price exactly as the API sends it ("12,35" stays "12,35", no
+// added ".00"); only a non-string value is formatted. Maths elsewhere uses
+// toCleanAmount, which reads the comma as a decimal point.
 const formatPrice = (val, lang) => {
+  if (typeof val === "string" && val.trim()) return val.trim();
   const num = toCleanAmount(val);
   const locale = lang && lang.startsWith("fr") ? "fr-FR" : "en-US";
   return num.toLocaleString(locale, { minimumFractionDigits: 2 });
