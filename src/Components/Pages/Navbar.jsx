@@ -135,10 +135,14 @@ export default function Navbar({
       // flashes the white body background through. Rounding to a whole
       // pixel before it ever reaches the transform removes the sub-pixel
       // case entirely.
+      //
+      // Small screens: the announcement bar is either fully shown (at the
+      // top of the page) or fully hidden (as soon as the page is scrolled),
+      // and the wrapper slides between the two with a CSS transition —
+      // instead of following the scroll pixel by pixel.
+      const hidden = !isDesktopRef.current && window.scrollY > 8;
       const scrollOffset = Math.round(
-        isDesktopRef.current
-          ? 0
-          : Math.min(window.scrollY, ANNOUNCEMENT_HEIGHT + safeAreaRef.current),
+        hidden ? ANNOUNCEMENT_HEIGHT + safeAreaRef.current : 0,
       );
       if (!force && scrollOffset === lastOffsetRef.current) return;
       lastOffsetRef.current = scrollOffset;
@@ -147,7 +151,11 @@ export default function Navbar({
       // headerWrapperRef above for why this replaces the old two-element
       // (announcementBarRef + navElRef) approach.
       if (headerWrapperRef.current) {
-        headerWrapperRef.current.style.transform = isDesktopRef.current
+        const el = headerWrapperRef.current;
+        el.style.transition = isDesktopRef.current
+          ? ""
+          : "transform .45s cubic-bezier(.22,.61,.36,1)";
+        el.style.transform = isDesktopRef.current
           ? ""
           : `translateY(-${scrollOffset}px)`;
       }
