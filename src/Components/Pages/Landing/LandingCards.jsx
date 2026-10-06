@@ -850,6 +850,20 @@ export default function PopularProducts({
     router.push(`/shop?source=${sectionSource}`);
   };
 
+  // Heading hover: both title lines underline together, drawn left to right
+  // (the second line a beat after the first). A background gradient on the
+  // inline text, sized in em so it scales with the heading.
+  const [titleHover, setTitleHover] = useState(false);
+  const titleHoverProps = {
+    onMouseEnter: () => setTitleHover(true),
+    onMouseLeave: () => setTitleHover(false),
+    onFocus: () => setTitleHover(true),
+    onBlur: () => setTitleHover(false),
+  };
+  const underlineClass = `bg-[linear-gradient(currentColor,currentColor)] bg-no-repeat bg-[position:0_92%] transition-[background-size] duration-500 ease-out ${
+    titleHover ? "bg-[length:100%_0.055em]" : "bg-[length:0%_0.055em]"
+  }`;
+
   return (
     <div className="w-full bg-[#f5f4f0]">
       <style
@@ -973,17 +987,24 @@ export default function PopularProducts({
                       tabIndex={0}
                       onClick={goToSection}
                       onKeyDown={(e) => e.key === "Enter" && goToSection()}
-                      className="col-start-1 row-start-1 block cursor-pointer text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444]"
+                      {...titleHoverProps}
+                      className="col-start-1 row-start-1 block justify-self-start cursor-pointer text-[clamp(26px,4.5vw,56px)] font-light uppercase leading-[1.04] tracking-[-0.035em] text-[#444] focus:outline-none"
                     >
-                      {titleFirstLine}
+                      <span className={underlineClass}>{titleFirstLine}</span>
                     </span>
                     <span
                       role="link"
                       tabIndex={-1}
                       onClick={goToSection}
-                      className="col-start-1 row-start-2 block cursor-pointer text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]"
+                      {...titleHoverProps}
+                      className="col-start-1 row-start-2 block justify-self-start cursor-pointer text-[clamp(26px,4.5vw,56px)] font-extrabold uppercase leading-[1.04] tracking-[-0.035em] text-[#0c0c0c]"
                     >
-                      {`${titleLastWord}.`}
+                      <span
+                        className={underlineClass}
+                        style={{ transitionDelay: titleHover ? "120ms" : "0ms" }}
+                      >
+                        {`${titleLastWord}.`}
+                      </span>
                     </span>
                   </h2>
 

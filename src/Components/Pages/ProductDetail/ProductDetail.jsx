@@ -108,7 +108,18 @@ export default function ProductDetail() {
   const { t, i18n } = useTranslation("productdetail");
   const language = i18n.language;
   const params = useParams();
-  const productId = searchParams.get("id") || params?.slug;
+  // The route param arrives URL-encoded ("%20%E2%80%93%20" for " – "), so
+  // decode it once — the API expects the real seo keyword. A keyword that
+  // is not valid percent-encoding is used as-is.
+  const rawProductId = searchParams.get("id") || params?.slug;
+  const productId = (() => {
+    if (!rawProductId) return rawProductId;
+    try {
+      return decodeURIComponent(rawProductId);
+    } catch {
+      return rawProductId;
+    }
+  })();
   const { start } = useTopLoader();
   const descriptionRef = useRef(null);
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { MEDIA_URL } from "../../API/API";
 
@@ -14,58 +15,52 @@ import { MEDIA_URL } from "../../API/API";
 const CARD_WIDTH =
   "w-[calc(100%/2)] min-[481px]:w-[calc(100%/3)] min-[721px]:w-[calc(100%/4)] min-[901px]:w-[calc(100%/5)] min-[1101px]:w-[calc(100%/6)]";
 
-// Shimmer tile — mirrors the real card box (same size, border, gaps as HOMEPAGE V2.html's .collection-tile)
+// Collection photos (public/), revealed on hover over an all-black card —
+// see biogance_animals_maquette.html. Matched by category id, with a name
+// fallback in case ids change. A category without a photo keeps its icon
+// as the hover visual instead.
+const CATEGORY_PHOTOS = {
+  10: { src: "/CHIEN.png", position: "50% 50%" }, // Dogs
+  20: { src: "/CHIOT.png", position: "50% 53%" }, // Puppies
+  24: { src: "/CHAT.png", position: "50% 48%" }, // Cats & Kittens
+  33: { src: "/NACS.png", position: "50% 50%" }, // Small mammals
+  // shortTitle: shorter name for the card title only (English); links and
+  // labels keep the full category name.
+  37: { src: "/7.png", position: "50% 38%", shortTitle: "Birds & Poultry" }, // Birds & Backyard Poultry
+  49: { src: "/13.png", position: "50% 52%" }, // Reptiles & Turtles
+  84: { src: "/horse.jpg", position: "50% 45%" }, // Horses
+};
+const getCategoryPhoto = (category) => {
+  if (CATEGORY_PHOTOS[category?.id]) return CATEGORY_PHOTOS[category.id];
+  const name = `${category?.name || ""} ${category?.french_name || ""}`.toLowerCase();
+  if (/pupp|chiot/.test(name)) return CATEGORY_PHOTOS[20];
+  if (/dog|chien/.test(name)) return CATEGORY_PHOTOS[10];
+  if (/cat|chat/.test(name)) return CATEGORY_PHOTOS[24];
+  if (/bird|oiseau|poultry|basse/.test(name)) return CATEGORY_PHOTOS[37];
+  if (/reptile|turtle|tortue/.test(name)) return CATEGORY_PHOTOS[49];
+  if (/mammal|mammif|rongeur|nac/.test(name)) return CATEGORY_PHOTOS[33];
+  if (/horse|cheva/.test(name)) return CATEGORY_PHOTOS[84];
+  return null;
+};
+const PHOTO_SIZES =
+  "(max-width: 480px) 50vw, (max-width: 720px) 34vw, (max-width: 900px) 25vw, (max-width: 1100px) 20vw, 17vw";
+const CARD_EASE = "cubic-bezier(.22,.61,.36,1)";
+
+// Black placeholder tile — same box as the real card (3:4, black, hairline
+// borders) with a sliding line where the title sits.
 const ShimmerCard = () => (
   <div
-    className={`relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px]`}
+    className={`relative ${CARD_WIDTH} aspect-[3/4] shrink-0 overflow-hidden border-r border-b border-white/[0.14] bg-[#060606]`}
   >
-    <div
-      className="w-[52px] h-[52px]"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
-    <div
-      className="w-[70%] h-[14px] rounded"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
-  </div>
-);
-
-// Loading tile with spinner
-const LoadingCard = () => (
-  <div
-    className={`relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px]`}
-  >
-    <div className="w-[52px] h-[52px] flex items-center justify-center">
-      <div
-        style={{
-          border: "2px solid #f3f3f3",
-          borderTop: "2px solid #000000",
-          borderRadius: "50%",
-          width: "24px",
-          height: "24px",
-          animation: "spin 0.8s linear infinite",
-        }}
-      />
+    <div className="absolute inset-x-4 bottom-5 flex flex-col gap-2.5 min-[721px]:inset-x-[22px] min-[721px]:bottom-6">
+      <span className="relative block h-5 w-2/3 overflow-hidden bg-white/[0.06]">
+        <span
+          className="absolute inset-y-0 left-0 w-1/3 bg-white/[0.12]"
+          style={{ animation: "catSlide 1.2s ease-in-out infinite" }}
+        />
+      </span>
+      <span className="block h-2 w-1/3 bg-white/[0.05]" />
     </div>
-    <div
-      className="w-[70%] h-[14px] rounded"
-      style={{
-        background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200px 100%",
-        animation: "shimmer 1.5s infinite",
-      }}
-    />
   </div>
 );
 
@@ -206,6 +201,11 @@ export default function LandingCategories({ data }) {
           }
         }
 
+        @keyframes catSlide {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(300%); }
+        }
+
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -299,50 +299,103 @@ export default function LandingCategories({ data }) {
       <div
         ref={scrollContainerRef}
         onScroll={checkScrollPosition}
-        className="flex overflow-x-auto hide-scrollbar border-t border-l border-[#d8d8d4]"
+        className="flex overflow-x-auto hide-scrollbar border-t border-[#d8d8d4] bg-black"
       >
-        {loadingState === "shimmer"
+        {loadingState !== "loaded"
           ? Array.from({ length: 6 }).map((_, index) => (
               <ShimmerCard key={index} />
             ))
-          : loadingState === "spinner"
-            ? Array.from({ length: 6 }).map((_, index) => (
-                <LoadingCard key={index} />
-              ))
-            : categories.map((category, index) => (
+          : categories.map((category) => {
+              const displayName =
+                isFrench && category.french_name
+                  ? category.french_name
+                  : category.name;
+              const photo = getCategoryPhoto(category);
+              const isPuppies = photo === CATEGORY_PHOTOS[20];
+              const open = () =>
+                router.push(
+                  `/shop?category_id=${category.id}&category_name=${encodeURIComponent(displayName)}`,
+                );
+              return (
+                // All-black card; on hover/focus the collection photo fades
+                // and zooms in under a dark veil and the title lifts. Small
+                // screens (no hover on touch) show the photo straight away.
                 <div
                   key={category.id}
-                  onClick={() =>
-                    router.push(
-                      `/shop?category_id=${category.id}&category_name=${encodeURIComponent(isFrench && category.french_name ? category.french_name : category.name)}`,
-                    )
-                  }
-                  className={`group relative bg-white border-r border-b border-[#d8d8d4] min-h-[205px] ${CARD_WIDTH} flex-shrink-0 px-[18px] pt-[22px] pb-[20px] flex flex-col items-center justify-center gap-[22px] overflow-hidden text-black cursor-pointer transition-colors duration-[250ms] hover:bg-black hover:border-black`}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={displayName}
+                  onClick={open}
+                  onKeyDown={(e) => e.key === "Enter" && open()}
+                  className={`group relative ${CARD_WIDTH} aspect-[3/4] shrink-0 cursor-pointer overflow-hidden border-r border-b border-white/[0.14] bg-[#060606] text-white [isolation:isolate] focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white`}
                 >
-                  <div className="relative w-full min-h-[72px] flex items-center justify-center">
-                    <span className="absolute top-0 left-0 text-[9px] tracking-[0.16em] uppercase text-[#757571] transition-colors duration-[250ms] group-hover:text-white/60">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    {/* Icon only — no background box. Forced black by default,
-                      inverted to white on hover, same as .collection-icon in the html. */}
-                    <img
-                      src={`${MEDIA_URL}${category.media}`}
-                      alt={category.name}
-                      className="w-[52px] h-[52px] object-contain brightness-0 transition-all duration-[250ms] group-hover:invert"
-                      onError={(e) => {
-                        e.target.style.display = "none";
+                  {photo ? (
+                    <div
+                      className="absolute -inset-[3%] z-0 scale-[1.055] opacity-0 [filter:saturate(.82)_contrast(.96)_brightness(.82)] group-hover:scale-100 group-hover:opacity-90 group-hover:[filter:saturate(.9)_contrast(.98)_brightness(.86)] group-focus-visible:scale-100 group-focus-visible:opacity-90 max-[720px]:scale-100 max-[720px]:opacity-90 max-[720px]:[filter:saturate(.9)_contrast(.98)_brightness(.86)]"
+                      style={{
+                        // Tailwind v4 scale-* sets the CSS `scale` property (not
+                        // `transform`), so that is what has to be transitioned.
+                        transition: `opacity .6s ${CARD_EASE}, scale .85s ${CARD_EASE}, filter .6s ease`,
+                        willChange: "opacity, scale",
                       }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center w-full text-center">
-                    <span className="max-w-[160px] text-[15px] font-medium leading-[1.2] text-inherit group-hover:text-white transition-colors duration-[250ms]">
-                      {isFrench && category.french_name
-                        ? category.french_name
-                        : category.name}
+                    >
+                      <Image
+                        src={photo.src}
+                        alt=""
+                        fill
+                        sizes={PHOTO_SIZES}
+                        className="object-cover"
+                        style={{ objectPosition: photo.position }}
+                      />
+                    </div>
+                  ) : (
+                    category.media && (
+                      <img
+                        src={`${MEDIA_URL}${category.media}`}
+                        alt=""
+                        className="absolute left-1/2 top-[38%] z-0 h-16 w-16 -translate-x-1/2 -translate-y-1/2 object-contain opacity-0 brightness-0 invert transition-opacity duration-500 group-hover:opacity-70 group-focus-visible:opacity-70 max-[720px]:opacity-70"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )
+                  )}
+
+                  {/* Veil */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 z-[1] opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100 max-[720px]:opacity-100"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.62) 100%), radial-gradient(circle at 50% 40%, rgba(0,0,0,0) 10%, rgba(0,0,0,.10) 100%)",
+                    }}
+                  />
+
+                  {/* Title + sub-label */}
+                  <span className="absolute inset-x-4 bottom-5 z-[3] flex flex-col items-start gap-2.5 min-[721px]:inset-x-[22px] min-[721px]:bottom-6">
+                    <span
+                      className="block text-left text-[clamp(22px,2.2vw,40px)] font-light uppercase leading-[0.94] tracking-[-0.045em] text-white group-hover:-translate-y-[3px] group-hover:tracking-[-0.03em] group-focus-visible:-translate-y-[3px]"
+                      style={{
+                        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                        transition: `translate .5s ${CARD_EASE}, letter-spacing .5s ease`,
+                      }}
+                    >
+                      {(!isFrench && photo?.shortTitle) || displayName}
                     </span>
-                  </div>
+                    <span
+                      className="block text-[8px] font-medium uppercase leading-none tracking-[0.26em] text-white/50 group-hover:-translate-y-px group-hover:text-white/75 group-focus-visible:text-white/75"
+                      style={{
+                        transition: `color .45s ease, translate .5s ${CARD_EASE}`,
+                      }}
+                    >
+                      {isPuppies
+                        ? t("categories.cardSubPuppies", "Gentle care")
+                        : t("categories.cardSub", "Care collection")}
+                    </span>
+                  </span>
                 </div>
-              ))}
+              );
+            })}
       </div>
       </div>
       </div>
