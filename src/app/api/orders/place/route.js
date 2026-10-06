@@ -8,7 +8,7 @@ export async function POST(req) {
     }
     const orderPayload = await req.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://api.biogance.com/endpoint"}/user/order/place`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/user/order/place`,
       {
         method: "POST",
         headers: {

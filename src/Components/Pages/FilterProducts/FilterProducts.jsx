@@ -810,14 +810,14 @@ export default function FilterProducts() {
       image:
         item.image ||
         (item.products?.[0]?.images[0]?.media
-          ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
+          ? `${MEDIA_URL}${item.products[0].images[0].media}`
           : ""),
       images: item.images ||
         item.products?.[0]?.images?.map(
-          (img) => `https://d18f57oyxifcsh.cloudfront.net/${img.media}`,
+          (img) => `${MEDIA_URL}${img.media}`,
         ) || [""],
       videoUrl: item.products?.[0]?.video?.media
-        ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].video.media}`
+        ? `${MEDIA_URL}${item.products[0].video.media}`
         : null,
       liked: item.liked ?? item.favorites_exists,
       productsCount: item.products?.length || 1,

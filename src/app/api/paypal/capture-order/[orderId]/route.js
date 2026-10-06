@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
     }
     const { orderId } = params;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://api.biogance.com/endpoint"}/user/payment/paypal/order/capture/${orderId}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/user/payment/paypal/order/capture/${orderId}`,
       {
         method: "GET",
         headers: { Authorization: authToken },

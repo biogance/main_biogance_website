@@ -9,8 +9,6 @@ import {
   IoLocationOutline,
   IoPersonOutline,
   IoSettingsOutline,
-  IoClose,
-  IoMenu,
 } from "react-icons/io5";
 import { BsArrowBarLeft } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
@@ -243,7 +241,7 @@ function LogoutButton({ onClick, t }) {
   );
 }
 
-// The dark panel itself, shared by the desktop sidebar and the mobile drawer.
+// The dark panel itself (desktop sidebar).
 function Panel({
   activeItem,
   onSelect,
@@ -307,91 +305,106 @@ export function Sidebar({ activeItem, onItemClick, onDelete }) {
   );
 }
 
-// Mobile / tablet (< lg): a sticky top bar with a menu button that slides the
-// same panel in from the left as a drawer.
+// Mobile / tablet (< lg): no drawer — the menu icon already lives in the
+// site Navbar. Instead: a short identity strip, then the account sections
+// as a sticky, horizontally scrollable row of tabs (the active one in ink
+// and kept scrolled into view), with Log out at the end of the row.
 export function MobileAccountNav({ activeItem, onItemClick, onDelete }) {
   const { t } = useTranslation("sidebar");
   const user = useAccountUser();
-  const [open, setOpen] = useState(false);
-  const current =
-    ACCOUNT_NAV_ITEMS.find((i) => i.key === activeItem) || ACCOUNT_NAV_ITEMS[0];
+  const rowRef = useRef(null);
+  const tabRefs = useRef({});
+  const name = user?.name || t("guest");
 
-  // Lock page scroll and allow Esc to close while the drawer is open.
+  // Keep the active tab centred in the row (also after a tab is picked).
   useEffect(() => {
-    if (!open) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+    const row = rowRef.current;
+    const tab = tabRefs.current[activeItem];
+    if (!row || !tab) return;
+    row.scrollTo({
+      left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2,
+      behavior: "smooth",
+    });
+  }, [activeItem]);
 
   return (
-    <div className="lg:hidden">
-      <div className="sticky top-16 z-30 h-14 px-4 flex items-center gap-3 bg-[#f3f3f3]/95 backdrop-blur-md border-b border-black/10">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={t("menu")}
-          className="grid place-items-center w-10 h-10 shrink-0 bg-[#0b0b0a] text-white border-0 cursor-pointer"
-        >
-          <IoMenu className="w-5 h-5" />
-        </button>
-        <span className="flex-1 min-w-0">
-          <span className="block text-[9px] font-semibold tracking-[0.26em] uppercase text-[#8a8880]">
-            {t("myAccount")}
+    // display:contents so the sticky tab bar sticks against the whole page,
+    // not just this short wrapper.
+    <div className="contents lg:hidden" style={{ fontFamily: FONT_SANS }}>
+      <link rel="stylesheet" href={FONT_HREF} precedence="default" />
+
+      {/* Identity strip */}
+      <div className="relative overflow-hidden bg-[#0b0b0a] px-4 py-4 text-white sm:px-6 sm:py-5">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
+          style={{ backgroundImage: GRAIN }}
+        />
+        <div className="relative flex items-center gap-3.5">
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden bg-white text-[15px] font-semibold tracking-[0.04em] text-[#0b0b0a] sm:h-12 sm:w-12">
+            {user?.profile_picture ? (
+              <img
+                src={`${MEDIA_URL}${user.profile_picture}`}
+                alt={name}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              initialsOf(user?.name)
+            )}
           </span>
-          <span className="block truncate text-[15px] font-semibold leading-tight text-[#0b0b0a]">
-            {t(current.label)}
-          </span>
-        </span>
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-[9px] font-medium uppercase tracking-[0.3em] text-white/45">
+              {t("hello")}
+            </p>
+            <p
+              className="m-0 truncate text-[22px] italic leading-[1.1] text-white sm:text-[24px]"
+              style={{ fontFamily: FONT_SERIF }}
+            >
+              {name}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-[75] bg-black/55 border-0 p-0 transition-opacity duration-300 ${
-          open
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-      />
-
-      {/* Drawer */}
-      <div
-        className={`fixed inset-y-0 left-0 z-[80] w-[88%] max-w-[360px] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
-        aria-hidden={!open}
-      >
-        <Panel
-          activeItem={activeItem}
-          onSelect={(key) => {
-            setOpen(false);
-            onItemClick(key);
-          }}
-          onLogout={() => {
-            setOpen(false);
-            onDelete();
-          }}
-          t={t}
-          user={user}
-          className="h-full w-full"
+      {/* Sticky tabs — sit right under the fixed site header (104px) */}
+      <div className="sticky top-[104px] z-30 border-b border-black/10 bg-[#f3f3f3]/95 backdrop-blur-md">
+        <nav
+          ref={rowRef}
+          aria-label={t("menu")}
+          className="ac-noscroll flex items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6"
         >
+          {ACCOUNT_NAV_ITEMS.map((item) => {
+            const active = activeItem === item.key;
+            return (
+              <button
+                key={item.key}
+                ref={(el) => {
+                  tabRefs.current[item.key] = el;
+                }}
+                type="button"
+                onClick={() => onItemClick(item.key)}
+                aria-current={active ? "page" : undefined}
+                className={`inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border px-3.5 text-[12.5px] transition-colors duration-200 ${
+                  active
+                    ? "border-[#0b0b0a] bg-[#0b0b0a] font-semibold text-white"
+                    : "border-black/[0.12] bg-white font-medium text-[#0b0b0a]/80 active:bg-black/[0.04]"
+                }`}
+              >
+                <NavIcon item={item} active={active} dark={active} />
+                {t(item.label)}
+              </button>
+            );
+          })}
+          <span aria-hidden="true" className="mx-1 h-6 w-px shrink-0 bg-black/10" />
           <button
             type="button"
-            onClick={() => setOpen(false)}
-            aria-label="Close"
-            className="absolute top-4 right-4 z-10 grid place-items-center w-9 h-9 bg-transparent border border-white/25 text-white cursor-pointer hover:bg-white hover:text-[#0b0b0a] transition-colors"
+            onClick={onDelete}
+            className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border border-black/[0.12] bg-transparent px-3.5 text-[12.5px] font-medium text-[#0b0b0a]/70 transition-colors active:bg-black/[0.04]"
           >
-            <IoClose className="w-5 h-5" />
+            <BsArrowBarLeft className="h-[17px] w-[17px] shrink-0" />
+            {t("logout")}
           </button>
-        </Panel>
+        </nav>
       </div>
     </div>
   );

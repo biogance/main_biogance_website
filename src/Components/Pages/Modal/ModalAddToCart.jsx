@@ -419,7 +419,7 @@ function UpsellCard({ item, onAdd, isAdding }) {
   const imageUrl =
     item.image ||
     (item.products?.[0]?.images?.[0]?.media
-      ? `https://d18f57oyxifcsh.cloudfront.net/${item.products[0].images[0].media}`
+      ? `${MEDIA_URL}${item.products[0].images[0].media}`
       : null);
 
   const price =
