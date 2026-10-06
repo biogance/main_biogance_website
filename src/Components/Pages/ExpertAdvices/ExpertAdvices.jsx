@@ -54,10 +54,9 @@ const TOPICS_FEW_THRESHOLD = 9;
 // Single-column (mobile) layout loads a flat 15 cards per page instead of
 // columns * ROWS_PER_PAGE (which would be just 1 * 3 = 3).
 const MOBILE_PER_PAGE = 15;
-// Fixed header shrinks from 104px to 64px on small screens once the
-// announcement bar scrolls away (see Navbar.jsx) — match whichever is live.
-const getNavbarHeight = () =>
-  typeof window !== "undefined" && window.innerWidth >= 1024 ? 104 : 64;
+// Fixed header (announcement bar + nav) is 104px on every screen size —
+// the announcement bar no longer scrolls away on small screens (Navbar.jsx).
+const getNavbarHeight = () => 104;
 const SKELETON_ROW_COUNT = 5;
 
 // In-memory cache (module scope, not sessionStorage) so filters + results
@@ -192,7 +191,7 @@ function HeroSkeleton() {
 function FiltersSkeleton({ speciesCount = 4, topicsCount = 6 }) {
   // Real TabButton: px-3.5 py-1.5 text-[9px] → ~h-7; real desktop search input: h-9; real mobile search: h-11
   return (
-    <div className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform">
+    <div className="sticky top-[104px] scroll-mt-[104px] z-30 bg-white/95 backdrop-blur transform-gpu will-change-transform">
       <div className="px-6 sm:px-10 lg:px-16 pt-3 md:mb-6">
         {/* Mobile (below md): species chip row, then topics chip row — matches pt-3 of real sticky block */}
         <div className="md:hidden flex items-center gap-2 overflow-hidden py-0.5">
@@ -1185,7 +1184,7 @@ function ExpertAdvices() {
       {/* Sticky Filters */}
    <div
   ref={filtersRef}
-  className="sticky top-[64px] scroll-mt-[64px] lg:top-[104px] lg:scroll-mt-[104px] z-30 transform-gpu will-change-transform"
+  className="sticky top-[104px] scroll-mt-[104px] z-30 transform-gpu will-change-transform"
 >
 
   <div className="absolute -inset-x-0 -top-px -bottom-px bg-white/95 backdrop-blur -z-10" />

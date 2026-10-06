@@ -47,11 +47,9 @@ export default function Breed() {
     requestAnimationFrame(() => {
       const section = document.getElementById('library');
       if (!section) return;
-      // Fixed header is 40px announcement + 64px nav = 104px on desktop
-      // (lg: 1024px+, pinned permanently there); below that the
-      // announcement bar slides away, leaving just the 64px nav pinned —
-      // same convention as ExpertAdvices.jsx's getNavbarHeight().
-      const navbarHeight = window.innerWidth >= 1024 ? 104 : 64;
+      // Fixed header (announcement bar + nav) is 104px on every screen
+      // size — same as ExpertAdvices.jsx getNavbarHeight().
+      const navbarHeight = 104;
       const targetY = section.getBoundingClientRect().top + window.scrollY - navbarHeight;
       window.scrollTo({ top: Math.max(targetY, 0), behavior: 'smooth' });
     });

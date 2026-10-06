@@ -27,6 +27,8 @@
     "services": "Pet Services"
   },
   "products": {
+    "quickAdd": "Quick add",
+    "add": "Add",
     "title": "Popular Products",
     "eyebrow": "Discover community favourites",
     "subtitle": "Explore the Biogance products pet owners are loving right now, selected to help you find the right care for your companion.",

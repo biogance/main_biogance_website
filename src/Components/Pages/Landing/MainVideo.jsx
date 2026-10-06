@@ -161,16 +161,11 @@ export default function HeroSection() {
     const handleScroll = () => {
       if (!videoSectionRef.current) return;
       const rect = videoSectionRef.current.getBoundingClientRect();
-      // jab video section ka bottom navbar (64px) ko touch kare tab white ho
+      // jab video section ka bottom navbar ko touch kare tab white ho —
+      // same rule on every screen size (the announcement bar no longer
+      // scrolls away on small screens).
       const videoStillBehindNav = rect.bottom > 88;
-      // Small screens: navbar sticks to top:0 once the announcement bar
-      // (40px) scrolls fully away — go white immediately at that point
-      // instead of waiting for the whole video section to scroll past.
-      const isSmallScreen = window.innerWidth < 1024;
-      const announcementHidden = window.scrollY >= 40;
-      setIsVideoVisible(
-        videoStillBehindNav && !(isSmallScreen && announcementHidden),
-      );
+      setIsVideoVisible(videoStillBehindNav);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
@@ -601,10 +596,10 @@ export default function HeroSection() {
       <LandingCategories
         data={splashCategories ? { categories: splashCategories } : apiData}
       />
-      <LandingCards data={apiData} apiData={apiData} />
+      <LandingCards data={apiData} apiData={apiData} mobileSpecial />
       <LandingFeatures data={apiData} />
       <LandingProductFinder data={apiData} />
-      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} />
+      <LandingCards title="Best Selling" isBestSeller={true} data={apiData} apiData={apiData} mobileSpecial />
       <LandingExpertAdvice data={apiData} />
       <LandingReview data={apiData} />
       {/* <LandingBanner data={apiData} /> */}

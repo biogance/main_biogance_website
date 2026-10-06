@@ -38,7 +38,7 @@ export default function IngredientsRail({ ingredients, loading, selectedId, onSe
   return (
     <div
       data-ingredient-rail
-      className="sticky top-16 lg:top-[104px] z-30 border-b border-[#d9d8d1] bg-white"
+      className="sticky top-[104px] z-30 border-b border-[#d9d8d1] bg-white"
     >
       {/* No max-w-[1840px]/mx-auto — same zoom/viewport-width fix as
           IngredientsHero.jsx. */}

@@ -182,11 +182,9 @@ export default function OurIngredients({ initialSlug } = {}) {
     requestAnimationFrame(() => {
       const detailSection = document.getElementById('ingredient-detail');
       if (!detailSection) return;
-      // Navbar's fixed header is 40px announcement + 64px nav = 104px on
-      // desktop (lg: 1024px+, pinned permanently there); below that the
-      // announcement bar slides away, leaving just the 64px nav pinned —
-      // same convention as ExpertAdvices.jsx's getNavbarHeight().
-      const navbarHeight = window.innerWidth >= 1024 ? 104 : 64;
+      // Fixed header (announcement bar + nav) is 104px on every screen
+      // size — same as ExpertAdvices.jsx getNavbarHeight().
+      const navbarHeight = 104;
       const railHeight = document.querySelector('[data-ingredient-rail]')?.offsetHeight ?? 0;
       const targetY = detailSection.getBoundingClientRect().top + window.scrollY - navbarHeight - railHeight;
       window.scrollTo({ top: Math.max(targetY, 0), behavior: 'smooth' });

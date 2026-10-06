@@ -554,7 +554,7 @@ export default function BreedLibrary({ onOpenBreed }) {
       </div>
 
       
-      <div className="sticky top-16 lg:top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-[#d8d8d4]">
+      <div className="sticky top-[104px] z-[35] bg-[#f6f6f4]/95 backdrop-blur-md border-t border-[#d8d8d4]">
         <div className="px-4 min-[721px]:px-[clamp(24px,2.4vw,46px)] flex items-stretch justify-between gap-5 border-b border-[#d8d8d4]">
           
           <div className="flex overflow-x-auto min-w-0">

@@ -136,11 +136,10 @@ export default function Navbar({
       // pixel before it ever reaches the transform removes the sub-pixel
       // case entirely.
       //
-      // Small screens: the announcement bar is either fully shown (at the
-      // top of the page) or fully hidden (as soon as the page is scrolled),
-      // and the wrapper slides between the two with a CSS transition —
-      // instead of following the scroll pixel by pixel.
-      const hidden = !isDesktopRef.current && window.scrollY > 8;
+      // The announcement bar now stays put on every screen size (small
+      // screens used to slide it away on scroll), so the wrapper is never
+      // offset — the header is announcement + nav (104px) everywhere.
+      const hidden = false;
       const scrollOffset = Math.round(
         hidden ? ANNOUNCEMENT_HEIGHT + safeAreaRef.current : 0,
       );

@@ -11,6 +11,7 @@ import { mergeCartItem } from "../../../utils/cartStorage";
 import { getDeviceId } from "../../../utils/deviceId";
 
 import ModalAddToCart from "../Modal/ModalAddToCart";
+import { LandingCardSpecial, SpecialLoadingCard } from "./LandingCardsSpecial";
 import { GoArrowUpRight } from "react-icons/go";
 
 const toCleanAmount = (val) => {
@@ -638,6 +639,9 @@ export default function PopularProducts({
   onTabChange,
   data,
   useGrid = false,
+  // Only MainVideo.jsx passes this: on phones (< 640px) its two rows use the
+  // card from LandingCardsSpecial.jsx instead of the regular one.
+  mobileSpecial = false,
 }) {
   const { t, i18n } = useTranslation("home");
   const router = useRouter();
@@ -798,6 +802,17 @@ export default function PopularProducts({
   // Landing row with the editorial header (Popular / Best Selling)
   const isLandingRow = isDefaultRow && !isHorizontal;
 
+  const [isPhone, setIsPhone] = useState(false);
+  useEffect(() => {
+    if (!mobileSpecial) return undefined;
+    const mq = window.matchMedia("(max-width: 639px)");
+    const read = () => setIsPhone(mq.matches);
+    read();
+    mq.addEventListener("change", read);
+    return () => mq.removeEventListener("change", read);
+  }, [mobileSpecial]);
+  const useSpecialCards = mobileSpecial && isPhone && isLandingRow;
+
   // Small screens (landing row): the arrows sit on the card row's edges
   // instead of the header, and only the usable directions are shown — right
   // only at the start, both in the middle, left only at the end. Read from
@@ -824,16 +839,61 @@ export default function PopularProducts({
     };
   }, [isDefaultRow, isLoading, products.length]);
 
+  // Small-screen edge arrows only show while the user is scrolling — the
+  // page or this row — and fade out shortly after scrolling stops (like
+  // us.jimmylion.com). Tapping an arrow scrolls the row, which keeps them up.
+  const [arrowsAwake, setArrowsAwake] = useState(false);
+  useEffect(() => {
+    if (!isLandingRow) return undefined;
+    const row = scrollContainerRef.current;
+    let timer = null;
+    let awake = false;
+    const wake = () => {
+      if (window.innerWidth >= 721) return;
+      if (!awake) {
+        awake = true;
+        setArrowsAwake(true);
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        awake = false;
+        setArrowsAwake(false);
+      }, 900);
+    };
+    window.addEventListener("scroll", wake, { passive: true });
+    row?.addEventListener("scroll", wake, { passive: true });
+    row?.addEventListener("touchstart", wake, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", wake);
+      row?.removeEventListener("scroll", wake);
+      row?.removeEventListener("touchstart", wake);
+    };
+  }, [isLandingRow, isLoading]);
+
   // One card per tap
   const scrollByCard = (dir) => {
     const el = scrollContainerRef.current;
-    const card = el?.querySelector(":scope > div");
-    if (!card) return;
-    el.scrollBy({ left: dir * card.offsetWidth, behavior: "smooth" });
+    const cards = el?.querySelectorAll(":scope > div");
+    if (!cards?.length) return;
+    // card width + any gap between cards
+    const step =
+      cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : cards[0].offsetWidth;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
   };
 
   const edgeBtnClass = (visible) =>
-    `absolute ${isBestSeller ? "top-[calc(50%-8px)]" : "top-1/2"} z-10 grid h-9 w-9 -translate-y-1/2 place-items-center border border-black/15 bg-white text-black shadow-[0_6px_18px_-8px_rgba(0,0,0,0.35)] transition-all duration-300 active:scale-95 cursor-pointer min-[721px]:hidden ${
+    // z-30: above the cards' own add-to-cart icon. With the phone cards
+    // (LandingCardsSpecial) the arrow is centred on the photo tile: tile height
+    // = 46% of the row width (full viewport, no padding) × 1.12, so its middle
+    // sits at 100vw × 0.2576 from the top of the row.
+    `absolute ${
+      useSpecialCards
+        ? "top-[calc(100vw*0.2576)]"
+        : isBestSeller
+          ? "top-[calc(50%-8px)]"
+          : "top-1/2"
+    } z-30 grid h-9 w-9 -translate-y-1/2 place-items-center border border-black/15 bg-white text-black shadow-[0_6px_18px_-8px_rgba(0,0,0,0.35)] transition-all duration-300 active:scale-95 cursor-pointer min-[721px]:hidden ${
       visible ? "opacity-100" : "pointer-events-none opacity-0"
     }`;
 
@@ -1070,7 +1130,7 @@ export default function PopularProducts({
               aria-label="Previous"
               aria-hidden={!edgeLeft}
               tabIndex={edgeLeft ? 0 : -1}
-              className={`left-0 ${edgeBtnClass(edgeLeft)}`}
+              className={`left-0 ${edgeBtnClass(edgeLeft && arrowsAwake)}`}
             >
               <IoChevronBack className="h-4 w-4" />
             </button>
@@ -1080,7 +1140,7 @@ export default function PopularProducts({
               aria-label="Next"
               aria-hidden={!edgeRight}
               tabIndex={edgeRight ? 0 : -1}
-              className={`right-0 ${edgeBtnClass(edgeRight)}`}
+              className={`right-0 ${edgeBtnClass(edgeRight && arrowsAwake)}`}
             >
               <IoChevronForward className="h-4 w-4" />
             </button>
@@ -1096,10 +1156,29 @@ export default function PopularProducts({
                 ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
                 : // Popular row: no space under the cards — the features
                   // band (LandingFeatures) sits flush against them.
-                  `flex overflow-x-auto hide-scrollbar ${isLandingRow && !isBestSeller ? "" : "pb-4"}`
+                  `flex overflow-x-auto hide-scrollbar ${
+                    useSpecialCards
+                      ? "snap-x snap-mandatory pb-6"
+                      : isLandingRow && !isBestSeller
+                        ? ""
+                        : "pb-4"
+                  }`
           }
         >
-          {isLoading
+          {useSpecialCards
+            ? isLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="w-[46%] shrink-0 snap-start">
+                    <SpecialLoadingCard />
+                  </div>
+                ))
+              : products.map((product, index) => (
+                  // edge to edge: no gap, no border
+                  <div key={product.id} className="w-[46%] shrink-0 snap-start">
+                    <LandingCardSpecial product={product} index={index} />
+                  </div>
+                ))
+            : isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}

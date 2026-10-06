@@ -2363,7 +2363,7 @@ function FilterRail({
         ref.current = el;
         if (railRef) railRef.current = el;
       }}
-      className="sticky top-[64px] lg:top-[104px] z-39 border-b border-stone-900/10 bg-white"
+      className="sticky top-[104px] z-39 border-b border-stone-900/10 bg-white"
       style={{ fontFamily: SHOP_FONT }}
     >
       {/* Mobile: single prominent CTA that opens the full filters modal */}

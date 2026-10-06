@@ -27,6 +27,8 @@
     "services": "Services pour Animaux"
   },
   "products": {
+    "quickAdd": "Ajout rapide",
+    "add": "Ajouter",
     "title": "Produits Populaires",
     "eyebrow": "Découvrez les favoris de la communauté",
     "subtitle": "Découvrez les produits Biogance plébiscités par les propriétaires d'animaux, sélectionnés pour vous aider à trouver le soin adapté à votre compagnon.",

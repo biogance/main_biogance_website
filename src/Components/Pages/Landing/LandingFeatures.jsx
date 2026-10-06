@@ -32,22 +32,28 @@ export const LandingFeatures = ({ data }) => {
           return (
             <div
               key={key}
-              className="group relative flex min-h-[210px] flex-col justify-between border-white/10 px-4 py-6 text-white odd:border-r max-[1100px]:[&:nth-child(-n+2)]:border-b min-[721px]:min-h-[270px] min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:py-9 min-[1101px]:border-r min-[1101px]:last:border-r-0"
+              className="group relative flex min-h-[210px] flex-col justify-between border-white/10 px-4 py-6 max-[720px]:min-h-0 text-white odd:border-r max-[1100px]:[&:nth-child(-n+2)]:border-b min-[721px]:min-h-[270px] min-[721px]:px-[clamp(24px,2.4vw,46px)] min-[721px]:py-9 min-[1101px]:border-r min-[1101px]:last:border-r-0"
             >
-              {/* Icon */}
-              <div className="flex items-start">
+              {/* Icon — its own row on larger screens; on small screens it
+                  moves to the right end of the eyebrow line (below). */}
+              <div className="flex items-start max-[720px]:hidden">
                 <span className="grid h-9 w-9 place-items-center border border-white/15 text-white/80 min-[721px]:h-11 min-[721px]:w-11">
                   <Icon className="h-4 w-4 min-[721px]:h-[18px] min-[721px]:w-[18px]" strokeWidth={1.5} />
                 </span>
               </div>
 
-              <div className="mt-8">
-                <p
-                  className="m-0 text-[9px] font-semibold uppercase tracking-[0.26em] min-[721px]:text-[10px]"
-                  style={{ color: GOLD }}
-                >
-                  {tk('eyebrow')}
-                </p>
+              <div className="mt-8 max-[720px]:mt-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    className="m-0 text-[9px] font-semibold uppercase tracking-[0.26em] min-[721px]:text-[10px]"
+                    style={{ color: GOLD }}
+                  >
+                    {tk('eyebrow')}
+                  </p>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center border border-white/15 text-white/80 min-[721px]:hidden">
+                    <Icon className="h-[15px] w-[15px]" strokeWidth={1.5} />
+                  </span>
+                </div>
                 <p
                   className={`m-0 mt-2.5 font-light leading-[1] tracking-[-0.03em] text-white ${
                     isFigure
