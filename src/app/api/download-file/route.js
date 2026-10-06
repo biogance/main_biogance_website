@@ -7,7 +7,7 @@
 // both problems: the browser sees a same-origin response with a
 // Content-Disposition: attachment header, so a plain <a download> works
 // natively with no JS involved.
-const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL || "https://d18f57oyxifcsh.cloudfront.net/";
+const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);

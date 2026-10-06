@@ -389,23 +389,23 @@ export default function Address() {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-black/10 flex flex-col items-center justify-center min-h-[40vh] py-12 px-4">
-              <div className="w-48 h-48 md:w-64 md:h-64 mb-6">
+            <div className="bg-white border border-black/10 flex flex-col items-center justify-center px-5 py-7 text-center sm:py-9 md:min-h-[40vh] md:py-12 md:px-4">
+              <div className="mb-3 h-24 w-24 sm:h-32 sm:w-32 md:mb-6 md:h-64 md:w-64">
                 <img
                   src="/address.svg"
                   alt={t("address.emptyAlt")}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h3 className="text-[18px] sm:text-[20px] font-semibold text-[#0b0b0a] mb-2">
+              <h3 className="mb-1.5 text-[15px] font-semibold text-[#0b0b0a] sm:text-[18px] md:mb-2 md:text-[20px]">
                 {t("address.emptyTitle")}
               </h3>
-              <p className="text-[13.5px] text-[#8a8880] text-center max-w-md mb-6 leading-relaxed">
+              <p className="mb-4 max-w-[260px] text-center text-[12.5px] leading-relaxed text-[#8a8880] sm:max-w-sm md:mb-6 md:max-w-md md:text-[13.5px]">
                 {t("address.emptyDescription")}
               </p>
               <button
                 onClick={handleAddAddress}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13.5px] font-medium tracking-[0.02em] border border-[#0b0b0a] shadow-[0_14px_30px_-14px_rgba(0,0,0,.55)] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[12px] md:text-[13.5px] font-medium tracking-[0.02em] border border-[#0b0b0a] shadow-[0_14px_30px_-14px_rgba(0,0,0,.55)] transition-all duration-200 hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,.65)] hover:-translate-y-px cursor-pointer"
               >
                 {t("address.addFirstAddress")}
               </button>

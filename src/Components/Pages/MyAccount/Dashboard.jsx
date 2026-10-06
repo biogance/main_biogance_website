@@ -23,9 +23,10 @@ const Bone = ({ w, h, className = "" }) => (
   />
 );
 
-// ── KPI card — a compact single row: icon, number + label, arrow. No tall
-// stacked layout, no leftover vertical air. Sits flush against its
-// neighbours (one shared border). ──
+// ── KPI card — sm and up: a compact single row (icon, number + label,
+// arrow) sitting flush against its neighbours (one shared border). Phones:
+// three small stacked cards side by side (icon, number, label) instead of
+// three full-width rows, so the page needs far less scrolling. ──
 function StatCard({
   Icon,
   value,
@@ -39,31 +40,31 @@ function StatCard({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden flex items-center gap-4 text-left bg-white border-y border-l border-black/10 ${isLast ? "border-r" : ""} p-5 sm:p-6 cursor-pointer transition-colors duration-200 hover:bg-black/[0.02]`}
+      className={`group relative overflow-hidden flex min-w-0 flex-col items-start gap-2.5 text-left bg-white border border-black/10 p-3 cursor-pointer transition-colors duration-200 hover:bg-black/[0.02] sm:flex-row sm:items-center sm:gap-4 sm:border-r-0 sm:p-6 ${isLast ? "sm:border-r" : ""}`}
     >
-      <span className="grid place-items-center w-11 h-11 shrink-0 bg-[#0b0b0a] text-white transition-transform duration-300 ease-out group-hover:scale-[1.06]">
-        <Icon className="w-[18px] h-[18px]" />
+      <span className="grid place-items-center w-8 h-8 shrink-0 bg-[#0b0b0a] text-white transition-transform duration-300 ease-out group-hover:scale-[1.06] sm:w-11 sm:h-11">
+        <Icon className="w-[15px] h-[15px] sm:w-[18px] sm:h-[18px]" />
       </span>
 
       <div className="flex-1 min-w-0">
         {isLoading ? (
           <Bone w="52px" h="24px" className="mb-1.5" />
         ) : (
-          <div className="text-[23px] sm:text-[25px] font-semibold leading-none tracking-[-0.01em] text-[#0b0b0a] mb-1.5">
+          <div className="text-[19px] sm:text-[25px] font-semibold leading-none tracking-[-0.01em] text-[#0b0b0a] tabular-nums mb-1 sm:mb-1.5">
             {value}
           </div>
         )}
-        <div className="text-[12.5px] font-medium text-[#0b0b0a] truncate">
+        <div className="text-[11px] leading-tight font-medium text-[#0b0b0a] sm:text-[12.5px] sm:truncate">
           {label}
         </div>
         {subtitle && (
-          <div className="mt-0.5 text-[11px] text-[#8a8880] truncate">
+          <div className="mt-0.5 hidden text-[11px] text-[#8a8880] truncate sm:block">
             {subtitle}
           </div>
         )}
       </div>
 
-      <IoArrowForward className="w-3.5 h-3.5 shrink-0 text-black/20 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-[#0b0b0a] transition-all duration-300" />
+      <IoArrowForward className="hidden sm:block w-3.5 h-3.5 shrink-0 text-black/20 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-[#0b0b0a] transition-all duration-300" />
 
       <span className="absolute left-0 bottom-0 h-[2px] w-0 bg-[#0b0b0a] transition-[width] duration-300 ease-out group-hover:w-full" />
     </button>
@@ -254,7 +255,7 @@ export default function Dashboard() {
       <div className="p-4 md:p-8 max-w-10xl mx-auto">
         {/* KPI row — cards share their borders (one hairline between each),
             not three separate boxed tiles. */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 mb-10 md:mb-12">
+        <div className="grid grid-cols-3 gap-2 sm:gap-0 mb-8 md:mb-12">
           <StatCard
             Icon={RxRocket}
             isLoading={isLoading}
@@ -315,19 +316,21 @@ export default function Dashboard() {
                   ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center min-h-[30vh] py-8">
-              <div className="w-48 md:w-64 h-48 md:h-64 mb-4 md:mb-6 flex items-center justify-center">
-                <img src="empty.svg" alt="" />
+            // Empty state — compact on phones (small illustration, short
+            // copy width, smaller button), roomier from md up.
+            <div className="flex flex-col items-center justify-center px-5 py-7 text-center sm:py-9 md:min-h-[30vh] md:py-10">
+              <div className="mb-3 flex h-24 w-24 items-center justify-center sm:h-32 sm:w-32 md:mb-5 md:h-48 md:w-48">
+                <img src="/empty.svg" alt="" className="h-full w-full object-contain" />
               </div>
-              <h3 className="text-base md:text-lg font-semibold text-[#0b0b0a] mb-2">
+              <h3 className="mb-1.5 text-[15px] font-semibold text-[#0b0b0a] md:mb-2 md:text-lg">
                 {t("dashboard.emptyCart.title")}
               </h3>
-              <p className="text-sm text-[#8a8880] mb-4 md:mb-6 text-center max-w-md">
+              <p className="mb-4 max-w-[260px] text-[12.5px] leading-relaxed text-[#8a8880] sm:max-w-sm md:mb-6 md:max-w-md md:text-sm">
                 {t("dashboard.emptyCart.description")}
               </p>
               <button
-                onClick={() => router.push("/products")}
-                className="bg-[#0b0b0a] text-white cursor-pointer px-6 py-3 text-sm font-medium tracking-[0.02em] transition-colors duration-200 hover:bg-white hover:text-[#0b0b0a] border border-[#0b0b0a]"
+                onClick={() => router.push("/shop")}
+                className="cursor-pointer border border-[#0b0b0a] bg-[#0b0b0a] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white transition-colors duration-200 hover:bg-white hover:text-[#0b0b0a] md:px-6 md:py-3"
               >
                 {t("dashboard.emptyCart.browseProducts")}
               </button>

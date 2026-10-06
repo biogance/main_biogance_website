@@ -507,14 +507,14 @@ export default function MyOrder() {
                   <OrderRowShimmer key={index} />
                 ))
               ) : orders.length === 0 ? (
-                <div className="flex flex-col items-center justify-center min-h-[40vh] py-12">
-                  <div className="w-40 h-40 mb-5 flex items-center justify-center opacity-80">
-                    <img src="empty.svg" alt="" />
+                <div className="flex flex-col items-center justify-center px-5 py-7 text-center sm:py-9 md:min-h-[40vh] md:py-12">
+                  <div className="mb-3 h-24 w-24 sm:h-32 sm:w-32 md:mb-5 md:h-40 md:w-40 flex items-center justify-center opacity-80">
+                    <img src="/empty.svg" alt="" className="h-full w-full object-contain" />
                   </div>
-                  <h3 className="text-[16px] font-semibold text-[#0b0b0a] mb-1.5">
+                  <h3 className="mb-1.5 text-[15px] font-semibold text-[#0b0b0a] md:text-[16px]">
                     {t("dashboard.emptyCart.title")}
                   </h3>
-                  <p className="text-[13px] text-[#8a8880] text-center max-w-xs">
+                  <p className="max-w-[260px] text-center text-[12.5px] leading-relaxed text-[#8a8880] md:text-[13px] md:max-w-xs">
                     {t("orderHistory.subtitle")}
                   </p>
                 </div>

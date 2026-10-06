@@ -9,7 +9,7 @@ export async function POST(req) {
     const { amount } = await req.json();
     const env = process.env.NEXT_PUBLIC_PAYPAL_ENV ?? "sandbox";
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://api.biogance.com/endpoint"}/user/payment/paypal/create-order`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/user/payment/paypal/create-order`,
       {
         method: "POST",
         headers: {
