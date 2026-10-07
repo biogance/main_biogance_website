@@ -26,15 +26,56 @@ let finderMemory = { categories: [], sectionMediaSet: { desktop: null, tab: null
 // Admin-uploaded media for a slot, from the splash response
 // ({ media, media_type: "image" | "video" }) — either is valid, so render a
 // muted looping <video> or an <img> accordingly.
-function FinderMedia({ data, className }) {
+function FinderMedia({ data, className, onLoad }) {
   const media = typeof data?.media === 'string' ? data.media : '';
-  if (!media) return <img src={BACKGROUND_IMAGE} alt="" className={className} />;
+  if (!media) return <img src={BACKGROUND_IMAGE} alt="" className={className} onLoad={onLoad} />;
   const src = /^https?:\/\//i.test(media) ? media : `${MEDIA_URL}${media}`;
   const isVideo = data.media_type === 'video' || /\.(mp4|webm|ogg|mov)$/i.test(media);
   return isVideo ? (
-    <video key={src} src={src} autoPlay loop muted playsInline className={className} />
+    <video key={src} src={src} autoPlay loop muted playsInline className={className} onCanPlay={onLoad} />
   ) : (
-    <img key={src} src={src} alt="" className={className} />
+    <img key={src} src={src} alt="" className={className} onLoad={onLoad} />
+  );
+}
+
+function PetIcon({ src, invert }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <span className="relative flex h-6 w-6 items-center justify-center">
+      {!loaded && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="relative block w-5 h-px bg-black/15 overflow-hidden">
+            <span className="absolute inset-y-0 left-0 w-1/3 bg-black"
+              style={{ animation: 'lcSlide 1.1s ease-in-out infinite' }} />
+          </span>
+        </span>
+      )}
+      <img
+        src={src}
+        alt=""
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
+        className={`h-6 w-6 object-contain brightness-0 ${invert ? 'invert' : ''}`}
+        style={{ opacity: loaded ? 1 : 0 }}
+      />
+    </span>
+  );
+}
+
+function SectionBg({ data }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0c0c0e]">
+          <span className="relative block w-14 h-px bg-white/20 overflow-hidden">
+            <span className="absolute inset-y-0 left-0 w-1/3 bg-white"
+              style={{ animation: 'lcSlide 1.1s ease-in-out infinite' }} />
+          </span>
+        </div>
+      )}
+      <FinderMedia data={data} className="absolute inset-0 h-full w-full object-cover" onLoad={() => setLoaded(true)} />
+    </>
   );
 }
 
@@ -83,6 +124,7 @@ export function LandingProductFinder({ data }) {
   const [modalMedia, setModalMedia] = useState(() => finderMemory.modalMedia);
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [modalImgLoaded, setModalImgLoaded] = useState(false);
   // Wizard shows one step at a time; dir drives the slide-in direction.
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
@@ -155,6 +197,7 @@ export function LandingProductFinder({ data }) {
   const openModal = () => {
     setDir(1);
     setStep(0);
+    setModalImgLoaded(false);
     setIsOpen(true);
   };
 
@@ -243,6 +286,7 @@ export function LandingProductFinder({ data }) {
     >
       <style>{`
         @keyframes pfStepIn { from { opacity: 0; transform: translateX(var(--pf-from)); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes lcSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
       `}</style>
       <div
         role="dialog"
@@ -255,8 +299,16 @@ export function LandingProductFinder({ data }) {
       >
         {/* Left — image + vertical stepper (desktop) */}
         <aside className="hidden w-[260px] shrink-0 flex-col bg-[#f5f4f0] md:flex lg:w-[330px]">
-          <div className="relative h-[44%] shrink-0 overflow-hidden">
-            <FinderMedia data={modalMedia} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="relative h-[44%] shrink-0 overflow-hidden bg-[#eceae4]">
+            {!modalImgLoaded && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center">
+                <span className="relative block w-14 h-px bg-black/15 overflow-hidden">
+                  <span className="absolute inset-y-0 left-0 w-1/3 bg-black"
+                    style={{ animation: 'lcSlide 1.1s ease-in-out infinite' }} />
+                </span>
+              </div>
+            )}
+            <FinderMedia data={modalMedia} className="absolute inset-0 h-full w-full object-cover" onLoad={() => setModalImgLoaded(true)} />
             <div className="absolute inset-0 bg-gradient-to-t from-[#f5f4f0] via-[#f5f4f0]/10 to-transparent" />
           </div>
           <div className="flex flex-1 flex-col px-5 pb-6 lg:px-7 lg:pb-7">
@@ -398,11 +450,7 @@ export function LandingProductFinder({ data }) {
                               }`}
                             >
                               {opt.media ? (
-                                <img
-                                  src={`${MEDIA_URL}${opt.media}`}
-                                  alt=""
-                                  className={`h-6 w-6 object-contain brightness-0 ${on ? 'invert' : ''}`}
-                                />
+                                <PetIcon src={`${MEDIA_URL}${opt.media}`} invert={on} />
                               ) : (
                                 <LuPawPrint className="h-5 w-5" />
                               )}
@@ -493,7 +541,7 @@ export function LandingProductFinder({ data }) {
       <div className="relative w-full overflow-hidden bg-[#0c0c0e]">
       {/* Background */}
       <div className="absolute inset-0 z-0">
-        <FinderMedia data={sectionMedia} className="absolute inset-0 h-full w-full object-cover" />
+        <SectionBg data={sectionMedia} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-black/5" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
       </div>
