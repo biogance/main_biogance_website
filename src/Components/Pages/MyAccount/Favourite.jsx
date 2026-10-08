@@ -804,7 +804,7 @@ export default function Favourite() {
     breeds: !breedsLoading,
   };
   const tabCount = (tab) => TAB_COUNTS[tab];
-  const tabCountReady = (tab) => TAB_READY[tab];
+  const tabCountReady = (tab) => Boolean(TAB_READY[tab] && TAB_COUNTS[tab] > 0);
 
   // Underline tabs — sliding bottom bar (tabIndicator's left/width still
   // measured off the button geometry, same as before) instead of a filled

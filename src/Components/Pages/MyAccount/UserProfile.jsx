@@ -449,62 +449,67 @@ export default function UserProfile() {
             {/* Avatar banner */}
             <div className="p-5 sm:p-8">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5 bg-gradient-to-br from-black/[0.045] to-black/[0.01] border border-black/10 p-5 sm:p-6">
-                <div className="shrink-0 p-[3px] bg-gradient-to-br from-[#0b0b0a] via-[#5a584f] to-[#0b0b0a]">
-                  <div
-                    onClick={handleImageClick}
-                    className={`relative w-20 h-20 sm:w-24 sm:h-24 bg-white flex items-center justify-center overflow-hidden ${
-                      profileImage
-                        ? "cursor-pointer hover:opacity-90 transition-opacity"
-                        : ""
-                    }`}
-                  >
-                    {profileImage ? (
-                      <>
-                        {imageLoading && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/[0.03]">
-                            <div className="w-6 h-6 border-2 border-[#0b0b0a] border-t-transparent rounded-full animate-spin" />
-                          </div>
-                        )}
-                        <img
-                          src={profileImage}
-                          alt="Profile"
-                          className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0" : "opacity-100"}`}
-                          onLoad={() => setImageLoading(false)}
-                          onError={() => setImageLoading(false)}
-                        />
-                      </>
-                    ) : (
-                      <RiUserLine size={40} className="text-black/15" />
-                    )}
+                {/* Avatar + text row */}
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="shrink-0">
+                    <div
+                      onClick={handleImageClick}
+                      className={`relative w-20 h-20 sm:w-24 sm:h-24 bg-white border border-black/15 flex items-center justify-center overflow-hidden ${
+                        profileImage
+                          ? "cursor-pointer hover:border-black/30 hover:opacity-90 transition-all"
+                          : ""
+                      }`}
+                    >
+                      {profileImage ? (
+                        <>
+                          {imageLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/[0.03]">
+                              <div className="w-6 h-6 border-2 border-[#0b0b0a] border-t-transparent rounded-full animate-spin" />
+                            </div>
+                          )}
+                          <img
+                            src={profileImage}
+                            alt="Profile"
+                            className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0" : "opacity-100"}`}
+                            onLoad={() => setImageLoading(false)}
+                            onError={() => setImageLoading(false)}
+                          />
+                        </>
+                      ) : (
+                        <RiUserLine size={40} className="text-black/15" />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[15px] font-semibold text-[#0b0b0a]">
+                      {t("userProfile.avatarTitle")}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-[#8a8880]">
+                      {t("userProfile.avatarDescription")}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-semibold text-[#0b0b0a]">
-                    {t("userProfile.avatarTitle")}
-                  </p>
-                  <p className="mt-0.5 text-[12.5px] text-[#8a8880]">
-                    {t("userProfile.avatarDescription")}
-                  </p>
-                </div>
-
+                {/* Buttons — own row on mobile, inline on sm+ */}
                 <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleUploadClick}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[13px] font-medium cursor-pointer border border-[#0b0b0a] shadow-[0_10px_24px_-12px_rgba(0,0,0,.5)] transition-all duration-200 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,.6)] hover:-translate-y-px"
-                  >
-                    <FiUploadCloud className="w-4 h-4" />
-                    {t("userProfile.uploadNewPhoto")}
-                  </button>
-                  {profileImage && (
+                  {profileImage ? (
                     <button
                       onClick={handleRemoveImage}
                       type="button"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-[#0b0b0a] text-[13px] font-medium cursor-pointer border border-black/15 hover:bg-black/[0.03] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-white text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 text-[12px] sm:text-[13px] font-medium cursor-pointer border border-red-200 transition-colors whitespace-nowrap"
                     >
-                      <HiOutlineTrash className="w-4 h-4" />
+                      <HiOutlineTrash className="w-4 h-4 shrink-0" />
                       {t("userProfile.remove")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleUploadClick}
+                      className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-b from-[#25221e] to-[#0b0b0a] text-white text-[12px] sm:text-[13px] font-medium cursor-pointer border border-[#0b0b0a] shadow-[0_10px_24px_-12px_rgba(0,0,0,.5)] transition-all duration-200 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,.6)] hover:-translate-y-px whitespace-nowrap"
+                    >
+                      <FiUploadCloud className="w-4 h-4 shrink-0" />
+                      {t("userProfile.uploadNewPhoto")}
                     </button>
                   )}
                 </div>

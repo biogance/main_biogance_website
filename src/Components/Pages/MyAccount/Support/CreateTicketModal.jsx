@@ -102,6 +102,8 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
 
   const handleBackdropClick = () => {
     if (modalCardRef.current) {
+      modalCardRef.current.classList.remove('modal-shake');
+      void modalCardRef.current.offsetWidth;
       modalCardRef.current.classList.add('modal-shake');
       modalCardRef.current.addEventListener('animationend', () => {
         modalCardRef.current?.classList.remove('modal-shake');
@@ -229,11 +231,12 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
       className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[1200] p-4 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
       onClick={handleBackdropClick}
     >
-      <div
-        ref={modalCardRef}
-        className={`bg-white w-full max-w-[520px] max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`w-full max-w-[520px] flex items-center justify-center ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        <div
+          ref={modalCardRef}
+          className="bg-white w-full max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Dark editorial header band — mirrors the ticket-card spine treatment on Support.jsx */}
         <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 shrink-0">
           <button
@@ -356,6 +359,7 @@ export default function CreateTicketModal({ isOpen, onClose, onCreate }) {
         </div>
       </div>
     </div>
+  </div>
   );
 }
 
