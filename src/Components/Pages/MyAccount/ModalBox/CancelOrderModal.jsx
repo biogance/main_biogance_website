@@ -21,7 +21,7 @@ export function CancelOrderModal({ isOpen, onClose, onConfirm }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+      className={`fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[80] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
       onClick={handleClose}
     >
       <div

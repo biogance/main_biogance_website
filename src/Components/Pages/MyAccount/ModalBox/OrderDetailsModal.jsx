@@ -292,8 +292,15 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
 
 
   return (
-    <div className={`fixed inset-0 bg-black/60 flex items-center justify-center p-2 sm:p-4 z-70 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}>
-      <div className={`bg-white w-full max-w-2xl max-h-[95vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+    <>
+      <div
+        className={`fixed inset-0 bg-black/60 flex items-center justify-center p-2 sm:p-4 z-70 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
+        onClick={handleClose}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`bg-white w-full max-w-2xl max-h-[95vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
+        >
         {/* Dark editorial header band */}
         <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-5 sm:px-8 py-5 sm:py-6 flex items-center gap-4 border-b border-white/5 overflow-hidden shrink-0">
           <IoReceiptOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
@@ -428,7 +435,7 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
           </button>
         </div>
       </div>
-
+    </div>
 
       {/* Cancel Order Modal */}
       <CancelOrderModal
@@ -439,7 +446,7 @@ export function OrderDetailsModal({ isOpen, onClose, order }) {
           onClose(); // Close the order details modal as well
         }}
       />
-    </div>
+    </>
   );
 }
 

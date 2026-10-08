@@ -135,8 +135,11 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
     };
 
 
-    const handleBackdropClick = () => {
+    const handleBackdropClick = (e) => {
+        if (e.target !== e.currentTarget) return;
         if (modalCardRef.current) {
+            modalCardRef.current.classList.remove('modal-shake');
+            void modalCardRef.current.offsetWidth;
             modalCardRef.current.classList.add('modal-shake');
             modalCardRef.current.addEventListener('animationend', () => {
                 modalCardRef.current?.classList.remove('modal-shake');
@@ -198,11 +201,12 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
                 className={`fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[1200] ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
                 onClick={handleBackdropClick}
             >
-              <div
-                ref={modalCardRef}
-                onClick={(e) => e.stopPropagation()}
-                className={`bg-white w-full max-w-[520px] shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
-              >
+              <div className={`w-full max-w-[520px] flex items-center justify-center ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+                <div
+                  ref={modalCardRef}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white w-full shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden"
+                >
                 {/* Dark editorial header band */}
                 <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 sm:px-7 pt-6 sm:pt-7 pb-5 sm:pb-6 overflow-hidden">
                   <IoTicketOutline className="pointer-events-none absolute -right-5 -top-6 w-28 h-28 text-white/[0.05] rotate-[12deg]" />
@@ -290,7 +294,8 @@ export default function CreateVoucherModal({ isOpen, onClose, loyaltyPoints = 0,
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
 
           {/* Success Modal */}

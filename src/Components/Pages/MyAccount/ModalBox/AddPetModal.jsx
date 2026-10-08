@@ -690,8 +690,11 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
   ];
 
 
-  const handleBackdropClick = () => {
+  const handleBackdropClick = (e) => {
+    if (e.target !== e.currentTarget) return;
     if (modalCardRef.current) {
+      modalCardRef.current.classList.remove('modal-shake');
+      void modalCardRef.current.offsetWidth;
       modalCardRef.current.classList.add('modal-shake');
       modalCardRef.current.addEventListener('animationend', () => {
         modalCardRef.current?.classList.remove('modal-shake');
@@ -734,11 +737,12 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
       {/* Main Add Pet Modal */}
       {!isSuccessModalOpen && (
         <div className={`fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-60 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`} onClick={handleBackdropClick}>
-          <div
-            ref={modalCardRef}
-            onClick={(e) => e.stopPropagation()}
-            className={`bg-white w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
-          >
+          <div className={`w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-3xl flex items-center justify-center ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+            <div
+              ref={modalCardRef}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden"
+            >
             {/* Dark editorial header band — kept compact so it doesn't push the form below the fold */}
             <div className="relative bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-5 sm:px-8 py-5 sm:py-10 shrink-0 overflow-hidden flex items-center gap-4 border-b border-white/5">
               <PiPawPrint className="pointer-events-none absolute -right-6 -top-8 w-32 h-32 text-white/[0.05] rotate-[18deg]" />
@@ -946,7 +950,8 @@ export function AddPetModal({ isOpen, onClose, onSuccess, petToEdit }) {
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
 
       {/* Image Preview Modal */}

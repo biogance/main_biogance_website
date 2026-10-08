@@ -264,11 +264,14 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
   };
 
 
-  const handleBackdropClick = () => {
+  const handleBackdropClick = (e) => {
+    if (e.target !== e.currentTarget) return;
     if (modalCardRef.current) {
-      modalCardRef.current.classList.add("modal-shake");
-      modalCardRef.current.addEventListener("animationend", () => {
-        modalCardRef.current?.classList.remove("modal-shake");
+      modalCardRef.current.classList.remove('modal-shake');
+      void modalCardRef.current.offsetWidth;
+      modalCardRef.current.classList.add('modal-shake');
+      modalCardRef.current.addEventListener('animationend', () => {
+        modalCardRef.current?.classList.remove('modal-shake');
       }, { once: true });
     }
   };
@@ -403,11 +406,12 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
       className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[1200] p-4 ${isClosing ? 'backdrop-out' : 'backdrop-in'}`}
       onClick={handleBackdropClick}
     >
-      <div
-        ref={modalCardRef}
-        onClick={(e) => e.stopPropagation()}
-        className={`bg-white w-full max-w-[600px] max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}
-      >
+      <div className={`w-full max-w-[600px] flex items-center justify-center ${isClosing ? 'modal-pop-out' : 'modal-pop-in'}`}>
+        <div
+          ref={modalCardRef}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white w-full max-h-[90vh] flex flex-col shadow-[0_50px_110px_-30px_rgba(0,0,0,.55)] overflow-hidden"
+        >
         {/* Dark editorial header band — matches the Support ticket modal */}
         <div className="relative  bg-gradient-to-br from-[#211e1a] to-[#0b0b0a] px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 shrink-0">
           <button
@@ -434,7 +438,7 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
 
 
         {/* Form */}
-        <div className="px-6 sm:px-8 pt-6 sm:pt-7 pb-7 sm:pb-8 flex flex-col gap-5 overflow-y-auto">
+        <div className="px-6 sm:px-8 pt-6 sm:pt-7 pb-7 sm:pb-8 flex flex-col gap-5 overflow-y-auto flex-1">
           {/* Address Type + Country */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
@@ -522,10 +526,11 @@ export function AddAddressModal({ isOpen, onClose, onSave, activeTab, editData }
               <FieldError message={fieldErrors.postalCode || fieldErrors.postal_code} />
             </div>
           </div>
+        </div>
 
 
-          {/* Actions */}
-          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-1">
+          {/* Actions — sticky bottom, same as AddPetModal */}
+          <div className="px-6 sm:px-8 py-4 sm:py-5 border-t border-black/10 bg-white shrink-0 flex flex-col-reverse sm:flex-row gap-3">
             <button
               onClick={handleCloseModal}
               className="flex-1 py-3.5 text-[13.5px] font-medium text-[#0b0b0a] border border-black/10 bg-white hover:border-black/30 transition-colors duration-200 cursor-pointer"
