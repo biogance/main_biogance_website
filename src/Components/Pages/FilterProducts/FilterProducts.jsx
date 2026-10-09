@@ -1005,6 +1005,150 @@ export default function FilterProducts() {
     }
   }, [shopDeepLink, RANGES_LIST]);
 
+  // ── Synchronize Filter State <-> Browser URL Parameters ──
+  const isInitialUrlSyncedRef = useRef(false);
+
+  const parseCsvParam = (str) => {
+    if (!str) return [];
+    return str.split(",").map((s) => s.trim()).filter(Boolean);
+  };
+
+  // 1. Initial read / sync from URL searchParams into state
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const urlAnimals = parseCsvParam(searchParams.get("animals"));
+    const catNameParam = searchParams.get("category_name");
+    const catIdParam = searchParams.get("category_id");
+
+    let initialAnimals = urlAnimals;
+    if (initialAnimals.length === 0 && catNameParam) {
+      initialAnimals = [catNameParam];
+    } else if (initialAnimals.length === 0 && catIdParam && categoriesList.length > 0) {
+      const matchedCat = categoriesList.find((c) => String(c.id) === String(catIdParam));
+      if (matchedCat) initialAnimals = [matchedCat.name];
+    }
+
+    const urlUniverse = parseCsvParam(searchParams.get("universe"));
+    const urlFamilies = parseCsvParam(searchParams.get("families"));
+    const famNameParam = searchParams.get("family_name");
+    let initialFamilies = urlFamilies;
+    if (initialFamilies.length === 0 && famNameParam) {
+      initialFamilies = [famNameParam];
+    }
+
+    const urlSpecificity = parseCsvParam(searchParams.get("specificity"));
+    const urlNeeds = parseCsvParam(searchParams.get("needs"));
+    const urlBreeds = parseCsvParam(searchParams.get("breeds"));
+    const urlForWhich = parseCsvParam(searchParams.get("for_which") || searchParams.get("forWhich"));
+
+    const urlRanges = parseCsvParam(searchParams.get("ranges"));
+    const rangeNameParam = searchParams.get("range_name");
+    let initialRanges = urlRanges;
+    if (initialRanges.length === 0 && rangeNameParam) {
+      initialRanges = [rangeNameParam];
+    }
+
+    const urlSizes = parseCsvParam(searchParams.get("sizes"));
+    const urlColors = parseCsvParam(searchParams.get("colors"));
+
+    const minPriceVal = searchParams.get("min_price");
+    const urlMinPrice = minPriceVal !== null && minPriceVal !== undefined ? parseFloat(minPriceVal) : null;
+
+    const maxPriceVal = searchParams.get("max_price") || searchParams.get("price");
+    const urlMaxPrice = maxPriceVal !== null && maxPriceVal !== undefined ? parseFloat(maxPriceVal) : null;
+
+    const urlSort = searchParams.get("sort");
+    const urlQ = searchParams.get("q") || searchParams.get("keyword") || searchParams.get("search");
+
+    if (initialAnimals.length > 0) setAnimals(initialAnimals);
+    if (initialFamilies.length > 0) setFamilies(initialFamilies);
+    if (initialRanges.length > 0) setRanges(initialRanges);
+    if (urlUniverse.length > 0) setUniverse(urlUniverse);
+    if (urlSpecificity.length > 0) setSpecificity(urlSpecificity);
+    if (urlNeeds.length > 0) setNeeds(urlNeeds);
+    if (urlBreeds.length > 0) setBreeds(urlBreeds);
+    if (urlForWhich.length > 0) setForWhich(urlForWhich);
+    if (urlSizes.length > 0) setSizes(urlSizes);
+    if (urlColors.length > 0) setColors(urlColors);
+
+    if (urlMinPrice !== null && !isNaN(urlMinPrice)) setMinPrice(urlMinPrice);
+    if (urlMaxPrice !== null && !isNaN(urlMaxPrice)) setPrice(urlMaxPrice);
+    if (urlSort) setSort(urlSort);
+
+    if (urlQ !== null && urlQ !== undefined) {
+      setQuery(urlQ);
+      setDebouncedQuery(urlQ);
+    }
+
+    isInitialUrlSyncedRef.current = true;
+  }, [searchParams, categoriesList]);
+
+  // 2. Sync filter state -> Browser URL query params (without triggering Next.js page reloads)
+  useEffect(() => {
+    if (!isInitialUrlSyncedRef.current) return;
+
+    const params = new URLSearchParams();
+
+    // source sirf tab rakhein jab koi filter active na ho
+    if (source && animals.length === 0 && families.length === 0 && ranges.length === 0 &&
+        universe.length === 0 && specificity.length === 0 && needs.length === 0 &&
+        breeds.length === 0 && forWhich.length === 0 && sizes.length === 0 && colors.length === 0 &&
+        minPrice === 0 && price === 500 && (!debouncedQuery || debouncedQuery.trim() === "")) {
+      params.set("source", source);
+    }
+
+    if (animals.length > 0) params.set("animals", animals.join(","));
+
+    if (universe.length > 0) params.set("universe", universe.join(","));
+
+    if (families.length > 0) params.set("families", families.join(","));
+
+    if (specificity.length > 0) params.set("specificity", specificity.join(","));
+    if (needs.length > 0) params.set("needs", needs.join(","));
+    if (breeds.length > 0) params.set("breeds", breeds.join(","));
+    if (forWhich.length > 0) params.set("for_which", forWhich.join(","));
+
+    if (ranges.length > 0) params.set("ranges", ranges.join(","));
+
+    if (sizes.length > 0) params.set("sizes", sizes.join(","));
+    if (colors.length > 0) params.set("colors", colors.join(","));
+
+    if (minPrice > 0) params.set("min_price", String(minPrice));
+    if (price < 500) params.set("max_price", String(price));
+
+    if (sort && sort !== "Featured") params.set("sort", sort);
+
+    if (debouncedQuery && debouncedQuery.trim() !== "") {
+      params.set("q", debouncedQuery.trim());
+    }
+
+    const newQs = params.toString();
+    const currentQs = typeof window !== "undefined" ? window.location.search.replace(/^\?/, "") : "";
+
+    if (newQs !== currentQs && typeof window !== "undefined") {
+      const newUrl = newQs ? `/shop?${newQs}` : "/shop";
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, [
+    animals,
+    universe,
+    families,
+    specificity,
+    needs,
+    breeds,
+    forWhich,
+    ranges,
+    sizes,
+    colors,
+    price,
+    minPrice,
+    sort,
+    debouncedQuery,
+    source,
+    categoriesList,
+  ]);
+
   const getSelectedIds = () => {
     const categoryIds = categoriesList
       .filter((cat) => animals.includes(cat.name))
@@ -1503,6 +1647,12 @@ export default function FilterProducts() {
     setColors([]);
     setPrice(500);
     setMinPrice(0);
+    setSort("Featured");
+    setQuery("");
+    setDebouncedQuery("");
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", "/shop");
+    }
   };
 
   return (

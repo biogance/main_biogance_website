@@ -162,124 +162,81 @@ function CustomDropdown({ value, onChange }) {
   );
 }
 
-// ─── Size Dropdown (unchanged — only for size, not qty) ───────────────────────
+// ─── Size Dropdown — same scroll-window UX as CustomDropdown (qty) ────────────
 function SizeDropdown({ options, value, onChange, disabled }) {
   const [open, setOpen] = useState(false);
+  const [windowStart, setWindowStart] = useState(0);
   const wrapRef = useRef(null);
+  const WINDOW = 10;
+
+  const openDropdown = () => {
+    const idx = options.indexOf(value);
+    const idealStart = Math.max(0, Math.min(idx - 4, options.length - WINDOW));
+    setWindowStart(Math.max(0, idealStart));
+    setOpen(true);
+  };
+
+  const windowEnd = Math.min(windowStart + WINDOW - 1, options.length - 1);
+  const visible = options.slice(windowStart, windowEnd + 1);
 
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target))
-        setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  if (disabled || options.length <= 1) return null;
+
   return (
-    <div
-      ref={wrapRef}
-      style={{ position: "relative", display: "inline-block" }}
-    >
-      <style>{`
-        .dropdown-menu-scrollbar-hide::-webkit-scrollbar { display: none; }
-        .dropdown-menu-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-      <div
-        onClick={() => !disabled && setOpen((v) => !v)}
-        style={{
-          border: "1px solid #ddd",
-          padding: "4px 8px",
-          fontSize: "13px",
-          background: "#fff",
-          color: "#111",
-          cursor: disabled ? "default" : "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "6px",
-          minWidth: disabled ? "auto" : "42px",
-          userSelect: "none",
-          transition: "border-color 0.15s",
-          opacity: disabled ? 0.6 : 1,
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) e.currentTarget.style.borderColor = "#999";
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled) e.currentTarget.style.borderColor = "#ddd";
-        }}
+    <div ref={wrapRef} className="relative inline-block">
+      <button
+        onClick={() => (open ? setOpen(false) : openDropdown())}
+        className="flex items-center gap-1 border border-gray-200 px-1.5 py-1 text-sm text-gray-800 cursor-pointer hover:border-gray-400 transition-colors"
+        style={{ minWidth: "42px" }}
       >
-        <span>{value}</span>
-        {!disabled && (
-          <span
-            style={{
-              display: "inline-block",
-              width: 0,
-              height: 0,
-              borderLeft: "4px solid transparent",
-              borderRight: "4px solid transparent",
-              borderTop: "5px solid #555",
-              flexShrink: 0,
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.2s",
-            }}
-          />
-        )}
-      </div>
-      {open && !disabled && (
-        <div
-          className="dropdown-menu-scrollbar-hide"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            left: 0,
-            background: "#fff",
-            border: "1px solid #ddd",
-            minWidth: "100%",
-            zIndex: 1100,
-            maxHeight: "calc(10 * 33px)",
-            overflowY: "auto",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          }}
-        >
-          {options.map((opt) => (
-            <SizeDropItem
-              key={opt}
-              label={opt}
-              selected={opt === value}
-              onSelect={() => {
-                onChange(opt);
-                setOpen(false);
-              }}
-            />
-          ))}
+        <span className="font-medium">{value}</span>
+        <span className={`ml-auto text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <ChevronDown />
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute top-[calc(100%+6px)] left-0 bg-white border border-gray-200 shadow-md z-50 overflow-hidden" style={{ minWidth: "42px" }}>
+          {windowStart > 0 && (
+            <button
+              className="w-full flex items-center justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors cursor-pointer"
+              onMouseEnter={() => setWindowStart((p) => Math.max(0, p - WINDOW))}
+              onClick={() => setWindowStart((p) => Math.max(0, p - WINDOW))}
+            >
+              <ChevronUp />
+            </button>
+          )}
+          <ul>
+            {visible.map((opt) => (
+              <li
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className={`py-1.5 text-sm cursor-pointer transition-colors hover:bg-gray-50 text-center w-full ${
+                  opt === value ? "font-medium text-black" : "text-gray-800"
+                }`}
+              >
+                {opt}
+              </li>
+            ))}
+          </ul>
+          {windowEnd < options.length - 1 && (
+            <button
+              className="w-full flex items-center justify-center h-7 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors cursor-pointer"
+              onMouseEnter={() => setWindowStart((p) => Math.min(p + WINDOW, options.length - WINDOW))}
+              onClick={() => setWindowStart((p) => Math.min(p + WINDOW, options.length - WINDOW))}
+            >
+              <ChevronDown />
+            </button>
+          )}
         </div>
       )}
-    </div>
-  );
-}
-
-function SizeDropItem({ label, selected, onSelect }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onClick={onSelect}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: "8px 12px",
-        fontSize: "13px",
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-        background: hovered ? "#111" : "#fff",
-        color: hovered ? "#fff" : "#111",
-        fontWeight: selected ? 600 : 400,
-        transition: "background 0.15s, color 0.15s",
-        textAlign: "center",
-      }}
-    >
-      {label}
     </div>
   );
 }
@@ -1829,7 +1786,7 @@ export default function ModalAddToCart({
               height="44"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#ccc"
+              stroke="#111"
               strokeWidth="1.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -1902,7 +1859,12 @@ export default function ModalAddToCart({
                 : "";
               const name =
                 lang === "fr" && p.french_name ? p.french_name : p.name || "";
-              const sizeOptions = p.size_name ? [p.size_name] : [];
+              // bundle_products gives all size variants; fallback to single size_name
+              const sizeOptions = (() => {
+                const variants = item.bundle_products || item.product?.bundle_products || [];
+                const sizes = [...new Set(variants.map((v) => v.size_name).filter(Boolean))];
+                return sizes.length > 1 ? sizes : (p.size_name ? [p.size_name] : []);
+              })();
               const isSingleSize = sizeOptions.length <= 1;
               const unitPrice =
                 parseFloat(String(item.price ?? "0").replace(",", ".")) || 0;
@@ -1975,13 +1937,16 @@ export default function ModalAddToCart({
                         value={String(item.quantity)}
                         onChange={(val) => handleQtyChange(item.id, val)}
                       />
-                      {/* Size dropdown (old style, unchanged) */}
-                      {sizeOptions.length > 0 && (
+                      {sizeOptions.length > 1 && (
                         <SizeDropdown
                           options={sizeOptions}
-                          value={sizeOptions[0]}
-                          onChange={() => {}}
-                          disabled={isSingleSize}
+                          value={p.size_name || sizeOptions[0]}
+                          onChange={(newSize) => {
+                            const variants = item.bundle_products || item.product?.bundle_products || [];
+                            const match = variants.find((v) => v.size_name === newSize);
+                            if (match) handleQtyChange(item.id, String(item.quantity));
+                          }}
+                          disabled={false}
                         />
                       )}
                       <button
@@ -2288,7 +2253,14 @@ export default function ModalAddToCart({
             {/* Promo Accordion */}
             <div style={{ borderBottom: "1px solid #e5e5e5" }}>
               <button
-                onClick={() => setPromoOpen((v) => !v)}
+                onClick={() => {
+                  const next = !promoOpen;
+                  setPromoOpen(next);
+                  if (next) setTimeout(() => {
+                    const el = document.getElementById("cart-promo-content");
+                    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                  }, 420);
+                }}
                 style={{
                   width: "100%",
                   background: "none",
@@ -2319,8 +2291,9 @@ export default function ModalAddToCart({
                 </span>
               </button>
               <div
+                id="cart-promo-content"
                 style={{
-                  maxHeight: promoOpen ? "200px" : "0px",
+                  maxHeight: promoOpen ? "300px" : "0px",
                   overflow: "hidden",
                   transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
                   opacity: promoOpen ? 1 : 0,
@@ -2504,7 +2477,14 @@ export default function ModalAddToCart({
             {/* Voucher Accordion */}
             <div style={{ paddingBottom: "8px" }}>
               <button
-                onClick={() => setGiftOpen((v) => !v)}
+                onClick={() => {
+                  const next = !giftOpen;
+                  setGiftOpen(next);
+                  if (next) setTimeout(() => {
+                    const el = document.getElementById("cart-voucher-content");
+                    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                  }, 420);
+                }}
                 style={{
                   width: "100%",
                   background: "none",
@@ -2533,6 +2513,7 @@ export default function ModalAddToCart({
                 </span>
               </button>
               <div
+                id="cart-voucher-content"
                 style={{
                   maxHeight: giftOpen ? `${giftContentHeight + 20}px` : "0px",
                   overflow: "hidden",

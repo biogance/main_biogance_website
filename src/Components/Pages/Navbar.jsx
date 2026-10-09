@@ -832,7 +832,7 @@ export default function Navbar({
                 {/* Cart */}
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="flex items-center gap-1 h-full text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
+                  className="flex items-center gap-1 h-full px-2 text-sm font-[500] text-[#1C1C1C] cursor-pointer bg-transparent border-none"
                 >
                   <span className="uppercase">{t("cart") || "Cart"}</span>
                   {cartCount > 0 ? (
@@ -871,7 +871,7 @@ export default function Navbar({
               <div className="flex lg:hidden items-center justify-end">
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative flex items-center p-2 text-sm font-normal text-[#1C1C1C] cursor-pointer"
+                  className="relative flex items-center justify-center p-3 text-sm font-normal text-[#1C1C1C] cursor-pointer"
                 >
                   {cartCount > 0 ? (
                     <div

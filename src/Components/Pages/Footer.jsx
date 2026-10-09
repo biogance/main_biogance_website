@@ -36,7 +36,7 @@ import { BASE_URL } from "../API/API";
 
 export default function Footer() {
   const { t, i18n } = useTranslation("footer");
-  const isFrench = i18n.language === "fr";
+  const isFrench = i18n.language?.startsWith('fr');
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 

@@ -104,7 +104,7 @@ const preloadHeroVideos = () => {
 
 export default function HeroSection() {
   const { t, i18n } = useTranslation("home");
-  const isFrench = i18n.language === "fr";
+  const isFrench = i18n.language?.startsWith('fr');
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
@@ -237,6 +237,7 @@ export default function HeroSection() {
     } else {
       payload.device_id = getDeviceId();
     }
+    payload.language = i18n.language?.startsWith('fr') ? 'fr' : 'en';
     axios
       .post(`${BASE_URL}/web/home`, payload)
       .then((res) => {
