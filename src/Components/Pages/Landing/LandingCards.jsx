@@ -534,9 +534,9 @@ export const LandingCards = ({
 
                       {hasSizes && (
                         <div className={hasColors ? "mb-2.5" : ""}>
-                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
+                          {/* <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.size") || "Size"}
-                          </p>
+                          </p> */}
                           <div className="flex flex-wrap gap-1.5">
                             {uniqueSizes.map((size) => (
                               <button
@@ -562,9 +562,9 @@ export const LandingCards = ({
 
                       {hasColors && (
                         <div className={hasSizes && hasColors ? "mb-2.5" : ""}>
-                          <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
+                          {/* <p className="m-0 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-black">
                             {t("products.color") || "Color"}
-                          </p>
+                          </p> */}
                           <div className="flex flex-wrap gap-2">
                             {uniqueColors.map((color) => (
                               <button
@@ -885,11 +885,11 @@ export default function PopularProducts({
   const edgeBtnClass = (visible) =>
     // z-30: above the cards' own add-to-cart icon. With the phone cards
     // (LandingCardsSpecial) the arrow is centred on the photo tile: tile height
-    // = 46% of the row width (full viewport, no padding) × 1.12, so its middle
-    // sits at 100vw × 0.2576 from the top of the row.
+    // = 44% of the row width (full viewport, no padding) × 1.12, so its middle
+    // sits at 100vw × 0.2464 from the top of the row.
     `absolute ${
       useSpecialCards
-        ? "top-[calc(100vw*0.2576)]"
+        ? "top-[calc(100vw*0.2464)]"
         : isBestSeller
           ? "top-[calc(50%-8px)]"
           : "top-1/2"
@@ -1158,7 +1158,7 @@ export default function PopularProducts({
                   // band (LandingFeatures) sits flush against them.
                   `flex overflow-x-auto hide-scrollbar ${
                     useSpecialCards
-                      ? "snap-x snap-mandatory pb-6"
+                      ? "snap-x snap-mandatory px-4 gap-3.5 pb-6"
                       : isLandingRow && !isBestSeller
                         ? ""
                         : "pb-4"
@@ -1167,14 +1167,13 @@ export default function PopularProducts({
         >
           {useSpecialCards
             ? isLoading
-              ? Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="w-[46%] shrink-0 snap-start">
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="w-[44%] shrink-0 snap-start">
                     <SpecialLoadingCard />
                   </div>
                 ))
               : products.map((product, index) => (
-                  // edge to edge: no gap, no border
-                  <div key={product.id} className="w-[46%] shrink-0 snap-start">
+                  <div key={product.id} className="w-[44%] shrink-0 snap-start">
                     <LandingCardSpecial product={product} index={index} />
                   </div>
                 ))

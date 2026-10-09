@@ -12,7 +12,7 @@ import { getDeviceId } from '../../../utils/deviceId';
 
 export default function Products({ isOpen, onClose, categories = [], triggerRef, popular = [], onCartOpen, onQuickViewOpen, onFeaturedProductChange, isMobileModal = false }) {
   const { t, i18n } = useTranslation('ourproduct');
-  const isFrench = i18n.language === 'fr';
+  const isFrench = i18n.language?.startsWith('fr');
   const router = useRouter();
 
   const getName = (item) => {
@@ -24,23 +24,14 @@ export default function Products({ isOpen, onClose, categories = [], triggerRef,
   // shape LandingCategories uses).
   const goToCategory = (category) => {
     onClose?.();
-    const params = new URLSearchParams({
-      category_id: category.id,
-      category_name: getName(category),
-    });
-    router.push(`/shop?${params.toString()}`);
+    router.push(`/shop?animals=${encodeURIComponent(getName(category))}`);
   };
 
   // Family click → /shop with the animal collection (category) and family
   // pre-selected in the filter rail, so the API call comes back already filtered.
   const goToFamily = (category, fam) => {
     onClose?.();
-    const params = new URLSearchParams({
-      category_id: category.id,
-      category_name: getName(category),
-      family_name: getName(fam),
-    });
-    router.push(`/shop?${params.toString()}`);
+    router.push(`/shop?animals=${encodeURIComponent(getName(category))}&families=${encodeURIComponent(getName(fam))}`);
   };
 
   const [activeCategory, setActiveCategory] = useState(null);

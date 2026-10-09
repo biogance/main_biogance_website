@@ -70,9 +70,9 @@ const addToCartRequest = async (productId) => {
 
 // Placeholder with the same box as the real card.
 export const SpecialLoadingCard = () => (
-  <div className="flex h-full w-full flex-col pb-3">
+  <div className="flex h-full w-full flex-col">
     <style>{`@keyframes lcsSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`}</style>
-    <div className="relative grid aspect-[1/1.12] place-items-center overflow-hidden bg-[#eceae4]">
+    <div className="relative grid aspect-[1/1.12] w-full place-items-center overflow-hidden bg-[#eceae4] border border-black/5">
       <span className="relative block h-px w-12 overflow-hidden bg-black/15">
         <span
           className="absolute inset-y-0 left-0 w-1/3 bg-black"
@@ -80,9 +80,11 @@ export const SpecialLoadingCard = () => (
         />
       </span>
     </div>
-    <div className="mx-2.5 mt-2.5 h-3 w-4/5 animate-pulse bg-black/10" />
-    <div className="mx-2.5 mt-2 h-2 w-1/2 animate-pulse bg-black/10" />
-    <div className="mx-2.5 mt-2.5 h-3 w-1/4 animate-pulse bg-black/10" />
+    <div className="px-1 pt-2.5 pb-2">
+      <div className="h-3.5 w-4/5 animate-pulse bg-black/10 mb-1.5" />
+      <div className="h-2.5 w-1/2 animate-pulse bg-black/10 mb-2" />
+      <div className="h-3.5 w-1/4 animate-pulse bg-black/10" />
+    </div>
   </div>
 );
 
@@ -141,11 +143,10 @@ export function LandingCardSpecial({ product, index }) {
   };
 
   return (
-    // Cards sit edge to edge, no gap and no border between them.
     <div className="flex h-full w-full flex-col">
       <style>{`@keyframes lcsSpin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Tile — photo, tag, add-to-cart icon */}
+      {/* Photo Tile — zero border radius (rounded-none), soft studio background */}
       <div
         ref={tileRef}
         role="link"
@@ -153,7 +154,7 @@ export function LandingCardSpecial({ product, index }) {
         aria-label={name}
         onClick={sheetOpen ? undefined : openProduct}
         onKeyDown={(e) => e.key === "Enter" && openProduct()}
-        className="relative aspect-[1/1.12] cursor-pointer overflow-hidden bg-[#f3f3f3]"
+        className="relative aspect-[1/1.12] w-full cursor-pointer overflow-hidden bg-[#f3f3f3] border border-black/5"
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,rgba(255,255,255,.95),rgba(255,255,255,0)_64%)]" />
 
@@ -181,19 +182,21 @@ export function LandingCardSpecial({ product, index }) {
           />
         )}
 
+        {/* Tag — EXACT same design as LandingCards.jsx */}
         {badgeText && (
-          <span
-            className={`absolute left-2 top-2 z-10 flex items-center gap-1.5 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${
+          <div
+            className={`absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2 py-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${
               isDiscountBadge
                 ? "bg-[#0b0b0a] text-white"
-                : "border border-white bg-white/80 text-[#0b0b0a] backdrop-blur-md"
+                : "bg-white/75 backdrop-blur-md text-[#0b0b0a] border border-white"
             }`}
           >
-            {!isDiscountBadge && <span className="h-1 w-1 bg-[#0b0b0a]" />}
+            {!isDiscountBadge && <span className="w-1 h-1 bg-[#0b0b0a]" />}
             {badgeText}
-          </span>
+          </div>
         )}
 
+        {/* Cart Icon button — square sharp corners (rounded-none) */}
         <button
           type="button"
           onClick={handleCartIcon}
@@ -221,13 +224,13 @@ export function LandingCardSpecial({ product, index }) {
         )}
       </div>
 
-      {/* Name, label, price — under the tile */}
-      <div className="cursor-pointer px-2.5 pb-3 pt-2.5" onClick={openProduct}>
-        <p className="m-0 line-clamp-2 text-[13px] font-semibold leading-[1.3] tracking-[-0.005em] text-[#0b0b0a]">
+      {/* Name, label, price under the tile */}
+      <div className="cursor-pointer px-1 pt-2.5 pb-2" onClick={openProduct}>
+        <p className="m-0 line-clamp-2 text-[13px] font-bold leading-[1.3] tracking-tight text-[#0b0b0a]">
           {name}
         </p>
         {label && (
-          <p className="m-0 mt-1 truncate text-[11px] leading-snug text-[#6c6a62]">{label}</p>
+          <p className="m-0 mt-1 truncate text-[11px] font-medium text-[#6c6a62]">{label}</p>
         )}
         <p className="m-0 mt-1.5 text-[13px] font-semibold tabular-nums text-[#0b0b0a]">
           {p.priceLabel || priceText(p.price)} €
@@ -352,7 +355,7 @@ function QuickAddPanel({
       <div className="min-h-0 space-y-3 overflow-y-auto px-2.5 pb-2.5 pt-1" style={{ overscrollBehavior: "contain" }}>
         {hasSizes && (
           <div>
-            {sectionLabel(t("products.size", "Size"), size)}
+            {/* {sectionLabel(t("products.size", "Size"), size)} */}
             <div className="grid grid-cols-2 gap-1.5">
               {uniqueSizes.map((s) => (
                 <button
@@ -413,9 +416,11 @@ function QuickAddPanel({
           </span>
         ) : (
           <>
-            <span>{t("products.add", "Add")}</span>
-            <span className="text-[11px] tracking-normal tabular-nums">{priceText(shownPrice)} €</span>
-          </>
+  <span className="text-[10px] leading-none">{t("products.add", "Add")}</span>
+  <span className="text-[10px] leading-none tracking-normal tabular-nums">
+    {priceText(shownPrice)} €
+  </span>
+</>
         )}
       </button>
     </div>
